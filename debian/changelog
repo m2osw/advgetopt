@@ -1,3 +1,9 @@
+advgetopt (1.1.11.2~xenial) xenial; urgency=high
+
+  * Nightly build.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Tue, 24 Oct 2017 20:54:53 -0700
+
 advgetopt (1.1.11.0~xenial) xenial; urgency=high
 
   * Upload to PPA.
