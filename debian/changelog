@@ -3,7 +3,7 @@ advgetopt (1.1.12.0~xenial) xenial; urgency=high
   * Fix to the .cmake file to prevent the addition of advgetopt/ in the include
     path.
 
- -- Alexis Wilke <alexis@m2osw.com>  Sun,  8 Jan 2017 17:16:48 -0800
+ -- Alexis Wilke <alexis@m2osw.com>  Sun,  8 Jan 2018 17:16:48 -0800
 
 advgetopt (1.1.11.2~xenial) xenial; urgency=high
 

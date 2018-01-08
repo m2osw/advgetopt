@@ -1,7 +1,7 @@
 # File:         CMakeLists.txt
 # Object:       Install necessary cmake modules
 #
-# Copyright:    Copyright (c) 2006-2017 Made to Order Software Corp.
+# Copyright:    Copyright (c) 2006-2018 Made to Order Software Corp.
 #               All Rights Reserved.
 #
 # http://snapwebsites.org/

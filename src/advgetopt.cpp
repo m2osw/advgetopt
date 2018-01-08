@@ -1,5 +1,5 @@
 /*    advgetopt -- advanced get option implementation
- *    Copyright (C) 2006-2017  Made to Order Software Corporation
+ *    Copyright (C) 2006-2018  Made to Order Software Corporation
  *
  *    This program is free software; you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -299,6 +299,11 @@ void getopt::reset(int argc
                  , std::vector<std::string> const configuration_files
                  , char const * environment_variable_name)
 {
+    if(argv == nullptr)
+    {
+        throw getopt_exception_invalid("argv pointer cannot be nullptr");
+    }
+
     f_options = opts;
     f_map.clear();
     f_program_fullname = argv[0];
