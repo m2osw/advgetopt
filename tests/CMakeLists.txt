@@ -1,6 +1,6 @@
 #
 # File:
-#      CMakeLists.txt
+#      tests/CMakeLists.txt
 #
 # Description:
 #      Definitions to create all the unit tests of the advgetopt library.

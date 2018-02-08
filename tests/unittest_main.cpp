@@ -1,5 +1,12 @@
-/*    unittest_main.cpp
+/*
+ * File:
+ *    unittest_main.cpp
+ *
+ * License:
  *    Copyright (C) 2006-2018  Made to Order Software Corporation
+ *
+ *    https://snapwebsites.org/
+ *    contact@m2osw.com
  *
  *    This program is free software; you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -15,7 +22,7 @@
  *    with this program; if not, write to the Free Software Foundation, Inc.,
  *    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *    Authors
+ * Authors:
  *    Alexis Wilke   alexis@m2osw.com
  */
 

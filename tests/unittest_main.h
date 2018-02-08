@@ -1,5 +1,12 @@
-/*    unittest_main.h
+/*
+ * File:
+ *    tests/unittest_main.h
+ *
+ * License:
  *    Copyright (C) 2006-2018  Made to Order Software Corporation
+ *
+ *    https://snapwebsites.org/
+ *    contact@m2osw.com
  *
  *    This program is free software; you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -15,7 +22,7 @@
  *    with this program; if not, write to the Free Software Foundation, Inc.,
  *    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *    Authors
+ * Authors:
  *    Alexis Wilke   alexis@m2osw.com
  */
 #ifndef UNIT_TEST_MAIN_H
@@ -46,25 +53,26 @@ extern std::string   tmp_dir;
 class obj_setenv
 {
 public:
-	obj_setenv(const std::string& var)
-		: f_copy(strdup(var.c_str()))
-	{
-		putenv(f_copy);
-		std::string::size_type p(var.find_first_of('='));
-		f_name = var.substr(0, p);
-	}
-	~obj_setenv()
-	{
-		putenv(strdup((f_name + "=").c_str()));
-		free(f_copy);
-	}
+    obj_setenv(const std::string& var)
+        : f_copy(strdup(var.c_str()))
+    {
+        putenv(f_copy);
+        std::string::size_type p(var.find_first_of('='));
+        f_name = var.substr(0, p);
+    }
+    ~obj_setenv()
+    {
+        putenv(strdup((f_name + "=").c_str()));
+        free(f_copy);
+    }
 
 private:
-	char *		f_copy;
-	std::string	f_name;
+    char *          f_copy;
+    std::string     f_name;
 };
 
 
 
 }
 #endif
+// vim: ts=4 sw=4 et

@@ -1,9 +1,9 @@
 #
 # File:
-#      CMakeLists.txt
+#      doc/CMakeLists.txt
 #
 # Description:
-#      Create the documentation of the libtld library.
+#      Create the documentation of the advgetopt library.
 #
 # Documentation:
 #      See the CMake documentation.
@@ -11,7 +11,7 @@
 # License:
 #      Copyright (c) 2006-2018 Made to Order Software Corp.
 #
-#      http://snapwebsites.org/
+#      https://snapwebsites.org/
 #      contact@m2osw.com
 #
 #      Permission is hereby granted, free of charge, to any person obtaining a
