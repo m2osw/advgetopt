@@ -1,3 +1,9 @@
+advgetopt (1.1.13.3~xenial) xenial; urgency=high
+
+  * Bump version to recompile without the -fsanitizer flags.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 27 Jun 2018 19:46:10 -0800
+
 advgetopt (1.1.13.2~xenial) xenial; urgency=high
 
   * Bump version to recompile with the -fsanitizer flags.
