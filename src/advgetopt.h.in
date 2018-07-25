@@ -87,6 +87,12 @@ public:
 };
 
 
+// TODO:
+// to avoid turning off the -Weffc++ warning, we should look into not having
+// a bare pointer
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
+
 // getopt is a advanced class that parses your command line
 // arguments and make them accessible by name via a
 // standard map
@@ -160,8 +166,8 @@ private:
     {
         bool                        f_cvt = false;  // whether f_int is defined (true) or not (false)
         int32_t                     f_idx = 0;      // index in f_options
-        std::vector<long>           f_int;
-        std::vector<std::string>    f_val;
+        std::vector<long>           f_int = std::vector<long>();
+        std::vector<std::string>    f_val = std::vector<std::string>();
     };
     typedef std::map<std::string, optmap_info>  optmap_t;
     typedef std::map<char, int>                 short_opt_name_map_t;
@@ -176,12 +182,13 @@ private:
     std::string         assemble_options( status_t status /*, std::string & default_arg_help*/ ) const;
     std::string         process_help_string( char const * help ) const;
 
-    std::string         f_program_fullname;
-    std::string         f_program_name;
-    std::string         f_project_name;
+    std::string         f_program_fullname = std::string();
+    std::string         f_program_name = std::string();
+    std::string         f_project_name = std::string();
     option const *      f_options = nullptr;
-    optmap_t            f_map;
+    optmap_t            f_map = optmap_t();
 };
+#pragma GCC diagnostic pop
 
 
 

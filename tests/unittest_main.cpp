@@ -1,6 +1,6 @@
 /*
  * File:
- *    unittest_main.cpp
+ *    tests/unittest_main.cpp
  *
  * License:
  *    Copyright (C) 2006-2018  Made to Order Software Corporation
@@ -51,7 +51,7 @@ namespace
     {
         bool        help = false;
         int         seed = 0;
-        std::string tmp /* = "" */;
+        std::string tmp = std::string();
         bool        version = false;
     };
 
