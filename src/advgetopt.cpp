@@ -3,7 +3,7 @@
  *    src/advgetopt -- advanced get option implementation
  *
  * License:
- *    Copyright (C) 2006-2018  Made to Order Software Corporation
+ *    Copyright (c) 2006-2019  Made to Order Software Corp.  All Rights Reserved
  *
  *    https://snapwebsites.org/
  *    contact@m2osw.com

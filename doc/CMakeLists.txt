@@ -9,7 +9,7 @@
 #      See the CMake documentation.
 #
 # License:
-#      Copyright (c) 2006-2018 Made to Order Software Corp.
+#      Copyright (c) 2006-2019  Made to Order Software Corp.  All Rights Reserved
 #
 #      https://snapwebsites.org/
 #      contact@m2osw.com
