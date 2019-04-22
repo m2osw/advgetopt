@@ -38,10 +38,6 @@
 # in the final output
 project(unittest)
 
-if( NOT CMAKE_MODULE_PATH )
-    set( CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake )
-endif()
-
 find_package( Catch )
 if( CATCH_FOUND )
 

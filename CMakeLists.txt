@@ -38,15 +38,8 @@ cmake_minimum_required(VERSION 2.8.4)
 
 project(advgetopt_library)
 
-#
-# Include support modules
-# (must be included in a project even though it is not made
-# specific to that project)
-#
-#if( NOT CMAKE_MODULE_PATH )
-#    set( CMAKE_MODULE_PATH ${CMAKE_PREFIX_PATH}/share/cmake )
-#endif()
-#
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
+
 find_package( SnapCMakeModules REQUIRED )
 find_package( SnapDoxygen )
 
