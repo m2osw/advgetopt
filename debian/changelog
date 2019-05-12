@@ -1,3 +1,9 @@
+advgetopt (1.1.15.1~xenial) xenial; urgency=high
+
+  * Bump version to get a recompile on launchpad.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 11 May 2019 18:12:41 -0800
+
 advgetopt (1.1.15.0~xenial) xenial; urgency=high
 
   * Moved the CMAKE_MODULE_PATH change to the main CMakeLists.txt.
