@@ -1,9 +1,9 @@
 #
 # File:
-#       CMakeLists.txt
+#      advgetopt/CMakeLists.txt
 #
 # Description:
-#       Definitions to create the build environment with cmake
+#      Build the AdvGetopt library
 #
 # License:
 #      Copyright (c) 2006-2019  Made to Order Software Corp.  All Rights Reserved.
@@ -17,10 +17,10 @@
 #      to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 #      copies of the Software, and to permit persons to whom the Software is
 #      furnished to do so, subject to the following conditions:
-#
+# 
 #      The above copyright notice and this permission notice shall be included in
 #      all copies or substantial portions of the Software.
-#
+# 
 #      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 #      IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 #      FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -30,37 +30,56 @@
 #      THE SOFTWARE.
 #
 
-set(LIBADVGETOPT_VERSION_MAJOR 1)
-set(LIBADVGETOPT_VERSION_MINOR 1)
-set(LIBADVGETOPT_VERSION_PATCH 0)
+##
+## AdvGetopt library
+##
+project(advgetopt)
 
-cmake_minimum_required(VERSION 2.8.4)
-
-project(advgetopt_library)
-
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
-
-find_package( SnapCMakeModules REQUIRED )
-find_package( LibExcept        REQUIRED )
-find_package( SnapDoxygen )
-
-if( "${CMAKE_BUILD_TYPE}" STREQUAL "Debug" )
-    message("Debug is in effect for advgetopt!")
-    add_definitions( -DDEBUG -D_DEBUG )
-else()
-    message("Debug is turned OFF")
-    add_definitions( -DNDEBUG )
-endif()
-
-include_directories(
-    ${PROJECT_SOURCE_DIR}
-    ${CMAKE_CURRENT_BINARY_DIR}
+# Put the version in the header file
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/version.h.in
+    ${CMAKE_CURRENT_BINARY_DIR}/version.h
 )
 
-add_subdirectory( cmake     )
-add_subdirectory( advgetopt )
-add_subdirectory( tools     )
-add_subdirectory( doc       )
-add_subdirectory( tests     )
+include_directories(
+    ${LIBEXCEPT_INCLUDE_DIRS}
+)
+
+add_library( ${PROJECT_NAME} SHARED
+    advgetopt.cpp
+)
+
+
+target_link_libraries(${PROJECT_NAME}
+    ${LIBEXCEPT_LIBRARIES}
+)
+
+
+set_target_properties( ${PROJECT_NAME} PROPERTIES
+    VERSION
+        ${LIBADVGETOPT_VERSION_MAJOR}.${LIBADVGETOPT_VERSION_MINOR}
+    SOVERSION
+        ${LIBADVGETOPT_VERSION_MAJOR}
+)
+
+install(
+    TARGETS
+        ${PROJECT_NAME}
+    RUNTIME DESTINATION
+        bin
+    LIBRARY DESTINATION
+        lib
+    ARCHIVE DESTINATION
+        lib
+)
+
+install(
+    FILES
+        advgetopt.h
+        exception.h
+        ${CMAKE_CURRENT_BINARY_DIR}/version.h
+    DESTINATION
+        include/advgetopt
+)
 
 # vim: ts=4 sw=4 et nocindent

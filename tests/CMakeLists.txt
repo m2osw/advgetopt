@@ -47,10 +47,10 @@ if( CATCH_FOUND )
     )
 
     include_directories(
-        "${CMAKE_BINARY_DIR}"
-        "${CMAKE_BINARY_DIR}/src"
-        "${PROJECT_SOURCE_DIR}"
-        "${CATCH_INCLUDE_DIR}"
+        ${CMAKE_BINARY_DIR}
+        ${PROJECT_SOURCE_DIR}
+        ${CATCH_INCLUDE_DIR}
+        ${LIBEXCEPT_INCLUDE_DIRS}
     )
 
     add_executable( ${PROJECT_NAME}

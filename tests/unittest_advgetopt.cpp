@@ -26,15 +26,26 @@
  *    Alexis Wilke   alexis@m2osw.com
  */
 
+// self
+//
 #include "unittest_main.h"
-#include "advgetopt.h"
 
-#include <string.h>
-#include <math.h>
-#include <time.h>
+// advgetopt lib
+//
+#include "advgetopt/advgetopt.h"
+#include "advgetopt/exception.h"
 
+// C++ lib
+//
+#include <cstring>
+#include <cmath>
 #include <sstream>
 #include <fstream>
+
+// C lib
+//
+#include <time.h>
+
 
 
 class AdvGetOptUnitTests
