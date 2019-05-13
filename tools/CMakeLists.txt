@@ -1,9 +1,9 @@
 #
 # File:
-#       CMakeLists.txt
+#      tools/CMakeLists.txt
 #
 # Description:
-#       Definitions to create the build environment with cmake
+#      Build the AdvGetopt tools.
 #
 # License:
 #      Copyright (c) 2006-2019  Made to Order Software Corp.  All Rights Reserved.
@@ -17,10 +17,10 @@
 #      to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 #      copies of the Software, and to permit persons to whom the Software is
 #      furnished to do so, subject to the following conditions:
-#
+# 
 #      The above copyright notice and this permission notice shall be included in
 #      all copies or substantial portions of the Software.
-#
+# 
 #      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 #      IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 #      FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -30,32 +30,23 @@
 #      THE SOFTWARE.
 #
 
-set(LIBADVGETOPT_VERSION_MAJOR 1)
-set(LIBADVGETOPT_VERSION_MINOR 1)
-set(LIBADVGETOPT_VERSION_PATCH 0)
 
-cmake_minimum_required(VERSION 2.8.4)
+##
+## hide warning command line tool
+##
+project(hide-warnings)
 
-project(advgetopt_library)
+add_executable(${PROJECT_NAME}
+    hide-warnings.cpp
+)
 
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
-
-find_package( SnapCMakeModules REQUIRED )
-find_package( LibExcept        REQUIRED )
-find_package( SnapDoxygen )
-
-if( "${CMAKE_BUILD_TYPE}" STREQUAL "Debug" )
-    message("Debug is in effect for advgetopt!")
-    add_definitions( -DDEBUG -D_DEBUG )
-else()
-    message("Debug is turned OFF")
-    add_definitions( -DNDEBUG )
-endif()
-
-add_subdirectory( cmake          )
-add_subdirectory( libadvgetopt   )
-add_subdirectory( tools          )
-add_subdirectory( doc            )
-add_subdirectory( tests          )
+install(
+    TARGETS
+        ${PROJECT_NAME}
+    RUNTIME DESTINATION
+        bin
+    COMPONENT
+        runtime
+)
 
 # vim: ts=4 sw=4 et nocindent
