@@ -1,8 +1,13 @@
-advgetopt (1.1.15.1~xenial) xenial; urgency=high
+advgetopt (1.2.0.0~xenial) xenial; urgency=high
 
-  * Bump version to get a recompile on launchpad.
+  * Reorganized the project to incorporate the snap_config.cpp/h.
+   - Moved the src to libadvgetopt.
+   - Put the hide-warnings utility in the tools/* folder.
+   - Made exceptions derive from our libexcept::exception_t class.
+   - Moved the version declaration in a separate header.
+   - Bumped version to 1.2 (it won't exactly be compatible with 1.1.x anymore.)
 
- -- Alexis Wilke <alexis@m2osw.com>  Sat, 11 May 2019 18:12:41 -0800
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 13 May 2019 00:03:40 -0800
 
 advgetopt (1.1.15.0~xenial) xenial; urgency=high
 
