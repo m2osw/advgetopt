@@ -78,7 +78,7 @@ install(
 install(
     FILES
         advgetopt.h
-        exceptions.h
+        exception.h
         ${CMAKE_CURRENT_BINARY_DIR}/version.h
     DESTINATION
         include/advgetopt

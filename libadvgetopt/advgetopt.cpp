@@ -43,7 +43,7 @@
 
 // ourselves
 //
-#include    "./exceptions.h"
+#include    "./exception.h"
 
 // C++ lib
 //
