@@ -39,24 +39,70 @@
  * The class also includes support for displaying error messages and help
  * information about all the command line arguments.
  */
+
+
+/** \mainpage
+ * The advanced getopt library to handle your command line tools seemlessly.
+ *
+ * The library offers an advanced way to parse command line arguments,
+ * an environment variable, and configuration files in a seamless manner.
+ * The advgetopt::getopt class is what is used everywhere for that purpose.
+ *
+ * The class can be used in a very restrictive mode, meaning that all
+ * the parameters must clearly be defined by the application. It can also
+ * be used in a dynamic way where the parameters are dynamically added
+ * to the list of available options.
+ *
+ * The library supports multiple levels in your options. The simplest
+ * is to use a period like so:
+ *
+ * \code
+ * level1.level2.level3.etc = 123
+ * \endcode
+ *
+ * The labels in a .ini format (i.e. `[name]`) are viewed as a first level.
+ * That name automatically get prepended to the parameters appearing under
+ * them. Additional levels can be added by using periods, again.
+ *
+ * \code
+ * [level1]
+ * level2.level3.etc = 123
+ * \endcode
+ *
+ * Support for other for format may be added later. For example, we could
+ * read XML and JSON files. Right now, we are focused on Unix configuration
+ * files and pretty much never even need two levels.
+ *
+ * The library is capable of writing your configuration back to file. It
+ * will know when a value was modified and only the modified values get
+ * saved to the read/write configuration file(s). (Either the user file
+ * or the system file under the `\<proc>.d/...` sub-path.)
+ */
+
+// self
+//
 #include    "advgetopt/advgetopt.h"
 
-// ourselves
+// advgetopt lib
 //
+#include    "advgetopt/conf_file.h"
 #include    "advgetopt/exception.h"
+#include    "advgetopt/log.h"
+
+// boost lib
+//
+#include <boost/algorithm/string/replace.hpp>
 
 // C++ lib
 //
 #include    <algorithm>
+#include    <cstdarg>
 #include    <cstring>
 #include    <fstream>
 #include    <iostream>
 #include    <iomanip>
 #include    <sstream>
 
-// C lib
-//
-#include    <stdarg.h>
 
 
 /** \brief The advgetopt environment to parse command line options.
@@ -199,26 +245,59 @@ bool is_arg(char const * a)
  *
  * \param[in] argc  The number of arguments in argv.
  * \param[in] argv  An array of strings representing arguments.
- * \param[in] opts  The list of options that your program supports.
- * \param[in] configuration_files  A list of configuration file names.
- * \param[in] environment_variable_name  The name of an environment variable to parse as parameters.
+ * \param[in] opt_env  The list of options that your program supports.
  */
-getopt::getopt(int argc
-             , char * argv[]
-             , option const * opts
-             , std::vector<std::string> const configuration_files
-             , char const * environment_variable_name)
+getopt::getopt(options_environment const * opt_env
+             , int argc
+             , char * argv[])
+    : f_options(std::make_shared<option_info>("root"))
 {
-    reset(argc, argv, opts, configuration_files, environment_variable_name);
+    if(argv == nullptr)
+    {
+        throw getopt_exception_invalid("argv pointer cannot be nullptr");
+    }
+    if(opt_env == nullptr)
+    {
+        throw getopt_exception_invalid("opt_env pointer cannot be nullptr");
+    }
+
+    f_options_environment = *opt_env;
+
+    parse_program_name(argv);
+    parse_options_info();
+    parse_options_from_file();
+
+    if(f_options->get_children().empty())
+    {
+        throw getopt_exception_invalid("an empty list of options is not legal, you must defined at least one (i.e. --version, --help...)");
+    }
+
+    link_aliases();
+
+    parse_configuration_files();
+    parse_environment_variable();
+    parse_arguments(argc, argv, false);
 }
 
 
-/** \brief Reset the array of options and parse the argv array.
+/** \brief Reset all the options.
  *
- * This function resets the current list of options and then parses, in
- * this order, the:
+ * This function goes through the list of options and mark them all as
+ * undefined. This is useful if you want to reuse a getopt object.
  *
- * \li Configuration Files
+ * The effect is that all calls to is_defined() made afterward return false
+ * until new arguments get parsed.
+ */
+void getopt::reset()
+{
+    for(auto & opt : f_options->get_children())
+    {
+        opt.second->reset();
+    }
+}
+
+
+/** \brief This function checks for arguments in configuration files.
  *
  * Each configuration file is checked one after another. Each file that is
  * defined is loaded and each line is viewed as an option. If valid, it is
@@ -231,7 +310,7 @@ getopt::getopt(int argc
  * The list of files is checked from beginning to end. So if a later file
  * changes an option of an earlier file, it is the one effective.
  *
- * Configuration file support a project name as defined in the
+ * The configuration file loader supports a project name as defined in the
  * get_project_name() function. It allows for a sub-directory to
  * be inserted between the path and the basename of the configuration
  * file. This allows for a file to be search in an extra sub-directory
@@ -245,48 +324,6 @@ getopt::getopt(int argc
  *
  * Notice that we add a ".d" as usual in other projects under Linux.
  *
- * \li Environment Variable
- *
- * If the name of an environment variable is specified, then it is read
- * as a command line string. This function parses the string in an array
- * of strings (as argv is defined) and then parses it as an argv array.
- *
- * Since the environment variable is checked after the configuration files,
- * the options defined in the variable can change the definitions from
- * the configuration files.
- *
- * Like in the configuration files, only options can be specified in the
- * environment variable. Commands, however, generate an error. This is
- * marked by the GETOPT_FLAG_ENVIRONMENT_VARIABLE flag in your opt variable.
- * In other words, you may allow options to appear on the command line, in
- * configuration files, in environment variables or a mix of all these
- * locations.
- *
- * \li argv array
- *
- * Finally, the argv array is checked. That's the actual parameters on the
- * command line. The arguments here will overwrite the selections of the
- * configuration files and environment variable.
- *
- * Note that this array is the only one that should include a command (opposed
- * to an option that alters the behavior of your commands.) However, the
- * advgetopt system expects you to properly define what can be used in a
- * configuration file, in an environment variable, or directly on the command
- * line.
- *
- * \note
- * Errors that come from an invalid list of options (i.e. duplicates of
- * options, for example) raise an exception since these are to be fixed
- * once by the programmer. Errors found on the command line generate a
- * call to the usage() function which ends with an exit(1) call after
- * printing out an error message and the Usage: ... output optimized in
- * case of errors.
- *
- * \todo
- * Add support for quotes in configuration files as parameters are otherwise
- * saved as a separated list of parameters losing the number of spaces between
- * each entry.
- *
  * \exception getopt_exception_invalid
  * This function generates the getopt_exception_invalid exception whenever
  * something invalid is found in the list of options passed as the \p opts
@@ -296,438 +333,635 @@ getopt::getopt(int argc
  * The function detects whether two options are marked as the default
  * option (the one receiving parameters that are not used by another command
  * or match a command.) This exception is raised when such is detected.
- *
- * \param[in] argc  The number of arguments in argv.
- * \param[in] argv  An array of strings representing arguments.
- * \param[in] opts  The list of options that your program supports.
- * \param[in] configuration_files  A list of configuration file names.
- * \param[in] environment_variable_name  The name of an environment variable to parse as parameters.
  */
-void getopt::reset(int argc
-                 , char * argv[]
-                 , option const * opts
-                 , std::vector<std::string> const configuration_files
-                 , char const * environment_variable_name)
+void getopt::parse_configuration_files()
 {
-    if(argv == nullptr)
+    // load options from configuration files specified as is by caller
+    //
+    for(char const ** configuration_files(f_options_environment.f_configuration_files)
+      ; *configuration_files != nullptr
+      ; ++configuration_files)
     {
-        throw getopt_exception_invalid("argv pointer cannot be nullptr");
+        char const * filename(*configuration_files);
+        if(*filename == '\0')
+        {
+            // skip empty string silently
+            //
+            continue;
+        }
+
+        process_configuration_file(filename);
+
+        if(f_options_environment.f_project_name != nullptr
+        && *f_options_environment.f_project_name != '\0')
+        {
+            std::string adjusted_filename(filename);
+
+            std::string::size_type const pos(adjusted_filename.find_last_of('/'));
+            if(pos != std::string::npos
+            && pos > 0)
+            {
+                adjusted_filename = adjusted_filename.substr(0, pos + 1)
+                                  + f_options_environment.f_project_name
+                                  + ".d"
+                                  + adjusted_filename.substr(pos);
+            }
+            else
+            {
+                adjusted_filename = f_options_environment.f_project_name
+                                  + (".d/" + adjusted_filename);
+            }
+
+            process_configuration_file(adjusted_filename);
+        }
+    }
+}
+
+
+/** \brief Parse one specific configuration file and process the results.
+ *
+ * This function reads a configuration file using a conf_file object and
+ * then goes through the resulting arguments and add them to the options.
+ *
+ * The options found in the configuration file must match an option by
+ * its long name. It is not allowed to have an option which is only one
+ * character in a configuration file.
+ *
+ * \note
+ * If the filename points to a file which can't be read or does not exist,
+ * then nothing happens and the function returns without an error.
+ *
+ * \todo
+ * Extend the support by having the various flags that the conf_file
+ * class supports appear in the list of configuration filenames.
+ *
+ * \param[in] filename  The name of the configuration file to check out.
+ */
+void getopt::process_configuration_file(std::string const & filename)
+{
+    conf_file conf(filename);
+
+    for(auto const & param : conf.get_parameters())
+    {
+        // in configuration files we only allow long arguments
+        //
+        option_info::pointer_t opt(f_options->get_child(param.first));
+        if(opt == nullptr)
+        {
+            if((f_options_environment.f_environment_flags & GETOPT_ENVIRONMENT_FLAG_DYNAMIC_PARAMETERS) == 0
+            || param.first.length () == 1)
+            {
+                log << log_level_t::error
+                    << "unknown option \""
+                    << param.first
+                    << "\" found in configuration file \""
+                    << filename
+                    << "\"."
+                    << end;
+            }
+            else
+            {
+                // add a new parameter dynamically
+                //
+                opt = std::make_shared<option_info>(param.first);
+
+                opt->set_flags(GETOPT_FLAG_CONFIGURATION_FILE | GETOPT_FLAG_DYNAMIC);
+
+                // consider the first definition as the default
+                // (which is likely in our environment)
+                //
+                opt->set_default(param.second);
+
+                f_options->add_child(opt);
+            }
+        }
+        else
+        {
+            if(!opt->has_flag(GETOPT_FLAG_CONFIGURATION_FILE))
+            {
+                // in configuration files we are expected to use '_' so
+                // print an error with such
+                //
+                log << log_level_t::error
+                    << "option \""
+                    << boost::replace_all_copy(param.first, "-", "_")
+                    << "\" is not supported in configuration files (found in \""
+                    << filename
+                    << "\")."
+                    << end;
+                opt = nullptr;
+            }
+        }
+
+        if(opt != nullptr)
+        {
+            if(opt->has_flag(GETOPT_FLAG_MULTIPLE))
+            {
+                opt->set_multiple_value(param.second);
+            }
+            else if(!param.second.empty())
+            {
+                opt->set_value(0, param.second);
+            }
+            else if(opt->has_flag(GETOPT_FLAG_REQUIRED))
+            {
+                log << log_level_t::error
+                    << "option \""
+                    << boost::replace_all_copy(param.first, "-", "_")
+                    << "\" must be given a value in configuration file \""
+                    << filename
+                    << "\"."
+                    << end;
+            }
+            else
+            {
+                opt->set_value(0, "1"); // 1 represents "on"
+            }
+        }
+    }
+}
+
+
+/** \brief Check for an environment variable.
+ *
+ * If the name of an environment variable is specified in the option
+ * environment structure, then it is read as a command line string.
+ * This function parses the string in an array of strings and then parses
+ * it as an argv array (just like the argv parameter defined in a main()
+ * function).
+ *
+ * Since the environment variable is checked after the configuration files,
+ * the options defined in the variable can change the definitions from
+ * the configuration files.
+ *
+ * Like in the configuration files, only options can be specified in the
+ * environment variable and commands generate an error. The system knows
+ * since options that can be included in the environment variable are
+ * marked by the GETOPT_FLAG_ENVIRONMENT_VARIABLE flag. In other words,
+ * you may allow options to appear on the command line, in configuration
+ * files, in environment variables or a mix of all of these locations.
+ */
+void getopt::parse_environment_variable()
+{
+    if(f_options_environment.f_environment_variable_name == nullptr
+    || *f_options_environment.f_environment_variable_name == '\0')
+    {
+        // no name
+        //
+        return;
     }
 
-    f_options = opts;
-    f_map.clear();
+    char const * s(getenv(f_options_environment.f_environment_variable_name));
+    if(s == nullptr)
+    {
+        // no environment variable with that name
+        //
+        return;
+    }
+
+    parse_string(s, true);
+}
+
+
+/** \brief Parse a string similar to a command line argument.
+ *
+ * This function parses a line of command line argument from a string.
+ * Especially, it is used to parse the environment variable which is
+ * a string of arguments.
+ *
+ * This can be used to parse the command line string as received under
+ * MS-Windows (i.e. an unparsed one long string of arguments, where
+ * you also need to do the glob() calls.)
+ *
+ * This function actually transforms the input string in an array of
+ * strings and then calls the parse_arguments() function.
+ *
+ * \note
+ * The input allows for an empty string in which case pretty much nothing
+ * happens.
+ *
+ * \param[in] str  The string that is going to be parsed.
+ * \param[in] only_environment_variable  Whether only options marked with
+ *            the GETOPT_FLAG_ENVIRONMENT_VARIABLE flag are accepted.
+ */
+void getopt::parse_string(std::string const & str, bool only_environment_variable)
+{
+    // this is exactly like the command line only in an environment variable
+    // so parse the parameters just like the shell
+    //
+    std::vector<std::string> args;
+    std::string a;
+    char const * s(str.c_str());
+    while(*s != '\0')
+    {
+        if(isspace(*s))
+        {
+            if(!a.empty())
+            {
+                args.push_back(a);
+                a.clear();
+            }
+            do
+            {
+                ++s;
+            }
+            while(isspace(*s));
+        }
+        else if(*s == '"' || *s == '\'')
+        {
+            // support quotations and remove them from the argument
+            char const quote(*s++);
+            while(*s != '\0' && *s != quote)
+            {
+                a += *s++;
+            }
+            if(*s != '\0')
+            {
+                ++s;
+            }
+        }
+        else
+        {
+            a += *s++;
+        }
+    }
+
+    if(!a.empty())
+    {
+        args.push_back(a);
+    }
+
+    if(args.empty())
+    {
+        // there is a variables, but it's empty
+        //
+        return;
+    }
+
+    // TODO: expand the arguments that include unquoted '*', '?', '[...]'
+    //       (note that we remove the quoates at the moment so we'd have
+    //       to keep track of that specific problem...)
+
+    // the argv array has to be a null terminated bare string pointers
+    //
+    std::vector<char *> sub_argv;
+
+    sub_argv.resize(args.size() + 2);
+
+    // argv[0] is the program name
+    //
+    sub_argv[0] = const_cast<char *>(f_program_fullname.c_str());
+
+    // the other arguments are from the variable
+    //
+    for(size_t idx(0); idx < args.size(); ++idx)
+    {
+        sub_argv[idx + 1] = const_cast<char *>(args[idx].c_str());
+    }
+
+    // this is probably already a nullptr
+    //
+    sub_argv[args.size() + 1] = nullptr;
+
+    // now convert those parameters in values
+    //
+    parse_arguments(static_cast<int>(args.size() + 1), &sub_argv[0], only_environment_variable);
+}
+
+
+/** \brief Transform the argv[0] parameter in the program name.
+ *
+ * This function is transforms the first command line parameter in a program
+ * name. It will define two versions, the basename and the fullname.
+ *
+ * \param[in] argv  The arguments vector.
+ */
+void getopt::parse_program_name(char * argv[])
+{
     f_program_fullname = argv[0];
-    size_t p(f_program_fullname.find_last_of('/'));
+    std::string::size_type p(f_program_fullname.find_last_of('/'));
     if(p == std::string::npos)
     {
         // MS-Windows path uses \ instead of /
+        //
         p = f_program_fullname.find_last_of('\\');
     }
     if(p != std::string::npos)
     {
         // remove the path
-        f_program_name = f_program_fullname.c_str() + p + 1;
+        //
+        f_program_name = f_program_fullname.substr(p + 1);
     }
     else
     {
         f_program_name = f_program_fullname;
     }
+}
 
-    // search for the default argument, although there may not be one
-    int def_opt(NO_DEFAULT_OPT);
-    size_t count(0);
-    std::map<char, int> opt_by_short_name;
-    std::map<std::string, int> opt_by_long_name;
-    for(int opts_max(0); opts[opts_max].f_arg_mode != argument_mode_t::end_of_options; ++opts_max)
+
+/** \brief Parse the options to option_info objects.
+ *
+ * This function transforms an array of options in a vector of option_info
+ * objects.
+ */
+void getopt::parse_options_info()
+{
+    if(f_options_environment.f_options == nullptr)
     {
-        if(opts[opts_max].f_opt != '\0')
-        {
-            if(opt_by_short_name.find(opts[opts_max].f_opt) != opt_by_short_name.end())
-            {
-                throw getopt_exception_invalid(std::string("short name option \"") + opts[opts_max].f_opt + "\" defined twice");
-            }
-            opt_by_short_name[opts[opts_max].f_opt] = opts_max;
-            ++count;
-        }
-        else if(opts[opts_max].f_name == nullptr)
-        {
-            switch(opts[opts_max].f_arg_mode)
-            {
-            case argument_mode_t::required_argument:
-            case argument_mode_t::optional_argument:
-            case argument_mode_t::required_multiple_argument:
-            case argument_mode_t::optional_multiple_argument:
-            case argument_mode_t::required_long:
-            case argument_mode_t::optional_long:
-            case argument_mode_t::required_multiple_long:
-            case argument_mode_t::optional_multiple_long:
-                throw getopt_exception_invalid("an unnamed option is only valid with a no argument, default argument, help argument, and end of options");
-
-            case argument_mode_t::no_argument:
-            case argument_mode_t::default_argument:
-            case argument_mode_t::default_multiple_argument:
-                opt_by_long_name["--"] = opts_max;
-                ++count;
-                break;
-
-            case argument_mode_t::help_argument:
-            case argument_mode_t::end_of_options:
-                break;
-
-            }
-        }
-        if(opts[opts_max].f_name != nullptr)
-        {
-            if(strlen(opts[opts_max].f_name) < 2)
-            {
-                throw getopt_exception_invalid("a long name option must be at least 2 characters");
-            }
-            if(opt_by_long_name.find(opts[opts_max].f_name) != opt_by_long_name.end())
-            {
-                throw getopt_exception_invalid(std::string("long name option \"") + opts[opts_max].f_name + "\" defined twice");
-            }
-            opt_by_long_name[opts[opts_max].f_name] = opts_max;
-            ++count;
-        }
-        else if((opts[opts_max].f_flags & GETOPT_FLAG_CONFIGURATION_FILE) != 0)
-        {
-            throw getopt_exception_invalid(std::string("all configuration options require a long name, that includes \"") + opts[opts_max].f_opt + "\"");
-        }
-        switch(opts[opts_max].f_arg_mode)
-        {
-        case argument_mode_t::default_argument:
-        case argument_mode_t::default_multiple_argument: // this is contradictory with the if() below!
-            if(def_opt != NO_DEFAULT_OPT)
-            {
-                // we cannot have more than one default option
-                throw getopt_exception_default("more than one default argument defined in opts");
-            }
-            def_opt = opts_max;
-            break;
-
-        default:
-            // we're only interested in the default argument at this point
-            break;
-
-        }
-    }
-    if(count == 0)
-    {
-        throw getopt_exception_invalid("an empty list of options is not legal, you must defined at least one (i.e. --version, --help...)");
+        return;
     }
 
-    // load options from configuration files as specified by caller
-    for( size_t use_sub_path(0); use_sub_path < (f_project_name.empty() ? 1UL : 2UL); ++use_sub_path)
+    for(option * opts(f_options_environment.f_options)
+      ; (opts->f_flags & GETOPT_FLAG_END) == 0
+      ; ++opts)
     {
-        for( auto const & filename : configuration_files )
+        if(opts->f_name == nullptr
+        && opts->f_name[0] == '\0')
         {
-            // empty strings in this array are just ignored
-            if(filename.empty())
-            {
-                continue;
-            }
-            if(filename[0] == '@'
-            && filename.back() == '@'
-            && filename.length() > 2)
-            {
-                // record the project name
-                //
-                if(!f_project_name.empty())
-                {
-                    if(use_sub_path == 0)
-                    {
-                        throw getopt_exception_invalid("the list of configuration filenames cannot include more than one project name.");
-                    }
-                    // no need to extract this name again
-                    continue;
-                }
-                f_project_name = filename.substr(1, filename.length() - 2);
-                continue;
-            }
+            throw getopt_exception_invalid("option long name missing or empty.");
+        }
+        if(opts->f_name[1] == '\0')
+        {
+            throw getopt_exception_invalid("a long name option must be at least 2 characters.");
+        }
 
-            std::string adjusted_filename(filename);
-            if(use_sub_path)
+        if(f_options->get_child(opts->f_name) != nullptr)
+        {
+            throw getopt_exception_invalid(
+                      std::string("option named \"")
+                    + opts->f_name
+                    + "\" found twice.");
+        }
+        if(f_options->get_child(opts->f_short_name) != nullptr)
+        {
+            throw getopt_exception_invalid(
+                      std::string("option with short name \"")
+                    + static_cast<char>(opts->f_short_name)
+                    + "\" found twice.");
+        }
+
+        option_info::pointer_t o(std::make_shared<option_info>(opts->f_name, opts->f_short_name));
+
+        o->set_flags(opts->f_flags);
+        o->set_default(opts->f_default);
+        o->set_help(opts->f_help);
+        o->set_multiple_separators(opts->f_multiple_separators);
+
+        if(o->is_default_option())
+        {
+            if(f_default_option != nullptr)
             {
-                size_t const pos(filename.find_last_of('/'));
-                if(pos != std::string::npos && pos > 0)
-                {
-                    adjusted_filename = filename.substr(0, pos) + "/" + f_project_name + ".d" + filename.substr(pos);
-                }
-                else
-                {
-                    adjusted_filename = f_project_name + ".d/" + filename;
-                }
+                throw getopt_exception_invalid("two default options found.");
             }
 
-            std::ifstream conf(adjusted_filename);
-            if( !conf )
+            f_default_option = o;
+        }
+
+        f_options->add_child(o);
+    }
+}
+
+
+/** \brief Check for a file with option definitions.
+ *
+ * This function tries to read a file of options for this application.
+ * These are similar to the option structure, only it is defined in a
+ * file.
+ *
+ * The format of the file is like so:
+ *
+ * \li Option names are defined on a line by themselves between square brackets.
+ * \li Parameters of that option are defined below as a `name=<value>`.
+ *
+ * Example:
+ *
+ * \code
+ *     [<command-name>]
+ *     short_name=<character>
+ *     default=<default value>
+ *     minimum=<minimum value>
+ *     maximum=<maximum value>
+ *     help=<help sentence>
+ *     validator=<validator name>|/<regex>/
+ *     alias=<name of aliased option>
+ *     allowed=command-line,environment-variable,configuration-file
+ *     show-usage-on-error
+ *     no-arguments|multiple
+ *     required
+ * \endcode
+ */
+void getopt::parse_options_from_file()
+{
+    std::string filename("/usr/share/advgetopt/");
+    filename += f_options_environment.f_project_name;
+    filename += ".ini";
+
+    conf_file conf(filename);
+    conf_file::parameters_t const & params(conf.get_parameters());
+    for(auto & p : params)
+    {
+        std::string::size_type pos(p.first.find("::"));
+        if(pos == std::string::npos)
+        {
+            continue;
+        }
+
+        std::string const parameter_option(p.first.substr(pos + 1));
+        if(parameter_option == "")
+        {
+            log << log_level_t::error
+                << "option \""
+                << p.first
+                << "\" is missing a name in \""
+                << filename
+                << "\"."
+                << end;
+            continue;
+        }
+
+        std::string const parameter_name(p.first.substr(0, pos));
+        std::string const short_name(conf.get_parameter(parameter_name + "::shortname"));
+        if(short_name.length() > 1)
+        {
+            log << log_level_t::error
+                << "option \""
+                << p.first
+                << "\" has an invalid short name in \""
+                << filename
+                << "\", it can't be more than one character."
+                << end;
+            continue;
+        }
+        short_name_t sn('\0');
+        if(short_name.length() == 1)
+        {
+            sn = short_name[0];
+        }
+
+        option_info::pointer_t opt(std::make_shared<option_info>(parameter_name, sn));
+
+        std::string const default_name(parameter_name + "::default");
+        if(conf.has_parameter(default_name))
+        {
+            std::string const default_value(conf.get_parameter(default_name));
+            opt->set_default(default_value);
+        }
+
+        opt->set_help(conf.get_parameter(parameter_name + "::minimum"));
+        opt->set_help(conf.get_parameter(parameter_name + "::maximum"));
+        opt->set_help(conf.get_parameter(parameter_name + "::help"));
+
+        std::string const validator_name(parameter_name + "::validator");
+        if(validator_name.length() >= 2
+        && validator_name[0] == '/'
+        && validator_name.back() == '/')
+        {
+            // the regex is a special case since we do not use the name
+            // to find the validator
+            //
+            validator_regex::pointer_t v(std::make_shared<validator_regex>(validator_name));
+            opt->set_validator(v);
+        }
+        else if(!validator_name.empty())
+        {
+            validator::pointer_t v(validator::create(validator_name));
+            opt->set_validator(v);
+        }
+
+        if(conf.has_parameter(parameter_name + "::alias"))
+        {
+            opt->add_flag(GETOPT_FLAG_ALIAS);
+        }
+
+        std::string const allowed_name(parameter_name + "::allowed");
+        if(conf.has_parameter(allowed_name))
+        {
+            std::string const allowed_list(conf.get_parameter(allowed_name));
+            string_list_t allowed;
+            split_string(allowed_list, allowed, {","});
+            for(auto const & a : allowed)
             {
-                if(errno == ENOENT)
+                if(a == "command-line")
                 {
-                    continue;
+                    opt->add_flag(GETOPT_FLAG_COMMAND_LINE);
                 }
-                // we let it go through and we will get an error from
-                // the read_file() instead
-            }
-
-            std::string str;
-            int line(0);
-            while( !conf.eof() )
-            {
-                std::getline( conf, str );
-                ++line;
-                char const * s(str.c_str());
-                while(isspace(*s))
+                else if(a == "environment-variable")
                 {
-                    ++s;
+                    opt->add_flag(GETOPT_FLAG_ENVIRONMENT_VARIABLE);
                 }
-                if(*s == '\0' || *s == '#')
+                else if(a == "configuration-file")
                 {
-                    // skip empty lines and comments
-                    continue;
-                }
-                char const * str_name(s);
-                char const * e(nullptr);
-                while(*s != '=' && *s != '\0')
-                {
-                    if(isspace(*s))
-                    {
-                        e = s;
-                        while(isspace(*s))
-                        {
-                            ++s;
-                        }
-                        if(*s != '\0' && *s != '=')
-                        {
-                            usage(status_t::error, "option name from \"%s\" on line %d in configuration file \"%s\" cannot include a space, missing = sign?",
-                                            str.c_str(), line, filename.c_str());
-                            /*NOTREACHED*/
-                        }
-                    }
-                    else
-                    {
-                        ++s;
-                    }
-                }
-                if(e == nullptr)
-                {
-                    e = s;
-                }
-                if(e - str_name == 0)
-                {
-                    usage(status_t::error, "no option name in \"%s\" on line %d from configuration file \"%s\", missing name before = sign?",
-                                    str.c_str(), line, filename.c_str());
-                    /*NOTREACHED*/
-                }
-                if(*str_name == '-')
-                {
-                    usage(status_t::error, "option names in configuration files cannot start with a dash in \"%s\" on line %d from configuration file \"%s\"",
-                                    str.c_str(), line, filename.c_str());
-                    /*NOTREACHED*/
-                }
-                std::string name(str_name, e - str_name);
-                std::replace(name.begin(), name.end(), '_', '-');
-                if(opt_by_long_name.find(name) == opt_by_long_name.end())
-                {
-                    // as a fallback allow _ in command line options
-                    // (although either way you cannot have a mix of - and _ ...)
-                    std::replace(name.begin(), name.end(), '-', '_');
-                    if(opt_by_long_name.find(name) == opt_by_long_name.end())
-                    {
-                        usage(status_t::error, "unknown option \"%s\" found in configuration file \"%s\" on line %d",
-                                        name.c_str(), filename.c_str(), line);
-                        /*NOTREACHED*/
-                    }
-                }
-                if((opts[opt_by_long_name[name.c_str()]].f_flags & GETOPT_FLAG_CONFIGURATION_FILE) == 0)
-                {
-                    // in configuration files we are expected to use '_' so
-                    // print an error with such
-                    //
-                    std::replace(name.begin(), name.end(), '-', '_');
-                    usage(status_t::error, "option \"%s\" is not supported in configuration files (found in \"%s\")", name.c_str(), filename.c_str());
-                    /*NOTREACHED*/
-                }
-                if(*s == '=')
-                {
-                    do
-                    {
-                        ++s;
-                    }
-                    while(isspace(*s));
-                }
-                const char *str_value(s);
-                std::vector<std::string> values;
-                switch(opts[opt_by_long_name[name.c_str()]].f_arg_mode)
-                {
-                case argument_mode_t::required_multiple_argument:
-                case argument_mode_t::optional_multiple_argument:
-                case argument_mode_t::required_multiple_long:
-                case argument_mode_t::optional_multiple_long:
-                case argument_mode_t::default_multiple_argument:
-                    // TODO: add support for quotes
-                    //
-                    while(*s != '\0')
-                    {
-                        if(isspace(*s))
-                        {
-                            if(s > str_value)
-                            {
-                                std::string v(str_value, s - str_value);
-                                values.push_back(v);
-                            }
-                            str_value = s + 1;
-                        }
-                        ++s;
-                    }
-                    if(s > str_value)
-                    {
-                        std::string v(str_value, s - str_value);
-                        values.push_back(v);
-                    }
-                    break;
-
-                default:
-                    // we expect exactly one argument, so just take the
-                    // rest of the line and use that as the argument
-                    //
-                    while(isspace(*s))
-                    {
-                        ++s;
-                    }
-                    for(e = s + strlen(s); e > s; --e)
-                    {
-                        if(!isspace(e[-1]))
-                        {
-                            break;
-                        }
-                    }
-                    // TODO: remove quotes if present
-                    //
-                    {
-                        size_t const len(e - s);
-                        if(len != 0)
-                        {
-                            values.push_back(std::string(s, len));
-                        }
-                    }
-                    break;
-
-                }
-                if(values.size() > 0)
-                {
-                    // got parameters
-                    int sub_argc(static_cast<int>(values.size() + 2)), sub_i(1);
-                    std::vector<char *> sub_argv;
-                    sub_argv.resize(values.size() + 3);
-                    sub_argv[0] = argv[0];
-                    sub_argv[1] = const_cast<char *>(name.c_str());
-                    for(size_t idx(0); idx < values.size(); ++idx)
-                    {
-                        sub_argv[idx + 2] = const_cast<char *>(values[idx].c_str());
-                    }
-                    sub_argv[values.size() + 2] = nullptr;
-                    add_options(opts + opt_by_long_name[name.c_str()], sub_i, sub_argc, &sub_argv[0]);
-                }
-                else
-                {
-                    // no parameters
-                    int sub_argc(2), sub_i(1);
-                    char *sub_argv[3];
-                    sub_argv[0] = argv[0];
-                    sub_argv[1] = const_cast<char *>(name.c_str());
-                    sub_argv[2] = nullptr;
-                    add_options(opts + opt_by_long_name[name.c_str()], sub_i, sub_argc, sub_argv);
+                    opt->add_flag(GETOPT_FLAG_CONFIGURATION_FILE);
                 }
             }
         }
-    }
 
-    // check the environment variable if defined
-    if(environment_variable_name != nullptr && *environment_variable_name != '\0')
-    {
-        char const * s(getenv(environment_variable_name));
-        if(s != nullptr)
+        if(conf.has_parameter(parameter_name + "::show-usage-on-error"))
         {
-            // this is exactly like the command line only in an environment variable
-            // so parse the parameters just like the shell
-            std::vector<std::string> args;
-            std::string a;
-            while(*s != '\0')
-            {
-                if(isspace(*s))
-                {
-                    if(!a.empty())
-                    {
-                        args.push_back(a);
-                        a.clear();
-                    }
-                    do
-                    {
-                        ++s;
-                    }
-                    while(isspace(*s));
-                }
-                else if(*s == '"' || *s == '\'')
-                {
-                    // support quotations and remove them from the argument
-                    char const quote(*s++);
-                    while(*s != '\0' && *s != quote)
-                    {
-                        a += *s++;
-                    }
-                    if(*s != '\0')
-                    {
-                        ++s;
-                    }
-                }
-                else
-                {
-                    a += *s++;
-                }
-            }
-            if(!a.empty())
-            {
-                args.push_back(a);
-            }
-            // TODO: expand the arguments that include unquoted '*', '?', '[...]'
+            opt->add_flag(GETOPT_FLAG_SHOW_USAGE_ON_ERROR);
+        }
 
-            std::vector<char *> sub_argv;
-            sub_argv.resize(args.size() + 2);
-            sub_argv[0] = argv[0];
-            for(size_t idx(0); idx < args.size(); ++idx)
-            {
-                sub_argv[idx + 1] = const_cast<char *>(args[idx].c_str());
-            }
-            sub_argv[args.size() + 1] = nullptr;
-            // IMPORTANT NOTE: the def_opt is passed down so a tool may allow
-            //                 the default option to be used in the environment
-            //                 variable; it is a good idea NOT to set the
-            //                 flag in such commands
-            parse_arguments(static_cast<int>(args.size() + 1), &sub_argv[0], opts, def_opt, opt_by_short_name, opt_by_long_name, true);
+        if(conf.has_parameter(parameter_name + "::no-arguments"))
+        {
+            opt->add_flag(GETOPT_FLAG_FLAG);
+        }
+
+        if(conf.has_parameter(parameter_name + "::multiple"))
+        {
+            opt->add_flag(GETOPT_FLAG_MULTIPLE);
+        }
+
+        if(conf.has_parameter(parameter_name + "::required"))
+        {
+            opt->add_flag(GETOPT_FLAG_REQUIRED);
         }
     }
+}
 
-    parse_arguments(argc, argv, opts, def_opt, opt_by_short_name, opt_by_long_name, false);
+
+/** \brief Link options marked as a GETOPT_FLAG_ALIAS.
+ *
+ * After we defined all the options, go through the list again to find
+ * aliases and link them with their corresponding alias option.
+ *
+ * \exception getopt_exception_invalid
+ * All aliases must exist or this exception is raised.
+ */
+void getopt::link_aliases()
+{
+    auto const & children(f_options->get_children());
+    for(auto & c : children)
+    {
+        if(c.second->has_flag(GETOPT_FLAG_ALIAS))
+        {
+            std::string const & alias_name(c.second->get_default());
+            if(alias_name.empty())
+            {
+                throw getopt_exception_invalid(
+                          "the default value of your alias cannot be an empty string for \""
+                        + c.first
+                        + "\".");
+            }
+
+            option_info::pointer_t alias(f_options->get_child(alias_name));
+            if(alias == nullptr)
+            {
+                throw getopt_exception_invalid(
+                          "no option named \""
+                        + alias_name
+                        + "\" to satify the alias of \""
+                        + c.first
+                        + "\".");
+            }
+
+            c.second->set_alias(alias);
+        }
+    }
 }
 
 
 /** \brief Parse an array of arguments.
  *
  * This function accepts an array of arguments as received by the main()
- * function. It also takes a list of options and maps thereof.
+ * function. By default, though, you pass the argc/argv parameters to
+ * the getopt() constructor which automatically calls this function.
  *
- * The \p only_environment_variable parameter is set to true whenever the
- * function is called while parsing an environment variable. This allows
- * the function to know whether the given parameter is legal in an
- * environment variable or not. If not, then an error is issued and the
- * program exists.
+ * This functin is public so you can call it with additional lists of
+ * arguments. If that list of arguments comes as a string, you may want
+ * to call the parse_string() function instead. It will transform your
+ * string in a list of parameters for you.
  *
- * The function is considered internal, it gets called by the reset()
- * function.
+ * When the \p only_environment_variable parameter is set to true, then
+ * it is considered that the input arguments were found in an environment
+ * variables and they are only accepted if the corresponding option
+ * definition includes the GETOPT_FLAG_ENVIRONMENT_VARIABLE flag.
  *
- * This function is not expected to throw errors, however, it may exit(1)
- * if an option is invalid after it calls the usage() function.
+ * When the \p only_environment_variable parameter is set to false, the
+ * arguments are viewed as command line arguments and the corresponding
+ * options must include the GETOPT_FLAG_COMMAND_LINE flag.
+ *
+ * \exception getopt_exception_exiting
+ * This function is throws on an error. It uses the special exception
+ * named which means that exit() can be called if safe in your environment
+ * (i.e. you have multiple threads running, exit() is not safe until you
+ * stop all the other threads.)
+ *
+ * Variables get overridden by the newest values found in the list of
+ * arguments.
+ *
+ * Note that the command line arguments are the only ones that should
+ * include a command (opposed to an option that alters the behavior of
+ * your commands.) However, the advgetopt system expects you to properly
+ * define what can be used in a configuration file, in an environment
+ * variable, or directly on the command line. It is not in charge of
+ * that part in itself.
+ *
+ * \note
+ * The code may find some errors in the tables passed to the advgetopt
+ * environment (i.e. a duplicate definition.) When such errors are
+ * detected, an exception is raised. Errors found on the command line
+ * also generate an exception unless you called exit(1) in your log
+ * callback. The exception raised is the getopt_exception_exiting.
  *
  * \note
  * The function does NOT check whether the list of arguments (argv) is
@@ -735,14 +969,12 @@ void getopt::reset(int argc
  *
  * \param[in] argc  The number of arguments in argv.
  * \param[in] argv  The argument strings terminated by a nullptr.
- * \param[in] opts  An array of valid command line options for your program.
- * \param[in] def_opt  The index of default option in opts.
- * \param[in] opt_by_short_name  A map of all the command options by short name (one letter).
- * \param[in] opt_by_long_name  A map of all the command options by long name (--\<name\>).
+ * \param[in] only_environment_variable  Accept command line arguments (false)
+ *            or environment variable arguments (true).
  */
-void getopt::parse_arguments(int argc, char * argv[], option const * opts, int def_opt,
-                             short_opt_name_map_t opt_by_short_name, long_opt_name_map_t opt_by_long_name,
-                             bool only_environment_variable)
+void getopt::parse_arguments(int argc
+                           , char * argv[]
+                           , bool only_environment_variable)
 {
     for(int i(1); i < argc; ++i)
     {
@@ -754,39 +986,86 @@ void getopt::parse_arguments(int argc, char * argv[], option const * opts, int d
                 {
                     // end of options, skip the '--' and then anything else
                     // is taken as "filenames" (or whatever the tool expects)
-                    if(def_opt == NO_DEFAULT_OPT)
+                    //
+                    if(f_default_option == nullptr)
                     {
-                        usage(status_t::error, "default options not defined; thus -- is not accepted by this program");
-                        /*NOTREACHED*/
+                        log << log_level_t::error
+                            << "default options not defined; thus -- is not accepted by this program."
+                            << end;
+                        break;
                     }
-                    if(only_environment_variable && (opts[def_opt].f_flags & GETOPT_FLAG_ENVIRONMENT_VARIABLE) == 0)
+
+                    if(only_environment_variable)
                     {
-                        usage(status_t::error, "option -- is not supported in the environment variable");
-                        /*NOTREACHED*/
+                        if(f_default_option->has_flag(GETOPT_FLAG_ENVIRONMENT_VARIABLE))
+                        {
+                            log << log_level_t::error
+                                << "option -- is not supported in the environment variable."
+                                << end;
+                            break;
+                        }
                     }
+                    else
+                    {
+                        if(f_default_option->has_flag(GETOPT_FLAG_COMMAND_LINE))
+                        {
+                            log << log_level_t::error
+                                << "option -- is not supported in the environment variable."
+                                << end;
+                            break;
+                        }
+                    }
+
                     // in this case we do NOT test whether an argument uses
                     // a dash (-) we take them all as default options
+                    //
                     while(i + 1 < argc)
                     {
                         ++i;
-                        add_option(opts + def_opt, argv[i]);
+                        add_option(f_default_option, argv[i]);
                     }
                 }
                 else
                 {
                     // a long option, check that it is defined in the
                     // programmer defined options
-                    if(opt_by_long_name.find(argv[i] + 2) == opt_by_long_name.end())
+                    //
+                    option_info::pointer_t opt(f_options->get_child(argv[i] + 2));
+                    if(opt == nullptr)
                     {
-                        usage(status_t::error, "option %s is not supported", argv[i]);
-                        /*NOTREACHED*/
+                        log << log_level_t::error
+                            << "option "
+                            << argv[i]
+                            << " is not supported"
+                            << end;
+                        break;
                     }
-                    if(only_environment_variable && (opts[opt_by_long_name[argv[i] + 2]].f_flags & GETOPT_FLAG_ENVIRONMENT_VARIABLE) == 0)
+                    if(only_environment_variable)
                     {
-                        usage(status_t::error, "option %s is not supported in the environment variable", argv[i]);
-                        /*NOTREACHED*/
+                        if(opt->has_flag(GETOPT_FLAG_ENVIRONMENT_VARIABLE))
+                        {
+                            log << log_level_t::error
+                                << "option "
+                                << argv[i]
+                                << " is not supported in the environment variable."
+                                << end;
+                            break;
+                        }
                     }
-                    add_options(opts + opt_by_long_name[argv[i] + 2], i, argc, argv);
+                    else
+                    {
+                        if(opt->has_flag(GETOPT_FLAG_COMMAND_LINE))
+                        {
+                            log << log_level_t::error
+                                << "option "
+                                << argv[i]
+                                << " is not supported on the command line."
+                                << end;
+                            break;
+                        }
+                    }
+                    opt->add_value(argv[i]);
+                    add_options(opt, i, argc, argv);
                 }
             }
             else
@@ -794,37 +1073,85 @@ void getopt::parse_arguments(int argc, char * argv[], option const * opts, int d
                 if(argv[i][1] == '\0')
                 {
                     // stdin (a '-' by itself)
-                    if(def_opt == NO_DEFAULT_OPT)
+                    //
+                    if(f_default_option == nullptr)
                     {
-                        usage(status_t::error, "no default options defined; thus - is not accepted by this tool");
-                        /*NOTREACHED*/
+                        log << log_level_t::error
+                            << "no default options defined; thus - is not accepted by this tool.";
+                        break;
                     }
-                    if(only_environment_variable && (opts[def_opt].f_flags & GETOPT_FLAG_ENVIRONMENT_VARIABLE) == 0)
+                    if(only_environment_variable)
                     {
-                        usage(status_t::error, "option - is not supported in the environment variable");
-                        /*NOTREACHED*/
+                        if(f_default_option->has_flag(GETOPT_FLAG_ENVIRONMENT_VARIABLE))
+                        {
+                            log << log_level_t::error
+                                << "option - is not supported in the environment variable.";
+                            break;
+                        }
                     }
+                    else
+                    {
+                        if(f_default_option->has_flag(GETOPT_FLAG_COMMAND_LINE))
+                        {
+                            log << log_level_t::error
+                                << "option - is not supported in the environment variable.";
+                            break;
+                        }
+                    }
+
                     // this is similar to a default option by itself
-                    add_option(opts + def_opt, argv[i]);
+                    //
+                    f_default_option->add_value(argv[i]);
+                    add_options(f_default_option, i, argc, argv);
                 }
                 else
                 {
                     // short option(s)
-                    int k(i);
-                    int max(static_cast<int>(strlen(argv[k])));
+                    //
+                    // i gets incremented by add_options() so we have to
+                    // keep a copy of `k`
+                    //
+                    int const k(i);
+                    int const max(static_cast<int>(strlen(argv[k])));
                     for(int j = 1; j < max; ++j)
                     {
-                        if(opt_by_short_name.find(argv[k][j]) == opt_by_short_name.end())
+                        // TODO: add support for UTF-32 characters
+                        //
+                        option_info::pointer_t opt(f_options->get_child(argv[k][j]));
+                        if(opt == nullptr)
                         {
-                            usage(status_t::error, "option -%c is not supported", argv[k][j]);
-                            /*NOTREACHED*/
+                            log << log_level_t::error
+                                << "option -"
+                                << argv[k][j]
+                                << " is not supported"
+                                << end;
+                            break;
                         }
-                        if(only_environment_variable && (opts[opt_by_short_name[argv[k][j]]].f_flags & GETOPT_FLAG_ENVIRONMENT_VARIABLE) == 0)
+                        if(only_environment_variable)
                         {
-                            usage(status_t::error, "option -%c is not supported in the environment variable", argv[k][j]);
-                            /*NOTREACHED*/
+                            if(f_default_option->has_flag(GETOPT_FLAG_ENVIRONMENT_VARIABLE))
+                            {
+                                log << log_level_t::error
+                                    << "option -"
+                                    << argv[k][j]
+                                    << " is not supported in the environment variable."
+                                    << end;
+                                break;
+                            }
                         }
-                        add_options(opts + opt_by_short_name[argv[k][j]], i, argc, argv);
+                        else
+                        {
+                            if(f_default_option->has_flag(GETOPT_FLAG_COMMAND_LINE))
+                            {
+                                log << log_level_t::error
+                                    << "option -"
+                                    << argv[k][j]
+                                    << " is not supported on the command line."
+                                    << end;
+                                break;
+                            }
+                        }
+                        add_options(opt, i, argc, argv);
                     }
                 }
             }
@@ -832,19 +1159,37 @@ void getopt::parse_arguments(int argc, char * argv[], option const * opts, int d
         else
         {
             // direct entry (filename or whatever the tool expects as a default)
-            if(def_opt == NO_DEFAULT_OPT)
+            //
+            if(f_default_option == nullptr)
             {
-                usage(status_t::error,
-                    "no default option defined; we do not know what to do of \"%s\"; thus standalone parameters are not accepted by this tool",
-                    argv[i]);
-                /*NOTREACHED*/
+                log << log_level_t::error
+                    << "no default option defined; we do not know what to do of \""
+                    << argv[i]
+                    << "\"; thus standalone parameters are not accepted by this tool."
+                    << end;
+                break;
             }
-            if(only_environment_variable && (opts[def_opt].f_flags & GETOPT_FLAG_ENVIRONMENT_VARIABLE) == 0)
+            if(only_environment_variable)
             {
-                usage(status_t::error, "default options are not supported in the environment variable");
-                /*NOTREACHED*/
+                if(f_default_option->has_flag(GETOPT_FLAG_ENVIRONMENT_VARIABLE))
+                {
+                    log << log_level_t::error
+                        << "default options are not supported in the environment variable."
+                        << end;
+                    break;
+                }
             }
-            add_option(opts + def_opt, argv[i]);
+            else
+            {
+                if(f_default_option->has_flag(GETOPT_FLAG_COMMAND_LINE))
+                {
+                    log << log_level_t::error
+                        << "default options are not supported on the command line."
+                        << end;
+                    break;
+                }
+            }
+            add_option(f_default_option, argv[i]);
         }
     }
 }
@@ -896,7 +1241,7 @@ void getopt::parse_arguments(int argc, char * argv[], option const * opts, int d
  */
 bool getopt::is_defined(std::string const & name) const
 {
-    return f_map.find(name) != f_map.end();
+    return f_options->get_child(name) != nullptr;
 }
 
 
@@ -907,19 +1252,20 @@ bool getopt::is_defined(std::string const & name) const
  *
  * The function returns zero if the argument was never specified on the
  * command line. If the option accepts exactly one parameter (i.e. not
- * marked as a multiple arguments option) then the function returns either
- * zero (not specified) or one (specified at least once.)
+ * marked as a multiple arguments option: GETOPT_FLAG_MULTIPLE) then
+ * the function returns either zero (not specified) or one (specified
+ * at least once.)
  *
  * \param[in] name  The name of the option to check.
  *
  * \return The number of arguments specified on the command line or zero.
  */
-int getopt::size(std::string const & name) const
+size_t getopt::size(std::string const & name) const
 {
-    optmap_t::const_iterator it(f_map.find(name));
-    if(it != f_map.end())
+    option_info::pointer_t opt(f_options->get_child(name));
+    if(opt != nullptr)
     {
-        return static_cast<int>(it->second.f_val.size());
+        return opt->size();
     }
     return 0;
 }
@@ -937,60 +1283,25 @@ int getopt::size(std::string const & name) const
  * The getopt_exception_undefined exception is raised if this function is
  * called with an empty \p name.
  *
- * \param[in] name  The name of the parameter if which you want to retrieve
+ * \param[in] name  The name of the parameter of which you want to retrieve
  *                  the default value.
  *
- * \return The default value or nullptr if no value is defined.
+ * \return The default value or an empty string if no value is defined.
  */
-char const * getopt::get_default(std::string const & name) const
+std::string getopt::get_default(std::string const & name) const
 {
     if(name.empty())
     {
-        throw getopt_exception_undefined("command line name cannot be empty");
+        throw getopt_exception_undefined("command line name cannot be empty.");
     }
 
-    int const long_option(name.length() != 1);
-    for(int i(0); f_options[i].f_arg_mode != argument_mode_t::end_of_options; ++i)
+    option_info::pointer_t opt(f_options->get_child(name));
+    if(opt != nullptr)
     {
-        if(long_option)
-        {
-            if(f_options[i].f_name == nullptr)
-            {
-                if(f_options[i].f_opt == '\0')
-                {
-                    switch(f_options[i].f_arg_mode)
-                    {
-                    case argument_mode_t::no_argument:
-                    case argument_mode_t::default_argument:
-                    case argument_mode_t::default_multiple_argument:
-                        if(name == "--")
-                        {
-                            return f_options[i].f_default;
-                        }
-                        break;
-
-                    default:
-                        // if invalid it was caught in reset()
-                        break;
-
-                    }
-                }
-            }
-            else if(name == f_options[i].f_name)
-            {
-                return f_options[i].f_default;
-            }
-        }
-        else
-        {
-            if(name[0] == f_options[i].f_opt)
-            {
-                return f_options[i].f_default;
-            }
-        }
+        return opt->get_default();
     }
 
-    return nullptr;    // no default
+    return std::string();
 }
 
 
@@ -1039,54 +1350,64 @@ char const * getopt::get_default(std::string const & name) const
  */
 long getopt::get_long(std::string const & name, int idx, long min, long max)
 {
+    option_info::pointer_t opt(f_options->get_child(name));
+    if(opt == nullptr)
+    {
+        throw getopt_exception_undefined(
+                  "there is no \"--"
+                + name
+                + "\" option defined.");
+    }
+
     long result(0);
-    int max_idx = size(name);
+    int max_idx = opt->size();
     if(max_idx == 0)
     {
-        char const * d(get_default(name));
-        if(d == nullptr)
+        std::string const d(opt->get_default());
+        if(d.empty())
         {
-            throw getopt_exception_undefined("the \"" + name + "\" option was not defined on the command line");
+            throw getopt_exception_undefined(
+                      "the \"--"
+                    + name
+                    + "\" option was not defined on the command line.");
         }
         char * end;
-        result = strtol(d, &end, 10);
-        if(end != d + strlen(d))
+        char const * str(d.c_str());
+        result = strtol(str, &end, 10);
+        if(end != str + d.length())
         {
             // here we throw because this default value is defined in the
             // options of the tool and not by the user
-            throw getopt_exception_invalid("invalid default number \"" + std::string(d) + "\" in parameter --" + name);
+            //
+            throw getopt_exception_invalid(
+                      "invalid default number \""
+                    + d
+                    + "\" in parameter --"
+                    + name);
         }
-    }
-    else if(static_cast<unsigned int>(idx) >= static_cast<unsigned int>(max_idx))
-    {
-        throw getopt_exception_undefined("not this many options were defined on the command line");
     }
     else
     {
-        optmap_info & opt(f_map[name]);
-        if(!opt.f_cvt)
-        {
-            // we did not yet convert to integers do that now
-            for(int i = 0; i < max_idx; ++i)
-            {
-                char * end;
-                char const * s(opt.f_val[i].c_str());
-                opt.f_int.push_back(strtol(s, &end, 10));
-                if(end != s + opt.f_val[i].size())
-                {
-                    usage(status_t::error, "invalid number (%s) in parameter --%s", s, name.c_str());
-                    /*NOTREACHED*/
-                }
-            }
-            opt.f_cvt = static_cast<int32_t>(true);
-        }
-        result = opt.f_int[idx];
+        result = opt->get_long(idx);
     }
+
+    // TODO: replace with validators
+    //
     if(result < min || result > max)
     {
-        usage(status_t::error, "%ld is out of bounds (%ld..%ld inclusive) in parameter --%s", result, min, max, name.c_str());
-        /*NOTREACHED*/
+        log << log_level_t::error
+            << result
+            << " is out of bounds ("
+            << min
+            << ".."
+            << max
+            << " inclusive) in parameter --"
+            << name
+            << "."
+            << end;
+        result = -1;
     }
+
     return result;
 }
 
@@ -1113,24 +1434,28 @@ long getopt::get_long(std::string const & name, int idx, long min, long max)
  */
 std::string getopt::get_string(std::string const & name, int idx) const
 {
-    optmap_t::const_iterator it(f_map.find(name));
-    if(it == f_map.end())
+    option_info::pointer_t opt(f_options->get_child(name));
+    if(opt == nullptr)
     {
-        char const * d(get_default(name));
-        if(d != nullptr)
+        throw getopt_exception_undefined(
+                  "there is no \"--"
+                + name
+                + "\" option defined.");
+    }
+
+    if(!opt->is_defined())
+    {
+        if(opt->has_default())
         {
-            return d;
+            return opt->get_default();
         }
-        throw getopt_exception_undefined("the --" + name + " option was not defined on the command line");
+        throw getopt_exception_undefined(
+                  "the --"
+                + name
+                + " option was not defined on the command line and it has no default.");
     }
 
-    size_t const max_idx(it->second.f_val.size());
-    if(static_cast<size_t>(idx) >= max_idx)
-    {
-        throw getopt_exception_undefined("not this many options were defined on the command line");
-    }
-
-    return it->second.f_val[idx];
+    return opt->get_value(idx);
 }
 
 
@@ -1145,6 +1470,21 @@ std::string getopt::get_string(std::string const & name, int idx) const
  *    "Usage: %p [-opt] filename ..."
  * \endcode
  *
+ * \li "%%" -- print out a percent
+ * \li "%a" -- print out the project name (a.k.a. application name)
+ * \li "%b" -- print out the build date
+ * \li "%c" -- print out the copyright notice
+ * \li "%d" -- print out the first directory with configuration files.
+ * \li "%*d" -- print out the complete list of directories with configuration
+ * files.
+ * \li "%f" -- print out the first configuration path and filename.
+ * \li "%*f" -- print out all the configuration full paths.
+ * \li "%l" -- print out the license
+ * \li "%p" -- print out the program basename
+ * \li "%*p" -- print out the full program name
+ * \li "%t" -- print out the build time
+ * \li "%v" -- print out the version
+ *
  * \param[in] help  A string that may include '%p'.
  *
  * \return The string with any '%p' replaced with the program name.
@@ -1155,10 +1495,128 @@ std::string getopt::process_help_string( char const * help ) const
 
     while(help[0] != '\0')
     {
-        if(help[0] == '%' && help[1] == 'p')
+        if(help[0] == '%')
         {
-            result += f_program_name;
-            help += 2; // skip the % and p at the same time
+            switch(help[1])
+            {
+            case '%':
+                result += '%';
+                help += 2;
+                break;
+
+            case '*':
+                switch(help[2])
+                {
+                case 'd':
+                    if(f_options_environment.f_configuration_directories != nullptr)
+                    {
+                        bool first(true);
+                        for(char const ** directories(f_options_environment.f_configuration_directories)
+                          ; *directories != nullptr
+                          ; ++directories)
+                        {
+                            if(first)
+                            {
+                                first = false;
+                            }
+                            else
+                            {
+                                result += ", ";
+                            }
+                            result += *directories;
+                        }
+                    }
+                    help += 3;
+                    break;
+
+                case 'f':
+                    if(f_options_environment.f_configuration_files != nullptr)
+                    {
+                        bool first(true);
+                        for(char const ** filenames(f_options_environment.f_configuration_files)
+                          ; *filenames != nullptr
+                          ; ++filenames)
+                        {
+                            if(first)
+                            {
+                                first = false;
+                            }
+                            else
+                            {
+                                result += ", ";
+                            }
+                            result += *filenames;
+                        }
+                    }
+                    help += 3;
+                    break;
+
+                case 'p':
+                    result += f_program_fullname;
+                    help += 3;
+                    break;
+
+                }
+                break;
+
+            case 'a':
+                result += f_options_environment.f_project_name;
+                help += 2;
+                break;
+
+            case 'b':
+                result += f_options_environment.f_build_date;
+                help += 2;
+                break;
+
+            case 'c':
+                result += f_options_environment.f_copyright;
+                help += 2;
+                break;
+
+            case 'd':
+                if(f_options_environment.f_configuration_directories != nullptr)
+                {
+                    if(*f_options_environment.f_configuration_directories != nullptr)
+                    {
+                        result += *f_options_environment.f_configuration_directories;
+                    }
+                }
+                help += 2;
+                break;
+
+            case 'f':
+                if(f_options_environment.f_configuration_files != nullptr)
+                {
+                    if(*f_options_environment.f_configuration_files != nullptr)
+                    {
+                        result += *f_options_environment.f_configuration_files;
+                    }
+                }
+                help += 2;
+                break;
+
+            case 'l':
+                result += f_options_environment.f_license;
+                help += 2;
+                break;
+
+            case 'p':
+                result += f_program_name;
+                help += 2;
+                break;
+
+            case 't':
+                result += f_options_environment.f_build_time;
+                help += 2;
+                break;
+
+            case 'v':
+                result += f_options_environment.f_version;
+                help += 2;
+                break;
+
+            }
         }
         else
         {
@@ -1171,218 +1629,304 @@ std::string getopt::process_help_string( char const * help ) const
 }
 
 
-/** \brief Assemble the cmdline arguments.
+/** \brief Create a string of the command line arguments.
  *
- * Assembles the command line arguments into a string and returns
- * the string.
+ * This function assembles the command line arguments in a string and
+ * returns that string.
  *
- * \param[in] status  The status at the time the options are requested.
- * \param[out] default_arg_help
+ * The function has the ability to wrap strings around for better formatting.
+ *
+ * The list of arguments to show is defined by the \p show parameter. When
+ * \p show is 0, then only the regular and error arguments are shown.
+ * Otherwise only the argumenst with the specified flags are show. Only
+ * the `..._SHOW_...` flags are valid here.
+ *
+ * When an error occurs, it is customary to set \p show to
+ * GETOPT_FLAG_SHOW_USAGE_ON_ERROR so only a limited set of arguments
+ * are shown.
+ *
+ * The library offers two groups in case you have a command line tools
+ * with a large number of options, those two can be used to only show
+ * those specific set of options with using a specific `--help` argument.
+ *
+ * \note
+ * This function does NOT print anything in the output. This is your
+ * responsibility. We do it this way because you may be using a logger
+ * and not want to print the usage in the \em wrong destination.
+ *
+ * \bug
+ * The options are written from our map. This means the order will be
+ * alphabetical and not the order in which you defined the options.
+ * We are not looking into fixing this problem. That's just something
+ * you want to keep in mind.
+ *
+ * \param[in] show  Selection of the options to show.
+ *
+ * \return The assembled command line arguments.
  */
-std::string getopt::assemble_options( status_t status /*, std::string & default_arg_help*/ ) const
+std::string getopt::usage( flag_t show ) const
 {
     std::stringstream ss;
 
-    unsigned char errflag(0);
-    bool const no_error_status(status == status_t::no_error || status == status_t::no_error_nobr);
-    if( !no_error_status )
-    {
-        errflag = GETOPT_FLAG_SHOW_USAGE_ON_ERROR;
-    }
+    // ignore all the non-show flags
+    //
+    show &= GETOPT_FLAG_SHOW_USAGE_ON_ERROR
+          | GETOPT_FLAG_SHOW_ALL
+          | GETOPT_FLAG_SHOW_GROUP1
+          | GETOPT_FLAG_SHOW_GROUP2;
 
-    for( int i(0); f_options[i].f_arg_mode != argument_mode_t::end_of_options; ++i )
+    ss << breakup_line(process_help_string(f_options_environment.f_help_header), 0, 80);
+
+    for(auto const & opt : f_options->get_children())
     {
-        // ignore entries with a nullptr pointer
-        // ignore entries representing an alias
-        // only display error marked entries if error status
-        const auto& opt( f_options[i] );
-        if(opt.f_help
-            && (opt.f_flags & advgetopt::getopt::GETOPT_FLAG_ALIAS) == 0
-            && (((opt.f_flags & errflag) == 0) ^ !no_error_status))
+        std::string const help(opt.second->get_help());
+        if(help.empty())
         {
-            if( opt.f_arg_mode == argument_mode_t::help_argument )
+            // ignore entries without help
+            //
+            continue;
+        }
+
+        if(opt.second->has_flag(GETOPT_FLAG_ALIAS))
+        {
+            // ignore entries representing an alias
+            //
+            continue;
+        }
+
+        if((show & GETOPT_FLAG_SHOW_ALL) == 0)
+        {
+            if(show != 0)
             {
-                ss << process_help_string(opt.f_help) << std::endl;
+                if(!opt.second->has_flag(show))
+                {
+                    // usage selected group is not present in this option, ignore
+                    //
+                    continue;
+                }
             }
-            else
+            else if(opt.second->has_flag(GETOPT_FLAG_SHOW_GROUP1 | GETOPT_FLAG_SHOW_GROUP2))
             {
-                std::stringstream opt_ss;
-
-                if( opt.f_arg_mode == argument_mode_t::default_argument )
-                {
-                    opt_ss << "[default argument]";
-                }
-                else if( opt.f_arg_mode == argument_mode_t::default_multiple_argument)
-                {
-                    opt_ss << "[default arguments]";
-                }
-                else
-                {
-                    if(opt.f_opt != '\0' && opt.f_name != nullptr)
-                    {
-                        // both options!
-                        opt_ss << "--" << opt.f_name << " or -" << opt.f_opt;
-                    }
-                    else if(opt.f_opt != '\0')
-                    {
-                        opt_ss << "-" << opt.f_opt;
-                    }
-                    else if(opt.f_name != nullptr)
-                    {
-                        opt_ss << "--" << opt.f_name;
-                    }
-                    else
-                    {
-                        // TODO: the 'default_arg_help' is not used and I am
-                        //       really thinking we should have the throw back in...
-                        //
-                        throw getopt_exception_invalid("an option has help but no option name");
-                        //default_arg_help = process_help_string(opt.f_help);
-                        //continue;
-                    }
-                    switch(opt.f_arg_mode)
-                    {
-                        case argument_mode_t::no_argument:
-                            break;
-
-                        case argument_mode_t::required_argument:
-                        case argument_mode_t::required_long:
-                            opt_ss << " <arg>";
-                            break;
-
-                        case argument_mode_t::optional_argument:
-                        case argument_mode_t::optional_long:
-                            opt_ss << " [<arg>]";
-                            break;
-
-                        case argument_mode_t::required_multiple_argument:
-                        case argument_mode_t::required_multiple_long:
-                            opt_ss << " <arg> {<arg>}";
-                            break;
-
-                        case argument_mode_t::optional_multiple_argument:
-                        case argument_mode_t::optional_multiple_long:
-                            opt_ss << " {<arg>}";
-                            break;
-
-                        default:
-                            throw getopt_exception_invalid("an option uses an invalid argument mode");
-                    }
-                }
-
-                // Output argument string with help
+                // do not show specialized groups
                 //
-                int const option_width(30); // <- this could be dynamically calculated (i.e. largest option) and capped instead of forced to 30
-                int const line_width(80);
-                ss << "   ";
-                std::string options( opt_ss.str() );
-                if( options.size() < option_width - 3 )
-                {
-                    ss << options << std::setw( option_width - 3 - options.size() ) << " ";
-                }
-                else
-                {
-                    // write help on following line since this line is too
-                    // short
-                    ss << options << std::endl << std::setw( option_width ) << " ";
-                }
-                //
-                // break up the line if longer than line_width characters
-                //
-                std::string help(process_help_string(opt.f_help));
-                while(help.size() > line_width - option_width)
-                {
-                    if(std::isspace(help[line_width - option_width]))
-                    {
-                        ss << help.substr(0, line_width - option_width) << std::endl;
-                        help = help.substr(line_width - option_width + 1);
-                    }
-                    else
-                    {
-                        std::string::size_type const pos(help.find_last_of(' ', line_width - option_width));
-                        ss << help.substr(0, pos) << std::endl;
-                        help = help.substr(pos + 1);
-                    }
-                    if(!help.empty())
-                    {
-                        ss << std::setw( option_width ) << " ";
-                    }
-                }
-                if(!help.empty()) // this only happens if you end a help string with spaces
-                {
-                    ss << help << std::endl;
-                }
+                continue;
             }
         }
+
+        std::stringstream argument;
+
+        if(opt.second->is_default_option())
+        {
+            switch(opt.second->get_flags() & (GETOPT_FLAG_REQUIRED | GETOPT_FLAG_MULTIPLE))
+            {
+            case 0:
+                argument << "[default argument]";
+                break;
+
+            case GETOPT_FLAG_REQUIRED:
+                argument << "<default argument>";
+                break;
+
+            case GETOPT_FLAG_MULTIPLE:
+                argument << "[default arguments]";
+                break;
+
+            case GETOPT_FLAG_REQUIRED | GETOPT_FLAG_MULTIPLE:
+                argument << "<default arguments>";
+                break;
+
+            }
+        }
+        else
+        {
+            argument << "--" << opt.second->get_name();
+            if(opt.second->get_short_name() != NO_SHORT_NAME)
+            {
+                argument << " or -" << opt.second->get_short_name();
+            }
+
+            switch(opt.second->get_flags() & (GETOPT_FLAG_FLAG | GETOPT_FLAG_REQUIRED | GETOPT_FLAG_MULTIPLE))
+            {
+            case 0:
+                argument << " [<arg>]";
+                break;
+
+            case GETOPT_FLAG_REQUIRED:
+                argument << " <arg>";
+                break;
+
+            case GETOPT_FLAG_MULTIPLE:
+                argument << " {<arg>}";
+                break;
+
+            case GETOPT_FLAG_REQUIRED | GETOPT_FLAG_MULTIPLE:
+                argument << " <arg> {<arg>}";
+                break;
+
+            }
+        }
+
+        if(opt.second->has_default())
+        {
+            argument << " (default is \""
+                     << opt.second->get_default()
+                     << "\")";
+        }
+
+        // Output argument string with help
+        //
+        ss << format_usage_string(argument.str()
+                                , process_help_string(help.c_str())
+                                , 30
+                                , 80);
     }
+
+    ss << breakup_line(process_help_string(f_options_environment.f_help_footer), 0, 80);
 
     return ss.str();
 }
 
 
-/** \brief Print the tool usage and then exit the program.
+/** \brief Format a help string to make it fit on a given width.
  *
- * This function prints the usage of this tool and then calls exit(1).
- * In case of our tests, the exit(1) can be transformed in a throw that
- * we can easily capture.
+ * This function properly wraps a set of help strings so they fit in
+ * your console. The width has to be given by you at the moment.
  *
- * \todo
- * Change the format string with a message option. As far as I know the
- * wpkg_output does not use the getopt classes so we could use that.
+ * The function takes two strings, the argument with it's options
+ * and the actual help string for that argument. If the argument
+ * is short enough, it will appear on the first line with the
+ * first line of help. If not, then one whole line is reserved
+ * just for the argument and the help starts on the next line.
  *
- * \param[in] status  The status when calling this function.
- * \param[in] msg  A printf() string format (with %s, %d, etc.).
+ * \param[in] argument  The option name with -- and arguments.
+ * \param[in] help  The help string for this argument.
+ * \param[in] option_width  Number of characters reserved for the option.
+ * \param[in] line_width  The maximum number of characters to display in width.
+ *
+ * \return A help string formatted for display.
  */
-void getopt::usage(status_t status, char const * msg, ...)
+std::string getopt::format_usage_string(
+                      std::string const & argument
+                    , std::string const & help
+                    , size_t const option_width
+                    , size_t const line_width)
 {
-    //std::string default_arg_help;
-    std::string options( assemble_options( status /*, default_arg_help*/ ) );
+    std::stringstream ss;
 
-    bool const no_error_status(status == status_t::no_error || status == status_t::no_error_nobr);
-    if( !no_error_status )
+    ss << "   ";
+
+    if( argument.size() < option_width - 3 )
     {
-        char const * errstr(nullptr);
-        switch(status)
-        {
-        // other cases are eliminated by the test before this if() block
-        //case no_error:
-        //case no_error_nobr:
-
-        case status_t::warning:
-            errstr = "warning";
-            break;
-
-        case status_t::fatal:
-            errstr = "fatal error";
-            break;
-
-        default: //case status_t::error:
-            errstr = "error";
-            break;
-
-        }
-        std::cerr << errstr << ":" << f_program_name << ": ";
-        // TODO: fix that with some form of << or () operator support
-        va_list ap;
-        va_start(ap, msg);
-        vfprintf(stderr, msg, ap);
-        std::cerr << "." << std::endl;
-
-        std::cerr << options << std::flush;
+        // enough space on a single line
+        //
+        ss << argument
+           << std::setw( option_width - 3 - argument.size() )
+           << " ";
+    }
+    else if(argument.size() >= line_width - 4)
+    {
+        // argument too long for even one line on the screen!?
+        // call the function to break it up with indentation of 3
+        //
+        ss << breakup_line(argument, 3, line_width);
     }
     else
     {
-        // A little flush helps greatly under MS-Windows
+        // argument too long for the help to follow immediately
         //
-        std::cout << options << std::flush;
+        ss << argument
+           << std::endl
+           << std::setw( option_width )
+           << " ";
     }
 
-#ifdef ADVGETOPT_THROW_FOR_EXIT
-    // for test purposes
-    throw getopt_exception_exiting("usage was called, throwing an exception instead of calling exit(1)...");
-#else
-    exit(1);
-#endif
+    ss << breakup_line(help, option_width, line_width);
+
+    return ss.str();
+}
+
+
+/** \brief Breakup a string on multiple lines.
+ *
+ * This function breaks up the specified \p line of text in one or more
+ * strings to fit your output.
+ *
+ * The \p line_width represents the maximum number of characters that get
+ * printed in a row.
+ *
+ * The \p option_width parameter is the number of characters in the left
+ * margin. When dealing with a very long argument, this width is 3 characters.
+ * When dealing with the help itself, it is expected to be around 30.
+ *
+ * \note
+ * This function always makes sure that the resulting string ends with
+ * a newline character unless the input \p line string is empty.
+ *
+ * \param[in] line  The line to breakup.
+ * \param[in] option_width  The number of characters in the left margin.
+ * \param[in] line_width  The total number of characters in the output.
+ *
+ * \return The broken up line as required.
+ */
+std::string getopt::breakup_line(std::string line
+                               , size_t const option_width
+                               , size_t const line_width)
+{
+    std::stringstream ss;
+
+    size_t const width(line_width - option_width);
+
+    while(line.size() > width)
+    {
+        std::string l;
+        if(std::isspace(line[width]))
+        {
+            // special case when the space is right at the edge
+            //
+            l = line.substr(0, width);
+            line = line.substr(width + 1);
+        }
+        else
+        {
+            // search for the last space before the edge of the screen
+            //
+            std::string::size_type const pos(line.find_last_of(' ', width));
+            if(pos == std::string::npos)
+            {
+                // no space found, cut right at the edge...
+                // (this should be really rare)
+                //
+                l = line.substr(0, width);
+                line = line.substr(width);
+            }
+            else
+            {
+                // we found a space, write everything up to that space
+                //
+                l = line.substr(0, pos);
+                line = line.substr(pos + 1);
+            }
+        }
+
+        ss << l
+           << std::endl;
+
+        // more to print? if so we need the indentation
+        //
+        if(!line.empty())
+        {
+            ss << std::setw( option_width ) << " ";
+        }
+    }
+
+    // some leftover?
+    //
+    if(!line.empty())
+    {
+        ss << line << std::endl;
+    }
+
+    return ss.str();
 }
 
 
@@ -1431,14 +1975,16 @@ std::string getopt::get_program_name() const
 
 /** \brief Retrieve the project name if one is defined.
  *
- * This function returns the name of the project as defined in the list
- * of configuration files under '@' characters. For example, the
- * snapwebsites project makes use of "@snapwebsites@" as one of its
- * configuration filename. This ensures that the configuration files
+ * This function returns the name of the project as defined in the
+ * options_environment structure passed to the constructor.
+ *
+ * For example, the snapwebsites project makes use of "snapwebsites"
+ * name as its common project name. Many of the configuration files are
+ * found under that sub-folder. This ensures that the configuration files
  * are searched for under the indicated folders and again under:
  *
  * \code
- *      <existing path>/@<project name>@/<basename>
+ *      <existing path>/<project name>.d/<basename>
  * \endcode
  *
  * So if you have a configuration file named "snapserver.conf" with
@@ -1460,19 +2006,20 @@ std::string getopt::get_program_name() const
  *      "/home/alexis/.config/iplock/iplock.conf"
  *
  *      # Second we read this file (assuming the same project name
- *      # of "@snapwebsites@"):
+ *      # of "snapwebsites"):
  *      "/home/alexis/.config/iplock/snapwebsites.d/iplock.conf"
  * \endcode
  *
- * Since we test with the additional project name in the path, it
- * can be defined anywhere in the list of configuration filenames.
+ * The order is important as well. We first load the direct path, then
+ * the path with the sub-folder. Finally, we move forward to the next
+ * configuration file. We ignore errors when a file can't be loaded or
+ * is missing.
  *
- * \return The name of the project if one was defined in the vector of
- *         configuration filename.
+ * \return The name of the project, maybe empty if undefined.
  */
 std::string getopt::get_project_name() const
 {
-    return f_project_name;
+    return f_options_environment.f_project_name;
 }
 
 
@@ -1494,88 +2041,45 @@ std::string getopt::get_project_name() const
  * \param[in] argc  The number of arguments in the argv array.
  * \param[in] argv  The list of argument strings.
  */
-void getopt::add_options(option const * opt, int & i, int argc, char ** argv)
+void getopt::add_options(option_info::pointer_t opt, int & i, int argc, char ** argv)
 {
-    switch(opt->f_arg_mode)
+    if(opt->has_flag(GETOPT_FLAG_FLAG))
     {
-    case argument_mode_t::no_argument:
-        // this value should not be taken in account
-        add_option(opt, opt->f_default);
-        break;
-
-    case argument_mode_t::required_argument:
-    case argument_mode_t::required_long:
-        if(i + 1 >= argc || is_arg(argv[i + 1]))
-        {
-            if(opt->f_name != nullptr)
-            {
-                usage(status_t::error, "option --%s expects an argument", opt->f_name);
-            }
-            else
-            {
-                usage(status_t::error, "option -%c expects an argument", opt->f_opt);
-            }
-            /*NOTREACHED*/
-        }
-        ++i;
-        add_option(opt, argv[i]);
-        break;
-
-    case argument_mode_t::optional_argument:
-    case argument_mode_t::optional_long:
-    case argument_mode_t::default_argument:
+        add_option(opt, opt->get_default());
+    }
+    else
+    {
         if(i + 1 < argc && !is_arg(argv[i + 1]))
         {
-            ++i;
-            add_option(opt, argv[i]);
-        }
-        else {
-            add_option(opt, opt->f_default);
-        }
-        break;
-
-    case argument_mode_t::required_multiple_argument:
-    case argument_mode_t::required_multiple_long:
-        if(i + 1 >= argc || is_arg(argv[i + 1]))
-        {
-            if(opt->f_name != nullptr)
+            if(opt->has_flag(GETOPT_FLAG_MULTIPLE))
             {
-                usage(status_t::error, "option --%s requires at least one argument", opt->f_name);
+                do
+                {
+                    ++i;
+                    add_option(opt, argv[i]);
+                } while(i + 1 < argc && !is_arg(argv[i + 1]));
             }
             else
             {
-                usage(status_t::error, "option -%c requires at least one argument", opt->f_opt);
-            }
-            /*NOTREACHED*/
-        }
-        do
-        {
-            ++i;
-            add_option(opt, argv[i]);
-        } while(i + 1 < argc && !is_arg(argv[i + 1]));
-        break;
-
-    case argument_mode_t::optional_multiple_argument:
-    case argument_mode_t::optional_multiple_long:
-    case argument_mode_t::default_multiple_argument:
-        {
-            bool got_option = false;
-            while(i + 1 < argc && !is_arg(argv[i + 1]))
-            {
                 ++i;
-                got_option = true;
                 add_option(opt, argv[i]);
             }
-            if(!got_option)
+        }
+        else
+        {
+            if(opt->has_flag(GETOPT_FLAG_REQUIRED))
             {
-                add_option(opt, opt->f_default);
+                log << log_level_t::error
+                    << "option --"
+                    << opt->get_name()
+                    << " expects an argument"
+                    << end;
+            }
+            else
+            {
+                add_option(opt, opt->get_default());
             }
         }
-        break;
-
-    default:
-        throw getopt_exception_invalid("an option has an unexpected argument mode");
-
     }
 }
 
@@ -1614,80 +2118,24 @@ void getopt::add_options(option const * opt, int & i, int argc, char ** argv)
  * \param[in] opt  The concerned option.
  * \param[in] value  The value to add to that option info.
  */
-void getopt::add_option(option const * opt, char const * value)
+void getopt::add_option(option_info::pointer_t opt, std::string const & value)
 {
-    std::string name;
-    if((opt->f_flags & advgetopt::getopt::GETOPT_FLAG_ALIAS) != 0)
+    if(opt->has_flag(GETOPT_FLAG_ALIAS))
     {
-        // use the help string as the alias
-        name = opt->f_help;
+        opt = opt->get_alias();
+        if(opt == nullptr)
+        {
+            throw getopt_exception_undefined("getopt::add_option(): alias is missing.");
+        }
     }
-    else if(opt->f_name == nullptr)
+
+    if(opt->has_flag(GETOPT_FLAG_MULTIPLE))
     {
-        if(opt->f_opt == '\0')
-        {
-            // default argument name is "--" if not otherwise specified
-            name = "--";
-        }
-        else
-        {
-            name = opt->f_opt;
-        }
+        opt->add_value(value);
     }
     else
     {
-        name = opt->f_name;
-    }
-
-    // nullptr is not valid with push_back() for an std::string
-    if(value == nullptr)
-    {
-        value = "";
-    }
-
-    if(f_map.find(name) == f_map.end())
-    {
-        // this is a new entry
-        optmap_info info;
-        info.f_val.push_back(value);
-        f_map[name] = info;
-    }
-    else
-    {
-        // TODO: unless we are adding a multiple argument, we should
-        //       warning about the problem because it is not unlikely
-        //       a mistake by the end user (TBD)
-        switch(opt->f_arg_mode)
-        {
-        case argument_mode_t::no_argument:
-            // do not waste time, return immediately
-            break;
-
-        case argument_mode_t::required_argument:
-        case argument_mode_t::required_long:
-        case argument_mode_t::optional_argument:
-        case argument_mode_t::optional_long:
-        case argument_mode_t::default_argument:
-            // we do not expect more than one, overwrite previous value
-            // if necessary
-            f_map[name].f_val[0] = value;
-            break;
-
-        case argument_mode_t::required_multiple_argument:
-        case argument_mode_t::required_multiple_long:
-        case argument_mode_t::optional_multiple_argument:
-        case argument_mode_t::optional_multiple_long:
-        case argument_mode_t::default_multiple_argument:
-            f_map[name].f_val.push_back(value);
-            break;
-
-        default:
-            // the add_option() is called directly only for def_opt which
-            // has to have a valid more so we are not expected to get here
-            // (i.e. there is a similar throw in the add_options() function
-            throw getopt_exception_invalid("an option has an unexpected argument mode"); // LCOV_EXCL_LINE
-
-        }
+        opt->set_value(0, value);
     }
 }
 

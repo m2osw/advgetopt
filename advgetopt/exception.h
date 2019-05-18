@@ -46,6 +46,14 @@ namespace advgetopt
 
 
 
+// generic logic error (something's wrong in the library)
+class getopt_exception_logic : public libexcept::logic_exception_t
+{
+public:
+    getopt_exception_logic(std::string const & msg) : logic_exception_t(msg) {}
+};
+
+
 // generic getopt exception
 class getopt_exception : public libexcept::exception_t
 {

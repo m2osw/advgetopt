@@ -43,10 +43,17 @@ configure_file(
 
 include_directories(
     ${LIBEXCEPT_INCLUDE_DIRS}
+    ${BOOST_INCLUDE_DIRS}
 )
 
 add_library( ${PROJECT_NAME} SHARED
     advgetopt.cpp
+    conf_file.cpp
+    log.cpp
+    option_info.cpp
+    utils.cpp
+    validator.cpp
+    version.cpp
 )
 
 
@@ -76,7 +83,12 @@ install(
 install(
     FILES
         advgetopt.h
+        conf_file.h
         exception.h
+        log.h
+        option_info.h
+        utils.h
+        validator.h
         ${CMAKE_CURRENT_BINARY_DIR}/version.h
     DESTINATION
         include/advgetopt
