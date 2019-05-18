@@ -6,6 +6,12 @@ advgetopt (1.2.0.0~xenial) xenial; urgency=high
    - Made exceptions derive from our libexcept::exception_t class.
    - Moved the version declaration in a separate header.
    - Bumped version to 1.2 (it won't exactly be compatible with 1.1.x anymore.)
+  * Added missing BOOST dependency in the CMakeLists.txt.
+  * Added an ./mk script to recompile quickly.
+  * Broke up the large advgetopt.cpp single file in many sub-objects/files.
+  * Removed the exit() call from the usage() function. Now it returns a string.
+  * Added a logger which by defaults prints in stderr.
+  * Changed many structures.
 
  -- Alexis Wilke <alexis@m2osw.com>  Mon, 13 May 2019 00:03:40 -0800
 
