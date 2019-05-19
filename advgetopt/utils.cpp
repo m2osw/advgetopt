@@ -117,36 +117,71 @@ void split_string(std::string const & str
     std::string::size_type start(pos);
     while(pos < str.length())
     {
-        for(auto const & sep : separators)
+        if(pos == start
+        && (str[pos] == '\'' || str[pos] == '"'))
         {
-            if(str.length() - pos >= sep.length())
+            // quoted parameters are handled without the separators
+            //
+            char const quote(str[pos]);
+            for(++pos; pos < str.length(); ++pos)
             {
-                if(str.compare(pos, sep.length(), sep) == 0)
+                if(str[pos] == quote)
                 {
-                    // match! cut here
-                    //
-                    if(start < pos)
-                    {
-                        std::string v(unquote(str.substr(start, pos - start)));
-                        boost::trim(v);
-                        if(!v.empty())
-                        {
-                            result.push_back(v);
-                        }
-                    }
-                    pos += sep.length();
-                    start = pos;
-                    continue;
+                    break;
                 }
             }
-        }
 
-        ++pos;
+            std::string v(str.substr(start + 1, pos - (start + 1)));
+            if(!v.empty())
+            {
+                result.push_back(v);
+            }
+            if(pos < str.length())
+            {
+                // skip the closing quote
+                //
+                ++pos;
+            }
+            start = pos;
+        }
+        else
+        {
+            bool found(false);
+            for(auto const & sep : separators)
+            {
+                if(str.length() - pos >= sep.length())
+                {
+                    if(str.compare(pos, sep.length(), sep) == 0)
+                    {
+                        // match! cut here
+                        //
+                        if(start < pos)
+                        {
+                            std::string v(str.substr(start, pos - start));
+                            boost::trim(v);
+                            if(!v.empty())
+                            {
+                                result.push_back(v);
+                            }
+                        }
+                        pos += sep.length();
+                        start = pos;
+                        found = true;
+                        break;
+                    }
+                }
+            }
+
+            if(!found)
+            {
+                ++pos;
+            }
+        }
     }
 
     if(start < pos)
     {
-        std::string v(unquote(str.substr(start, pos - start)));
+        std::string v(str.substr(start, pos - start));
         boost::trim(v);
         if(!v.empty())
         {

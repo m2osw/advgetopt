@@ -77,13 +77,6 @@ void set_log_callback(log_callback callback)
 }
 
 
-logger & logger::nobr()
-{
-    f_break_lines = false;
-    return *this;
-}
-
-
 logger & logger::end()
 {
     if(g_log_callback != nullptr)

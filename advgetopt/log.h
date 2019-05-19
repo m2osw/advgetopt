@@ -84,18 +84,14 @@ public:
         return *this;
     }
 
-    logger &            nobr();
     logger &            end();
 
 private:
-
     log_level_t         f_level = log_level_t::error;
-    bool                f_break_lines = true;
     std::stringstream   f_log = std::stringstream();
 };
 
 
-inline logger & nobr(logger & l) { return l.nobr(); }
 inline logger & end(logger & l) { return l.end(); }
 
 

@@ -1,4 +1,4 @@
-advgetopt (1.2.0.0~xenial) xenial; urgency=high
+advgetopt (2.0.0.0~xenial) xenial; urgency=high
 
   * Reorganized the project to incorporate the snap_config.cpp/h.
    - Moved the src to advgetopt.
@@ -12,6 +12,7 @@ advgetopt (1.2.0.0~xenial) xenial; urgency=high
   * Removed the exit() call from the usage() function. Now it returns a string.
   * Added a logger which by defaults prints in stderr.
   * Changed many structures.
+  * Updated the tests and added a coverage script.
 
  -- Alexis Wilke <alexis@m2osw.com>  Mon, 13 May 2019 00:03:40 -0800
 

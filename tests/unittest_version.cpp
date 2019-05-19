@@ -1,6 +1,6 @@
 /*
- * File:
- *    advgetopt/version.h.in -- a replacement to the Unix getopt() implementation
+ * Files:
+ *    tests/unittest_advgetopt.cpp
  *
  * License:
  *    Copyright (c) 2006-2019  Made to Order Software Corp.  All Rights Reserved
@@ -24,34 +24,44 @@
  *
  * Authors:
  *    Alexis Wilke   alexis@m2osw.com
- *    Doug Barbieri  doug@m2osw.com
- */
-#pragma once
-
-/** \file
- * \brief Definitions of the advanced getopt class version.
- *
- * This header includes the advgetopt library version and functions you
- * can use to check the current version of the library.
  */
 
+// self
+//
+#include "unittest_main.h"
 
-#define    LIBADVGETOPT_VERSION_MAJOR   @LIBADVGETOPT_VERSION_MAJOR@
-#define    LIBADVGETOPT_VERSION_MINOR   @LIBADVGETOPT_VERSION_MINOR@
-#define    LIBADVGETOPT_VERSION_PATCH   @LIBADVGETOPT_VERSION_PATCH@
-#define    LIBADVGETOPT_VERSION_STRING  "@LIBADVGETOPT_VERSION_MAJOR@.@LIBADVGETOPT_VERSION_MINOR@.@LIBADVGETOPT_VERSION_PATCH@"
+// advgetopt lib
+//
+//#include "advgetopt/advgetopt.h"
+#include "advgetopt/version.h"
+//#include "advgetopt/log.h"
 
-namespace advgetopt
+// C++ lib
+//
+#include <cstring>
+#include <cmath>
+#include <sstream>
+#include <fstream>
+
+// C lib
+//
+#include <time.h>
+
+
+namespace
 {
 
 
-int             get_major_version();
-int             get_release_version();
-int             get_patch_version();
-char const *    get_version_string();
+} // no name namespace
 
 
+CATCH_TEST_CASE( "Version", "version" )
+{
+    CATCH_REQUIRE(advgetopt::get_major_version() == LIBADVGETOPT_VERSION_MAJOR);
+    CATCH_REQUIRE(advgetopt::get_release_version() == LIBADVGETOPT_VERSION_MINOR);
+    CATCH_REQUIRE(advgetopt::get_patch_version() == LIBADVGETOPT_VERSION_PATCH);
+    CATCH_REQUIRE(strcmp(advgetopt::get_version_string(), LIBADVGETOPT_VERSION_STRING) == 0);
+}
 
-} // advgetopt namespace
 
 // vim: ts=4 sw=4 et

@@ -967,12 +967,6 @@ void getopt::link_aliases()
  * arguments are viewed as command line arguments and the corresponding
  * options must include the GETOPT_FLAG_COMMAND_LINE flag.
  *
- * \exception getopt_exception_exiting
- * This function is throws on an error. It uses the special exception
- * named which means that exit() can be called if safe in your environment
- * (i.e. you have multiple threads running, exit() is not safe until you
- * stop all the other threads.)
- *
  * Variables get overridden by the newest values found in the list of
  * arguments.
  *
@@ -987,8 +981,8 @@ void getopt::link_aliases()
  * The code may find some errors in the tables passed to the advgetopt
  * environment (i.e. a duplicate definition.) When such errors are
  * detected, an exception is raised. Errors found on the command line
- * also generate an exception unless you called exit(1) in your log
- * callback. The exception raised is the getopt_exception_exiting.
+ * generate a log message. If you setup a callback, you can then decide
+ * to either call exit(1) or raise your own exception.
  *
  * \note
  * The function does NOT check whether the list of arguments (argv) is

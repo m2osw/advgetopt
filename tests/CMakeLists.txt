@@ -55,6 +55,7 @@ if( CATCH_FOUND )
     add_executable( ${PROJECT_NAME}
         unittest_main.cpp
         unittest_advgetopt.cpp
+        unittest_version.cpp
     )
 
     target_link_libraries( ${PROJECT_NAME}

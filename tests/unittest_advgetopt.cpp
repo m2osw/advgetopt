@@ -2552,6 +2552,87 @@ void AdvGetOptUnitTests::valid_config_files_extra()
         CATCH_REQUIRE(opt.get_program_fullname() == "tests/unittests/AdvGetOptUnitTests::valid_config_files_extra");
     }
 
+    // another one with some quotes
+    {
+        unittest::obj_setenv env(const_cast<char *>("ADVGETOPT_TEST_OPTIONS=- --verbose -- 'more files' --string \"hard work in env\""));
+        {
+            std::ofstream config_file;
+            config_file.open(config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "number      =\t\t\t\t1111\t\t\t\t\n"
+                "string      =     strange    \n"
+                " filenames =\tfoo\t\"bar tender\" \t' blah '\n"
+            ;
+        }
+
+        char const * sub_cargv[] =
+        {
+            "tests/unittests/AdvGetOptUnitTests::valid_config_files_extra",
+            "--valid-parameter",
+            "--",
+            "'extra stuff '",
+            "-file",
+            "\"long names\"",
+            "-", // copied as is since we're after --
+            nullptr
+        };
+        int const sub_argc(sizeof(sub_cargv) / sizeof(sub_cargv[0]) - 1);
+        char ** sub_argv = const_cast<char **>(sub_cargv);
+
+        advgetopt::getopt opt(valid_options_with_multiple, sub_argc, sub_argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+
+        // the valid parameter
+        CATCH_REQUIRE(opt.is_defined("valid-parameter"));
+        CATCH_REQUIRE(opt.get_default("valid-parameter").empty());
+        CATCH_REQUIRE(opt.size("valid-parameter") == 1);
+
+        // a valid number
+        CATCH_REQUIRE(opt.is_defined("number"));
+        CATCH_REQUIRE(opt.get_long("number") == 1111);
+        CATCH_REQUIRE(opt.get_default("number") == "111");
+        CATCH_REQUIRE(opt.size("number") == 1);
+
+        // a valid string
+        CATCH_REQUIRE(opt.is_defined("string"));
+        CATCH_REQUIRE(opt.get_string("string") == "strange");
+        CATCH_REQUIRE(opt.get_default("string") == "the default string");
+        CATCH_REQUIRE(opt.size("string") == 1);
+
+        // verbosity
+        CATCH_REQUIRE(opt.is_defined("verbose"));
+        CATCH_REQUIRE(opt.get_string("verbose") == "");
+        CATCH_REQUIRE(opt.get_default("verbose").empty());
+        CATCH_REQUIRE(opt.size("verbose") == 1);
+
+        // filenames
+        CATCH_REQUIRE(opt.is_defined("filenames"));
+        CATCH_REQUIRE(opt.get_string("filenames") == "foo"); // same as index = 0
+        CATCH_REQUIRE(opt.get_string("filenames",  0) == "foo");
+        CATCH_REQUIRE(opt.get_string("filenames",  1) == "bar tender");
+        CATCH_REQUIRE(opt.get_string("filenames",  2) == " blah ");
+        CATCH_REQUIRE(opt.get_string("filenames",  3) == "-");
+        CATCH_REQUIRE(opt.get_string("filenames",  4) == "more files");
+        CATCH_REQUIRE(opt.get_string("filenames",  5) == "--string");
+        CATCH_REQUIRE(opt.get_string("filenames",  6) == "hard work in env");
+        CATCH_REQUIRE(opt.get_string("filenames",  7) == "'extra stuff '");
+        CATCH_REQUIRE(opt.get_string("filenames",  8) == "-file");
+        CATCH_REQUIRE(opt.get_string("filenames",  9) == "\"long names\"");
+        CATCH_REQUIRE(opt.get_string("filenames", 10) == "-");
+        CATCH_REQUIRE(opt.get_default("filenames") == "a.out");
+        CATCH_REQUIRE(opt.size("filenames") == 11);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "AdvGetOptUnitTests::valid_config_files_extra");
+        CATCH_REQUIRE(opt.get_program_fullname() == "tests/unittests/AdvGetOptUnitTests::valid_config_files_extra");
+    }
+
     // check that multiple flags can be used one after another
     advgetopt::option const valid_short_options_list[] =
     {

@@ -86,15 +86,6 @@ public:
 };
 
 
-// usage() was called and the library was compiled in debug mode
-class getopt_exception_exiting : public getopt_exception
-{
-public:
-    getopt_exception_exiting(std::string const & msg) : getopt_exception(msg) {}
-};
-
-
-
 
 }   // namespace advgetopt
 

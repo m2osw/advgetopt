@@ -30,10 +30,6 @@
 #      THE SOFTWARE.
 #
 
-set(LIBADVGETOPT_VERSION_MAJOR 1)
-set(LIBADVGETOPT_VERSION_MINOR 1)
-set(LIBADVGETOPT_VERSION_PATCH 0)
-
 cmake_minimum_required(VERSION 2.8.4)
 
 project(advgetopt_library)
@@ -44,6 +40,8 @@ find_package( Boost            REQUIRED )
 find_package( SnapCMakeModules REQUIRED )
 find_package( LibExcept        REQUIRED )
 find_package( SnapDoxygen               )
+
+SnapGetVersion( LIBADVGETOPT ${CMAKE_CURRENT_SOURCE_DIR} )
 
 if( "${CMAKE_BUILD_TYPE}" STREQUAL "Debug" )
     message("Debug is in effect for advgetopt!")
