@@ -45,6 +45,7 @@ fi
 
 start_date=`date`
 SOURCE=`pwd`
+TEMPDIR=${SOURCE}/tmp/advgetopt
 VERSION=`dpkg-parsechangelog --show-field Version | sed -e 's/~.*//' -e 's/\(^[0-9]\+\.[0-9]\+\.[0-9]\+\).*/\1/'`
 echo "***"
 echo "*** advgetopt coverage for version $VERSION ($start_date)"
@@ -52,7 +53,6 @@ echo "***"
 mkdir -p tmp/coverage
 rm -rf tmp/coverage/*
 cd tmp/coverage
-TEMPDIR=`pwd`
 mkdir BUILD
 cd BUILD
 # request coverage in this build

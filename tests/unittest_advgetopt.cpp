@@ -967,7 +967,9 @@ void AdvGetOptUnitTests::invalid_parameters()
             ;
         }
         {
-            g_expected_logs.push_back("error: option name from \"valid param\" on line 2 in configuration file \"/tmp/advgetopt/.config/advgetopt.config\" cannot include a space, missing assignment operator?");
+            g_expected_logs.push_back("error: option name from \"valid param\" on line 2 in configuration file \""
+                                    + config_filename
+                                    + "\" cannot include a space, missing assignment operator?");
             g_expected_logs.push_back("error: option --ignore-parameters is not supported.");
             advgetopt::getopt opt(valid_options, argc, argv);
         }
@@ -985,7 +987,9 @@ void AdvGetOptUnitTests::invalid_parameters()
             ;
         }
         {
-            g_expected_logs.push_back("error: option name from \" valid param \" on line 2 in configuration file \"/tmp/advgetopt/.config/advgetopt.config\" cannot include a space, missing assignment operator?");
+            g_expected_logs.push_back("error: option name from \" valid param \" on line 2 in configuration file \""
+                                    + config_filename
+                                    + "\" cannot include a space, missing assignment operator?");
             g_expected_logs.push_back("error: option --ignore-parameters is not supported.");
             advgetopt::getopt opt(valid_options, argc, argv);
         }
@@ -1003,7 +1007,9 @@ void AdvGetOptUnitTests::invalid_parameters()
             ;
         }
         {
-            g_expected_logs.push_back("error: no option name in \" = valid param\" on line 2 from configuration file \"/tmp/advgetopt/.config/advgetopt.config\", missing name before = sign?");
+            g_expected_logs.push_back("error: no option name in \" = valid param\" on line 2 from configuration file \""
+                                    + config_filename
+                                    + "\", missing name before = sign?");
             g_expected_logs.push_back("error: option --ignore-parameters is not supported.");
             advgetopt::getopt opt(valid_options, argc, argv);
         }
@@ -1021,7 +1027,9 @@ void AdvGetOptUnitTests::invalid_parameters()
             ;
         }
         {
-            g_expected_logs.push_back("error: option names in configuration files cannot start with a dash in \"--valid=param\" on line 2 from configuration file \"/tmp/advgetopt/.config/advgetopt.config\".");
+            g_expected_logs.push_back("error: option names in configuration files cannot start with a dash in \"--valid=param\" on line 2 from configuration file \""
+                                    + config_filename
+                                    + "\".");
             g_expected_logs.push_back("error: option --ignore-parameters is not supported.");
             advgetopt::getopt opt(valid_options, argc, argv);
         }
@@ -1039,7 +1047,9 @@ void AdvGetOptUnitTests::invalid_parameters()
             ;
         }
         {
-            g_expected_logs.push_back("error: unknown option \"invalid\" found in configuration file \"/tmp/advgetopt/.config/advgetopt.config\".");
+            g_expected_logs.push_back("error: unknown option \"invalid\" found in configuration file \""
+                                    + config_filename
+                                    + "\".");
             g_expected_logs.push_back("error: option --ignore-parameters is not supported.");
             advgetopt::getopt opt(valid_options, argc, argv);
         }
@@ -1057,7 +1067,9 @@ void AdvGetOptUnitTests::invalid_parameters()
             ;
         }
         {
-            g_expected_logs.push_back("error: option \"command\" is not supported in configuration files (found in \"/tmp/advgetopt/.config/advgetopt.config\").");
+            g_expected_logs.push_back("error: option \"command\" is not supported in configuration files (found in \""
+                                    + config_filename
+                                    + "\").");
             g_expected_logs.push_back("error: option --ignore-parameters is not supported.");
             advgetopt::getopt opt(valid_options, argc, argv);
         }
