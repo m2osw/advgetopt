@@ -72,7 +72,7 @@ constexpr flag_t    GETOPT_ENVIRONMENT_FLAG_DYNAMIC_PARAMETERS  = 0x0001;
 struct options_environment
 {
     char const *                f_project_name = nullptr;               // project/application name--used as filename for the .conf files
-    option *                    f_options = nullptr;                    // raw options
+    option const *              f_options = nullptr;                    // raw options
     char const *                f_environment_variable_name = nullptr;  // environment variable with additional options
     char const **               f_configuration_files = nullptr;        // nullptr terminated array of full paths to configuration files
     char const *                f_configuration_filename = nullptr;     // the configuration filename to search in f_configuration_directories
@@ -95,7 +95,7 @@ class getopt
 public:
     typedef std::shared_ptr<getopt>     pointer_t;
 
-                            getopt(options_environment const * opts
+                            getopt(options_environment const & opts
                                  , int argc
                                  , char * argv[]);
 
@@ -109,6 +109,8 @@ public:
                                     , char * argv[]
                                     , bool only_environment_variable);
 
+    option_info::pointer_t  get_option(std::string const & name) const;
+    option_info::pointer_t  get_option(short_name_t name) const;
     bool                    is_defined(std::string const & name) const;
     size_t                  size(std::string const & name) const;
     std::string             get_default(std::string const & name) const;

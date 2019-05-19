@@ -45,7 +45,8 @@
 
 namespace unittest
 {
-    std::string   tmp_dir;
+    std::string     g_tmp_dir;
+    bool            g_verbose;
 }
 
 
@@ -56,6 +57,7 @@ namespace
         bool        help = false;
         int         seed = 0;
         std::string tmp = std::string();
+        bool        verbose = false;
         bool        version = false;
     };
 
@@ -92,6 +94,10 @@ int unittest_main(int argc, char * argv[])
     cli["-T"]["--tmp"]
         .describe("path to a temporary directory")
         .bind(&UnitTestCLData::tmp, "path");
+
+    cli["-v"]["--verbose"]
+        .describe("make the test more verbose")
+        .bind(&UnitTestCLData::verbose);
 
     cli["-V"]["--version"]
         .describe("print out the advgetopt library version these unit tests pertain to")
@@ -135,10 +141,10 @@ int unittest_main(int argc, char * argv[])
 
     if( !configData.tmp.empty() )
     {
-        unittest::tmp_dir = configData.tmp;
+        unittest::g_tmp_dir = configData.tmp;
         remove_from_args( arg_list, "--tmp", "-T" );
 
-        if(unittest::tmp_dir == "/tmp")
+        if(unittest::g_tmp_dir == "/tmp")
         {
             std::cerr << "fatal error: you must specify a sub-directory for your temporary directory such as /tmp/advgetopt";
             exit(1);
@@ -146,26 +152,32 @@ int unittest_main(int argc, char * argv[])
     }
     else
     {
-        unittest::tmp_dir = "/tmp/advgetopt";
+        unittest::g_tmp_dir = "/tmp/advgetopt";
+    }
+
+    unittest::g_verbose = configData.verbose;
+    if( unittest::g_verbose )
+    {
+        remove_from_args( arg_list, "--verbose", "-v" );
     }
 
     // delete the existing directory
     {
         std::stringstream ss;
-        ss << "rm -rf \"" << unittest::tmp_dir << "\"";
+        ss << "rm -rf \"" << unittest::g_tmp_dir << "\"";
         if(system(ss.str().c_str()) != 0)
         {
-            std::cerr << "fatal error: could not delete temporary directory \"" << unittest::tmp_dir << "\".";
+            std::cerr << "fatal error: could not delete temporary directory \"" << unittest::g_tmp_dir << "\".";
             exit(1);
         }
     }
     // then re-create the directory
     {
         std::stringstream ss;
-        ss << "mkdir -p \"" << unittest::tmp_dir << "\"";
+        ss << "mkdir -p \"" << unittest::g_tmp_dir << "\"";
         if(system(ss.str().c_str()) != 0)
         {
-            std::cerr << "fatal error: could not create temporary directory \"" << unittest::tmp_dir << "\".";
+            std::cerr << "fatal error: could not create temporary directory \"" << unittest::g_tmp_dir << "\".";
             exit(1);
         }
     }

@@ -8,6 +8,15 @@ case $1 in
 	make -C ../../../BUILD/contrib/advgetopt 2>&1 | less -SR
 	;;
 
+"-t")
+	(
+		if make -C ../../../BUILD/contrib/advgetopt
+		then
+			../../../BUILD/contrib/advgetopt/tests/unittest
+		fi
+	) 2>&1 | less -SR
+	;;
+
 *)
 	make -C ../../../BUILD/contrib/advgetopt
 	;;

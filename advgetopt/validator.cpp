@@ -35,11 +35,86 @@
  * had a minimum version or had some special case options when you
  * want to be able to support various versions.
  */
+
+// self
+//
 #include    "advgetopt/validator.h"
+
+// advgetopt lib
+//
+#include    "advgetopt/exception.h"
+#include    "advgetopt/log.h"
+
 
 
 namespace advgetopt
 {
+
+
+
+namespace
+{
+
+
+std::map<std::string, validator_factory const *>      g_validator_factories;
+
+
+class validator_integer_factory
+    : public validator_factory
+{
+public:
+    validator_integer_factory()
+    {
+        validator::register_validator(*this);
+    }
+
+    virtual std::string get_name() const
+    {
+        return std::string("integer");
+    }
+
+    virtual std::shared_ptr<validator> create(std::string const & data) const
+    {
+        static_cast<void>(data); // ignore `data`
+        return std::make_shared<validator_integer>();
+    }
+};
+
+
+class validator_regex_factory
+    : public validator_factory
+{
+public:
+    validator_regex_factory()
+    {
+        validator::register_validator(*this);
+    }
+
+    virtual std::string get_name() const
+    {
+        return std::string("regex");
+    }
+
+    virtual std::shared_ptr<validator> create(std::string const & data) const
+    {
+        return std::make_shared<validator_regex>(data);
+    }
+};
+
+
+} // no name namespace
+
+
+
+/** \brief The destructor to ease derived classes.
+ *
+ * At this point this destructor does nothing more than help with the
+ * virtual table.
+ */
+validator_factory::~validator_factory()
+{
+}
+
 
 
 
@@ -81,6 +156,30 @@ validator::~validator()
  */
 
 
+void validator::register_validator(validator_factory const & factory)
+{
+    auto it(g_validator_factories.find(factory.get_name()));
+    if(it != g_validator_factories.end())
+    {
+        throw getopt_exception_logic(
+                  "you have two or more validation factories named \""
+                + factory.get_name()
+                + "\".");
+    }
+    g_validator_factories[factory.get_name()] = &factory;
+}
+
+
+validator::pointer_t validator::create(std::string const & name, std::string const & data)
+{
+    auto it(g_validator_factories.find(name));
+    if(it == g_validator_factories.end())
+    {
+        return validator::pointer_t();
+    }
+
+    return it->second->create(data);
+}
 
 
 
@@ -160,6 +259,83 @@ bool validator_integer::validate(std::string const & value) const
     }
 }
 
+
+
+
+validator_regex::validator_regex(std::string const & regex)
+{
+    std::regex::flag_type flags =  std::regex_constants::extended;
+    if(regex.length() >= 2
+    && regex[0] == '/')
+    {
+        auto it(regex.end());
+        for(--it; it != regex.begin(); --it)
+        {
+            if(*it == '/')
+            {
+                break;
+            }
+            switch(*it)
+            {
+            case 'i':
+                flags |= std::regex_constants::icase;
+                break;
+
+            default:
+                log << log_level_t::error
+                    << "unsupported regex flag "
+                    << *it
+                    << " in regular expression \""
+                    << regex
+                    << "\"."
+                    << end;
+                break;
+
+            }
+        }
+        if(it == regex.begin())
+        {
+            log << log_level_t::error
+                << "invalid regex definition, ending / is missing in \""
+                << regex
+                << "\"."
+                << end;
+        }
+        f_regex = std::regex(std::string(regex.begin() + 1, it), flags);
+    }
+    else
+    {
+        f_regex = std::regex(regex, flags);
+    }
+}
+
+
+/** \brief Return the name of this validator.
+ *
+ * This function returns "regex".
+ *
+ * \return "regex".
+ */
+std::string const validator_regex::name() const
+{
+    return std::string("regex");
+}
+
+
+/** \brief Check the value against a regular expression.
+ *
+ * This function is used to match the value of an argument against a
+ * regular expression. It returns true when it does match.
+ *
+ * \param[in] value  The value to be validated.
+ *
+ * \return true on a match.
+ */
+bool validator_regex::validate(std::string const & value) const
+{
+    std::smatch info;
+    return std::regex_match(value, info, f_regex);
+}
 
 
 

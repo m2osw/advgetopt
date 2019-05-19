@@ -110,8 +110,8 @@ std::string unquote(std::string const & s)
  * \param[in] separators  The vector of strings used as separators.
  */
 void split_string(std::string const & str
-                             , string_list_t & result
-                             , string_list_t const & separators)
+                , string_list_t & result
+                , string_list_t const & separators)
 {
     std::string::size_type pos(0);
     std::string::size_type start(pos);
@@ -128,7 +128,7 @@ void split_string(std::string const & str
                     if(start < pos)
                     {
                         std::string v(unquote(str.substr(start, pos - start)));
-                        boost::trim_copy(v);
+                        boost::trim(v);
                         if(!v.empty())
                         {
                             result.push_back(v);
@@ -147,7 +147,7 @@ void split_string(std::string const & str
     if(start < pos)
     {
         std::string v(unquote(str.substr(start, pos - start)));
-        boost::trim_copy(v);
+        boost::trim(v);
         if(!v.empty())
         {
             result.push_back(v);

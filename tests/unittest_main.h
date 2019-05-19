@@ -48,7 +48,8 @@
 namespace unittest
 {
 
-extern std::string   tmp_dir;
+extern std::string      g_tmp_dir;
+extern bool             g_verbose;
 
 class obj_setenv
 {

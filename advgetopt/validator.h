@@ -39,10 +39,8 @@
  * by specify the \em type of data it supports.
  */
 
-//#include    <limits>
-//#include    <map>
 #include    <memory>
-//#include    <vector>
+#include    <regex>
 
 
 namespace advgetopt
@@ -57,9 +55,9 @@ class validator_factory
 public:
     virtual                     ~validator_factory();
 
-    virtual std::string const & get_name() const = 0;
+    virtual std::string         get_name() const = 0;
     virtual std::shared_ptr<validator>
-                                create() const = 0;
+                                create(std::string const & data) const = 0;
 };
 
 
@@ -76,7 +74,7 @@ public:
     virtual bool                validate(std::string const & value) const = 0;
 
     static void                 register_validator(validator_factory const & factory);
-    static pointer_t            create(std::string const & name);
+    static pointer_t            create(std::string const & name, std::string const & data);
 };
 
 
@@ -103,7 +101,7 @@ public:
     virtual bool                validate(std::string const & value) const;
 
 private:
-    std::string                 f_regex = std::string();
+    std::regex                  f_regex = std::regex();
 };
 
 

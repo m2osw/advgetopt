@@ -43,7 +43,6 @@ if( CATCH_FOUND )
 
     add_definitions(
         -DCATCH_CONFIG_PREFIX_ALL
-        -DADVGETOPT_THROW_FOR_EXIT
     )
 
     include_directories(

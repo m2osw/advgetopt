@@ -37,9 +37,8 @@
 
 // C++ lib
 //
-//#include    <map>
+#include    <iostream>
 #include    <sstream>
-//#include    <vector>
 
 
 namespace advgetopt
@@ -67,14 +66,29 @@ class logger
 {
 public:
     template<typename T>
-    logger &            operator << (T const & v);
+    logger & operator << (T const & v)
+    {
+        f_log << v;
+        return *this;
+    }
 
-    logger &            operator << (log_level_t const & level);
+    logger & operator << (log_level_t const & level)
+    {
+        f_level = level;
+        return *this;
+    }
+
+    logger & operator << (logger & (*func)(logger &))
+    {
+        func(*this);
+        return *this;
+    }
 
     logger &            nobr();
     logger &            end();
 
 private:
+
     log_level_t         f_level = log_level_t::error;
     bool                f_break_lines = true;
     std::stringstream   f_log = std::stringstream();

@@ -170,9 +170,8 @@ short_name_t option_info::get_short_name() const
  */
 bool option_info::is_default_option() const
 {
-    return f_name.size() == 2
-        && f_name[0] == '-'
-        && f_name[1] == '-';
+    return has_flag(GETOPT_FLAG_DEFAULT_OPTION)
+        || (f_name.size() == 2 && f_name[0] == '-' && f_name[1] == '-');
 }
 
 
@@ -254,6 +253,27 @@ flag_t option_info::get_flags() const
 bool option_info::has_flag(flag_t flag) const
 {
     return (f_flags & flag) != 0;
+}
+
+
+/** \brief Check whether this option has a default value.
+ *
+ * Whenever an option is given a default value, the GETOPT_FLAG_HAS_DEFAULT
+ * flag gets set. This allows us to distinguish between an option with a
+ * default which is the empty string and an option without a default.
+ *
+ * The set_default() forces the flag to be set.
+ *
+ * The remove_default() clears the flag.
+ *
+ * \return true if the flag is set, false otherwise.
+ *
+ * \sa set_default()
+ * \sa remove_default()
+ */
+bool option_info::has_default() const
+{
+    return (f_flags & GETOPT_FLAG_HAS_DEFAULT) != 0;
 }
 
 
@@ -753,7 +773,14 @@ void option_info::add_value(std::string const & value)
         // always replace the existing value,
         // we can't have more than one
         //
-        f_value[0] = value;
+        if(f_value.empty())
+        {
+            f_value.push_back(value);
+        }
+        else
+        {
+            f_value[0] = value;
+        }
     }
     else
     {
@@ -794,7 +821,14 @@ void option_info::set_value(int idx, std::string const & value)
                     + ") so you can't set this value (try add_value() maybe?).");
     }
 
-    f_value[idx] = value;
+    if(static_cast<size_t>(idx) == f_value.size())
+    {
+        f_value.push_back(value);
+    }
+    else
+    {
+        f_value[idx] = value;
+    }
 }
 
 
@@ -932,10 +966,10 @@ long option_info::get_long(int idx) const
         //
         for(auto const & str : f_value)
         {
-            char * end;
+            char * e;
             char const * s(str.c_str());
-            f_integer.push_back(strtol(s, &end, 10));
-            if(end != s + str.length())
+            f_integer.push_back(strtol(s, &e, 10));
+            if(e != s + str.length())
             {
                 f_integer.clear();
 

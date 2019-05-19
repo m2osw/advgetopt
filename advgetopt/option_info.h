@@ -67,10 +67,11 @@ static constexpr flag_t     GETOPT_FLAG_ENVIRONMENT_VARIABLE = static_cast<flag_
 static constexpr flag_t     GETOPT_FLAG_CONFIGURATION_FILE   = static_cast<flag_t>(0x00000004);  // acceptable in configuration files
 
 static constexpr flag_t     GETOPT_FLAG_ALIAS                = static_cast<flag_t>(0x00000010);  // alias, result in another option defined in "help" string
-static constexpr flag_t     GETOPT_FLAG_FLAG                 = static_cast<flag_t>(0x00000020);  // no parameter allowed (-h)
+static constexpr flag_t     GETOPT_FLAG_FLAG                 = static_cast<flag_t>(0x00000020);  // no parameter allowed (--help)
 static constexpr flag_t     GETOPT_FLAG_REQUIRED             = static_cast<flag_t>(0x00000040);  // required (--host 127.0.0.1)
 static constexpr flag_t     GETOPT_FLAG_MULTIPLE             = static_cast<flag_t>(0x00000080);  // any number of parameter is allowed (--files a b c d ...)
-static constexpr flag_t     GETOPT_FLAG_HAS_DEFAULT          = static_cast<flag_t>(0x00000100);  // default value is defined
+static constexpr flag_t     GETOPT_FLAG_DEFAULT_OPTION       = static_cast<flag_t>(0x00000100);  // where entries go by default (a.k.a. after "--")
+static constexpr flag_t     GETOPT_FLAG_HAS_DEFAULT          = static_cast<flag_t>(0x00000200);  // default value is defined
 
 static constexpr flag_t     GETOPT_FLAG_SHOW_USAGE_ON_ERROR  = static_cast<flag_t>(0x00001000);  // show in usage() when an error occurs
 static constexpr flag_t     GETOPT_FLAG_SHOW_ALL             = static_cast<flag_t>(0x00002000);  // show in usage() when --long-help is used

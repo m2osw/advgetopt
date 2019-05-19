@@ -43,7 +43,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 find_package( Boost            REQUIRED )
 find_package( SnapCMakeModules REQUIRED )
 find_package( LibExcept        REQUIRED )
-find_package( SnapDoxygen )
+find_package( SnapDoxygen               )
 
 if( "${CMAKE_BUILD_TYPE}" STREQUAL "Debug" )
     message("Debug is in effect for advgetopt!")

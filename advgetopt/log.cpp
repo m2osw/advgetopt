@@ -77,22 +77,6 @@ void set_log_callback(log_callback callback)
 }
 
 
-template<typename T>
-logger & logger::operator << (T const & v)
-{
-    std::string const old(f_log.str());
-    f_log << v;
-    return *this;
-}
-
-
-logger & logger::operator << (log_level_t const & level)
-{
-    f_level = level;
-    return *this;
-}
-
-
 logger & logger::nobr()
 {
     f_break_lines = false;
@@ -111,7 +95,7 @@ logger & logger::end()
         std::cerr << to_string(f_level) << ": " << f_log.str() << std::endl;
     }
 
-    f_log.clear();
+    f_log.str(std::string());
 
     return *this;
 }
@@ -122,19 +106,19 @@ std::string to_string(log_level_t level)
     switch(level)
     {
     case log_level_t::debug:
-        return "debug:";
+        return "debug";
 
     case log_level_t::info:
-        return "info:";
+        return "info";
 
     case log_level_t::warning:
-        return "warning:";
+        return "warning";
 
     case log_level_t::error:
-        return "error:";
+        return "error";
 
     case log_level_t::fatal:
-        return "fatal:";
+        return "fatal";
 
     }
 

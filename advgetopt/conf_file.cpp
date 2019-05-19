@@ -145,15 +145,25 @@ bool conf_file::get_line(std::ifstream & in, std::string & line)
         {
             return false;
         }
-
         if(c == ';'
         && f_line_continuation == line_continuation_t::semicolon)
         {
             return true;
         }
 
-        while(c == '\n')
+        while(c == '\n' || c == '\r')
         {
+            if(c == '\r')
+            {
+                c = getc(in);
+                if(c != '\n')
+                {
+                    ungetc(c);
+                }
+                c = '\n';
+            }
+
+            ++f_line;
             switch(f_line_continuation)
             {
             case line_continuation_t::single_line:
