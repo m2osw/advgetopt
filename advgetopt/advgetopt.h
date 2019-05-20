@@ -73,6 +73,7 @@ struct options_environment
 {
     char const *                f_project_name = nullptr;               // project/application name--used as filename for the .conf files
     option const *              f_options = nullptr;                    // raw options
+    char const *                f_options_files_directory = nullptr;    // directory to check for option files (default "/usr/shared/advgetopt")
     char const *                f_environment_variable_name = nullptr;  // environment variable with additional options
     char const **               f_configuration_files = nullptr;        // nullptr terminated array of full paths to configuration files
     char const *                f_configuration_filename = nullptr;     // the configuration filename to search in f_configuration_directories
@@ -128,7 +129,7 @@ public:
     size_t                  get_configuration_filename_size() const;
     std::string             get_configuration_filename(int idx) const;
 
-    std::string             usage(flag_t show) const;
+    std::string             usage(flag_t show = GETOPT_FLAG_SHOW_ALL) const;
     std::string             process_help_string(char const * help) const;
     static std::string      breakup_line(
                                       std::string line

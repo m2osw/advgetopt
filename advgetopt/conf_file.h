@@ -96,6 +96,7 @@ public:
 
     std::string const &         get_filename() const;
     int                         get_errno() const;
+    sections_t const &          get_sections() const;
     parameters_t const &        get_parameters() const;
     bool                        has_parameter(std::string const & name) const;
     std::string                 get_parameter(std::string const & name) const;

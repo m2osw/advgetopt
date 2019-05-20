@@ -759,40 +759,49 @@ void getopt::parse_options_info()
  */
 void getopt::parse_options_from_file()
 {
-    std::string filename("/usr/share/advgetopt/");
+    std::string filename;
+
+    if(f_options_environment.f_options_files_directory == nullptr
+    || f_options_environment.f_options_files_directory[0] == '\0')
+    {
+        filename = "/usr/share/advgetopt/";
+    }
+    else
+    {
+        filename = f_options_environment.f_options_files_directory;
+        if(filename.back() != '/')
+        {
+            filename += '/';
+        }
+    }
     filename += f_options_environment.f_project_name;
     filename += ".ini";
 
-    conf_file conf(filename);
-    conf_file::parameters_t const & params(conf.get_parameters());
-    for(auto & p : params)
-    {
-        std::string::size_type pos(p.first.find("::"));
-        if(pos == std::string::npos)
-        {
-            continue;
-        }
 
-        std::string const parameter_option(p.first.substr(pos + 1));
-        if(parameter_option == "")
+    conf_file conf(filename);
+    conf_file::sections_t const & sections(conf.get_sections());
+    for(auto & s : sections)
+    {
+        std::string::size_type pos(s.first.find("::"));
+        if(pos != std::string::npos)
         {
             log << log_level_t::error
-                << "option \""
-                << p.first
-                << "\" is missing a name in \""
+                << "section \""
+                << s.first
+                << "\" includes a section separator (::) in \""
                 << filename
-                << "\"."
+                << "\". We only support one level."
                 << end;
             continue;
         }
 
-        std::string const parameter_name(p.first.substr(0, pos));
+        std::string const parameter_name(s.first);
         std::string const short_name(conf.get_parameter(parameter_name + "::shortname"));
         if(short_name.length() > 1)
         {
             log << log_level_t::error
                 << "option \""
-                << p.first
+                << s.first
                 << "\" has an invalid short name in \""
                 << filename
                 << "\", it can't be more than one character."
@@ -811,11 +820,11 @@ void getopt::parse_options_from_file()
         if(conf.has_parameter(default_name))
         {
             std::string const default_value(conf.get_parameter(default_name));
-            opt->set_default(default_value);
+            opt->set_default(unquote(default_value));
         }
 
-        opt->set_help(conf.get_parameter(parameter_name + "::minimum"));
-        opt->set_help(conf.get_parameter(parameter_name + "::maximum"));
+        opt->set_minimum(conf.get_parameter(parameter_name + "::minimum"));
+        opt->set_maximum(conf.get_parameter(parameter_name + "::maximum"));
         opt->set_help(conf.get_parameter(parameter_name + "::help"));
 
         std::string const validator_name(parameter_name + "::validator");
@@ -839,7 +848,7 @@ void getopt::parse_options_from_file()
                 {
                     log << log_level_t::error
                         << "option \""
-                        << p.first
+                        << s.first
                         << "\" has an invalid validator parameter definition in \""
                         << validator_name
                         << "\", the ')' is missing."

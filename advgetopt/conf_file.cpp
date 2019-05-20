@@ -80,6 +80,12 @@ int conf_file::get_errno() const
 }
 
 
+conf_file::sections_t const & conf_file::get_sections() const
+{
+    return f_sections;
+}
+
+
 conf_file::parameters_t const & conf_file::get_parameters() const
 {
     return f_parameters;
@@ -314,10 +320,12 @@ void conf_file::read_configuration()
                 << end;
             continue;
         }
-        if(*str_name == '-')
+        std::string name(str_name, e - str_name);
+        std::replace(name.begin(), name.end(), '_', '-');
+        if(name[0] == '-')
         {
             log << log_level_t::error
-                << "option names in configuration files cannot start with a dash in \""
+                << "option names in configuration files cannot start with a dash or an underscore in \""
                 << str
                 << "\" on line "
                 << f_line
@@ -327,8 +335,6 @@ void conf_file::read_configuration()
                 << end;
             continue;
         }
-        std::string name(str_name, e - str_name);
-        std::replace(name.begin(), name.end(), '_', '-');
         if(name.length() >= 2
         && name[0] == '['
         && name.back() == ']')
@@ -402,7 +408,7 @@ void conf_file::read_configuration()
             // TODO: add a set_parameter() which verifies that the name is
             //       considered valid
             //
-            f_parameters[name] = current_section + std::string(s, len);
+            f_parameters[current_section + name] = std::string(s, len);
         }
     }
     if(!sections.empty())
