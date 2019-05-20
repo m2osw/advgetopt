@@ -8,6 +8,12 @@ case $1 in
 	make -C ../../../BUILD/contrib/advgetopt 2>&1 | less -SR
 	;;
 
+"-d")
+	rm -rf ../../../BUILD/contrib/advgetopt/doc/advgetopt-doc-2.0.tar.gz \
+	       ../../../BUILD/contrib/advgetopt/doc/advgetopt-doc-2.0
+	make -C ../../../BUILD/contrib/advgetopt
+	;;
+
 "-t")
 	(
 		if make -C ../../../BUILD/contrib/advgetopt

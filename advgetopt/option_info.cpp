@@ -193,7 +193,7 @@ bool option_info::is_default_option() const
  * value will be defined here because it will instead be saved
  * in the aliased option.
  *
- * \param[in] flag  The new flags.
+ * \param[in] flags  The new flags.
  */
 void option_info::set_flags(flag_t flags)
 {
@@ -408,7 +408,7 @@ void option_info::set_help(char const * help)
  *
  * This function returns the help string for this command line option.
  *
- * \important
+ * \warning
  * Note that when a special flag is set, this string may represent something
  * else that a help string.
  *
@@ -753,7 +753,7 @@ string_list_t const & option_info::get_multiple_separators() const
  * Later you can use the size() function to know how many values were
  * added and the get_value() to retrieve the value.
  *
- * \important
+ * \warning
  * This function sets the value at offset 0 if it is already defined and
  * the GETOPT_FLAG_MULTIPLE flag is not set in this option. In other words,
  * you can't use this function to add multiple values if this option does

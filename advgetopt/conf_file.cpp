@@ -487,7 +487,7 @@ bool conf_file::is_comment(char const * s) const
 /** \brief Returns true if \p c is considered to be a whitespace.
  *
  * Our iswspace() function is equivalent to the std::iswspace() function
- * except that '\r' and '\n' are never viewed as white spaces.
+ * except that `'\\r'` and `'\\n'` are never viewed as white spaces.
  *
  * \return true if c is considered to be a white space character.
  */

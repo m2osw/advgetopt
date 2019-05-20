@@ -54,22 +54,34 @@
  * to the list of available options.
  *
  * The library supports multiple levels in your options. The simplest
- * is to use a period like so:
+ * is to use a scope operator like so:
  *
  * \code
- * level1.level2.level3.etc = 123
+ * level1::level2::level3::etc = 123
  * \endcode
  *
- * The labels in a .ini format (i.e. `[name]`) are viewed as a first level.
- * That name automatically get prepended to the parameters appearing under
- * them. Additional levels can be added by using periods, again.
+ * \note
+ * The library understands the scope operator (::), the period (.), and
+ * the slash (/) as level separator. So the following are equivalent.
+ * Internally, all are changed to the scope operator (::).
+ *
+ * \code
+ * level1::level2::level3::etc = 123
+ * level1.level2.level3.etc = 123
+ * level1/level2/level3/etc = 123
+ * \endcode
+ *
+ * The labels in a .ini format (i.e. `[name]` defines sections) are viewed
+ * as a first level. That name automatically get prepended to the parameters
+ * appearing under them. Additional levels can be added by using the
+ * scope operator, again.
  *
  * \code
  * [level1]
- * level2.level3.etc = 123
+ * level2::level3::etc = 123
  * \endcode
  *
- * Support for other for format may be added later. For example, we could
+ * Support for other formats may be added later. For example, we could
  * read XML and JSON files. Right now, we are focused on Unix configuration
  * files and pretty much never even need two levels.
  *
@@ -194,7 +206,7 @@ bool is_arg(char const * a)
  */
 
 
-/** \struct getopt::option
+/** \struct option
  * \brief Structure representing an option.
  *
  * When creating a getopt() object you have to pass an array of options. That
@@ -203,13 +215,6 @@ bool is_arg(char const * a)
  * defined as the last option is used to define what the parser should do
  * with the lose options (in most cases it is named "filenames" and used
  * as an array of files, paths, windows package names, etc.)
- */
-
-
-/** \struct getopt::optmap_info
- * \brief Structure used internally to save each options.
- *
- * Options are saved as in a map using an optmap_info structure entry.
  */
 
 
@@ -1423,7 +1428,7 @@ std::string getopt::get_default(std::string const & name) const
  *
  * Note that the function can be used to read unsigned numbers, however
  * at this point getopt does not really support negative numbers (i.e. because
- * -<number> is viewed as an option.)
+ * -\<number> is viewed as an option.)
  *
  * \exception getopt_exception_undefined
  * The getopt_exception_undefined exception is raised if \p name was not

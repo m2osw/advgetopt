@@ -99,5 +99,5 @@ char const * get_version_string()
 }
 
 
-} // namespace advgetopt
+} // advgetopt namespace
 // vim: ts=4 sw=4 et
