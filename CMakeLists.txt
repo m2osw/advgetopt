@@ -43,14 +43,6 @@ find_package( SnapDoxygen               )
 
 SnapGetVersion( LIBADVGETOPT ${CMAKE_CURRENT_SOURCE_DIR} )
 
-if( "${CMAKE_BUILD_TYPE}" STREQUAL "Debug" )
-    message("Debug is in effect for advgetopt!")
-    add_definitions( -DDEBUG -D_DEBUG )
-else()
-    message("Debug is turned OFF")
-    add_definitions( -DNDEBUG )
-endif()
-
 include_directories(
     ${PROJECT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
