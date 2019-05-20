@@ -75,9 +75,9 @@ struct options_environment
     option const *              f_options = nullptr;                    // raw options
     char const *                f_options_files_directory = nullptr;    // directory to check for option files (default "/usr/shared/advgetopt")
     char const *                f_environment_variable_name = nullptr;  // environment variable with additional options
-    char const **               f_configuration_files = nullptr;        // nullptr terminated array of full paths to configuration files
+    char const * const *        f_configuration_files = nullptr;        // nullptr terminated array of full paths to configuration files
     char const *                f_configuration_filename = nullptr;     // the configuration filename to search in f_configuration_directories
-    char const **               f_configuration_directories = nullptr;  // nullptr terminated array of paths only to configuration files
+    char const * const *        f_configuration_directories = nullptr;  // nullptr terminated array of paths only to configuration files
     flag_t                      f_environment_flags = 0;                // GETOPT_ENVIRONMENT_FLAG_...
     char const *                f_help_header = nullptr;                // show on --help
     char const *                f_help_footer = nullptr;                // show on --help

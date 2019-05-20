@@ -343,7 +343,7 @@ void getopt::parse_configuration_files()
 
     // load options from configuration files specified as is by caller
     //
-    for(char const ** configuration_files(f_options_environment.f_configuration_files)
+    for(char const * const * configuration_files(f_options_environment.f_configuration_files)
       ; *configuration_files != nullptr
       ; ++configuration_files)
     {
@@ -1605,7 +1605,7 @@ std::string getopt::process_help_string( char const * help ) const
                     if(f_options_environment.f_configuration_directories != nullptr)
                     {
                         bool first(true);
-                        for(char const ** directories(f_options_environment.f_configuration_directories)
+                        for(char const * const * directories(f_options_environment.f_configuration_directories)
                           ; *directories != nullptr
                           ; ++directories)
                         {
@@ -1627,7 +1627,7 @@ std::string getopt::process_help_string( char const * help ) const
                     if(f_options_environment.f_configuration_files != nullptr)
                     {
                         bool first(true);
-                        for(char const ** filenames(f_options_environment.f_configuration_files)
+                        for(char const * const * filenames(f_options_environment.f_configuration_files)
                           ; *filenames != nullptr
                           ; ++filenames)
                         {
