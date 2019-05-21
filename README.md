@@ -17,37 +17,40 @@ The class accepts input from the command line, an environment variable,
 and configuration files.
 
 
-# Understood Commands Options
+# Understood Options
 
 The command line options that your application understands are created
-in a static array. This means it is built at compile time and the array
-is just there at runtime.
+in a static array. By this we mean that it gets created at compile time
+and the array is just there at runtime. (This does not prevent you from
+creating dynamic command line options, but I do not know of very many
+software that have command line options changing over time, do you?)
 
 The array is built with one entry per option. If you have options that
 make use of different names but have exactly the same result, then you
-will need multiple entries in your array. The following entries can
+will need multiple entries in your array. The additional entries can
 then make use of the `GETOPT_FLAG_ALIAS` and reference the first entry.
 
-All options can be used on the command line. However, you can select
-exactly which option is going to apply to what we find in the
-configuration file or the environment variable using the following
-two files:
+Options can be used on the command line, in your environment variable,
+or in a configuration file. You can select exactly which option is going
+to apply to what is found on the command line, in the configuration file,
+or the environment variable using the following flags:
 
+    GETOPT_FLAG_COMMAND_LINE
     GETOPT_FLAG_ENVIRONMENT_VARIABLE
     GETOPT_FLAG_CONFIGURATION_FILE
 
-Further, you probably do not want all the flags to be shown whenever
+Further, you probably do not want all the options to be shown whenever
 an error is detected. For this reason there is a flag to tell that
-this or that flag has to be shown on an error.
+this or that option has to be shown on an error:
 
     GETOPT_FLAG_SHOW_USAGE_ON_ERROR
 
 
 # Command Line
 
-The `getopt` class accepts the argc/argv from your main() function.
-Of course, you can also build another array and use the `getopt`
-class at any time.
+The `getopt` class accepts the `argc`/`argv` parameters directly from your
+`main()` function. Of course, you can also build another array and use the
+`getopt` class at any time.
 
 
 # Configuration Files
@@ -159,12 +162,13 @@ slashes in your project name.
 
 # Hide Warnings
 
-Many tools I use in my console generate warnings.
+Many tools I use in my console generate warnings (mainly Gnome complaining
+about missing this or that.)
 
 The `hide-warnings` program can start those tools and hide the warnings
-so the console doesn't get filled up by totally useless warnings
+so the console doesn't get filled up by totally useless messages
 that I can't do anything about. (I just hope that the next version
-won't have all those warnings turned on...)
+won't have all those warnings turned on... it has been years of hope!)
 
 By default, the `hide-warnings` works with a few tools as it defines
 the following regular expression which works well enough for most
@@ -172,7 +176,7 @@ tools.
 
     char const * const  g_default_regex = "gtk-warning|gtk-critical|glib-gobject-warning|^$";
 
-There are a few others I use because the default is not quite enough
+Here are a few others I use because the default is not quite enough
 for those tools:
 
     alias gvim="hide-warnings gvim"
