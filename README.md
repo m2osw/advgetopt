@@ -1,6 +1,6 @@
 
 <p align="center">
-<img alt="Snap! Websites" src="blob/master/doc/advgetopt-277x277.png" width="277" height="277"/>
+<img alt="Snap! Websites" src="https://snapwebsites.org/sites/snapwebsites.org/files/images/advgetopt-277x277.png" width="277" height="277"/>
 </p>
 
 # Introduction
