@@ -1,4 +1,8 @@
 
+<p align="center">
+<img alt="Snap! Websites" src="blob/master/doc/advgetopt-277x277.png" width="277" height="277"/>
+</p>
+
 # Introduction
 
 The `advgetopt` library provides the `advgetopt::getopt` class, which
