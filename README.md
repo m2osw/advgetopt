@@ -7,9 +7,9 @@ src="https://snapwebsites.org/sites/snapwebsites.org/files/images/advgetopt-277x
 # Introduction
 
 The `advgetopt` library provides the `advgetopt::getopt` class, which
-parses command line options (from argc/argv). It is very advanced and
+parses command line options (from `argc`/`argv`). It is very advanced and
 is capable of reading many different types of options with a letter
-(-h) and a word (--verbose) with no parameters, one parameter, any
+(`-h`) and a word (`--verbose`) with no parameters, one parameter, any
 number of parameters, and a set of "filenames," parameters without
 a flag first.
 
