@@ -3,9 +3,9 @@ Upstream-Name: advgetopt
 Source: https://github.com/m2osw/advgetopt
 
 Files: *
-Copyright: 2006-2018 Made to Order Software Corp. <contact@m2osw.com>
-           2006-2018 Alexis Wilke <alexis@m2osw.com>
-           2006-2018 R. Douglas Barbieri <doug@m2osw.com>
+Copyright: 2006-2019 Made to Order Software Corp. <contact@m2osw.com>
+           2006-2019 Alexis Wilke <alexis@m2osw.com>
+           2006-2019 R. Douglas Barbieri <doug@m2osw.com>
 License: MIT
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
@@ -25,10 +25,8 @@ License: MIT
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
 
-# If you want to use GPL v2 or later for the /debian/* files use 
-# the following clauses, or change it to suit. Delete these two lines
 Files: debian/*
-Copyright: 2006-2018 Made to Order Software <contact@m2osw.com>
+Copyright: 2006-2019 Made to Order Software <contact@m2osw.com>
 License: GPL-2+
  This package is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -45,8 +43,3 @@ License: GPL-2+
  .
  On Debian systems, the complete text of the GNU General
  Public License version 2 can be found in "/usr/share/common-licenses/GPL-2".
-
-# Please also look if there are files or directories which have a
-# different copyright/license attached and list them here.
-# Please avoid to pick license terms that are more restrictive than the
-# packaged work, as it may make Debian's contributions unacceptable upstream.

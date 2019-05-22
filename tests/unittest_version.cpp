@@ -1,6 +1,6 @@
 /*
  * Files:
- *    tests/unittest_advgetopt.cpp
+ *    tests/unittest_version.cpp
  *
  * License:
  *    Copyright (c) 2006-2019  Made to Order Software Corp.  All Rights Reserved
@@ -32,20 +32,8 @@
 
 // advgetopt lib
 //
-//#include "advgetopt/advgetopt.h"
 #include "advgetopt/version.h"
-//#include "advgetopt/log.h"
 
-// C++ lib
-//
-#include <cstring>
-#include <cmath>
-#include <sstream>
-#include <fstream>
-
-// C lib
-//
-#include <time.h>
 
 
 namespace
