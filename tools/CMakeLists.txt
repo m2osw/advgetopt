@@ -32,6 +32,36 @@
 
 
 ##
+## build a file of command line options compatible with advgetopt
+##
+project(build-file-of-options)
+
+include_directories(
+    ${LIBEXCEPT_INCLUDE_DIRS}
+    ${SNAPDEV_INCLUDE_DIRS}
+)
+
+add_executable(${PROJECT_NAME}
+    build-file-of-options.cpp
+)
+
+target_link_libraries(${PROJECT_NAME}
+    advgetopt
+)
+
+install(
+    TARGETS
+        ${PROJECT_NAME}
+
+    RUNTIME DESTINATION
+        bin
+
+    COMPONENT
+        runtime
+)
+
+
+##
 ## hide warning command line tool
 ##
 project(hide-warnings)

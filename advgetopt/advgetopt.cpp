@@ -1901,7 +1901,12 @@ std::string getopt::usage( flag_t show ) const
                                 , 80);
     }
 
-    ss << breakup_line(process_help_string(f_options_environment.f_help_footer), 0, 80);
+    if(f_options_environment.f_help_footer != nullptr
+    && f_options_environment.f_help_footer[0] != '\0')
+    {
+        ss << std::endl;
+        ss << breakup_line(process_help_string(f_options_environment.f_help_footer), 0, 80);
+    }
 
     return ss.str();
 }
@@ -1999,7 +2004,14 @@ std::string getopt::breakup_line(std::string line
     while(line.size() > width)
     {
         std::string l;
-        if(std::isspace(line[width]))
+        std::string::size_type const nl(line.find('\n'));
+        if(nl != std::string::npos
+        && nl < width)      // we could avoid this problem with std::string_view (C++17)
+        {
+            l = line.substr(0, nl);
+            line = line.substr(nl + 1);
+        }
+        else if(std::isspace(line[width]))
         {
             // special case when the space is right at the edge
             //
@@ -2033,7 +2045,8 @@ std::string getopt::breakup_line(std::string line
 
         // more to print? if so we need the indentation
         //
-        if(!line.empty())
+        if(!line.empty()
+        && option_width > 0)
         {
             ss << std::setw( option_width ) << " ";
         }

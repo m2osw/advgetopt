@@ -53,7 +53,7 @@ namespace advgetopt
 {
 
 
-typedef uint32_t            short_name_t;
+typedef char32_t            short_name_t;
 
 constexpr short_name_t      NO_SHORT_NAME = L'\0';
 

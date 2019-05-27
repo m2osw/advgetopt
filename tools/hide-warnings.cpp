@@ -67,6 +67,8 @@
 #define _GNU_SOURCE
 #endif
 
+#include <iostream>
+
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -285,7 +287,9 @@ int main(int argc, char * argv[], char * envp[])
                         ++i;
                         if(i >= argc)
                         {
-                            fprintf(stderr, "%s:error: --regex must be followed by a regular expression.\n", g_progname);
+                            std::cerr << g_progname
+                                      << ":error: --regex must be followed by a regular expression."
+                                      << std::endl;
                             exit(1);
                         }
                         g_regex = argv[i];
@@ -425,11 +429,6 @@ int main(int argc, char * argv[], char * envp[])
             *e = '\0';
             len = strlen(p) + 1 + cmd_len + 1; // path + '/' + command + '\0'
             e = new char[len];
-            if(e == NULL)
-            {
-                fprintf(stderr, "%s:error: could not allocate a buffer of %ld bytes.\n", g_progname, len);
-                exit(1);
-            }
             snprintf(e, len, "%s/%s", p, argv[i]);
             if(access(e, F_OK) == 0)
             {
@@ -439,7 +438,11 @@ int main(int argc, char * argv[], char * envp[])
                     argv[i] = e;
                     break;
                 }
-                fprintf(stderr, "%s:error: %s is not an executable.\n", g_progname, e);
+                std::cerr << g_progname
+                          << ":error: "
+                          << e
+                          << " is not an executable."
+                          << std::endl;
                 exit(1);
             }
             delete [] e;
@@ -452,15 +455,20 @@ int main(int argc, char * argv[], char * envp[])
     saved_errno = errno;
 
     /* we reach here if execve() cannot start 'command' */
-    fprintf(stderr, "%s:error: execve() failed: %s.\n"
-                    "%s:error: Command: %s",
-                        g_progname, strerror(saved_errno),
-                        g_progname, argv[i]);
+    std::cerr << g_progname
+              << ":error: execve() failed: "
+              << strerror(saved_errno)
+              << "."
+              << std::endl
+              << g_progname
+              << ":error: Command: "
+              << argv[i];
     for(++i; i < argc; ++i)
     {
-        fprintf(stderr, " %s", argv[i]);
+        std::cerr << " " << argv[i];
     }
-    fprintf(stderr, "\n");
+    std::cerr << std::endl;
+
     exit(1);
 }
 

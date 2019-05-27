@@ -39,6 +39,7 @@
 // advgetopt lib
 //
 #include    "advgetopt/option_info.h"
+#include    "advgetopt/options.h"
 #include    "advgetopt/validator.h"
 
 // C++ lib
@@ -51,42 +52,6 @@
 
 namespace advgetopt
 {
-
-
-
-// this structure is used to declare your command line options in a
-// constexpr array
-//
-struct option
-{
-    short_name_t        f_short_name = NO_SHORT_NAME;   // letter option (or '\0')
-    flag_t              f_flags = GETOPT_FLAG_NONE;     // set of flags
-    char const *        f_name = nullptr;               // name of the option (i.e. "test" for --test, or nullptr)
-    char const *        f_default = nullptr;            // a default value if not nullptr
-    char const *        f_help = nullptr;               // help for this option, if nullptr it's a hidden option; if ALIAS then this is the actual alias
-    char const **       f_multiple_separators = nullptr;// nullptr terminated list of strings used as separators when GETOPT_FLAG_MULTIPLE is set
-};
-
-constexpr flag_t    GETOPT_ENVIRONMENT_FLAG_DYNAMIC_PARAMETERS  = 0x0001;
-
-struct options_environment
-{
-    char const *                f_project_name = nullptr;               // project/application name--used as filename for the .conf files
-    option const *              f_options = nullptr;                    // raw options
-    char const *                f_options_files_directory = nullptr;    // directory to check for option files (default "/usr/shared/advgetopt")
-    char const *                f_environment_variable_name = nullptr;  // environment variable with additional options
-    char const * const *        f_configuration_files = nullptr;        // nullptr terminated array of full paths to configuration files
-    char const *                f_configuration_filename = nullptr;     // the configuration filename to search in f_configuration_directories
-    char const * const *        f_configuration_directories = nullptr;  // nullptr terminated array of paths only to configuration files
-    flag_t                      f_environment_flags = 0;                // GETOPT_ENVIRONMENT_FLAG_...
-    char const *                f_help_header = nullptr;                // show on --help
-    char const *                f_help_footer = nullptr;                // show on --help
-    char const *                f_version = nullptr;                    // show on --version and %v
-    char const *                f_license = nullptr;                    // show on --license and %l
-    char const *                f_copyright = nullptr;                  // show on --copyright and %c
-    char const *                f_build_date = __DATE__;                // available to parameter %b
-    char const *                f_build_time = __TIME__;                // available to parameter %t
-};
 
 
 
