@@ -87,6 +87,7 @@ install(
         exception.h
         log.h
         option_info.h
+        options.h
         utils.h
         validator.h
         ${CMAKE_CURRENT_BINARY_DIR}/version.h
