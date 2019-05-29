@@ -366,11 +366,11 @@ getopt::getopt(options_environment const & opt_env
     f_options_environment = opt_env;
 
     parse_program_name(argv);
-    parse_options_info(f_options_environment.f_options, true);
+    parse_options_info(f_options_environment.f_options, false);
     parse_options_from_file();
     if((f_options_environment.f_environment_flags & GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS) != 0)
     {
-        parse_options_info(g_system_options, false);
+        parse_options_info(g_system_options, true);
     }
 
     if(f_options->get_children().empty())

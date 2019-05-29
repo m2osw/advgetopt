@@ -55,7 +55,8 @@ void push_expected_log(std::string const & message)
 
 void log_for_test(advgetopt::log_level_t level, std::string const & message)
 {
-    if(unittest::g_verbose)
+    if(unittest::g_verbose
+    || g_expected_logs.empty())
     {
         std::cerr << "logger sent:\n"
                   << advgetopt::to_string(level)

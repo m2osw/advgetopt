@@ -50,7 +50,7 @@ CATCH_TEST_CASE("invalid_parameters", "inalid,getopt")
     //
     char const * cargv[] =
     {
-        "tests/unittests/AdvGetOptUnitTests::invalid_parameters",
+        "tests/unittests/invalid_parameters",
         "--ignore-parameters",
         nullptr
     };
