@@ -74,6 +74,9 @@ public:
                                       int argc
                                     , char * argv[]
                                     , bool only_environment_variable);
+    void                    parse_options_info(
+                                      option const * opts
+                                    , bool ignore_duplicates);
 
     option_info::pointer_t  get_option(std::string const & name) const;
     option_info::pointer_t  get_option(short_name_t name) const;
@@ -108,7 +111,6 @@ public:
 
 private:
     void                    parse_program_name(char * argv[]);
-    void                    parse_options_info();
     void                    parse_options_from_file();
     void                    parse_configuration_files();
     void                    parse_environment_variable();

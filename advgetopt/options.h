@@ -184,15 +184,6 @@ struct option
     char const *        f_default = nullptr;            // a default value if not nullptr
     char const *        f_help = nullptr;               // help for this option, if nullptr it's a hidden option; if ALIAS then this is the actual alias
     char const **       f_multiple_separators = nullptr;// nullptr terminated list of strings used as separators when GETOPT_FLAG_MULTIPLE is set
-
-
-    //option & operator () (OptName const & name)
-    //{
-    //    f_name = name.f_name;
-    //    return *this;
-    //}
-
-
 };
 
 
@@ -377,7 +368,9 @@ constexpr option end_options()
 
 
 
-constexpr flag_t    GETOPT_ENVIRONMENT_FLAG_DYNAMIC_PARAMETERS  = 0x0001;
+constexpr flag_t    GETOPT_ENVIRONMENT_FLAG_DYNAMIC_PARAMETERS  = 0x0001;   // accept parameters that are not declared
+constexpr flag_t    GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS   = 0x0002;   // add system parameters (i.e. --help, --version, etc.)
+
 
 struct options_environment
 {

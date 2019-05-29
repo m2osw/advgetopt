@@ -1,6 +1,6 @@
 /*
  * File:
- *    tests/unittest_main.h
+ *    tests/main.h
  *
  * License:
  *    Copyright (c) 2006-2019  Made to Order Software Corp.  All Rights Reserved
@@ -27,17 +27,27 @@
  */
 #ifndef UNIT_TEST_MAIN_H
 #define UNIT_TEST_MAIN_H
-#include <string>
-#include <cstring>
-#include <cstdlib>
-#include <iostream>
 
+// advgetopt lib
+//
+#include <advgetopt/advgetopt.h>
+#include "advgetopt/log.h"
+
+// catch lib
+//
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wctor-dtor-privacy"
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #pragma GCC diagnostic ignored "-Woverloaded-virtual"
 #include <catch.hpp>
 #pragma GCC diagnostic pop
+
+// C++ lib
+//
+#include <string>
+#include <cstring>
+#include <cstdlib>
+#include <iostream>
 
 #ifdef _MSC_VER
 // The POSIX name for this item is deprecated. Instead, use the ISO C++ conformant name: ... See online help for details.
@@ -48,8 +58,13 @@
 namespace unittest
 {
 
-extern std::string      g_tmp_dir;
-extern bool             g_verbose;
+extern std::string                  g_tmp_dir;
+extern bool                         g_verbose;
+extern std::vector<std::string>     g_expected_logs;
+
+void                                push_expected_log(std::string const & message);
+void                                log_for_test(advgetopt::log_level_t level, std::string const & message);
+
 
 class obj_setenv
 {

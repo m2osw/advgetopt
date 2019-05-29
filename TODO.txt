@@ -1,0 +1,18 @@
+
+
+* Confirm that all the configuration functionality from snapwebsites is available
+* Support the equal sign for long parameter (i.e. `--config=/file/name`)
+* Add default _system_ command line options
+** --help
+** --version
+** --license
+** --copyright
+** --build-date
+** --environment-variable-name
+** --configuration-filenames
+** --options-filename
+
+* Fixed the naming convention. (?)
+* Look into breaking up the existing tests, especially since some of the old functionality was removed and the concept of re-testing the same options later is not useful.
+* Finish up the unit tests to at least cover 100% of the code.
+

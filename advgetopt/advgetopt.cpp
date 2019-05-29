@@ -101,9 +101,13 @@
 #include    "advgetopt/exception.h"
 #include    "advgetopt/log.h"
 
+// libutf8 lib
+//
+#include    <libutf8/libutf8.h>
+
 // boost lib
 //
-#include <boost/algorithm/string/replace.hpp>
+#include    <boost/algorithm/string/replace.hpp>
 
 // C++ lib
 //
@@ -129,12 +133,105 @@ namespace advgetopt
 namespace
 {
 
+
+/** \brief Definitions of the system options.
+ *
+ * The system options are options we add automatically (if the user asked
+ * for them) and handle automatically when they are found.
+ *
+ * The following are the currently supported system options:
+ *
+ * \li `--help`
+ *
+ * Print out the usage() and exits.
+ *
+ * \li `--version`
+ *
+ * Print out the version and exits.
+ *
+ * \li `--copyright`
+ *
+ * Print out the copyright notice and exits.
+ *
+ * \li `--license`
+ *
+ * Print out the license notice and exits.
+ *
+ * \li `--build-date`
+ *
+ * Print out the build time and date and exits.
+ *
+ * \li `--environment-variable-name`
+ *
+ * Print out the build time and date and exits.
+ *
+ * \li `--configuration-filenames`
+ *
+ * Print out the list of configuration file names that the system checks
+ * for configuration data.
+ *
+ * \li `--path-to-option-definitions`
+ *
+ * Print out the path to files which define options for this tool.
+ */
+option const g_system_options[] =
+{
+    define_option(
+          Name("help")
+        , ShortName('h')
+        , Flags()
+        , Help("print out this help screen and exit.")
+    ),
+    define_option(
+          Name("version")
+        , ShortName('V')
+        , Flags()
+        , Help("print out the version of %p and exit.")
+    ),
+    define_option(
+          Name("copyright")
+        , ShortName('C')
+        , Flags()
+        , Help("print out the copyright of %p and exit.")
+    ),
+    define_option(
+          Name("license")
+        , ShortName('L')
+        , Flags()
+        , Help("print out the license of %p and exit.")
+    ),
+    define_option(
+          Name("build-date")
+        , Flags()
+        , Help("print out the time and date when %p was build and exit.")
+    ),
+    define_option(
+          Name("environment-variable-name")
+        , Flags()
+        , Help("print out the name of the environment variable supported by %p (if any.)")
+    ),
+    define_option(
+          Name("configuration-filenames")
+        , Flags()
+        , Help("print out the list of configuration files checked out by this tool.")
+    ),
+    define_option(
+          Name("path-to-option-definitions")
+        , Flags()
+        , Help("print out the path to the option definitons.")
+    ),
+    end_options()
+};
+
+
+
+
 /** \brief Value when no default option was defined.
  *
  * Some options may have defaults in which case their indexes are used.
  * By default, an option has no defaults and we instead use -1.
  */
-const int NO_DEFAULT_OPT = -1;
+int const NO_DEFAULT_OPT = -1;
 
 
 /** \brief Check whether this parameter is an argument.
@@ -259,18 +356,22 @@ getopt::getopt(options_environment const & opt_env
 {
     if(argv == nullptr)
     {
-        throw getopt_exception_invalid("argv pointer cannot be nullptr");
+        throw getopt_exception_logic("argv pointer cannot be nullptr");
     }
     if(&opt_env == nullptr)
     {
-        throw getopt_exception_invalid("opt_env pointer cannot be nullptr");
+        throw getopt_exception_logic("opt_env pointer cannot be nullptr");
     }
 
     f_options_environment = opt_env;
 
     parse_program_name(argv);
-    parse_options_info();
+    parse_options_info(f_options_environment.f_options, true);
     parse_options_from_file();
+    if((f_options_environment.f_environment_flags & GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS) != 0)
+    {
+        parse_options_info(g_system_options, false);
+    }
 
     if(f_options->get_children().empty())
     {
@@ -675,15 +776,18 @@ void getopt::parse_program_name(char * argv[])
  *
  * This function transforms an array of options in a vector of option_info
  * objects.
+ *
+ * \param[in] opts  An array of options to be parsed.
+ * \param[in] ignore_duplicates  Whether to ignore potential duplicates.
  */
-void getopt::parse_options_info()
+void getopt::parse_options_info(option const * opts, bool ignore_duplicates)
 {
-    if(f_options_environment.f_options == nullptr)
+    if(opts == nullptr)
     {
         return;
     }
 
-    for(option const * opts(f_options_environment.f_options)
+    for(
       ; (opts->f_flags & GETOPT_FLAG_END) == 0
       ; ++opts)
     {
@@ -699,20 +803,34 @@ void getopt::parse_options_info()
 
         if(get_option(opts->f_name) != nullptr)
         {
+            if(ignore_duplicates)
+            {
+                continue;
+            }
             throw getopt_exception_logic(
                       std::string("option named \"")
                     + opts->f_name
                     + "\" found twice.");
         }
-        if(get_option(opts->f_short_name) != nullptr)
+        short_name_t short_name(opts->f_short_name);
+        if(get_option(short_name) != nullptr)
         {
-            throw getopt_exception_logic(
-                      std::string("option with short name \"")
-                    + static_cast<char>(opts->f_short_name)
-                    + "\" found twice.");
+            if(ignore_duplicates)
+            {
+                short_name = L'\0';
+            }
+            else
+            {
+                throw getopt_exception_logic(
+                          std::string("option with short name \"")
+                        + libutf8::to_u8string(opts->f_short_name)
+                        + "\" found twice.");
+            }
         }
 
-        option_info::pointer_t o(std::make_shared<option_info>(opts->f_name, opts->f_short_name));
+        option_info::pointer_t o(std::make_shared<option_info>(
+                                              opts->f_name
+                                            , short_name));
 
         o->set_flags(opts->f_flags);
         o->set_default(opts->f_default);
@@ -765,6 +883,12 @@ void getopt::parse_options_info()
 void getopt::parse_options_from_file()
 {
     std::string filename;
+
+    if(f_options_environment.f_project_name == nullptr
+    || f_options_environment.f_project_name[0] == '\0')
+    {
+        return;
+    }
 
     if(f_options_environment.f_options_files_directory == nullptr
     || f_options_environment.f_options_files_directory[0] == '\0')
@@ -1583,7 +1707,7 @@ std::string getopt::get_string(std::string const & name, int idx) const
  *
  * \return The string with any '%p' replaced with the program name.
  */
-std::string getopt::process_help_string( char const * help ) const
+std::string getopt::process_help_string(char const * help) const
 {
     if(help == nullptr)
     {
@@ -1659,59 +1783,76 @@ std::string getopt::process_help_string( char const * help ) const
                 break;
 
             case 'a':
-                result += f_options_environment.f_project_name;
+                if(f_options_environment.f_project_name != nullptr)
+                {
+                    result += f_options_environment.f_project_name;
+                }
                 help += 2;
                 break;
 
             case 'b':
-                result += f_options_environment.f_build_date;
+                if(f_options_environment.f_build_date != nullptr)
+                {
+                    result += f_options_environment.f_build_date;
+                }
                 help += 2;
                 break;
 
             case 'c':
-                result += f_options_environment.f_copyright;
+                if(f_options_environment.f_copyright != nullptr)
+                {
+                    result += f_options_environment.f_copyright;
+                }
                 help += 2;
                 break;
 
             case 'd':
-                if(f_options_environment.f_configuration_directories != nullptr)
+                if(f_options_environment.f_configuration_directories != nullptr
+                && *f_options_environment.f_configuration_directories != nullptr)
                 {
-                    if(*f_options_environment.f_configuration_directories != nullptr)
-                    {
-                        result += *f_options_environment.f_configuration_directories;
-                    }
+                    result += *f_options_environment.f_configuration_directories;
                 }
                 help += 2;
                 break;
 
             case 'f':
-                if(f_options_environment.f_configuration_files != nullptr)
+                if(f_options_environment.f_configuration_files != nullptr
+                && *f_options_environment.f_configuration_files != nullptr)
                 {
-                    if(*f_options_environment.f_configuration_files != nullptr)
-                    {
-                        result += *f_options_environment.f_configuration_files;
-                    }
+                    result += *f_options_environment.f_configuration_files;
                 }
                 help += 2;
                 break;
 
             case 'l':
-                result += f_options_environment.f_license;
+                if(f_options_environment.f_license != nullptr)
+                {
+                    result += f_options_environment.f_license;
+                }
                 help += 2;
                 break;
 
             case 'p':
-                result += f_program_name;
+                if(f_program_name != nullptr)
+                {
+                    result += f_program_name;
+                }
                 help += 2;
                 break;
 
             case 't':
-                result += f_options_environment.f_build_time;
+                if(f_options_environment.f_build_time != nullptr)
+                {
+                    result += f_options_environment.f_build_time;
+                }
                 help += 2;
                 break;
 
             case 'v':
-                result += f_options_environment.f_version;
+                if(f_options_environment.f_version != nullptr)
+                {
+                    result += f_options_environment.f_version;
+                }
                 help += 2;
                 break;
 
@@ -2152,6 +2293,10 @@ std::string getopt::get_program_name() const
  */
 std::string getopt::get_project_name() const
 {
+    if(f_options_environment.f_project_name == nullptr)
+    {
+        return std::string();
+    }
     return f_options_environment.f_project_name;
 }
 

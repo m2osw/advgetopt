@@ -44,6 +44,7 @@ configure_file(
 include_directories(
     ${LIBEXCEPT_INCLUDE_DIRS}
     ${BOOST_INCLUDE_DIRS}
+    ${LIBUTF8_INCLUDE_DIRS}
 )
 
 add_library( ${PROJECT_NAME} SHARED
@@ -59,6 +60,7 @@ add_library( ${PROJECT_NAME} SHARED
 
 target_link_libraries(${PROJECT_NAME}
     ${LIBEXCEPT_LIBRARIES}
+    ${LIBUTF8_LIBRARIES}
 )
 
 

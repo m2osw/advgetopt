@@ -1,6 +1,6 @@
 /*
  * File:
- *    tests/unittest_main.cpp
+ *    tests/main.cpp
  *
  * License:
  *    Copyright (c) 2006-2019  Made to Order Software Corp.  All Rights Reserved
@@ -31,12 +31,16 @@
 
 // self
 //
-#include "unittest_main.h"
+#include "main.h"
 
 // advgetopt lib
 //
 #include "advgetopt/advgetopt.h"
 #include "advgetopt/version.h"
+
+// libexcept lib
+//
+#include "libexcept/exception.h"
 
 // C++ lib
 //
@@ -188,6 +192,21 @@ int unittest_main(int argc, char * argv[])
         new_argv.push_back( const_cast<char *>(arg.c_str()) );
     });
 
+    advgetopt::set_log_callback(unittest::log_for_test);
+
+    //wpkg_filename::uri_filename config("~/.config/advgetopt/advgetopt.conf");
+    //if(config.exists())
+    //{
+    //    fprintf(stderr, "\nerror:unittest_advgetopt: ~/.config/advgetopt/advgetopt.conf already exists, the advgetopt tests would not work as expected with such. Please delete or rename that file.\n");
+    //    throw std::runtime_error("~/.config/advgetopt/advgetopt.conf already exists");
+    //}
+    const char *options(getenv("ADVGETOPT_TEST_OPTIONS"));
+    if(options != nullptr && *options != '\0')
+    {
+        std::cerr << std::endl << "error:unittest_advgetopt: ADVGETOPT_TEST_OPTIONS already exists, the advgetopt tests would not work as expected with such. Please unset that environment variable and try again." << std::endl;
+        throw std::runtime_error("ADVGETOPT_TEST_OPTIONS already exists");
+    }
+
     return Catch::Session().run( static_cast<int>(new_argv.size()), &new_argv[0] );
 }
 
@@ -198,6 +217,7 @@ int main(int argc, char * argv[])
 
     try
     {
+        libexcept::set_collect_stack(false);
         r = unittest_main(argc, argv);
     }
     catch(std::logic_error const & e)
