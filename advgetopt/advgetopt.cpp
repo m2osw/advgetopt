@@ -1833,10 +1833,7 @@ std::string getopt::process_help_string(char const * help) const
                 break;
 
             case 'p':
-                if(f_program_name != nullptr)
-                {
-                    result += f_program_name;
-                }
+                result += f_program_name;
                 help += 2;
                 break;
 
