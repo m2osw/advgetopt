@@ -663,7 +663,7 @@ option_info::pointer_t option_info::get_child(short_name_t short_name) const
  */
 void option_info::set_alias(option_info::pointer_t alias)
 {
-    if(has_flag(GETOPT_FLAG_ALIAS))
+    if(alias->has_flag(GETOPT_FLAG_ALIAS))
     {
         throw getopt_exception_undefined(
                 "option_info::set_alias(): you can't set an alias as"

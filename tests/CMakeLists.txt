@@ -58,6 +58,7 @@ if( CATCH_FOUND )
         invalid_parameters.cpp
         log_for_test.cpp
         logic_errors.cpp
+        options_parser.cpp
         valid_config_files.cpp
         valid_config_files_extra.cpp
         valid_options_files.cpp

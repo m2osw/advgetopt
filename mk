@@ -18,7 +18,7 @@ case $1 in
 	(
 		if make -C ../../../BUILD/contrib/advgetopt
 		then
-			../../../BUILD/contrib/advgetopt/tests/unittest --tmp `pwd`/tmp/advgetopt
+			../../../BUILD/contrib/advgetopt/tests/unittest --tmp `pwd`/tmp/advgetopt "$2"
 		fi
 	) 2>&1 | less -SR
 	;;

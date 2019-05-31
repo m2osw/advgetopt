@@ -179,45 +179,45 @@ option const g_system_options[] =
     define_option(
           Name("help")
         , ShortName('h')
-        , Flags()
+        , Flags(standalone_command_flags())
         , Help("print out this help screen and exit.")
     ),
     define_option(
           Name("version")
         , ShortName('V')
-        , Flags()
+        , Flags(standalone_command_flags())
         , Help("print out the version of %p and exit.")
     ),
     define_option(
           Name("copyright")
         , ShortName('C')
-        , Flags()
+        , Flags(standalone_command_flags())
         , Help("print out the copyright of %p and exit.")
     ),
     define_option(
           Name("license")
         , ShortName('L')
-        , Flags()
+        , Flags(standalone_command_flags())
         , Help("print out the license of %p and exit.")
     ),
     define_option(
           Name("build-date")
-        , Flags()
+        , Flags(standalone_command_flags())
         , Help("print out the time and date when %p was build and exit.")
     ),
     define_option(
           Name("environment-variable-name")
-        , Flags()
+        , Flags(standalone_command_flags())
         , Help("print out the name of the environment variable supported by %p (if any.)")
     ),
     define_option(
           Name("configuration-filenames")
-        , Flags()
+        , Flags(standalone_command_flags())
         , Help("print out the list of configuration files checked out by this tool.")
     ),
     define_option(
           Name("path-to-option-definitions")
-        , Flags()
+        , Flags(standalone_command_flags())
         , Help("print out the path to the option definitons.")
     ),
     end_options()
@@ -520,7 +520,7 @@ void getopt::process_configuration_file(std::string const & filename)
         if(opt == nullptr)
         {
             if((f_options_environment.f_environment_flags & GETOPT_ENVIRONMENT_FLAG_DYNAMIC_PARAMETERS) == 0
-            || param.first.length () == 1)
+            || param.first.length() == 1)
             {
                 log << log_level_t::error
                     << "unknown option \""
@@ -751,7 +751,11 @@ void getopt::parse_string(std::string const & str, bool only_environment_variabl
  */
 void getopt::parse_program_name(char * argv[])
 {
-    f_program_fullname = argv[0];
+    if(argv[0] != nullptr)
+    {
+        f_program_fullname = argv[0];
+    }
+
     std::string::size_type p(f_program_fullname.find_last_of('/'));
     if(p == std::string::npos)
     {
@@ -842,6 +846,10 @@ void getopt::parse_options_info(option const * opts, bool ignore_duplicates)
             if(f_default_option != nullptr)
             {
                 throw getopt_exception_logic("two default options found after check of long names duplication.");
+            }
+            if(o->has_flag(GETOPT_FLAG_FLAG))
+            {
+                throw getopt_exception_logic("a default option must accept parameters, it can't be a GETOPT_FLAG_FLAG.");
             }
 
             f_default_option = o;
@@ -991,8 +999,19 @@ void getopt::parse_options_from_file()
             opt->set_validator(v);
         }
 
-        if(conf.has_parameter(parameter_name + "::alias"))
+        std::string const alias_name(parameter_name + "::alias");
+        if(conf.has_parameter(alias_name))
         {
+            if(!opt->get_help().empty())
+            {
+                log << log_level_t::error
+                    << "option \""
+                    << s.first
+                    << "\" is an alias and as such it can't include a help=... parameter."
+                    << end;
+                continue;
+            }
+            opt->set_help(conf.get_parameter(alias_name));
             opt->add_flag(GETOPT_FLAG_ALIAS);
         }
 
@@ -1059,7 +1078,7 @@ void getopt::link_aliases()
     {
         if(c.second->has_flag(GETOPT_FLAG_ALIAS))
         {
-            std::string const & alias_name(c.second->get_default());
+            std::string const & alias_name(c.second->get_help());
             if(alias_name.empty())
             {
                 throw getopt_exception_invalid(

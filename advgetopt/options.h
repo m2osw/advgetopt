@@ -188,18 +188,13 @@ struct option
 
 
 
-template<typename T, T default_value>
+template<typename T>
 class OptionValue
 {
 public:
     typedef T   value_t;
 
-    constexpr OptionValue<T, default_value>()
-        : f_value(default_value)
-    {
-    }
-
-    constexpr OptionValue<T, default_value>(T const v)
+    constexpr OptionValue<T>(T const v)
         : f_value(v)
     {
     }
@@ -209,102 +204,112 @@ public:
         return f_value;
     }
 
-    //static value_t get_default()
-    //{
-    //    return default_value;
-    //}
-
 private:
     value_t     f_value;
 };
 
 
 class ShortName
-    : public OptionValue<short_name_t, NO_SHORT_NAME>
+    : public OptionValue<short_name_t>
 {
 public:
     constexpr ShortName()
-        : OptionValue<short_name_t, NO_SHORT_NAME>()
+        : OptionValue<short_name_t>(NO_SHORT_NAME)
     {
     }
 
     constexpr ShortName(short_name_t name)
-        : OptionValue<short_name_t, NO_SHORT_NAME>(name)
+        : OptionValue<short_name_t>(name)
     {
     }
 };
 
 class Flags
-    : public OptionValue<flag_t, GETOPT_FLAG_NONE>
+    : public OptionValue<flag_t>
 {
 public:
     constexpr Flags()
-        : OptionValue<flag_t, GETOPT_FLAG_NONE>()
+        : OptionValue<flag_t>(GETOPT_FLAG_NONE)
     {
     }
 
     constexpr Flags(flag_t flags)
-        : OptionValue<flag_t, GETOPT_FLAG_NONE>(flags)
+        : OptionValue<flag_t>(flags)
     {
     }
 };
 
 class Name
-    : public OptionValue<char const *, nullptr>
+    : public OptionValue<char const *>
 {
 public:
     constexpr Name()
-        : OptionValue<char const *, nullptr>()
+        : OptionValue<char const *>(nullptr)
     {
     }
 
     constexpr Name(char const * name)
-        : OptionValue<char const *, nullptr>(name)
+        : OptionValue<char const *>(name)
     {
     }
 };
 
 class DefaultValue
-    : public OptionValue<char const *, nullptr>
+    : public OptionValue<char const *>
 {
 public:
     constexpr DefaultValue()
-        : OptionValue<char const *, nullptr>()
+        : OptionValue<char const *>(nullptr)
     {
     }
 
     constexpr DefaultValue(char const * help)
-        : OptionValue<char const *, nullptr>(help)
+        : OptionValue<char const *>(help)
+    {
+    }
+};
+
+class Alias
+    : public OptionValue<char const *>
+{
+public:
+    constexpr Alias()
+        : OptionValue<char const *>(nullptr)
+    {
+    }
+
+    constexpr Alias(char const * alias)
+        : OptionValue<char const *>(alias)
     {
     }
 };
 
 class Help
-    : public OptionValue<char const *, nullptr>
+    : public OptionValue<char const *>
 {
 public:
     constexpr Help()
-        : OptionValue<char const *, nullptr>()
+        : OptionValue<char const *>(nullptr)
     {
     }
 
     constexpr Help(char const * help)
-        : OptionValue<char const *, nullptr>(help)
+        : OptionValue<char const *>(help)
     {
     }
 };
 
 class Separators
-    : public OptionValue<char const **, nullptr>
+    : public OptionValue<char const **>
 {
 public:
     constexpr Separators()
-        : OptionValue<char const **, nullptr>()
+        : OptionValue<char const **>(nullptr)
     {
     }
 
     constexpr Separators(char const ** help)
-        : OptionValue<char const **, nullptr>(help)
+        : OptionValue<char const **>(help)
     {
     }
 };
@@ -336,10 +341,15 @@ constexpr option define_option(ARGS ...args)
     option opt =
     {
         .f_short_name =          find_option<ShortName   >(args..., ShortName()),
-        .f_flags =               find_option<Flags       >(args..., Flags()),
-        .f_name =                find_option<Name        >(args...),    // no default
+        .f_flags =               find_option<Flags       >(args..., Flags())
+                                    | (find_option<Alias       >(args..., Alias()) != nullptr
+                                            ? GETOPT_FLAG_ALIAS
+                                            : GETOPT_FLAG_NONE),
+        .f_name =                find_option<Name        >(args...),    // no default, must be defined
         .f_default =             find_option<DefaultValue>(args..., DefaultValue()),
-        .f_help =                find_option<Help        >(args..., Help()),
+        .f_help =                find_option<Alias       >(args..., Alias()) != nullptr
+                                    ? find_option<Alias       >(args..., Alias())
+                                    : find_option<Help        >(args..., Help()),
         .f_multiple_separators = find_option<Separators  >(args..., Separators()),
     };
 #pragma GCC diagnostic pop
