@@ -58,10 +58,9 @@ namespace
 {
     struct UnitTestCLData
     {
-        bool        help = false;
         int         seed = 0;
         std::string tmp = std::string();
-        bool        verbose = false;
+        bool        progress = false;
         bool        version = false;
     };
 
@@ -85,34 +84,29 @@ namespace
 int unittest_main(int argc, char * argv[])
 {
     UnitTestCLData configData;
-    Catch::Clara::CommandLine<UnitTestCLData> cli;
 
-    cli["-?"]["-h"]["--help"]
-        .describe("display usage information")
-        .bind(&UnitTestCLData::help);
+    Catch::Session session;
 
-    cli["-S"]["--seed"]
-        .describe("value to seed the randomizer, if not specified, randomize")
-        .bind(&UnitTestCLData::seed, "the seed value");
+    auto cli = session.cli()
+             | Catch::clara::Opt(configData.progress)
+                ["-p"]["--progress"]
+                ("print name of test section being run")
+             | Catch::clara::Opt(configData.seed, "seed")
+                ["-S"]["--seed"]
+                ("value to seed the randomizer, if not specified, randomize")
+             | Catch::clara::Opt(configData.tmp, "tmp")
+                ["-T"]["--tmp"]
+                ("path to a temporary directory")
+             | Catch::clara::Opt(configData.version)
+                ["-V"]["--version"]
+                ("print out the advgetopt library version these unit tests pertain to");
 
-    cli["-T"]["--tmp"]
-        .describe("path to a temporary directory")
-        .bind(&UnitTestCLData::tmp, "path");
+    session.cli(cli);
 
-    cli["-v"]["--verbose"]
-        .describe("make the test more verbose")
-        .bind(&UnitTestCLData::verbose);
-
-    cli["-V"]["--version"]
-        .describe("print out the advgetopt library version these unit tests pertain to")
-        .bind(&UnitTestCLData::version);
-
-    cli.parseInto( argc, argv, configData );
-
-    if( configData.help )
+    auto result(session.applyCommandLine(argc, argv));
+    if(result != 0)
     {
-        cli.usage( std::cout, argv[0] );
-        Catch::Session().run(argc, argv);
+        std::cerr << "Error in command line." << std::endl;
         exit(1);
     }
 
@@ -122,22 +116,16 @@ int unittest_main(int argc, char * argv[])
         exit(0);
     }
 
-    std::vector<std::string> arg_list;
-    for( int i = 0; i < argc; ++i )
-    {
-        arg_list.push_back( argv[i] );
-    }
-
     // by default we get a different seed each time; that really helps
     // in detecting errors! (I know, I wrote loads of tests before)
+    //
     unsigned int seed(static_cast<unsigned int>(time(NULL)));
     if( configData.seed != 0 )
     {
         seed = static_cast<unsigned int>(configData.seed);
-        remove_from_args( arg_list, "--seed", "-S" );
     }
     srand(seed);
-    std::cout << "advgetopt[" << getpid() << "]:unittest: seed is " << seed << std::endl;
+    std::cout << "advgetopt v" LIBADVGETOPT_VERSION_STRING " [" << getpid() << "]:unittest: seed is " << seed << std::endl;
 
     // we can only have one of those for ALL the tests that directly
     // access the library...
@@ -146,8 +134,6 @@ int unittest_main(int argc, char * argv[])
     if( !configData.tmp.empty() )
     {
         unittest::g_tmp_dir = configData.tmp;
-        remove_from_args( arg_list, "--tmp", "-T" );
-
         if(unittest::g_tmp_dir == "/tmp")
         {
             std::cerr << "fatal error: you must specify a sub-directory for your temporary directory such as /tmp/advgetopt";
@@ -159,13 +145,9 @@ int unittest_main(int argc, char * argv[])
         unittest::g_tmp_dir = "/tmp/advgetopt";
     }
 
-    unittest::g_verbose = configData.verbose;
-    if( unittest::g_verbose )
-    {
-        remove_from_args( arg_list, "--verbose", "-v" );
-    }
+    unittest::g_verbose = configData.progress;
 
-    // delete the existing directory
+    // delete the existing tmp directory
     {
         std::stringstream ss;
         ss << "rm -rf \"" << unittest::g_tmp_dir << "\"";
@@ -186,12 +168,6 @@ int unittest_main(int argc, char * argv[])
         }
     }
 
-    std::vector<char *> new_argv;
-    std::for_each( arg_list.begin(), arg_list.end(), [&new_argv]( const std::string& arg )
-    {
-        new_argv.push_back( const_cast<char *>(arg.c_str()) );
-    });
-
     advgetopt::set_log_callback(unittest::log_for_test);
 
     //wpkg_filename::uri_filename config("~/.config/advgetopt/advgetopt.conf");
@@ -207,7 +183,7 @@ int unittest_main(int argc, char * argv[])
         throw std::runtime_error("ADVGETOPT_TEST_OPTIONS already exists");
     }
 
-    return Catch::Session().run( static_cast<int>(new_argv.size()), &new_argv[0] );
+    return session.run();
 }
 
 

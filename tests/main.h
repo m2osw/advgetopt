@@ -31,16 +31,11 @@
 // advgetopt lib
 //
 #include <advgetopt/advgetopt.h>
-#include "advgetopt/log.h"
+#include <advgetopt/log.h>
 
 // catch lib
 //
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wctor-dtor-privacy"
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#pragma GCC diagnostic ignored "-Woverloaded-virtual"
-#include <catch.hpp>
-#pragma GCC diagnostic pop
+#include <catch2/catch.hpp>
 
 // C++ lib
 //

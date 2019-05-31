@@ -77,7 +77,7 @@ CATCH_TEST_CASE("invalid_parameters", "inalid,getopt")
     options_empty.f_help_header = "Usage: try this one and we get a throw (empty list)";
 
     {
-        CATCH_REQUIRE_THROWS_AS( { advgetopt::getopt opt(options_empty, argc, argv); }, advgetopt::getopt_exception_logic);
+        CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(options_empty, argc, argv), advgetopt::getopt_exception_logic);
     }
 
     // option without a name and "wrong" type
@@ -108,7 +108,7 @@ CATCH_TEST_CASE("invalid_parameters", "inalid,getopt")
     options_no_name.f_help_header = "Usage: try this one and we get a throw (no name)";
 
     {
-        CATCH_REQUIRE_THROWS_AS( { advgetopt::getopt opt(options_no_name, argc, argv); }, advgetopt::getopt_exception_logic);
+        CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(options_no_name, argc, argv), advgetopt::getopt_exception_logic);
     }
 
     // long options must be 2+ characters
@@ -139,7 +139,7 @@ CATCH_TEST_CASE("invalid_parameters", "inalid,getopt")
     options_2chars_minimum.f_help_header = "Usage: try this one and we get a throw (2 chars minimum)";
 
     {
-        CATCH_REQUIRE_THROWS_AS( { advgetopt::getopt opt(options_2chars_minimum, argc, argv); }, advgetopt::getopt_exception_logic);
+        CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(options_2chars_minimum, argc, argv), advgetopt::getopt_exception_logic);
     }
 
     // long options must be 2+ characters
@@ -170,7 +170,7 @@ CATCH_TEST_CASE("invalid_parameters", "inalid,getopt")
     options_2chars_minimum2.f_help_header = "Usage: try this one and we get a throw (2 chars minimum 2nd)";
 
     {
-        CATCH_REQUIRE_THROWS_AS( { advgetopt::getopt opt(options_2chars_minimum2, argc, argv); }, advgetopt::getopt_exception_logic);
+        CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(options_2chars_minimum2, argc, argv), advgetopt::getopt_exception_logic);
     }
 
     // same long option defined twice
@@ -209,7 +209,7 @@ CATCH_TEST_CASE("invalid_parameters", "inalid,getopt")
     options_defined_twice.f_help_header = "Usage: try this one and we get a throw (long defined twice)";
 
     {
-        CATCH_REQUIRE_THROWS_AS( { advgetopt::getopt opt(options_defined_twice, argc, argv); }, advgetopt::getopt_exception_logic);
+        CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(options_defined_twice, argc, argv), advgetopt::getopt_exception_logic);
     }
 
     // same short option defined twice
@@ -249,7 +249,7 @@ CATCH_TEST_CASE("invalid_parameters", "inalid,getopt")
     options_short_defined_twice.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
 
     {
-        CATCH_REQUIRE_THROWS_AS( { advgetopt::getopt opt(options_short_defined_twice, argc, argv); }, advgetopt::getopt_exception_logic);
+        CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(options_short_defined_twice, argc, argv), advgetopt::getopt_exception_logic);
     }
 
     // 2 default_multiple_argument's in the same list is invalid
@@ -288,7 +288,7 @@ CATCH_TEST_CASE("invalid_parameters", "inalid,getopt")
     options_two_default_multiple_arguments.f_help_header = "Usage: try this one and we get a throw (two defaults by flag, multiple args)";
 
     {
-        CATCH_REQUIRE_THROWS_AS( { advgetopt::getopt opt(options_two_default_multiple_arguments, argc, argv); }, advgetopt::getopt_exception_logic);
+        CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(options_two_default_multiple_arguments, argc, argv), advgetopt::getopt_exception_logic);
     }
 
     // 2 default_argument's in the same list is invalid
@@ -327,7 +327,7 @@ CATCH_TEST_CASE("invalid_parameters", "inalid,getopt")
     options_two_default_arguments.f_help_header = "Usage: try this one and we get a throw (two default args by name)";
 
     {
-        CATCH_REQUIRE_THROWS_AS( { advgetopt::getopt opt(options_two_default_arguments, argc, argv); }, advgetopt::getopt_exception_logic);
+        CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(options_two_default_arguments, argc, argv), advgetopt::getopt_exception_logic);
     }
 
     // mix of default arguments in the same list is invalid
@@ -367,7 +367,7 @@ CATCH_TEST_CASE("invalid_parameters", "inalid,getopt")
     options_mix_of_default.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
 
     {
-        CATCH_REQUIRE_THROWS_AS( { advgetopt::getopt opt(options_mix_of_default, argc, argv); }, advgetopt::getopt_exception_logic);
+        CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(options_mix_of_default, argc, argv), advgetopt::getopt_exception_logic);
     }
 
     // try the - and -- without a default in the arguments
@@ -695,7 +695,7 @@ CATCH_TEST_CASE("invalid_parameters", "inalid,getopt")
     configuration_long_name_missing.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
 
     {
-        CATCH_REQUIRE_THROWS_AS( { advgetopt::getopt opt(configuration_long_name_missing, argc, argv); }, advgetopt::getopt_exception_logic);
+        CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(configuration_long_name_missing, argc, argv), advgetopt::getopt_exception_logic);
     }
 
     // create invalid configuration files
@@ -1477,7 +1477,7 @@ CATCH_TEST_CASE("invalid_parameters", "inalid,getopt")
 
             // this initialization works as expected
             //
-            CATCH_REQUIRE_THROWS_AS( { advgetopt::getopt opt(options, argc2, argv2); }, advgetopt::getopt_exception_logic );
+            CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(options, argc2, argv2), advgetopt::getopt_exception_logic );
 
 //            // all of the following have the exiting exception
 //            for(int i(static_cast<int>(advgetopt::getopt::status_t::no_error)); i <= static_cast<int>(advgetopt::getopt::status_t::fatal); ++i)

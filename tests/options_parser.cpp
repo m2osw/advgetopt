@@ -506,7 +506,7 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
         char ** argv = const_cast<char **>(cargv);
 
-        CATCH_REQUIRE_THROWS_AS( { advgetopt::getopt opt(environment_options, argc, argv); }, advgetopt::getopt_exception_logic);
+        CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(environment_options, argc, argv), advgetopt::getopt_exception_logic);
     }
 
     CATCH_SECTION("Options without a name (null pointer)")
@@ -554,7 +554,7 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
         char ** argv = const_cast<char **>(cargv);
 
-        CATCH_REQUIRE_THROWS_AS( { advgetopt::getopt opt(environment_options, argc, argv); }, advgetopt::getopt_exception_logic);
+        CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(environment_options, argc, argv), advgetopt::getopt_exception_logic);
     }
 
     CATCH_SECTION("Options without a name (empty string)")
@@ -601,7 +601,7 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
         char ** argv = const_cast<char **>(cargv);
 
-        CATCH_REQUIRE_THROWS_AS( { advgetopt::getopt opt(environment_options, argc, argv); }, advgetopt::getopt_exception_logic);
+        CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(environment_options, argc, argv), advgetopt::getopt_exception_logic);
     }
 
     CATCH_SECTION("Options with a one letter name")
@@ -648,7 +648,7 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
         char ** argv = const_cast<char **>(cargv);
 
-        CATCH_REQUIRE_THROWS_AS( { advgetopt::getopt opt(environment_options, argc, argv); }, advgetopt::getopt_exception_logic);
+        CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(environment_options, argc, argv), advgetopt::getopt_exception_logic);
     }
 
     CATCH_SECTION("Duplicated Options (Long Name)")
@@ -687,7 +687,7 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
         char ** argv = const_cast<char **>(cargv);
 
-        CATCH_REQUIRE_THROWS_AS( { advgetopt::getopt opt(environment_options, argc, argv); }, advgetopt::getopt_exception_logic);
+        CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(environment_options, argc, argv), advgetopt::getopt_exception_logic);
     }
 
     CATCH_SECTION("Duplicated Options (short name)")
@@ -728,7 +728,7 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
         char ** argv = const_cast<char **>(cargv);
 
-        CATCH_REQUIRE_THROWS_AS( { advgetopt::getopt opt(environment_options, argc, argv); }, advgetopt::getopt_exception_logic);
+        CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(environment_options, argc, argv), advgetopt::getopt_exception_logic);
     }
 
     CATCH_SECTION("Duplicated Default Options")
@@ -767,7 +767,7 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
         char ** argv = const_cast<char **>(cargv);
 
-        CATCH_REQUIRE_THROWS_AS( { advgetopt::getopt opt(environment_options, argc, argv); }, advgetopt::getopt_exception_logic);
+        CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(environment_options, argc, argv), advgetopt::getopt_exception_logic);
     }
 
     CATCH_SECTION("Default Option marked as being a FLAG")
@@ -807,7 +807,7 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
         char ** argv = const_cast<char **>(cargv);
 
-        CATCH_REQUIRE_THROWS_AS( { advgetopt::getopt opt(environment_options, argc, argv); }, advgetopt::getopt_exception_logic);
+        CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(environment_options, argc, argv), advgetopt::getopt_exception_logic);
     }
 }
 

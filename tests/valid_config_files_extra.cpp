@@ -625,7 +625,7 @@ CATCH_TEST_CASE("valid_config_files_extra", "AdvGetOptUnitTests")
 
             // this initialization works as expected
             {
-                CATCH_REQUIRE_THROWS_AS( { advgetopt::getopt opt(options, argc2, argv2); }, advgetopt::getopt_exception_logic);
+                CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(options, argc2, argv2), advgetopt::getopt_exception_logic);
             }
 
 #if 0

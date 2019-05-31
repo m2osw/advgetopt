@@ -119,7 +119,7 @@ CATCH_TEST_CASE( "getop_logic_errors", "invalid" )
     {
         // argv can't be a nullptr
         //
-        CATCH_REQUIRE_THROWS_AS( { advgetopt::getopt opt(*g_options_environment, 0, nullptr); }, advgetopt::getopt_exception_logic);
+        CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(*g_options_environment, 0, nullptr), advgetopt::getopt_exception_logic);
 
         // g_options_environment can't be a reference to a null pointer
         // (I know that is not very likely but if you allocate the
@@ -127,14 +127,14 @@ CATCH_TEST_CASE( "getop_logic_errors", "invalid" )
         // it can happen.)
         //
         char * argv[] = { const_cast<char *>("program.exe"), nullptr };
-        CATCH_REQUIRE_THROWS_AS( { advgetopt::getopt opt(*g_options_environment, 0, argv); }, advgetopt::getopt_exception_logic);
+        CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(*g_options_environment, 0, argv), advgetopt::getopt_exception_logic);
     }
 
     CATCH_SECTION("initialiazing getopt with null pointers")
     {
         advgetopt::options_environment options_environment;
         char * argv[] = { const_cast<char *>("program.exe"), nullptr };
-        CATCH_REQUIRE_THROWS_AS( { advgetopt::getopt opt(options_environment, 1, argv); }, advgetopt::getopt_exception_logic);
+        CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(options_environment, 1, argv), advgetopt::getopt_exception_logic);
     }
 }
 
