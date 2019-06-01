@@ -1,6 +1,6 @@
 /*
  * Files:
- *    tests/valid_options_files.cpp
+ *    tests/options_files.cpp
  *
  * License:
  *    Copyright (c) 2006-2019  Made to Order Software Corp.  All Rights Reserved
@@ -30,29 +30,17 @@
 //
 #include "main.h"
 
-//// advgetopt lib
-////
-//#include "advgetopt/advgetopt.h"
-//#include "advgetopt/exception.h"
-//#include "advgetopt/log.h"
 
 // C++ lib
 //
-//#include <cstring>
-//#include <cmath>
-//#include <sstream>
 #include <fstream>
-
-//// C lib
-////
-//#include <time.h>
 
 
 
 
 CATCH_TEST_CASE("valid_options_files", "options")
 {
-    std::string tmpdir(unittest::g_tmp_dir);
+    std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir);
     tmpdir += "/shared/advgetopt";
     std::stringstream ss;
     ss << "mkdir -p " << tmpdir;
@@ -66,22 +54,13 @@ CATCH_TEST_CASE("valid_options_files", "options")
     // new set of options to test the special "--" option
     advgetopt::option const valid_options_from_file_list[] =
     {
-        {
-            'v',
-            advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_CONFIGURATION_FILE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_FLAG,
-            "verbose",
-            nullptr,
-            "a verbose like option, select it or not",
-            nullptr
-        },
-        {
-            '\0',
-            advgetopt::GETOPT_FLAG_END,
-            nullptr,
-            nullptr,
-            nullptr,
-            nullptr
-        }
+        advgetopt::define_option(
+              advgetopt::Name("verbose")
+            , advgetopt::ShortName('v')
+            , advgetopt::Flags(advgetopt::standalone_all_flags<>())
+            , advgetopt::Help("a verbose like option, select it or not.")
+        ),
+        advgetopt::end_options()
     };
 
     advgetopt::options_environment valid_options_from_file;

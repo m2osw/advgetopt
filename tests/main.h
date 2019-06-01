@@ -25,8 +25,8 @@
  * Authors:
  *    Alexis Wilke   alexis@m2osw.com
  */
-#ifndef UNIT_TEST_MAIN_H
-#define UNIT_TEST_MAIN_H
+#pragma once
+
 
 // advgetopt lib
 //
@@ -35,7 +35,7 @@
 
 // catch lib
 //
-#include <catch2/catch.hpp>
+#include <catch2/snapcatch2.hpp>
 
 // C++ lib
 //
@@ -44,18 +44,11 @@
 #include <cstdlib>
 #include <iostream>
 
-#ifdef _MSC_VER
-// The POSIX name for this item is deprecated. Instead, use the ISO C++ conformant name: ... See online help for details.
-// This is because of the putenv() and strdup() used in the class below
-#pragma warning(disable: 4996)
-#endif
 
-namespace unittest
+namespace SNAP_CATCH2_NAMESPACE
 {
 
 extern std::string                  g_tmp_dir;
-extern bool                         g_verbose;
-extern std::vector<std::string>     g_expected_logs;
 
 void                                push_expected_log(std::string const & message);
 void                                log_for_test(advgetopt::log_level_t level, std::string const & message);
@@ -87,5 +80,4 @@ private:
 
 
 }
-#endif
 // vim: ts=4 sw=4 et

@@ -57,56 +57,6 @@ advgetopt::options_environment *    g_options_environment = nullptr; // to test 
 
 
 
-std::vector<std::string>            g_expected_logs = std::vector<std::string>();
-
-void log_for_test(advgetopt::log_level_t level, std::string const & message)
-{
-    if(unittest::g_verbose)
-    {
-        std::cerr << "logger sent:\n"
-                  << advgetopt::to_string(level)
-                  << ": "
-                  << message
-                  << std::endl;
-    }
-
-    // at this time it's impossible to debug the location of the empty
-    // problem without a proper stack trace...
-    //
-    if(g_expected_logs.empty())
-    {
-        libexcept::stack_trace_t trace(libexcept::collect_stack_trace_with_line_numbers());
-        std::cerr << "*** STACK TRACE ***" << std::endl;
-        for(auto const & l : trace)
-        {
-            std::cerr << l << std::endl;
-        }
-        std::cerr << "***" << std::endl;
-    }
-
-    CATCH_REQUIRE_FALSE(g_expected_logs.empty());
-
-    std::stringstream ss;
-    ss << advgetopt::to_string(level) << ": " << message;
-
-    // again, the REQUIRE() is not going to be useful in terms of line number
-    //
-    if(g_expected_logs[0] != ss.str())
-    {
-        libexcept::stack_trace_t trace(libexcept::collect_stack_trace_with_line_numbers());
-        std::cerr << "*** STACK TRACE ***" << std::endl;
-        for(auto const & l : trace)
-        {
-            std::cerr << l << std::endl;
-        }
-        std::cerr << "***" << std::endl;
-    }
-
-    std::string expected_msg(g_expected_logs[0]);
-    g_expected_logs.erase(g_expected_logs.begin());
-
-    CATCH_REQUIRE(expected_msg == ss.str());
-}
 
 
 } // no name namespace

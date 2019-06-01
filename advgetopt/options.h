@@ -39,18 +39,13 @@
 // advgetopt lib
 //
 #include    "advgetopt/option_info.h"
-//#include    "advgetopt/validator.h"
 
 // snapdev lib
 //
 #include    <snapdev/not_used.h>
 
-// // C++ lib
-// //
-// #include    <limits>
-// #include    <map>
-// #include    <memory>
-// #include    <vector>
+// C++ lib
+//
 #include <iostream>
 
 
@@ -119,6 +114,31 @@ constexpr flag_t option_flags()
 
     //static_assert((result & (GETOPT_FLAG_ENVIRONMENT_VARIABLE | GETOPT_FLAG_CONFIGURATION_FILE)) == 0
     //            , "an option_flag() cannot include GETOPT_FLAG_ENVIRONMENT_VARIABLE | GETOPT_FLAG_CONFIGURATION_FILE");
+
+    return result;
+}
+
+
+template<flag_t ...args>
+constexpr flag_t all_flags()
+{
+    constexpr flag_t result(combine_option_flags<GETOPT_FLAG_COMMAND_LINE
+                                               , GETOPT_FLAG_ENVIRONMENT_VARIABLE
+                                               , GETOPT_FLAG_CONFIGURATION_FILE
+                                               , args...>());
+
+    return result;
+}
+
+
+template<flag_t ...args>
+constexpr flag_t standalone_all_flags()
+{
+    constexpr flag_t result(combine_option_flags<GETOPT_FLAG_COMMAND_LINE
+                                               , GETOPT_FLAG_ENVIRONMENT_VARIABLE
+                                               , GETOPT_FLAG_CONFIGURATION_FILE
+                                               , GETOPT_FLAG_FLAG
+                                               , args...>());
 
     return result;
 }

@@ -44,7 +44,15 @@ namespace unittest
 {
 
 
+
+namespace
+{
+
 std::vector<std::string>        g_expected_logs = std::vector<std::string>();
+
+}
+// no name namespace
+
 
 
 void push_expected_log(std::string const & message)
@@ -55,7 +63,7 @@ void push_expected_log(std::string const & message)
 
 void log_for_test(advgetopt::log_level_t level, std::string const & message)
 {
-    if(unittest::g_verbose
+    if(SNAP_CATCH2_NAMESPACE::g_progress
     || g_expected_logs.empty())
     {
         std::cerr << "logger sent:\n"
