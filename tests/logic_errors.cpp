@@ -32,9 +32,9 @@
 
 // advgetopt lib
 //
-#include "advgetopt/advgetopt.h"
-#include "advgetopt/exception.h"
-#include "advgetopt/log.h"
+#include <advgetopt/advgetopt.h>
+#include <advgetopt/exception.h>
+#include <advgetopt/log.h>
 
 // C++ lib
 //
@@ -62,8 +62,9 @@ advgetopt::options_environment *    g_options_environment = nullptr; // to test 
 } // no name namespace
 
 
+// TODO: get rid of this file once we replicated all of these (two test) in other locations
 
-CATCH_TEST_CASE( "getop_logic_errors", "invalid" )
+CATCH_TEST_CASE("getop_logic_errors", "[invalid]")
 {
     CATCH_SECTION("initialiazing getopt with null pointers")
     {

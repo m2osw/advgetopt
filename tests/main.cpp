@@ -135,6 +135,12 @@ int finish_init(Catch::Session & session)
 }
 
 
+void tests_done()
+{
+    SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
+}
+
+
 
 }
 // no name namespace
@@ -154,6 +160,7 @@ int main(int argc, char * argv[])
             , []() { libexcept::set_collect_stack(false); }
             , &add_command_line_options
             , &finish_init
+            , &tests_done
         );
 }
 

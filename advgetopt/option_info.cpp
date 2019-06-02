@@ -780,6 +780,7 @@ void option_info::add_value(std::string const & value)
         else
         {
             f_value[0] = value;
+            f_integer.clear();
         }
     }
     else
@@ -829,6 +830,7 @@ void option_info::set_value(int idx, std::string const & value)
     {
         f_value[idx] = value;
     }
+    f_integer.clear();
 }
 
 

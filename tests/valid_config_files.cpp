@@ -32,20 +32,16 @@
 
 // advgetopt lib
 //
-//#include "advgetopt/advgetopt.h"
-#include "advgetopt/exception.h"
-//#include "advgetopt/log.h"
+#include <advgetopt/exception.h>
+
+// snapdev lib
+//
+#include <snapdev/safe_setenv.h>
 
 // C++ lib
 //
-//#include <cstring>
-//#include <cmath>
-//#include <sstream>
 #include <fstream>
 
-//// C lib
-////
-//#include <time.h>
 
 
 
@@ -53,7 +49,7 @@
 
 
 
-CATCH_TEST_CASE("valid_config_files", "config,getopt")
+CATCH_TEST_CASE("valid_config_files", "[config][getopt]")
 {
     // default arguments
     const char *cargv[] =
@@ -67,7 +63,7 @@ CATCH_TEST_CASE("valid_config_files", "config,getopt")
 
     //std::vector<std::string> empty_confs;
 
-    std::string tmpdir(unittest::g_tmp_dir);
+    std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir);
     tmpdir += "/.config";
     std::stringstream ss;
     ss << "mkdir -p " << tmpdir;
@@ -324,7 +320,7 @@ CATCH_TEST_CASE("valid_config_files", "config,getopt")
     {
         // here we have verbose twice which should hit the no_argument case
         // in the add_option() function
-        unittest::obj_setenv env("ADVGETOPT_TEST_OPTIONS= --verbose --number\t15\t--filenames foo bar blah --string weird -v");
+        snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", " --verbose --number\t15\t--filenames foo bar blah --string weird -v");
         advgetopt::getopt opt(valid_options_no_confs, argc, argv);
 
         // check that the result is valid
@@ -371,7 +367,7 @@ CATCH_TEST_CASE("valid_config_files", "config,getopt")
 
     // test that the environment variable has priority over a configuration file
     {
-        unittest::obj_setenv env(const_cast<char *>("ADVGETOPT_TEST_OPTIONS=--number 501 --filenames more files"));
+        snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--number 501 --filenames more files");
 
         {
             std::ofstream config_file;
@@ -433,7 +429,7 @@ CATCH_TEST_CASE("valid_config_files", "config,getopt")
 
     // test order: conf files, environment var, command line
     {
-        unittest::obj_setenv env(const_cast<char *>("ADVGETOPT_TEST_OPTIONS=--number 501 --filenames more files"));
+        snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--number 501 --filenames more files");
         {
             std::ofstream config_file;
             config_file.open(config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
@@ -513,7 +509,7 @@ CATCH_TEST_CASE("valid_config_files", "config,getopt")
 
     // test again, just in case: conf files, environment var, command line
     {
-        unittest::obj_setenv env(const_cast<char *>("ADVGETOPT_TEST_OPTIONS=--number 709 --filenames more files --string \"hard work in env\""));
+        snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--number 709 --filenames more files --string \"hard work in env\"");
         {
             std::ofstream config_file;
             config_file.open(config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);

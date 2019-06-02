@@ -32,28 +32,19 @@
 
 // advgetopt lib
 //
-//#include "advgetopt/advgetopt.h"
-#include "advgetopt/exception.h"
-//#include "advgetopt/log.h"
+#include <advgetopt/exception.h>
 
 // C++ lib
 //
-//#include <cstring>
-//#include <cmath>
-//#include <sstream>
 #include <fstream>
 
-//// C lib
-////
-//#include <time.h>
 
 
 
 
 CATCH_TEST_CASE("options_parser", "[options][valid]")
 {
-    CATCH_SECTION("System options only")
-    {
+    CATCH_START_SECTION("System options only")
         advgetopt::options_environment environment_options;
         environment_options.f_project_name = "unittest";
         environment_options.f_options = nullptr;
@@ -145,10 +136,9 @@ CATCH_TEST_CASE("options_parser", "[options][valid]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "options-parser");
         CATCH_REQUIRE(opt.get_program_fullname() == "tests/options-parser");
-    }
+    CATCH_END_SECTION()
 
-    CATCH_SECTION("Duplicated options")
-    {
+    CATCH_START_SECTION("Duplicated options")
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -257,10 +247,9 @@ CATCH_TEST_CASE("options_parser", "[options][valid]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "options-parser");
         CATCH_REQUIRE(opt.get_program_fullname() == "options-parser");
-    }
+    CATCH_END_SECTION()
 
-    CATCH_SECTION("Default option")
-    {
+    CATCH_START_SECTION("Default option")
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -369,10 +358,9 @@ CATCH_TEST_CASE("options_parser", "[options][valid]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "options-parser");
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/options-parser");
-    }
+    CATCH_END_SECTION()
 
-    CATCH_SECTION("Alias option")
-    {
+    CATCH_START_SECTION("Alias option")
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -481,7 +469,7 @@ CATCH_TEST_CASE("options_parser", "[options][valid]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "options-parser");
         CATCH_REQUIRE(opt.get_program_fullname() == "options-parser");
-    }
+    CATCH_END_SECTION()
 }
 
 
@@ -489,8 +477,7 @@ CATCH_TEST_CASE("options_parser", "[options][valid]")
 
 CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
 {
-    CATCH_SECTION("No options")
-    {
+    CATCH_START_SECTION("No options")
         advgetopt::options_environment environment_options;
         environment_options.f_project_name = "unittest";
         environment_options.f_options = nullptr;
@@ -507,10 +494,9 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         char ** argv = const_cast<char **>(cargv);
 
         CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(environment_options, argc, argv), advgetopt::getopt_exception_logic);
-    }
+    CATCH_END_SECTION()
 
-    CATCH_SECTION("Options without a name (null pointer)")
-    {
+    CATCH_START_SECTION("Options without a name (null pointer)")
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -555,10 +541,9 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         char ** argv = const_cast<char **>(cargv);
 
         CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(environment_options, argc, argv), advgetopt::getopt_exception_logic);
-    }
+    CATCH_END_SECTION()
 
-    CATCH_SECTION("Options without a name (empty string)")
-    {
+    CATCH_START_SECTION("Options without a name (empty string)")
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -602,10 +587,9 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         char ** argv = const_cast<char **>(cargv);
 
         CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(environment_options, argc, argv), advgetopt::getopt_exception_logic);
-    }
+    CATCH_END_SECTION()
 
-    CATCH_SECTION("Options with a one letter name")
-    {
+    CATCH_START_SECTION("Options with a one letter name")
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -649,10 +633,9 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         char ** argv = const_cast<char **>(cargv);
 
         CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(environment_options, argc, argv), advgetopt::getopt_exception_logic);
-    }
+    CATCH_END_SECTION()
 
-    CATCH_SECTION("Duplicated Options (Long Name)")
-    {
+    CATCH_START_SECTION("Duplicated Options (Long Name)")
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -688,10 +671,9 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         char ** argv = const_cast<char **>(cargv);
 
         CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(environment_options, argc, argv), advgetopt::getopt_exception_logic);
-    }
+    CATCH_END_SECTION()
 
-    CATCH_SECTION("Duplicated Options (short name)")
-    {
+    CATCH_START_SECTION("Duplicated Options (short name)")
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -729,10 +711,9 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         char ** argv = const_cast<char **>(cargv);
 
         CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(environment_options, argc, argv), advgetopt::getopt_exception_logic);
-    }
+    CATCH_END_SECTION()
 
-    CATCH_SECTION("Duplicated Default Options")
-    {
+    CATCH_START_SECTION("Duplicated Default Options")
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -768,10 +749,9 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         char ** argv = const_cast<char **>(cargv);
 
         CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(environment_options, argc, argv), advgetopt::getopt_exception_logic);
-    }
+    CATCH_END_SECTION()
 
-    CATCH_SECTION("Default Option marked as being a FLAG")
-    {
+    CATCH_START_SECTION("Default Option marked as being a FLAG")
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -808,7 +788,7 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         char ** argv = const_cast<char **>(cargv);
 
         CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(environment_options, argc, argv), advgetopt::getopt_exception_logic);
-    }
+    CATCH_END_SECTION()
 }
 
 

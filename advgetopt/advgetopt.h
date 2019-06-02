@@ -61,11 +61,25 @@ class getopt
 public:
     typedef std::shared_ptr<getopt>     pointer_t;
 
+                            getopt(options_environment const & opts);
                             getopt(options_environment const & opts
                                  , int argc
                                  , char * argv[]);
 
     void                    reset();
+
+    void                    parse_options_info(
+                                      option const * opts
+                                    , bool ignore_duplicates = false);
+    void                    link_aliases();
+
+    void                    parse_program_name(char * argv[]);
+
+    void                    parse_configuration_files();
+    void                    load_configuration_files(std::string const & filename);
+    void                    process_configuration_file(std::string const & filename);
+
+    void                    parse_environment_variable();
 
     void                    parse_string(
                                       std::string const & str
@@ -73,10 +87,7 @@ public:
     void                    parse_arguments(
                                       int argc
                                     , char * argv[]
-                                    , bool only_environment_variable);
-    void                    parse_options_info(
-                                      option const * opts
-                                    , bool ignore_duplicates);
+                                    , bool only_environment_variable = false);
 
     option_info::pointer_t  get_option(std::string const & name) const;
     option_info::pointer_t  get_option(short_name_t name) const;
@@ -110,14 +121,7 @@ public:
                                     , size_t const line_width);
 
 private:
-    void                    parse_program_name(char * argv[]);
     void                    parse_options_from_file();
-    void                    parse_configuration_files();
-    void                    parse_environment_variable();
-
-    void                    link_aliases();
-
-    void                    process_configuration_file(std::string const & filename);
 
     void                    add_options(option_info::pointer_t opt
                                       , int & i

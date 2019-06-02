@@ -32,15 +32,15 @@
 
 // advgetopt lib
 //
-#include "advgetopt/log.h"
+#include <advgetopt/log.h>
 
 // libexcept lib
 //
-#include "libexcept/exception.h"
+#include <libexcept/exception.h>
 
 
 
-namespace unittest
+namespace SNAP_CATCH2_NAMESPACE
 {
 
 
@@ -112,5 +112,19 @@ void log_for_test(advgetopt::log_level_t level, std::string const & message)
 }
 
 
-} // no name namespace
+void expected_logs_stack_is_empty()
+{
+    if(!g_expected_logs.empty())
+    {
+        std::cerr << "List of expected error logs which did not occur:" << std::endl;
+        for(auto l : g_expected_logs)
+        {
+            std::cerr << "  " << l << std::endl;
+        }
+        throw std::logic_error("a test left an unexpected error message in the g_expected_logs vector.");
+    }
+}
+
+
+} // SNAP_CATCH2_NAMESPACE namespace
 // vim: ts=4 sw=4 et

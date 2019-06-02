@@ -317,6 +317,126 @@ bool is_arg(char const * a)
 
 /** \brief Initialize the getopt object.
  *
+ * \section into Introduction
+ *
+ * This constructor initializes a getopt object. It also reads and parses
+ * the corresponding option configuration file if it exists (based on the
+ * project name defined in the environment parameter.)
+ *
+ * \section program_name Program Name
+ *
+ * Once constructed, if you want to have access to the program name, make
+ * sure to call this function with your `argv` variable:
+ *
+ * \code
+ *     opt.parse_program_name(argv);
+ * \endcode
+ *
+ * Remember that the program name is often used in error messages so having
+ * it defined early is generally a good idea.
+ *
+ * \section dynamism Dynamic Options
+ *
+ * This constructor is most often used when you want to dynamically add
+ * options to your executable with the parse_options_info() function.
+ * For example, the list of options may vary slightly depending on what
+ * your command is named when launched.
+ *
+ * For example:
+ *
+ * \code
+ *     if(time(nullptr) & 1)
+ *     {
+ *         opt.parse_options_info(odd_options);
+ *     }
+ *     else
+ *     {
+ *         opt.parse_options_info(even_options);
+ *     }
+ * \endcode
+ *
+ * \section aliases Linking Aliases
+ *
+ * After you added all your dynamic options, you want to make sure that
+ * aliases are linked to the final option. You should always call that
+ * function because you can't be sure whether someone will add such an
+ * alias in the .ini option file.
+ *
+ * \code
+ *     opt.link_aliases();
+ * \endcode
+ *
+ * You can call this function any number of times. So if you add yet
+ * more dynamic options at a later time, just make sure to call it
+ * again in case aliases were added.
+ *
+ * \section parse Parse the Arguments
+ *
+ * Finally, you want to call the following functions in that order to
+ * parse the data from configuration files, the environment variable,
+ * and the list of command line arguments:
+ *
+ * \code
+ *     opt.parse_configuration_files();
+ *     opt.parse_environment_variable();
+ *     opt.parse_arguments(argc, argv);
+ * \endcode
+ *
+ * The order is important because the last command line option found is
+ * the one kept. So if the same argument is found in the configuration
+ * file, the environment variable and the command line, the one on the
+ * command line is kept. In most cases it makes no difference for standalone
+ * flags, but arguments that expect a parameter will be changed to the last
+ * specified value.
+ *
+ * If you want to determine the configuration filenames, you may use the
+ * process_configuration_file() function directly instead of the
+ * parse_configuration_files() function. This also gives you the ability
+ * to test whether a configuration file was indeed read.
+ *
+ * Note that the parse_arguments() last parameter (only_environment_variable)
+ * is expected to be left along when you call it with `argc` and `argv`.
+ *
+ * If you just have a string instead of an `argv` variable, call the
+ * parse_string() function instead. It will transform your string in an
+ * array of arguments and then call the parse_arguments() for you.
+ *
+ * \important
+ * Note that the program name does not get defined until you call the
+ * parse_program_name() function since that information comes from the
+ * first arguments of your command line which we do not get on
+ * construction in this case.
+ *
+ * \param[in] opt_env  The list of options that your program supports.
+ *
+ * \sa link_aliases()
+ * \sa parse_arguments()
+ * \sa parse_configuration_files()
+ * \sa parse_environment_variable()
+ * \sa parse_string()
+ * \sa process_configuration_file()
+ */
+getopt::getopt(options_environment const & opt_env)
+    : f_options(std::make_shared<option_info>("root"))
+{
+    if(&opt_env == nullptr)
+    {
+        throw getopt_exception_logic("opt_env pointer cannot be nullptr");
+    }
+
+    f_options_environment = opt_env;
+
+    parse_options_info(f_options_environment.f_options, false);
+    parse_options_from_file();
+    if((f_options_environment.f_environment_flags & GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS) != 0)
+    {
+        parse_options_info(g_system_options, true);
+    }
+}
+
+
+/** \brief Initialize the getopt object.
+ *
  * The constructor initializes a getopt object and parse the specified
  * argv array. If defined, it also parses a configuration file and
  * an environment variable.
@@ -439,6 +559,9 @@ void getopt::reset()
  * The function detects whether two options are marked as the default
  * option (the one receiving parameters that are not used by another command
  * or match a command.) This exception is raised when such is detected.
+ *
+ * \sa process_configuration_file()
+ * \sa load_configuration_files()
  */
 void getopt::parse_configuration_files()
 {
@@ -454,49 +577,80 @@ void getopt::parse_configuration_files()
       ; ++configuration_files)
     {
         char const * filename(*configuration_files);
-        if(*filename == '\0')
+        if(*filename != '\0')
         {
-            // skip empty string silently
-            //
-            continue;
+            load_configuration_files(filename);
+        }
+    }
+}
+
+
+/** \brief Try loading a configuration file.
+ *
+ * This function attempts to load a configuration file with the specified
+ * filename and if a project name is defined, also with that project name
+ * added with ".d" appended like so:
+ *
+ * \code
+ *     <filename path>/<project name>.d/<filename basename>
+ * \endcode
+ *
+ * If you are managing your own ".d" feature, make sure to call the
+ * process_configuration_file() function directly.
+ *
+ * The name of the file is not currently modified. It should already
+ * include the necessary extension such as ".conf" or ".ini".
+ *
+ * \todo
+ * Added more locations: we want to support a system configuration file
+ * under `/etc/<project-name>/`, and also a user defined configuration
+ * location under `~/.config/<project-name>/`. There could be others
+ * that should be automatic. Right now you can handle all of these
+ * with a list of configuration path, but automation is prime.
+ *
+ * \param[in] filename  The basic name of the configuration file.
+ *
+ * \sa process_configuration_file()
+ * \sa parse_configuration_files()
+ */
+void getopt::load_configuration_files(std::string const & filename)
+{
+    process_configuration_file(filename);
+
+    if(f_options_environment.f_project_name != nullptr
+    && *f_options_environment.f_project_name != '\0')
+    {
+        std::string adjusted_filename(filename);
+
+        std::string::size_type const pos(adjusted_filename.find_last_of('/'));
+        if(pos != std::string::npos
+        && pos > 0)
+        {
+            adjusted_filename = adjusted_filename.substr(0, pos + 1)
+                              + f_options_environment.f_project_name
+                              + ".d"
+                              + adjusted_filename.substr(pos);
+        }
+        else
+        {
+            adjusted_filename = f_options_environment.f_project_name
+                              + (".d/" + adjusted_filename);
         }
 
-        process_configuration_file(filename);
-
-        if(f_options_environment.f_project_name != nullptr
-        && *f_options_environment.f_project_name != '\0')
-        {
-            std::string adjusted_filename(filename);
-
-            std::string::size_type const pos(adjusted_filename.find_last_of('/'));
-            if(pos != std::string::npos
-            && pos > 0)
-            {
-                adjusted_filename = adjusted_filename.substr(0, pos + 1)
-                                  + f_options_environment.f_project_name
-                                  + ".d"
-                                  + adjusted_filename.substr(pos);
-            }
-            else
-            {
-                adjusted_filename = f_options_environment.f_project_name
-                                  + (".d/" + adjusted_filename);
-            }
-
-            process_configuration_file(adjusted_filename);
-        }
+        process_configuration_file(adjusted_filename);
     }
 }
 
 
 /** \brief Parse one specific configuration file and process the results.
  *
- * This function reads a configuration file using a conf_file object and
- * then goes through the resulting arguments and add them to the options.
+ * This function reads one specific configuration file using a conf_file
+ * object and then goes through the resulting arguments and add them to
+ * the options of this getopt object.
  *
  * The options found in the configuration file must match an option by
- * its long name. It is not allowed to have an option which is only one
- * character in a configuration file.
+ * its long name. In a configuration file, it is not allowed to have an
+ * option which name is only one character.
  *
  * \note
  * If the filename points to a file which can't be read or does not exist,
@@ -507,6 +661,9 @@ void getopt::parse_configuration_files()
  * class supports appear in the list of configuration filenames.
  *
  * \param[in] filename  The name of the configuration file to check out.
+ *
+ * \sa parse_configuration_files()
+ * \sa load_configuration_files()
  */
 void getopt::process_configuration_file(std::string const & filename)
 {
@@ -744,13 +901,32 @@ void getopt::parse_string(std::string const & str, bool only_environment_variabl
 
 /** \brief Transform the argv[0] parameter in the program name.
  *
- * This function is transforms the first command line parameter in a program
- * name. It will define two versions, the basename and the fullname.
+ * This function is transforms the first command line argument in a program
+ * name. It will define two versions, the basename and the fullname which
+ * you can access with the get_program_name() and get_program_fullname()
+ * functions.
+ *
+ * \note
+ * The %p and %*p options of the process_help_string() function make use
+ * of this parameter. If you never call this function, they both use an
+ * empty string as the program name.
+ *
+ * \exception getopt_exception_logic
+ * If you call this function with a null pointer, then it raises this
+ * exception.
  *
  * \param[in] argv  The arguments vector.
+ *
+ * \sa get_program_name()
+ * \sa get_program_fullname()
+ * \sa process_help_string()
  */
 void getopt::parse_program_name(char * argv[])
 {
+    if(argv == nullptr)
+    {
+        throw getopt_exception_logic("argv pointer cannot be nullptr");
+    }
     if(argv[0] != nullptr)
     {
         f_program_fullname = argv[0];
@@ -922,28 +1098,24 @@ void getopt::parse_options_from_file()
         std::string::size_type pos(s.first.find("::"));
         if(pos != std::string::npos)
         {
-            log << log_level_t::error
-                << "section \""
-                << s.first
-                << "\" includes a section separator (::) in \""
-                << filename
-                << "\". We only support one level."
-                << end;
-            continue;
+            throw getopt_exception_logic(
+                      "section \""
+                    + s.first
+                    + "\" includes a section separator (::) in \""
+                    + filename
+                    + "\". We only support one level.");
         }
 
         std::string const parameter_name(s.first);
         std::string const short_name(conf.get_parameter(parameter_name + "::shortname"));
         if(short_name.length() > 1)
         {
-            log << log_level_t::error
-                << "option \""
-                << s.first
-                << "\" has an invalid short name in \""
-                << filename
-                << "\", it can't be more than one character."
-                << end;
-            continue;
+            throw getopt_exception_logic(
+                      "option \""
+                    + s.first
+                    + "\" has an invalid short name in \""
+                    + filename
+                    + "\", it can't be more than one character.");
         }
         short_name_t sn('\0');
         if(short_name.length() == 1)
@@ -964,7 +1136,7 @@ void getopt::parse_options_from_file()
         opt->set_maximum(conf.get_parameter(parameter_name + "::maximum"));
         opt->set_help(conf.get_parameter(parameter_name + "::help"));
 
-        std::string const validator_name(parameter_name + "::validator");
+        std::string const validator_name(conf.get_parameter(parameter_name + "::validator"));
         if(validator_name.length() >= 2
         && validator_name[0] == '/')
         {
@@ -983,14 +1155,14 @@ void getopt::parse_options_from_file()
             {
                 if(validator_name.back() != ')')
                 {
-                    log << log_level_t::error
-                        << "option \""
-                        << s.first
-                        << "\" has an invalid validator parameter definition in \""
-                        << validator_name
-                        << "\", the ')' is missing."
-                        << end;
-                    continue;
+                    throw getopt_exception_logic(
+                              "option \""
+                            + s.first
+                            + "\" has an invalid validator parameter definition: \""
+                            + validator_name
+                            + "\", the ')' is missing in \""
+                            + filename
+                            + "\".");
                 }
                 name = validator_name.substr(0, param);
                 data = unquote(validator_name.substr(param + 1, validator_name.length() - param - 2));
@@ -1004,12 +1176,12 @@ void getopt::parse_options_from_file()
         {
             if(!opt->get_help().empty())
             {
-                log << log_level_t::error
-                    << "option \""
-                    << s.first
-                    << "\" is an alias and as such it can't include a help=... parameter."
-                    << end;
-                continue;
+                throw getopt_exception_logic(
+                          "option \""
+                        + s.first
+                        + "\" is an alias and as such it can't include a help=... parameter in \""
+                        + filename
+                        + "\".");
             }
             opt->set_help(conf.get_parameter(alias_name));
             opt->add_flag(GETOPT_FLAG_ALIAS);
@@ -1081,7 +1253,7 @@ void getopt::link_aliases()
             std::string const & alias_name(c.second->get_help());
             if(alias_name.empty())
             {
-                throw getopt_exception_invalid(
+                throw getopt_exception_logic(
                           "the default value of your alias cannot be an empty string for \""
                         + c.first
                         + "\".");
@@ -1090,7 +1262,7 @@ void getopt::link_aliases()
             option_info::pointer_t alias(get_option(alias_name));
             if(alias == nullptr)
             {
-                throw getopt_exception_invalid(
+                throw getopt_exception_logic(
                           "no option named \""
                         + alias_name
                         + "\" to satify the alias of \""
@@ -1725,6 +1897,8 @@ std::string getopt::get_string(std::string const & name, int idx) const
  * \param[in] help  A string that may include '%p'.
  *
  * \return The string with any '%p' replaced with the program name.
+ *
+ * \sa parse_program_name()
  */
 std::string getopt::process_help_string(char const * help) const
 {
@@ -2240,6 +2414,8 @@ std::string getopt::breakup_line(std::string line
  * \endcode
  *
  * \return The contents of the argv[0] parameter as defined on construction.
+ *
+ * \sa parse_program_name()
  */
 std::string getopt::get_program_fullname() const
 {
@@ -2256,6 +2432,8 @@ std::string getopt::get_program_fullname() const
  * the last reset() call.
  *
  * \return The basename of the program.
+ *
+ * \sa parse_program_name()
  */
 std::string getopt::get_program_name() const
 {

@@ -30,6 +30,13 @@
 //
 #include "main.h"
 
+// advgetopt lib
+//
+#include <advgetopt/exception.h>
+
+// snapdev lib
+//
+#include <snapdev/safe_setenv.h>
 
 // C++ lib
 //
@@ -38,45 +45,295 @@
 
 
 
-CATCH_TEST_CASE("valid_options_files", "options")
+CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
 {
-    std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir);
-    tmpdir += "/shared/advgetopt";
-    std::stringstream ss;
-    ss << "mkdir -p " << tmpdir;
-    if(system(ss.str().c_str()) != 0)
-    {
-        std::cerr << "fatal error: creating sub-temporary directory \"" << tmpdir << "\" failed.\n";
-        exit(1);
-    }
-    std::string const options_filename(tmpdir + "/unittest.ini");
+    CATCH_START_SECTION("Check the default path with a nullptr (not a very good test, though)")
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("verbose")
+                , advgetopt::ShortName('v')
+                , advgetopt::Flags(advgetopt::standalone_all_flags<>())
+                , advgetopt::Help("a verbose like option, select it or not.")
+            ),
+            advgetopt::end_options()
+        };
 
-    // new set of options to test the special "--" option
-    advgetopt::option const valid_options_from_file_list[] =
-    {
-        advgetopt::define_option(
-              advgetopt::Name("verbose")
-            , advgetopt::ShortName('v')
-            , advgetopt::Flags(advgetopt::standalone_all_flags<>())
-            , advgetopt::Help("a verbose like option, select it or not.")
-        ),
-        advgetopt::end_options()
-    };
+        advgetopt::options_environment options_env;
+        options_env.f_project_name = "this-is-the-name-of-a-test-project-which-wont-ever-exist";
+        options_env.f_options = options;
+        options_env.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
+        options_env.f_help_header = "Usage: test valid options from file";
 
-    advgetopt::options_environment valid_options_from_file;
-    valid_options_from_file.f_project_name = "unittest";
-    valid_options_from_file.f_options = valid_options_from_file_list;
-    valid_options_from_file.f_options_files_directory = tmpdir.c_str();
-    valid_options_from_file.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
-    valid_options_from_file.f_help_header = "Usage: test valid options from file";
+        char const * sub_cargv[] =
+        {
+            "tests/unittests/no_file_to_load",
+            "--verbose",
+            nullptr
+        };
+        int const sub_argc(sizeof(sub_cargv) / sizeof(sub_cargv[0]) - 1);
+        char ** sub_argv = const_cast<char **>(sub_cargv);
 
-    // yet again, just in case: conf files, environment var, command line
-    {
-        unittest::obj_setenv env(const_cast<char *>("ADVGETOPT_TEST_OPTIONS=--verbose"
-                                                    " --more purple"
-                                                    " --files left.txt center.txt right.txt"
-                                                    " --from"
-                                                    " --output destination.txt"));
+        advgetopt::getopt opt(options_env, sub_argc, sub_argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+
+        // the valid parameter
+        CATCH_REQUIRE(opt.is_defined("verbose"));
+        CATCH_REQUIRE(opt.get_default("verbose").empty());
+        CATCH_REQUIRE(opt.size("verbose") == 1);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "no_file_to_load");
+        CATCH_REQUIRE(opt.get_program_fullname() == "tests/unittests/no_file_to_load");
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Check the default path with an empty string (not a very good test, though)")
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("verbose")
+                , advgetopt::ShortName('v')
+                , advgetopt::Flags(advgetopt::standalone_all_flags<>())
+                , advgetopt::Help("a verbose like option, select it or not.")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment options_env;
+        options_env.f_project_name = "this-is-the-name-of-a-test-project-which-wont-ever-exist";
+        options_env.f_options = options;
+        options_env.f_options_files_directory = "";
+        options_env.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
+        options_env.f_help_header = "Usage: test valid options from file";
+
+        char const * sub_cargv[] =
+        {
+            "tests/unittests/no_file_to_load",
+            "--verbose",
+            nullptr
+        };
+        int const sub_argc(sizeof(sub_cargv) / sizeof(sub_cargv[0]) - 1);
+        char ** sub_argv = const_cast<char **>(sub_cargv);
+
+        advgetopt::getopt opt(options_env, sub_argc, sub_argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+
+        // the valid parameter
+        CATCH_REQUIRE(opt.is_defined("verbose"));
+        CATCH_REQUIRE(opt.get_default("verbose").empty());
+        CATCH_REQUIRE(opt.size("verbose") == 1);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "no_file_to_load");
+        CATCH_REQUIRE(opt.get_program_fullname() == "tests/unittests/no_file_to_load");
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Check the parsing of a valid options.ini file")
+        // create a file and make sure it's not read if the project name
+        // is empty
+        //
+        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir);
+        tmpdir += "/shared/advgetopt";
+        std::stringstream ss;
+        ss << "mkdir -p " << tmpdir;
+        if(system(ss.str().c_str()) != 0)
+        {
+            std::cerr << "fatal error: creating sub-temporary directory \"" << tmpdir << "\" failed.\n";
+            exit(1);
+        }
+        std::string const options_filename(tmpdir + "/no-project-name.ini");
+
+        advgetopt::option const valid_options_from_file_list[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("verbose")
+                , advgetopt::ShortName('v')
+                , advgetopt::Flags(advgetopt::standalone_all_flags<>())
+                , advgetopt::Help("a verbose like option, select it or not.")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment valid_options_from_file;
+        valid_options_from_file.f_project_name = nullptr;
+        valid_options_from_file.f_options = valid_options_from_file_list;
+        valid_options_from_file.f_options_files_directory = tmpdir.c_str();
+        valid_options_from_file.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
+        valid_options_from_file.f_help_header = "Usage: test valid options from file";
+
+        {
+            std::ofstream options_file;
+            options_file.open(options_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(options_file.good());
+            options_file <<
+                "# Auto-generated\n"
+
+                "[no-project-name]\n"
+                "shortname=n\n"
+                "default='inexistent'\n"
+                "help=Testing that this doesn't get loaded\n"
+                "allowed=command-line,environment-variable,configuration-file\n"
+            ;
+        }
+
+        char const * sub_cargv[] =
+        {
+            "tests/unittests/file_not_loaded",
+            "--verbose",
+            nullptr
+        };
+        int const sub_argc(sizeof(sub_cargv) / sizeof(sub_cargv[0]) - 1);
+        char ** sub_argv = const_cast<char **>(sub_cargv);
+
+        advgetopt::getopt opt(valid_options_from_file, sub_argc, sub_argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+
+        // the valid parameter
+        CATCH_REQUIRE(opt.is_defined("verbose"));
+        CATCH_REQUIRE(opt.get_default("verbose").empty());
+        CATCH_REQUIRE(opt.size("verbose") == 1);
+
+        // "--no-project-name"
+        CATCH_REQUIRE(opt.get_option("no-project-name") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("no-project-name"));
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "file_not_loaded");
+        CATCH_REQUIRE(opt.get_program_fullname() == "tests/unittests/file_not_loaded");
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Project name is an empty string")
+        // create a file and make sure it's not read if the project name
+        // is empty
+        //
+        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir);
+        tmpdir += "/shared/advgetopt";
+        std::stringstream ss;
+        ss << "mkdir -p " << tmpdir;
+        if(system(ss.str().c_str()) != 0)
+        {
+            std::cerr << "fatal error: creating sub-temporary directory \"" << tmpdir << "\" failed.\n";
+            exit(1);
+        }
+        std::string const options_filename(tmpdir + "/empty-string.ini");
+
+        advgetopt::option const valid_options_from_file_list[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("verbose")
+                , advgetopt::ShortName('v')
+                , advgetopt::Flags(advgetopt::standalone_all_flags<>())
+                , advgetopt::Help("a verbose like option, select it or not.")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment valid_options_from_file;
+        valid_options_from_file.f_project_name = "";
+        valid_options_from_file.f_options = valid_options_from_file_list;
+        valid_options_from_file.f_options_files_directory = tmpdir.c_str();
+        valid_options_from_file.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
+        valid_options_from_file.f_help_header = "Usage: test valid options from file";
+
+        {
+            std::ofstream options_file;
+            options_file.open(options_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(options_file.good());
+            options_file <<
+                "# Auto-generated\n"
+
+                "[no-project-name]\n"
+                "shortname=n\n"
+                "default='inexistent'\n"
+                "help=Testing that this doesn't get loaded\n"
+                "allowed=command-line,environment-variable,configuration-file\n"
+            ;
+        }
+
+        char const * sub_cargv[] =
+        {
+            "tests/unittests/file_not_loaded",
+            "--verbose",
+            nullptr
+        };
+        int const sub_argc(sizeof(sub_cargv) / sizeof(sub_cargv[0]) - 1);
+        char ** sub_argv = const_cast<char **>(sub_cargv);
+
+        advgetopt::getopt opt(valid_options_from_file, sub_argc, sub_argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+
+        // the valid parameter
+        CATCH_REQUIRE(opt.is_defined("verbose"));
+        CATCH_REQUIRE(opt.get_default("verbose").empty());
+        CATCH_REQUIRE(opt.size("verbose") == 1);
+
+        // "--no-project-name"
+        CATCH_REQUIRE(opt.get_option("no-project-name") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("no-project-name"));
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "file_not_loaded");
+        CATCH_REQUIRE(opt.get_program_fullname() == "tests/unittests/file_not_loaded");
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Check the parsing of a valid options.ini file")
+        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir);
+        tmpdir += "/shared/advgetopt";
+        std::stringstream ss;
+        ss << "mkdir -p " << tmpdir;
+        if(system(ss.str().c_str()) != 0)
+        {
+            std::cerr << "fatal error: creating sub-temporary directory \"" << tmpdir << "\" failed.\n";
+            exit(1);
+        }
+        std::string const options_filename(tmpdir + "/unittest.ini");
+
+        advgetopt::option const valid_options_from_file_list[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("verbose")
+                , advgetopt::ShortName('v')
+                , advgetopt::Flags(advgetopt::standalone_all_flags<>())
+                , advgetopt::Help("a verbose like option, select it or not.")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment valid_options_from_file;
+        valid_options_from_file.f_project_name = "unittest";
+        valid_options_from_file.f_options = valid_options_from_file_list;
+        valid_options_from_file.f_options_files_directory = tmpdir.c_str();
+        valid_options_from_file.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
+        valid_options_from_file.f_help_header = "Usage: test valid options from file";
+
+        snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS"
+                            , "--verbose"
+                             " --more purple"
+                             " -f left.txt center.txt right.txt"
+                             " --size 519"
+                             " --from"
+                             " --output destination.txt");
+
         {
             std::ofstream options_file;
             options_file.open(options_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
@@ -93,6 +350,14 @@ CATCH_TEST_CASE("valid_options_files", "options")
                 "show-usage-on-error\n"
                 "required\n"
 
+                "[size]\n"
+                "shortname=s\n"
+                "help=Specify the size\n"
+                "validator=/[0-9]+/\n"
+                "allowed=environment-variable,configuration-file\n"
+                "default=31\n"
+                "required\n"
+
                 "[files]\n"
                 "shortname=f\n"
                 "help=List of file names\n"
@@ -103,10 +368,9 @@ CATCH_TEST_CASE("valid_options_files", "options")
 
                 "[from]\n"
                 "shortname=F\n"
-                "help=request for the geographcal location representing the origin of the files\n"
+                "help=Request for the geographcal location representing the origin of the files; optionally you can specify the format\n"
                 "validator=integer\n"
-                "allowed=environment-variable,configuration-file\n"
-                "no-arguments\n"
+                "allowed=command-line,environment-variable,configuration-file\n"
 
                 "[output]\n"
                 "shortname=o\n"
@@ -120,25 +384,30 @@ CATCH_TEST_CASE("valid_options_files", "options")
                 "help=show this test license\n"
                 "allowed=command-line\n"
                 "no-arguments\n"
+
+                "[licence]\n"
+                "alias=license\n"
+                "allowed=command-line\n"
+                "no-arguments\n"
             ;
         }
 
         char const * sub_cargv[] =
         {
-            "tests/unittests/AdvGetOptUnitTests::valid_options_files",
+            "tests/unittests/valid_options_files",
             "--verbose",
-            "--license",
+            "--licence",
             nullptr
         };
         int const sub_argc(sizeof(sub_cargv) / sizeof(sub_cargv[0]) - 1);
         char ** sub_argv = const_cast<char **>(sub_cargv);
 
-        unittest::push_expected_log("error: option --license is not supported.");
         advgetopt::getopt opt(valid_options_from_file, sub_argc, sub_argv);
 
         // check that the result is valid
 
         // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
         CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
 
         // the valid parameter
@@ -152,6 +421,14 @@ CATCH_TEST_CASE("valid_options_files", "options")
         CATCH_REQUIRE(opt.get_default("more") == "More Stuff");
         CATCH_REQUIRE(opt.size("more") == 1);
 
+        // "--size <value>"
+        CATCH_REQUIRE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_string("size") == "519");
+        CATCH_REQUIRE(opt.get_string("size", 0) == "519");
+        CATCH_REQUIRE(opt.get_default("size") == "31");
+        CATCH_REQUIRE(opt.size("size") == 1);
+        CATCH_REQUIRE(opt.get_long("size") == 519);
+
         // "--files"
         CATCH_REQUIRE(opt.is_defined("files"));
         CATCH_REQUIRE(opt.get_string("files") == "left.txt");
@@ -164,6 +441,7 @@ CATCH_TEST_CASE("valid_options_files", "options")
         // "--from"
         CATCH_REQUIRE(opt.is_defined("from"));
         CATCH_REQUIRE(opt.get_string("from") == "");
+        CATCH_REQUIRE(opt.get_long("from") == 0);
         CATCH_REQUIRE(opt.get_default("from").empty());
         CATCH_REQUIRE(opt.size("from") == 1);
 
@@ -181,9 +459,511 @@ CATCH_TEST_CASE("valid_options_files", "options")
         CATCH_REQUIRE(opt.size("license") == 1);
 
         // other parameters
-        CATCH_REQUIRE(opt.get_program_name() == "AdvGetOptUnitTests::valid_options_files");
-        CATCH_REQUIRE(opt.get_program_fullname() == "tests/unittests/AdvGetOptUnitTests::valid_options_files");
-    }
+        CATCH_REQUIRE(opt.get_program_name() == "valid_options_files");
+        CATCH_REQUIRE(opt.get_program_fullname() == "tests/unittests/valid_options_files");
+
+        char const * sub_cargv2[] =
+        {
+            "this/is/ignored",
+            "--from",
+            "1001",
+            nullptr
+        };
+        int const sub_argc2(sizeof(sub_cargv2) / sizeof(sub_cargv2[0]) - 1);
+        char ** sub_argv2 = const_cast<char **>(sub_cargv2);
+
+        opt.parse_arguments(sub_argc2, sub_argv2);
+
+        // "--from"
+        CATCH_REQUIRE(opt.is_defined("from"));
+        CATCH_REQUIRE(opt.get_string("from") == "1001");
+        CATCH_REQUIRE(opt.get_long("from") == 1001);
+        CATCH_REQUIRE(opt.get_default("from").empty());
+        CATCH_REQUIRE(opt.size("from") == 1);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "valid_options_files");
+        CATCH_REQUIRE(opt.get_program_fullname() == "tests/unittests/valid_options_files");
+
+        // keep the last value...
+        //
+        opt.parse_environment_variable();
+
+        // "--from"
+        CATCH_REQUIRE(opt.is_defined("from"));
+        CATCH_REQUIRE(opt.get_string("from") == "");
+        CATCH_REQUIRE(opt.get_long("from") == 0);
+        CATCH_REQUIRE(opt.get_default("from").empty());
+        CATCH_REQUIRE(opt.size("from") == 1);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "valid_options_files");
+        CATCH_REQUIRE(opt.get_program_fullname() == "tests/unittests/valid_options_files");
+
+        // a reset will restore the state
+        //
+        opt.reset();
+
+        // the valid parameter
+        CATCH_REQUIRE_FALSE(opt.is_defined("verbose"));
+        CATCH_REQUIRE(opt.get_default("verbose").empty());
+        CATCH_REQUIRE(opt.size("verbose") == 0);
+
+        // "--from"
+        CATCH_REQUIRE_FALSE(opt.is_defined("from"));
+        CATCH_REQUIRE(opt.get_default("from").empty());
+        CATCH_REQUIRE(opt.size("from") == 0);
+
+        opt.parse_environment_variable();
+        opt.parse_arguments(sub_argc2, sub_argv2);
+
+        // "--from"
+        CATCH_REQUIRE(opt.is_defined("from"));
+        CATCH_REQUIRE(opt.get_string("from") == "1001");
+        CATCH_REQUIRE(opt.get_long("from") == 1001);
+        CATCH_REQUIRE(opt.get_default("from").empty());
+        CATCH_REQUIRE(opt.size("from") == 1);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "valid_options_files");
+        CATCH_REQUIRE(opt.get_program_fullname() == "tests/unittests/valid_options_files");
+
+    CATCH_END_SECTION()
+}
+
+
+CATCH_TEST_CASE("invalid_options_files", "[options][invalid][files]")
+{
+    CATCH_START_SECTION("2+ section names")
+        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir);
+        tmpdir += "/shared/advgetopt";
+        std::stringstream ss;
+        ss << "mkdir -p " << tmpdir;
+        if(system(ss.str().c_str()) != 0)
+        {
+            std::cerr << "fatal error: creating sub-temporary directory \"" << tmpdir << "\" failed.\n";
+            exit(1);
+        }
+        std::string const options_filename(tmpdir + "/bad-section.ini");
+
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("verbose")
+                , advgetopt::ShortName('v')
+                , advgetopt::Flags(advgetopt::standalone_all_flags<>())
+                , advgetopt::Help("a verbose like option, select it or not.")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment options_environment;
+        options_environment.f_project_name = "bad-section";
+        options_environment.f_options = options;
+        options_environment.f_options_files_directory = tmpdir.c_str();
+        options_environment.f_environment_variable_name = nullptr;
+        options_environment.f_help_header = "Usage: test invalid section name";
+
+        {
+            std::ofstream options_file;
+            options_file.open(options_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(options_file.good());
+            options_file <<
+                "# Auto-generated\n"
+
+                "[invalid::name]\n"
+                "shortname=m\n"
+                "default='Invalid Stuff'\n"
+                "help=Testing that a section name can't include \"::\"\n"
+                "allowed=command-line,environment-variable,configuration-file\n"
+            ;
+        }
+
+        char const * sub_cargv[] =
+        {
+            "tests/unittests/invalid_name_in_options_ini",
+            "--verbose",
+            nullptr
+        };
+        int const sub_argc(sizeof(sub_cargv) / sizeof(sub_cargv[0]) - 1);
+        char ** sub_argv = const_cast<char **>(sub_cargv);
+
+        CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(options_environment, sub_argc, sub_argv)
+                    , advgetopt::getopt_exception_logic
+                    , Catch::Matchers::Equals(
+                              "section \"invalid::name\" includes a section separator (::) in \""
+                            + options_filename
+                            + "\". We only support one level."));
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("short name too long")
+        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir);
+        tmpdir += "/shared/advgetopt";
+        std::stringstream ss;
+        ss << "mkdir -p " << tmpdir;
+        if(system(ss.str().c_str()) != 0)
+        {
+            std::cerr << "fatal error: creating sub-temporary directory \"" << tmpdir << "\" failed.\n";
+            exit(1);
+        }
+        std::string const options_filename(tmpdir + "/bad-shortname.ini");
+
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("verbose")
+                , advgetopt::ShortName('v')
+                , advgetopt::Flags(advgetopt::standalone_all_flags<>())
+                , advgetopt::Help("a verbose like option, select it or not.")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment options_environment;
+        options_environment.f_project_name = "bad-shortname";
+        options_environment.f_options = options;
+        options_environment.f_options_files_directory = tmpdir.c_str();
+        options_environment.f_environment_variable_name = nullptr;
+        options_environment.f_help_header = "Usage: test invalid shortname";
+
+        {
+            std::ofstream options_file;
+            options_file.open(options_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(options_file.good());
+            options_file <<
+                "# Auto-generated\n"
+
+                "[badname]\n"
+                "shortname=to\n"
+                "default='Invalid Stuff'\n"
+                "help=Testing that a shotname can't be 2 characters or more\n"
+                "allowed=command-line,environment-variable,configuration-file\n"
+            ;
+        }
+
+        char const * sub_cargv[] =
+        {
+            "tests/unittests/invalid_name_in_options_ini",
+            "--verbose",
+            nullptr
+        };
+        int const sub_argc(sizeof(sub_cargv) / sizeof(sub_cargv[0]) - 1);
+        char ** sub_argv = const_cast<char **>(sub_cargv);
+
+        CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(options_environment, sub_argc, sub_argv)
+                    , advgetopt::getopt_exception_logic
+                    , Catch::Matchers::Equals(
+                              "option \"badname\" has an invalid short name in \""
+                            + options_filename
+                            + "\", it can't be more than one character."));
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("missing ')' in validator specification")
+        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir);
+        tmpdir += "/shared/advgetopt";
+        std::stringstream ss;
+        ss << "mkdir -p " << tmpdir;
+        if(system(ss.str().c_str()) != 0)
+        {
+            std::cerr << "fatal error: creating sub-temporary directory \"" << tmpdir << "\" failed.\n";
+            exit(1);
+        }
+        std::string const options_filename(tmpdir + "/bad-validator-parenthesis.ini");
+
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("verbose")
+                , advgetopt::ShortName('v')
+                , advgetopt::Flags(advgetopt::standalone_all_flags<>())
+                , advgetopt::Help("a verbose like option, select it or not.")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment options_environment;
+        options_environment.f_project_name = "bad-validator-parenthesis";
+        options_environment.f_options = options;
+        options_environment.f_options_files_directory = tmpdir.c_str();
+        options_environment.f_environment_variable_name = nullptr;
+        options_environment.f_help_header = "Usage: test invalid validator specification";
+
+        {
+            std::ofstream options_file;
+            options_file.open(options_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(options_file.good());
+            options_file <<
+                "# Auto-generated\n"
+
+                "[bad-validator]\n"
+                "shortname=b\n"
+                "default='Invalid Stuff'\n"
+                "help=Testing that a validator with parenthesis must have the ')'\n"
+                "validator=regex(\"missing ')'\"\n"
+                "allowed=command-line,environment-variable,configuration-file\n"
+            ;
+        }
+
+        char const * sub_cargv[] =
+        {
+            "tests/unittests/invalid_validator_specification",
+            "--verbose",
+            nullptr
+        };
+        int const sub_argc(sizeof(sub_cargv) / sizeof(sub_cargv[0]) - 1);
+        char ** sub_argv = const_cast<char **>(sub_cargv);
+
+        CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(options_environment, sub_argc, sub_argv)
+                    , advgetopt::getopt_exception_logic
+                    , Catch::Matchers::Equals(
+                              "option \"bad-validator\" has an invalid validator parameter definition: \"regex(\"missing ')'\"\", the ')' is missing in \""
+                            + options_filename
+                            + "\"."));
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("alias with help")
+        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir);
+        tmpdir += "/shared/advgetopt";
+        std::stringstream ss;
+        ss << "mkdir -p " << tmpdir;
+        if(system(ss.str().c_str()) != 0)
+        {
+            std::cerr << "fatal error: creating sub-temporary directory \"" << tmpdir << "\" failed.\n";
+            exit(1);
+        }
+        std::string const options_filename(tmpdir + "/alias-with-help.ini");
+
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("verbose")
+                , advgetopt::ShortName('v')
+                , advgetopt::Flags(advgetopt::standalone_all_flags<>())
+                , advgetopt::Help("a verbose like option, select it or not.")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment options_environment;
+        options_environment.f_project_name = "alias-with-help";
+        options_environment.f_options = options;
+        options_environment.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        options_environment.f_options_files_directory = tmpdir.c_str();
+        options_environment.f_environment_variable_name = nullptr;
+        options_environment.f_help_header = "Usage: test invalid validator specification";
+
+        {
+            std::ofstream options_file;
+            options_file.open(options_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(options_file.good());
+            options_file <<
+                "# Auto-generated\n"
+
+                "[licence]\n"
+                "shortname=l\n"
+                "default='Invalid Stuff'\n"
+                "alias=license\n"
+                "help=Testing that an alias can't accept a help string\n"
+                "allowed=command-line,environment-variable,configuration-file\n"
+            ;
+        }
+
+        char const * sub_cargv[] =
+        {
+            "tests/unittests/invalid_alias_specification",
+            "--verbose",
+            nullptr
+        };
+        int const sub_argc(sizeof(sub_cargv) / sizeof(sub_cargv[0]) - 1);
+        char ** sub_argv = const_cast<char **>(sub_cargv);
+
+        CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(options_environment, sub_argc, sub_argv)
+                    , advgetopt::getopt_exception_logic
+                    , Catch::Matchers::Equals(
+                              "option \"licence\" is an alias and as such it can't include a help=... parameter in \""
+                            + options_filename
+                            + "\"."));
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("no-name alias")
+        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir);
+        tmpdir += "/shared/advgetopt";
+        std::stringstream ss;
+        ss << "mkdir -p " << tmpdir;
+        if(system(ss.str().c_str()) != 0)
+        {
+            std::cerr << "fatal error: creating sub-temporary directory \"" << tmpdir << "\" failed.\n";
+            exit(1);
+        }
+        std::string const options_filename(tmpdir + "/no-name-alias.ini");
+
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("verbose")
+                , advgetopt::ShortName('v')
+                , advgetopt::Flags(advgetopt::standalone_all_flags<>())
+                , advgetopt::Help("a verbose like option, select it or not.")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment options_environment;
+        options_environment.f_project_name = "no-name-alias";
+        options_environment.f_options = options;
+        options_environment.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        options_environment.f_options_files_directory = tmpdir.c_str();
+        options_environment.f_environment_variable_name = nullptr;
+        options_environment.f_help_header = "Usage: test alias with no name specified";
+
+        {
+            std::ofstream options_file;
+            options_file.open(options_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(options_file.good());
+            options_file <<
+                "# Auto-generated\n"
+
+                "[foo]\n"
+                "shortname=f\n"
+                "default='Invalid Stuff'\n"
+                "alias=\n"      // name missing (with an equal)
+                "allowed=command-line\n"
+            ;
+        }
+
+        char const * sub_cargv[] =
+        {
+            "tests/unittests/non_existant_alias",
+            "--verbose",
+            nullptr
+        };
+        int const sub_argc(sizeof(sub_cargv) / sizeof(sub_cargv[0]) - 1);
+        char ** sub_argv = const_cast<char **>(sub_cargv);
+
+        CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(options_environment, sub_argc, sub_argv)
+                    , advgetopt::getopt_exception_logic
+                    , Catch::Matchers::Equals("the default value of your alias cannot be an empty string for \"foo\"."));
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("no-name alias v2")
+        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir);
+        tmpdir += "/shared/advgetopt";
+        std::stringstream ss;
+        ss << "mkdir -p " << tmpdir;
+        if(system(ss.str().c_str()) != 0)
+        {
+            std::cerr << "fatal error: creating sub-temporary directory \"" << tmpdir << "\" failed.\n";
+            exit(1);
+        }
+        std::string const options_filename(tmpdir + "/no-name-alias-v2.ini");
+
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("verbose")
+                , advgetopt::ShortName('v')
+                , advgetopt::Flags(advgetopt::standalone_all_flags<>())
+                , advgetopt::Help("a verbose like option, select it or not.")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment options_environment;
+        options_environment.f_project_name = "no-name-alias-v2";
+        options_environment.f_options = options;
+        options_environment.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        options_environment.f_options_files_directory = tmpdir.c_str();
+        options_environment.f_environment_variable_name = nullptr;
+        options_environment.f_help_header = "Usage: test alias with no name specified";
+
+        {
+            std::ofstream options_file;
+            options_file.open(options_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(options_file.good());
+            options_file <<
+                "# Auto-generated\n"
+
+                "[foo]\n"
+                "shortname=f\n"
+                "default='Invalid Stuff'\n"
+                "alias\n"      // name missing (no equal)
+                "allowed=command-line\n"
+            ;
+        }
+
+        char const * sub_cargv[] =
+        {
+            "tests/unittests/non_existant_alias",
+            "--verbose",
+            nullptr
+        };
+        int const sub_argc(sizeof(sub_cargv) / sizeof(sub_cargv[0]) - 1);
+        char ** sub_argv = const_cast<char **>(sub_cargv);
+
+        CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(options_environment, sub_argc, sub_argv)
+                    , advgetopt::getopt_exception_logic
+                    , Catch::Matchers::Equals("the default value of your alias cannot be an empty string for \"foo\"."));
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("non-existant alias")
+        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir);
+        tmpdir += "/shared/advgetopt";
+        std::stringstream ss;
+        ss << "mkdir -p " << tmpdir;
+        if(system(ss.str().c_str()) != 0)
+        {
+            std::cerr << "fatal error: creating sub-temporary directory \"" << tmpdir << "\" failed.\n";
+            exit(1);
+        }
+        std::string const options_filename(tmpdir + "/non-existant-alias.ini");
+
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("verbose")
+                , advgetopt::ShortName('v')
+                , advgetopt::Flags(advgetopt::standalone_all_flags<>())
+                , advgetopt::Help("a verbose like option, select it or not.")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment options_environment;
+        options_environment.f_project_name = "non-existant-alias";
+        options_environment.f_options = options;
+        options_environment.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        options_environment.f_options_files_directory = tmpdir.c_str();
+        options_environment.f_environment_variable_name = nullptr;
+        options_environment.f_help_header = "Usage: test invalid validator specification";
+
+        {
+            std::ofstream options_file;
+            options_file.open(options_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(options_file.good());
+            options_file <<
+                "# Auto-generated\n"
+
+                "[foo]\n"
+                "shortname=f\n"
+                "default='Invalid Stuff'\n"
+                "alias=bar\n"       // option "bar" missing
+                "allowed=command-line\n"
+            ;
+        }
+
+        char const * sub_cargv[] =
+        {
+            "tests/unittests/non_existant_alias",
+            "--verbose",
+            nullptr
+        };
+        int const sub_argc(sizeof(sub_cargv) / sizeof(sub_cargv[0]) - 1);
+        char ** sub_argv = const_cast<char **>(sub_cargv);
+
+        CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(options_environment, sub_argc, sub_argv)
+                    , advgetopt::getopt_exception_logic
+                    , Catch::Matchers::Equals("no option named \"bar\" to satify the alias of \"foo\"."));
+    CATCH_END_SECTION()
 }
 
 

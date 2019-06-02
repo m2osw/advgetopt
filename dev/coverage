@@ -30,16 +30,10 @@ set -e
 
 if test "$1" = "--help" -o "$1" = "-h"
 then
-    echo "Usage: $0 [--opt] [<test name>]"
+    echo "Usage: $0 [--opt] [<comma separated test names>]"
     echo "where --opt is one of:"
     echo "   --help | -h    display this help screen"
     exit 1;
-fi
-
-TEST_NAME=
-if test -n "$1"
-then
-    TEST_NAME="$*"
 fi
 
 
@@ -82,7 +76,7 @@ fi
 # We test the pipe status on exit to detect whether the test failed
 echo "Start running the tests on `date`" >test_log.txt
 echo >>test_log.txt
-BUILD/tests/unittest --tmp "${TEMPDIR}" ${TEST_NAMES} 2>&1 | tee -a test_log.txt; test ${PIPESTATUS[0]} -eq 0
+BUILD/tests/unittest --tmp "${TEMPDIR}" $* 2>&1 | tee -a test_log.txt; test ${PIPESTATUS[0]} -eq 0
 echo >>test_log.txt
 echo "Finished running the tests on `date`" >>test_log.txt
 echo
@@ -133,7 +127,7 @@ echo "</pre></body></html>" >>html/test_log.html
 # For publication, if that directory does not exist, you probably don't
 # have a website to display this data
 PUBLISH_DIR=/usr/clients/www/lcov.snapwebsites.org/public_html
-if test -z "${TEST_NAME}" -a -d ${PUBLISH_DIR}
+if test -z "$*" -a -d ${PUBLISH_DIR}
 then
     echo "***"
     echo "*** publication to lcov.snapwebsites.org ($end_date)"

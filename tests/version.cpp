@@ -32,23 +32,18 @@
 
 // advgetopt lib
 //
-#include "advgetopt/version.h"
+#include <advgetopt/version.h>
 
 
 
-namespace
+CATCH_TEST_CASE("version", "[version][valid]")
 {
-
-
-} // no name namespace
-
-
-CATCH_TEST_CASE( "Version", "version" )
-{
-    CATCH_REQUIRE(advgetopt::get_major_version() == LIBADVGETOPT_VERSION_MAJOR);
-    CATCH_REQUIRE(advgetopt::get_release_version() == LIBADVGETOPT_VERSION_MINOR);
-    CATCH_REQUIRE(advgetopt::get_patch_version() == LIBADVGETOPT_VERSION_PATCH);
-    CATCH_REQUIRE(strcmp(advgetopt::get_version_string(), LIBADVGETOPT_VERSION_STRING) == 0);
+    CATCH_START_SECTION("Verify the test version")
+        CATCH_REQUIRE(advgetopt::get_major_version() == LIBADVGETOPT_VERSION_MAJOR);
+        CATCH_REQUIRE(advgetopt::get_release_version() == LIBADVGETOPT_VERSION_MINOR);
+        CATCH_REQUIRE(advgetopt::get_patch_version() == LIBADVGETOPT_VERSION_PATCH);
+        CATCH_REQUIRE(strcmp(advgetopt::get_version_string(), LIBADVGETOPT_VERSION_STRING) == 0);
+    CATCH_END_SECTION()
 }
 
 
