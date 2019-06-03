@@ -1,23 +1,24 @@
 advgetopt (2.0.0.0~xenial) xenial; urgency=high
 
   * Reorganized the project to incorporate the snap_config.cpp/h.
-   - Moved the src to advgetopt.
-   - Put the hide-warnings utility in the tools/* folder.
+   - Renamed "src" to "advgetopt" so #include are all correct.
+   - Broke up the large advgetopt.cpp single file in many sub-objects/files.
    - Made exceptions derive from our libexcept::exception_t class.
    - Moved the version declaration in a separate header.
    - Bumped version to 2.0 (it won't exactly be compatible with 1.x anymore.)
-   - Broke up the test in many files to make it easier to manage.
-   - Added system options (i.e. --help, --version, ...).
-  * Updated the tests to work with snapcatch2.
+   - Broke up the unit tests in many files to make it easier to manage.
+   - Made the tests be 100% coverage.
+   - Updated the tests to use snapcatch2.
+   - Removed all the exit() calls. usage() now returns a string.
+   - Added a logger which by defaults prints in stderr.
+   - Changed the options structure and added an environment_options one.
+   - Added templates to fill the structures with a better chance of testing
+     invalid parameters at compile time (although without at least C++17 it is
+     not complete).
+   - Added system command line options (i.e. --help, --version, ...).
+   - Put the hide-warnings utility in the tools/* folder.
   * Added missing BOOST dependency in the CMakeLists.txt.
   * Added an ./mk script to recompile quickly.
-  * Broke up the large advgetopt.cpp single file in many sub-objects/files.
-  * Removed the exit() call from the usage() function. Now it returns a string.
-  * Added a logger which by defaults prints in stderr.
-  * Changed many structures.
-  * Added templates to fill the structures with a better chance of testing
-    invalid parameters at that time (although without at least C++17 it is
-    not complete).
   * Added a coverage script.
 
  -- Alexis Wilke <alexis@m2osw.com>  Mon, 13 May 2019 00:03:40 -0800

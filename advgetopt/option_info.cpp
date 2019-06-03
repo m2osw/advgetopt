@@ -44,13 +44,14 @@
 #include "advgetopt/exception.h"
 #include "advgetopt/log.h"
 
+// libutf8 lib
+//
+#include    <libutf8/libutf8.h>
+
 // boost lib
 //
 #include <boost/algorithm/string/replace.hpp>
 
-// C++ lib
-//
-//#include    <limits>
 
 
 namespace advgetopt
@@ -80,6 +81,8 @@ namespace advgetopt
  * values, not just filenames (it could be URLs, email addresses, numbers,
  * etc.)
  *
+ * The "--" separator cannot be assigned a short name.
+ *
  * \li Special Option Name: "*"
  *
  * The "*" long name is viewed as the \em accept \em all option. This
@@ -99,9 +102,12 @@ namespace advgetopt
  * For this reason, the long name is saved with only dashes. That
  * means all the maps are indexed using the long name with dashes.
  *
- * \exception getopt_exception_invalid
+ * \exception getopt_exception_logic
  * The constructor raises the invalid exception if the long name is an
- * empty string since this is not allowed.
+ * empty string since this is not allowed. It will also raise that
+ * exception if the name is the default option ("--") and a short name
+ * is also defined. (i.e. no short name is allowed along the default
+ * option.)
  *
  * \param[in] name  The (long) name of this option.
  * \param[in] short_name  The short name of this option (one character.)
@@ -112,10 +118,19 @@ option_info::option_info(std::string const & name, short_name_t short_name)
 {
     if(name.empty())
     {
-        throw getopt_exception_invalid(
-                      std::string("option_info::option_info(): all options must at least have a long name (short name: '")
-                    + static_cast<char>(short_name) // TODO: convert a UTF-8
+        throw getopt_exception_logic(
+                      "option_info::option_info(): all options must at least have a long name (short name: '"
+                    + libutf8::to_u8string(short_name)
                     + "'.");
+    }
+
+    if(name == "--"
+    && short_name != NO_SHORT_NAME)
+    {
+        throw getopt_exception_logic(
+                      "option_info::option_info(): the default parameter \"--\" cannot include a short name ('"
+                    + libutf8::to_u8string(short_name)
+                    + "').");
     }
 }
 
@@ -661,16 +676,16 @@ option_info::pointer_t option_info::get_child(short_name_t short_name) const
  *
  * \param[in] alias  The final destination of this option.
  */
-void option_info::set_alias(option_info::pointer_t alias)
+void option_info::set_alias_destination(option_info::pointer_t destination)
 {
-    if(alias->has_flag(GETOPT_FLAG_ALIAS))
+    if(destination->has_flag(GETOPT_FLAG_ALIAS))
     {
         throw getopt_exception_undefined(
                 "option_info::set_alias(): you can't set an alias as"
                 " an alias of another option.");
     }
 
-    f_alias = alias;
+    f_alias_destination = destination;
 }
 
 
@@ -680,9 +695,9 @@ void option_info::set_alias(option_info::pointer_t alias)
  *
  * \return The alias or a nullptr.
  */
-option_info::pointer_t option_info::get_alias() const
+option_info::pointer_t option_info::get_alias_destination() const
 {
-    return f_alias;
+    return f_alias_destination;
 }
 
 
@@ -696,7 +711,7 @@ option_info::pointer_t option_info::get_alias() const
  *
  * \param[in] separators  The list of separators to be used for this argument.
  */
-void option_info::set_multiple_separators(char const ** separators)
+void option_info::set_multiple_separators(char const * const * separators)
 {
     f_multiple_separators.clear();
     if(separators == nullptr)

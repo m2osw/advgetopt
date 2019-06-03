@@ -138,7 +138,7 @@ CATCH_TEST_CASE("options_parser", "[options][valid]")
         CATCH_REQUIRE(opt.get_program_fullname() == "tests/options-parser");
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Duplicated options")
+    CATCH_START_SECTION("Duplicated options (ignored by system options)")
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -493,7 +493,11 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
         char ** argv = const_cast<char **>(cargv);
 
-        CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(environment_options, argc, argv), advgetopt::getopt_exception_logic);
+        CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(environment_options, argc, argv)
+                , advgetopt::getopt_exception_logic
+                , Catch::Matchers::ExceptionMessage(
+                          "an empty list of options is not legal, you must"
+                          " defined at least one (i.e. --version, --help...)"));
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Options without a name (null pointer)")
@@ -540,7 +544,10 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
         char ** argv = const_cast<char **>(cargv);
 
-        CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(environment_options, argc, argv), advgetopt::getopt_exception_logic);
+        CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(environment_options, argc, argv)
+                , advgetopt::getopt_exception_logic
+                , Catch::Matchers::ExceptionMessage(
+                          "option long name missing or empty."));
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Options without a name (empty string)")
@@ -586,7 +593,10 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
         char ** argv = const_cast<char **>(cargv);
 
-        CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(environment_options, argc, argv), advgetopt::getopt_exception_logic);
+        CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(environment_options, argc, argv)
+                , advgetopt::getopt_exception_logic
+                , Catch::Matchers::ExceptionMessage(
+                          "option long name missing or empty."));
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Options with a one letter name")
@@ -632,7 +642,10 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
         char ** argv = const_cast<char **>(cargv);
 
-        CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(environment_options, argc, argv), advgetopt::getopt_exception_logic);
+        CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(environment_options, argc, argv)
+                , advgetopt::getopt_exception_logic
+                , Catch::Matchers::ExceptionMessage(
+                          "a long name option must be at least 2 characters."));
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Duplicated Options (Long Name)")
@@ -670,7 +683,10 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
         char ** argv = const_cast<char **>(cargv);
 
-        CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(environment_options, argc, argv), advgetopt::getopt_exception_logic);
+        CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(environment_options, argc, argv)
+                , advgetopt::getopt_exception_logic
+                , Catch::Matchers::ExceptionMessage(
+                          "option named \"licence\" found twice."));
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Duplicated Options (short name)")
@@ -710,7 +726,10 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
         char ** argv = const_cast<char **>(cargv);
 
-        CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(environment_options, argc, argv), advgetopt::getopt_exception_logic);
+        CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(environment_options, argc, argv)
+                , advgetopt::getopt_exception_logic
+                , Catch::Matchers::ExceptionMessage(
+                          "option with short name \"l\" found twice."));
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Duplicated Default Options")
@@ -728,7 +747,7 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
             ),
             advgetopt::define_option(
                   advgetopt::Name("outs")
-                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_DEFAULT_OPTION>())
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_DEFAULT_OPTION>()) // default option again
             ),
             advgetopt::end_options()
         };
@@ -748,7 +767,10 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
         char ** argv = const_cast<char **>(cargv);
 
-        CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(environment_options, argc, argv), advgetopt::getopt_exception_logic);
+        CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(environment_options, argc, argv)
+                , advgetopt::getopt_exception_logic
+                , Catch::Matchers::ExceptionMessage(
+                          "two default options found after check of long names duplication."));
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Default Option marked as being a FLAG")
@@ -787,7 +809,49 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
         char ** argv = const_cast<char **>(cargv);
 
-        CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(environment_options, argc, argv), advgetopt::getopt_exception_logic);
+        CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(environment_options, argc, argv)
+                , advgetopt::getopt_exception_logic
+                , Catch::Matchers::ExceptionMessage(
+                          "a default option must accept parameters, it can't be a GETOPT_FLAG_FLAG."));
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Option with an alias and mismatched flags")
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("verbose")
+                , advgetopt::ShortName('v')
+                , advgetopt::Flags(advgetopt::standalone_command_flags())
+                , advgetopt::Help("print info as we work.")
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("licence")    // to allow French spelling
+                , advgetopt::Alias("license")
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>()) // not a match
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_help_header = "Usage: flags are not equal";
+
+        char const * cargv[] =
+        {
+            "tests/option-without-a-name",
+            "--incompatible-flags",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(environment_options, argc, argv)
+                , advgetopt::getopt_exception_logic
+                , Catch::Matchers::ExceptionMessage(
+                          "the flags of alias \"licence\" (0x41) are different"
+                          " than the flags of \"license\" (0x21)."));
     CATCH_END_SECTION()
 }
 

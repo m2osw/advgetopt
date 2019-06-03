@@ -203,7 +203,7 @@ struct option
     char const *        f_name = nullptr;               // name of the option (i.e. "test" for --test, or nullptr)
     char const *        f_default = nullptr;            // a default value if not nullptr
     char const *        f_help = nullptr;               // help for this option, if nullptr it's a hidden option; if ALIAS then this is the actual alias
-    char const **       f_multiple_separators = nullptr;// nullptr terminated list of strings used as separators when GETOPT_FLAG_MULTIPLE is set
+    char const * const *f_multiple_separators = nullptr;// nullptr terminated list of strings used as separators when GETOPT_FLAG_MULTIPLE is set
 };
 
 
@@ -320,16 +320,16 @@ public:
 };
 
 class Separators
-    : public OptionValue<char const **>
+    : public OptionValue<char const * const *>
 {
 public:
     constexpr Separators()
-        : OptionValue<char const **>(nullptr)
+        : OptionValue<char const * const *>(nullptr)
     {
     }
 
-    constexpr Separators(char const ** help)
-        : OptionValue<char const **>(help)
+    constexpr Separators(char const * const * separators)
+        : OptionValue<char const * const *>(separators)
     {
     }
 };

@@ -89,8 +89,8 @@ public:
                                     , char * argv[]
                                     , bool only_environment_variable = false);
 
-    option_info::pointer_t  get_option(std::string const & name) const;
-    option_info::pointer_t  get_option(short_name_t name) const;
+    option_info::pointer_t  get_option(std::string const & name, bool exact_option = false) const;
+    option_info::pointer_t  get_option(short_name_t name, bool exact_option = false) const;
     bool                    is_defined(std::string const & name) const;
     size_t                  size(std::string const & name) const;
     std::string             get_default(std::string const & name) const;
@@ -122,11 +122,15 @@ public:
 
 private:
     void                    parse_options_from_file();
+    option_info::pointer_t  get_alias_destination(option_info::pointer_t opt) const;
 
     void                    add_options(option_info::pointer_t opt
                                       , int & i
                                       , int argc
                                       , char ** argv);
+    void                    add_option_from_string(option_info::pointer_t opt
+                                                 , std::string const & value
+                                                 , std::string const & filename);
     void                    add_option(option_info::pointer_t opt
                                      , std::string const & value);
 

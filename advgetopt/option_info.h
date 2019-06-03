@@ -134,11 +134,11 @@ public:
     map_by_name_t const &       get_children() const;
     pointer_t                   get_child(std::string const & name) const;
     pointer_t                   get_child(short_name_t short_name) const;
-    void                        set_alias(option_info::pointer_t alias);
-    option_info::pointer_t      get_alias() const;
+    void                        set_alias_destination(option_info::pointer_t destination);
+    option_info::pointer_t      get_alias_destination() const;
 
     void                        set_multiple_separators(string_list_t const & separators);
-    void                        set_multiple_separators(char const ** separators);
+    void                        set_multiple_separators(char const * const * separators);
     string_list_t const &       get_multiple_separators() const;
     void                        add_value(std::string const & value);
     void                        set_value(int idx, std::string const & value);
@@ -162,7 +162,7 @@ private:
     std::string                 f_maximum_value = std::string();
     std::string                 f_help = std::string();
     validator::pointer_t        f_validator = validator::pointer_t();
-    pointer_t                   f_alias = pointer_t();
+    pointer_t                   f_alias_destination = pointer_t();
     map_by_name_t               f_children_by_long_name = map_by_name_t();
     map_by_short_name_t         f_children_by_short_name = map_by_short_name_t();
     string_list_t               f_multiple_separators = string_list_t();
