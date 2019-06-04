@@ -108,7 +108,7 @@ std::string getopt::get_default(std::string const & name) const
 {
     if(name.empty())
     {
-        throw getopt_exception_undefined("command line name cannot be empty.");
+        throw getopt_exception_logic("argument name cannot be empty.");
     }
 
     option_info::pointer_t opt(get_option(name));
@@ -146,10 +146,10 @@ std::string getopt::get_string(std::string const & name, int idx) const
     option_info::pointer_t opt(get_option(name));
     if(opt == nullptr)
     {
-        throw getopt_exception_undefined(
-                  "there is no \"--"
+        throw getopt_exception_logic(
+                  "there is no --"
                 + name
-                + "\" option defined.");
+                + " option defined.");
     }
 
     if(!opt->is_defined())
@@ -158,7 +158,7 @@ std::string getopt::get_string(std::string const & name, int idx) const
         {
             return opt->get_default();
         }
-        throw getopt_exception_undefined(
+        throw getopt_exception_logic(
                   "the --"
                 + name
                 + " option was not defined on the command line and it has no default.");
@@ -216,23 +216,22 @@ long getopt::get_long(std::string const & name, int idx, long min, long max)
     option_info::pointer_t opt(get_option(name));
     if(opt == nullptr)
     {
-        throw getopt_exception_undefined(
-                  "there is no \"--"
+        throw getopt_exception_logic(
+                  "there is no --"
                 + name
-                + "\" option defined.");
+                + " option defined.");
     }
 
     long result(0);
-    int max_idx = opt->size();
-    if(max_idx == 0)
+    if(!opt->is_defined())
     {
         std::string const d(opt->get_default());
         if(d.empty())
         {
-            throw getopt_exception_undefined(
-                      "the \"--"
+            throw getopt_exception_logic(
+                      "the --"
                     + name
-                    + "\" option was not defined on the command line.");
+                    + " option was not defined on the command line and it has no or an empty default.");
         }
         char * end;
         char const * str(d.c_str());
@@ -242,10 +241,10 @@ long getopt::get_long(std::string const & name, int idx, long min, long max)
             // here we throw because this default value is defined in the
             // options of the tool and not by the user
             //
-            throw getopt_exception_invalid(
+            throw getopt_exception_logic(
                       "invalid default number \""
                     + d
-                    + "\" in parameter --"
+                    + "\" for option --"
                     + name);
         }
     }

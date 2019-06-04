@@ -44,15 +44,6 @@
 
 
 
-// valid tests
-//
-//    flag_argument
-//    require_argument
-//    require_arguments
-//    optional_arguments
-//    default_argument
-//    default_arguments
-//
 
 
 
@@ -4063,7 +4054,7 @@ CATCH_TEST_CASE("manual_arguments", "[arguments][valid][getopt]")
                   opt.parse_arguments(argc, argv)
                 , advgetopt::getopt_exception_undefined
                 , Catch::Matchers::ExceptionMessage(
-                              "getopt::get_alias_destination(): alias is missing."));
+                              "getopt::get_alias_destination(): alias is missing. Did you call link_aliases()?"));
     CATCH_END_SECTION()
 }
 
@@ -4173,47 +4164,284 @@ CATCH_TEST_CASE("invalid_getopt_missing_options", "[invalid][getopt][arguments]"
 }
 
 
-//CATCH_TEST_CASE("invalid_getopt_missing_alias", "[invalid][getopt][arguments][alias]")
-//{
-//    CATCH_START_SECTION("Attempt to create an alias with no valid destination.")
-//        const advgetopt::option options[] =
-//        {
-//            advgetopt::define_option(
-//                  advgetopt::Name("verbose")
-//                , advgetopt::ShortName('v')
-//                , advgetopt::Flags(advgetopt::standalone_command_flags())
-//                , advgetopt::Help("print info as we work.")
-//            ),
-//            advgetopt::define_option(
-//                  advgetopt::Name("licence")    // French spelling
-//                , advgetopt::Flags(advgetopt::standalone_command_flags())
-//                , advgetopt::Alias("license")   // forgot system flags?
-//            ),
-//            advgetopt::end_options()
-//        };
-//
-//        advgetopt::options_environment environment_options;
-//        environment_options.f_project_name = "unittest";
-//        environment_options.f_options = options;
-//        environment_options.f_help_header = "Usage: missing \"--license\" so alias can't be satisfied.";
-//
-//        char const * cargv[] =
-//        {
-//            "/usr/bin/arguments",
-//            "--verbose",
-//            "--licence",
-//            nullptr
-//        };
-//        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
-//        char ** argv = const_cast<char **>(cargv);
-//
-//        CATCH_REQUIRE_THROWS_MATCHES(
-//                  std::make_shared<advgetopt::getopt>(environment_options, argc, argv)
-//                , advgetopt::getopt_exception_logic
-//                , Catch::Matchers::ExceptionMessage(
-//                              "no option named \"license\" to satisfy the alias of \"licence\"."));
-//    CATCH_END_SECTION()
-//}
+CATCH_TEST_CASE("invalid_getopt_missing_required_option", "[invalid][getopt][arguments][alias]")
+{
+    CATCH_START_SECTION("Specify the option without a corresponding parameter.")
+        const advgetopt::option options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("verbose")
+                , advgetopt::ShortName('v')
+                , advgetopt::Flags(advgetopt::standalone_command_flags())
+                , advgetopt::Help("print info as we work.")
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::Help("The size of the line.")
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::DefaultValue("100")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_help_header = "Usage: use --size without a value.";
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--verbose",
+            "--size",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: option --size expects an argument.");
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // the valid parameter
+        CATCH_REQUIRE(opt.get_option("verbose") != nullptr);
+        CATCH_REQUIRE(opt.get_option('v') != nullptr);
+        CATCH_REQUIRE(opt.is_defined("verbose"));
+        CATCH_REQUIRE(opt.get_default("verbose").empty());
+        CATCH_REQUIRE(opt.size("verbose") == 1);
+
+        // the invalid parameter
+        CATCH_REQUIRE(opt.get_option("size") != nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_default("size") == "100");
+        CATCH_REQUIRE(opt.size("size") == 0);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Specify the option with an equal sign but without a corresponding parameter.")
+        const advgetopt::option options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("verbose")
+                , advgetopt::ShortName('v')
+                , advgetopt::Flags(advgetopt::standalone_command_flags())
+                , advgetopt::Help("print info as we work.")
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::Help("The size of the line.")
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::DefaultValue("100")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_help_header = "Usage: use --size without a value.";
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--verbose",
+            "--size=",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: option --size must be given a value.");
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // the valid parameter
+        CATCH_REQUIRE(opt.get_option("verbose") != nullptr);
+        CATCH_REQUIRE(opt.get_option('v') != nullptr);
+        CATCH_REQUIRE(opt.is_defined("verbose"));
+        CATCH_REQUIRE(opt.get_default("verbose").empty());
+        CATCH_REQUIRE(opt.size("verbose") == 1);
+
+        // the invalid parameter
+        CATCH_REQUIRE(opt.get_option("size") != nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_default("size") == "100");
+        CATCH_REQUIRE(opt.size("size") == 0);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Specify the option without a corresponding parameter followed by a long argument.")
+        const advgetopt::option options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("verbose")
+                , advgetopt::ShortName('v')
+                , advgetopt::Flags(advgetopt::standalone_command_flags())
+                , advgetopt::Help("print info as we work.")
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::Help("The size of the line.")
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::DefaultValue("100")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_help_header = "Usage: use --size without a value.";
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--size",
+            "--verbose",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: option --size expects an argument.");
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // the valid parameter
+        CATCH_REQUIRE(opt.get_option("verbose") != nullptr);
+        CATCH_REQUIRE(opt.get_option('v') != nullptr);
+        CATCH_REQUIRE(opt.is_defined("verbose"));
+        CATCH_REQUIRE(opt.get_default("verbose").empty());
+        CATCH_REQUIRE(opt.size("verbose") == 1);
+
+        // the invalid parameter
+        CATCH_REQUIRE(opt.get_option("size") != nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_default("size") == "100");
+        CATCH_REQUIRE(opt.size("size") == 0);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Specify the option without a corresponding parameter followed by a short argument.")
+        const advgetopt::option options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("verbose")
+                , advgetopt::ShortName('v')
+                , advgetopt::Flags(advgetopt::standalone_command_flags())
+                , advgetopt::Help("print info as we work.")
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::Help("The size of the line.")
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::DefaultValue("100")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_help_header = "Usage: use --size without a value.";
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--size",
+            "-v",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: option --size expects an argument.");
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // the valid parameter
+        CATCH_REQUIRE(opt.get_option("verbose") != nullptr);
+        CATCH_REQUIRE(opt.get_option('v') != nullptr);
+        CATCH_REQUIRE(opt.is_defined("verbose"));
+        CATCH_REQUIRE(opt.get_default("verbose").empty());
+        CATCH_REQUIRE(opt.size("verbose") == 1);
+
+        // the invalid parameter
+        CATCH_REQUIRE(opt.get_option("size") != nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_default("size") == "100");
+        CATCH_REQUIRE(opt.size("size") == 0);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    CATCH_END_SECTION()
+}
 
 
 CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
@@ -6232,16 +6460,16 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
             advgetopt::getopt opt(options, argc2, argv2);
 
             // cannot get the default without a valid name!
-            CATCH_REQUIRE_THROWS_AS( opt.get_default(""), advgetopt::getopt_exception_undefined);
+            CATCH_REQUIRE_THROWS_AS( opt.get_default(""), advgetopt::getopt_exception_logic);
 
             // cannot get a long named "blah"
-            CATCH_REQUIRE_THROWS_AS( opt.get_long("blah"), advgetopt::getopt_exception_undefined);
+            CATCH_REQUIRE_THROWS_AS( opt.get_long("blah"), advgetopt::getopt_exception_logic);
             // existing "long", but only 1 entry
             CATCH_REQUIRE_THROWS_AS( opt.get_long("long", 100), advgetopt::getopt_exception_undefined);
             long l(-1);
-            CATCH_REQUIRE_THROWS_AS( l = opt.get_long("not-specified-and-no-default", 0), advgetopt::getopt_exception_undefined);
+            CATCH_REQUIRE_THROWS_AS( l = opt.get_long("not-specified-and-no-default", 0), advgetopt::getopt_exception_logic);
             CATCH_REQUIRE(l == -1);
-            CATCH_REQUIRE_THROWS_AS( l = opt.get_long("not-specified-with-invalid-default", 0), advgetopt::getopt_exception_invalid);
+            CATCH_REQUIRE_THROWS_AS( l = opt.get_long("not-specified-with-invalid-default", 0), advgetopt::getopt_exception_logic);
             CATCH_REQUIRE(l == -1);
             SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid number (123abc) in parameter --long.");
             l = opt.get_long("long");
@@ -6250,7 +6478,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
             l = opt.get_long("out-of-bounds", 0, 1, 9);
             CATCH_REQUIRE(l == -1);
             std::string s;
-            CATCH_REQUIRE_THROWS_AS( s = opt.get_string("not-specified-string-without-default", 0), advgetopt::getopt_exception_undefined);
+            CATCH_REQUIRE_THROWS_AS( s = opt.get_string("not-specified-string-without-default", 0), advgetopt::getopt_exception_logic);
             CATCH_REQUIRE(s.empty());
             CATCH_REQUIRE_THROWS_AS( s = opt.get_string("string", 100), advgetopt::getopt_exception_undefined);
             CATCH_REQUIRE(s.empty());

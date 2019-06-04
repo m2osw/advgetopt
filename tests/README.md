@@ -47,7 +47,7 @@ is done separately because it is really large on its own. It does test the
 command line and variable, though. The variable includes parsing a string
 into arguments before parsing the arguments in our map of named values.
 
-    dev/coverage flag_argument,require_argument,require_arguments,optional_arguments,default_argument,default_arguments,manual_arguments,invalid_getopt_pointers,invalid_getopt_missing_options,invalid_getopt_missing_alias,invalid_default_options,invalid_options
+    dev/coverage flag_argument,require_argument,require_arguments,optional_arguments,default_argument,default_arguments,manual_arguments,invalid_getopt_pointers,invalid_getopt_missing_options,invalid_getopt_missing_alias,invalid_getopt_missing_required_option,invalid_default_options,invalid_options
 
 ## Configuration Parsing
 
@@ -66,7 +66,34 @@ places in Snap! However, we now have the ability to define an external
 definition for each file so it will be possible to verify configuration files
 properly from any tool.
 
+## Program & Project Names
 
+The program name is taken from the command line first string (`argv[0]`)
+which is expected to be the path to the program being run.
+
+The project name is _hard coded_ in the option environment structure passed
+to the getopt constructor. This one may be set to `nullptr` or an empty
+string.
+
+These tests make sure that all cases are checked, including a program name
+with backslashes as directory separators (if no slashes are found first.)
+This is a small remain from the days when advgetopt worked on MS-Windows.
+
+    dev/coverage program_name,project_name
+
+## Data Retieval
+
+Once the command line arguments, environment variable, and configuration
+files were parsed, you want to retrieve the data. These test verify that
+the data is returned to you as expected.
+
+    dev/coverage string_access,long_access,invalid_option_name,missing_default_value,incompatible_default_value,out_of_range_value
+
+## Usage
+
+Whenever an error occurs or when a command line option such as `--help`
+is used, the usage screens get printed. This tests verify that the usage
+output works as expected.
 
 
 

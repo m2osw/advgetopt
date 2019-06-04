@@ -55,7 +55,9 @@ if( CATCH_FOUND )
     add_executable( ${PROJECT_NAME}
         main.cpp
 
+        access.cpp
         arguments.cpp
+        data.cpp
         log_for_test.cpp
         logic_errors.cpp
         options_files.cpp

@@ -1022,7 +1022,7 @@ option_info::pointer_t getopt::get_alias_destination(option_info::pointer_t opt)
         opt = opt->get_alias_destination();
         if(opt == nullptr)
         {
-            throw getopt_exception_undefined("getopt::get_alias_destination(): alias is missing.");
+            throw getopt_exception_undefined("getopt::get_alias_destination(): alias is missing. Did you call link_aliases()?");
         }
     }
 
@@ -1200,11 +1200,11 @@ void getopt::add_option_from_string(option_info::pointer_t opt, std::string cons
     if(opt->has_flag(GETOPT_FLAG_REQUIRED))
     {
         log << log_level_t::error
-            << "option \""
+            << "option "
             << (filename.empty()
-                    ? opt->get_name()
-                    : boost::replace_all_copy(opt->get_name(), "-", "_"))
-            << "\" must be given a value"
+                    ? "--" + opt->get_name()
+                    : "\"" + boost::replace_all_copy(opt->get_name(), "-", "_") + "\"")
+            << " must be given a value"
             << (filename.empty()
                 ? std::string()
                 : " in configuration file \""
