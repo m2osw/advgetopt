@@ -78,7 +78,7 @@ constexpr flag_t combine_option_flags()
     static_assert(static_cast<int>((result & GETOPT_FLAG_FLAG) != 0)
                 + static_cast<int>((result & (GETOPT_FLAG_REQUIRED | GETOPT_FLAG_MULTIPLE | GETOPT_FLAG_DEFAULT_OPTION)) != 0)
                 + static_cast<int>((result & GETOPT_FLAG_END) != 0)
-                        == 1
+                        <= 1
                 , "flag GETOPT_FLAG_FLAG is not compatible with any of GETOPT_FLAG_REQUIRED | GETOPT_FLAG_MULTIPLE | GETOPT_FLAG_DEFAULT_OPTION or none of these flags were specified.");
 
     static_assert(((result & (GETOPT_FLAG_COMMAND_LINE | GETOPT_FLAG_ENVIRONMENT_VARIABLE | GETOPT_FLAG_CONFIGURATION_FILE)) != 0)

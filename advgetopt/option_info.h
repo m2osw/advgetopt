@@ -73,6 +73,7 @@ static constexpr flag_t     GETOPT_FLAG_MULTIPLE             = static_cast<flag_
 static constexpr flag_t     GETOPT_FLAG_DEFAULT_OPTION       = static_cast<flag_t>(0x00000100);  // where entries go by default (a.k.a. after "--")
 static constexpr flag_t     GETOPT_FLAG_HAS_DEFAULT          = static_cast<flag_t>(0x00000200);  // default value is defined
 
+static constexpr flag_t     GETOPT_FLAG_SHOW_MOST            = static_cast<flag_t>(0x00000000);  // show in usage() when not in GROUP1 or GROUP2
 static constexpr flag_t     GETOPT_FLAG_SHOW_USAGE_ON_ERROR  = static_cast<flag_t>(0x00001000);  // show in usage() when an error occurs
 static constexpr flag_t     GETOPT_FLAG_SHOW_ALL             = static_cast<flag_t>(0x00002000);  // show in usage() when --long-help is used
 static constexpr flag_t     GETOPT_FLAG_SHOW_GROUP1          = static_cast<flag_t>(0x00004000);  // show in usage() when --<group1>-help is used (app dependent)

@@ -95,7 +95,7 @@ Whenever an error occurs or when a command line option such as `--help`
 is used, the usage screens get printed. This tests verify that the usage
 output works as expected.
 
-
+    dev/coverage usage_function,help_string_percent,help_string_project_name,help_string_build_date,help_string_copyright,help_string_directories,help_string_environment_variable,help_string_configuration_files,help_string_license,help_string_program_name,help_string_build_time,help_string_version
 
 
 

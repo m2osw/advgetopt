@@ -312,6 +312,25 @@ std::string getopt::process_help_string(char const * help) const
                     help += 3;
                     break;
 
+                case 'e':
+                    if(f_options_environment.f_environment_variable_name != nullptr
+                    && *f_options_environment.f_environment_variable_name != '\0')
+                    {
+                        result += f_options_environment.f_environment_variable_name;
+                        char const * env(getenv(f_options_environment.f_environment_variable_name));
+                        if(env != nullptr)
+                        {
+                            result += '=';
+                            result += env;
+                        }
+                        else
+                        {
+                            result += " (not set)";
+                        }
+                    }
+                    help += 3;
+                    break;
+
                 case 'f':
                     if(f_options_environment.f_configuration_files != nullptr)
                     {
@@ -371,6 +390,14 @@ std::string getopt::process_help_string(char const * help) const
                 && *f_options_environment.f_configuration_directories != nullptr)
                 {
                     result += *f_options_environment.f_configuration_directories;
+                }
+                help += 2;
+                break;
+
+            case 'e':
+                if(f_options_environment.f_environment_variable_name != nullptr)
+                {
+                    result += f_options_environment.f_environment_variable_name;
                 }
                 help += 2;
                 break;
@@ -468,6 +495,12 @@ std::string getopt::format_usage_string(
         // call the function to break it up with indentation of 3
         //
         ss << breakup_line(argument, 3, line_width);
+
+        if(!help.empty()
+        && option_width > 0)
+        {
+            ss << std::setw( option_width ) << " ";
+        }
     }
     else
     {
@@ -515,12 +548,14 @@ std::string getopt::breakup_line(std::string line
 
     size_t const width(line_width - option_width);
 
+    // TODO: once we have C++17, avoid substr() using std::string_view instead
+    //
     while(line.size() > width)
     {
         std::string l;
         std::string::size_type const nl(line.find('\n'));
         if(nl != std::string::npos
-        && nl < width)      // we could avoid this problem with std::string_view (C++17)
+        && nl < width)      
         {
             l = line.substr(0, nl);
             line = line.substr(nl + 1);
@@ -530,13 +565,19 @@ std::string getopt::breakup_line(std::string line
             // special case when the space is right at the edge
             //
             l = line.substr(0, width);
-            line = line.substr(width + 1);
+            size_t pos(width);
+            do
+            {
+                ++pos;
+            }
+            while(std::isspace(line[pos]));
+            line = line.substr(pos);
         }
         else
         {
             // search for the last space before the edge of the screen
             //
-            std::string::size_type const pos(line.find_last_of(' ', width));
+            std::string::size_type pos(line.find_last_of(' ', width));
             if(pos == std::string::npos)
             {
                 // no space found, cut right at the edge...
@@ -550,7 +591,14 @@ std::string getopt::breakup_line(std::string line
                 // we found a space, write everything up to that space
                 //
                 l = line.substr(0, pos);
-                line = line.substr(pos + 1);
+
+                // remove additional spaces from the start of the next line
+                do
+                {
+                    ++pos;
+                }
+                while(std::isspace(line[pos]));
+                line = line.substr(pos);
             }
         }
 

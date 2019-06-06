@@ -62,6 +62,7 @@ if( CATCH_FOUND )
         logic_errors.cpp
         options_files.cpp
         options_parser.cpp
+        usage.cpp
         valid_config_files.cpp
         valid_config_files_extra.cpp
         version.cpp

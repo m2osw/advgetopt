@@ -108,7 +108,7 @@ public:
     size_t                  get_configuration_filename_size() const;
     std::string             get_configuration_filename(int idx) const;
 
-    std::string             usage(flag_t show = GETOPT_FLAG_SHOW_ALL) const;
+    std::string             usage(flag_t show = GETOPT_FLAG_SHOW_MOST) const;
     std::string             process_help_string(char const * help) const;
     static std::string      breakup_line(
                                       std::string line
