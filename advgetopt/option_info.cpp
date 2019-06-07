@@ -39,18 +39,27 @@
 //
 #include "advgetopt/option_info.h"
 
+
 // advgetopt lib
 //
 #include "advgetopt/exception.h"
 #include "advgetopt/log.h"
 
+
 // libutf8 lib
 //
 #include    <libutf8/libutf8.h>
 
+
 // boost lib
 //
 #include <boost/algorithm/string/replace.hpp>
+
+
+// last include
+//
+#include <snapdev/poison.h>
+
 
 
 

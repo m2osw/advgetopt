@@ -44,9 +44,6 @@
 //
 #include    <snapdev/not_used.h>
 
-// C++ lib
-//
-#include <iostream>
 
 
 namespace advgetopt

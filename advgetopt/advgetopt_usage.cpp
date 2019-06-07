@@ -47,6 +47,12 @@
 #include    <iomanip>
 
 
+// last include
+//
+#include <snapdev/poison.h>
+
+
+
 
 namespace advgetopt
 {

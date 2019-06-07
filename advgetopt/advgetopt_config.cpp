@@ -43,18 +43,14 @@
 #include    "advgetopt/conf_file.h"
 #include    "advgetopt/log.h"
 
-//// libutf8 lib
-////
-//#include    <libutf8/libutf8.h>
-
 // boost lib
 //
 #include    <boost/algorithm/string/replace.hpp>
 
-//// C++ lib
-////
-//#include    <iomanip>
 
+// last include
+//
+#include <snapdev/poison.h>
 
 
 namespace advgetopt

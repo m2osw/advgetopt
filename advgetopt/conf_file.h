@@ -43,6 +43,7 @@
 #include    <memory>
 
 
+
 namespace advgetopt
 {
 

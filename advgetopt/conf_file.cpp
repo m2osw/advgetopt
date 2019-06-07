@@ -39,15 +39,23 @@
 //
 #include "advgetopt/conf_file.h"
 
+
 // advgetopt lib
 //
 #include "advgetopt/exception.h"
 #include "advgetopt/log.h"
 
+
 // C++ lib
 //
 #include <algorithm>
 #include <fstream>
+
+
+// last include
+//
+#include <snapdev/poison.h>
+
 
 
 namespace advgetopt

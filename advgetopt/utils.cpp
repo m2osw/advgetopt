@@ -39,9 +39,16 @@
 //
 #include "advgetopt/utils.h"
 
+
 // boost lib
 //
 #include <boost/algorithm/string/trim.hpp>
+
+
+// last include
+//
+#include <snapdev/poison.h>
+
 
 
 namespace advgetopt

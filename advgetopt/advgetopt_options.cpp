@@ -45,19 +45,23 @@
 //
 #include    "advgetopt/advgetopt.h"
 
+
 // advgetopt lib
 //
 #include    "advgetopt/conf_file.h"
 #include    "advgetopt/exception.h"
 #include    "advgetopt/log.h"
 
+
 // libutf8 lib
 //
 #include    <libutf8/libutf8.h>
 
-//// C++ lib
-////
-//#include    <iomanip>
+
+// last include
+//
+#include <snapdev/poison.h>
+
 
 
 

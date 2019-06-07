@@ -1,6 +1,6 @@
 /*
  * File:
- *    advgetopt/conf_file.h -- a replacement to the Unix getopt() implementation
+ *    advgetopt/utils.h -- a replacement to the Unix getopt() implementation
  *
  * License:
  *    Copyright (c) 2006-2019  Made to Order Software Corp.  All Rights Reserved
@@ -42,8 +42,10 @@
 #include <vector>
 
 
+
 namespace advgetopt
 {
+
 
 
 typedef std::vector<std::string>                string_list_t;
@@ -53,7 +55,6 @@ std::string          unquote(std::string const & s);
 void                 split_string(std::string const & str
                                 , string_list_t & result
                                 , string_list_t const & separators);
-
 
 
 

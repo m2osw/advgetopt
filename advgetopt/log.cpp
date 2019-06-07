@@ -44,13 +44,21 @@
 //
 #include "advgetopt/log.h"
 
+
 // advgetopt lib
 //
 #include "advgetopt/exception.h"
 
+
 // C++ lib
 //
 #include    <iostream>
+
+
+// last include
+//
+#include <snapdev/poison.h>
+
 
 
 namespace advgetopt

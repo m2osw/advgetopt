@@ -1,6 +1,6 @@
 /*
  * File:
- *    advgetopt/advgetopt.h -- a replacement to the Unix getopt() implementation
+ *    advgetopt/validator.h -- a replacement to the Unix getopt() implementation
  *
  * License:
  *    Copyright (c) 2006-2019  Made to Order Software Corp.  All Rights Reserved

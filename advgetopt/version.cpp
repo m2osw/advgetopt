@@ -35,7 +35,16 @@
  * had a minimum version or had some special case options when you
  * want to be able to support various versions.
  */
+
+// self
+//
 #include    "advgetopt/version.h"
+
+
+// last include
+//
+#include <snapdev/poison.h>
+
 
 
 namespace advgetopt
