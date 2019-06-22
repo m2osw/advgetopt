@@ -863,7 +863,7 @@ void getopt::parse_arguments(int argc
                     // short option(s)
                     //
                     // i gets incremented by add_options() so we have to
-                    // keep a copy of `k`
+                    // keep a copy in `k`
                     //
                     int const k(i);
                     int const max(static_cast<int>(strlen(argv[k])));
@@ -1175,7 +1175,7 @@ void getopt::add_options(option_info::pointer_t opt, int & i, int argc, char ** 
  *
  * \param[in] opt  The option receiving a value.
  * \param[in] value  The value to assign this option.
- * \param[in] filename  The name of a configuration file is the option was
+ * \param[in] filename  The name of a configuration file if the option was
  *                      read from such.
  */
 void getopt::add_option_from_string(option_info::pointer_t opt, std::string const & value, std::string const & filename)

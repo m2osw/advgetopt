@@ -151,7 +151,7 @@ void getopt::parse_options_info(option const * opts, bool ignore_duplicates)
                                               opts->f_name
                                             , short_name));
 
-        o->set_flags(opts->f_flags);
+        o->add_flag(opts->f_flags);
         o->set_default(opts->f_default);
         o->set_help(opts->f_help);
         o->set_multiple_separators(opts->f_multiple_separators);
@@ -192,10 +192,8 @@ void getopt::parse_options_info(option const * opts, bool ignore_duplicates)
  *     [<command-name>]
  *     short_name=<character>
  *     default=<default value>
- *     minimum=<minimum value>
- *     maximum=<maximum value>
  *     help=<help sentence>
- *     validator=<validator name>|/<regex>/<flags>
+ *     validator=<validator name>[(<param>)]|/<regex>/<flags>
  *     alias=<name of aliased option>
  *     allowed=command-line,environment-variable,configuration-file
  *     show-usage-on-error
@@ -271,8 +269,6 @@ void getopt::parse_options_from_file()
             opt->set_default(unquote(default_value));
         }
 
-        opt->set_minimum(conf.get_parameter(parameter_name + "::minimum"));
-        opt->set_maximum(conf.get_parameter(parameter_name + "::maximum"));
         opt->set_help(conf.get_parameter(parameter_name + "::help"));
 
         std::string const validator_name(conf.get_parameter(parameter_name + "::validator"));

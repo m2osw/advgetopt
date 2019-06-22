@@ -78,7 +78,6 @@ public:
     void                    parse_program_name(char * argv[]);
 
     void                    parse_configuration_files();
-    void                    load_configuration_files(std::string const & filename);
     void                    process_configuration_file(std::string const & filename);
 
     void                    parse_environment_variable();
@@ -95,6 +94,7 @@ public:
     option_info::pointer_t  get_option(short_name_t name, bool exact_option = false) const;
     bool                    is_defined(std::string const & name) const;
     size_t                  size(std::string const & name) const;
+    bool                    has_default(std::string const & name) const;
     std::string             get_default(std::string const & name) const;
     long                    get_long(
                                       std::string const & name
@@ -109,6 +109,8 @@ public:
     std::string             get_environment_variable_name() const;
     size_t                  get_configuration_filename_size() const;
     std::string             get_configuration_filename(int idx) const;
+    string_list_t           get_configuration_filenames(bool exists
+                                                      , bool writable);
 
     std::string             usage(flag_t show = GETOPT_FLAG_SHOW_MOST) const;
     std::string             process_help_string(char const * help) const;

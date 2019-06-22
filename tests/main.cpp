@@ -153,7 +153,7 @@ void tests_done()
 int main(int argc, char * argv[])
 {
     return SNAP_CATCH2_NAMESPACE::snap_catch2_main(
-              "libutf8"
+              "advgetopt"
             , LIBADVGETOPT_VERSION_STRING
             , argc
             , argv

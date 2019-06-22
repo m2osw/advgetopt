@@ -127,19 +127,44 @@ option_info::option_info(std::string const & name, short_name_t short_name)
 {
     if(name.empty())
     {
+        if(short_name != NO_SHORT_NAME)
+        {
+            throw getopt_exception_logic(
+                          "option_info::option_info(): all options must at least have a long name (short name: '"
+                        + libutf8::to_u8string(short_name)
+                        + "'.)");
+        }
         throw getopt_exception_logic(
-                      "option_info::option_info(): all options must at least have a long name (short name: '"
-                    + libutf8::to_u8string(short_name)
-                    + "'.");
+                      "option_info::option_info(): all options must at least have a long name.");
     }
 
-    if(name == "--"
-    && short_name != NO_SHORT_NAME)
+    if(name == "--")
     {
-        throw getopt_exception_logic(
-                      "option_info::option_info(): the default parameter \"--\" cannot include a short name ('"
-                    + libutf8::to_u8string(short_name)
-                    + "').");
+        if(short_name != NO_SHORT_NAME)
+        {
+            throw getopt_exception_logic(
+                          "option_info::option_info(): the default parameter \"--\" cannot include a short name ('"
+                        + libutf8::to_u8string(short_name)
+                        + "'.)");
+        }
+
+        add_flag(GETOPT_FLAG_DEFAULT_OPTION);
+    }
+    else
+    {
+        if(name[0] == '-')
+        {
+            throw getopt_exception_logic(
+                          "option_info::option_info(): an option cannot start with a dash (-), \""
+                        + name
+                        + "\" is not valid.");
+        }
+
+        if(short_name == '-')
+        {
+            throw getopt_exception_logic(
+                          "option_info::option_info(): the short name of an option cannot be the dash (-).");
+        }
     }
 }
 
@@ -297,7 +322,7 @@ bool option_info::has_flag(flag_t flag) const
  */
 bool option_info::has_default() const
 {
-    return (f_flags & GETOPT_FLAG_HAS_DEFAULT) != 0;
+    return has_flag(GETOPT_FLAG_HAS_DEFAULT);
 }
 
 
@@ -481,6 +506,18 @@ void option_info::set_validator(validator::pointer_t validator)
  */
 bool option_info::validates(int idx) const
 {
+    if(static_cast<size_t>(idx) >= f_value.size())
+    {
+        throw getopt_exception_undefined(
+                      "option_info::get_value(): no value at index "
+                    + std::to_string(idx)
+                    + " (idx >= "
+                    + std::to_string(f_value.size())
+                    + ") for --"
+                    + f_name
+                    + " so you can't get this value.");
+    }
+
     return f_validator == nullptr
                     ? true
                     : f_validator->validate(f_value[idx]);
@@ -507,82 +544,6 @@ bool option_info::validates(int idx) const
 validator::pointer_t option_info::get_validator() const
 {
     return f_validator;
-}
-
-
-/** \brief Set the minimum expected value.
- *
- * This function is used to set the minimum value of this parameter.
- *
- * Note that the minimum is not taken in account for the default value.
- *
- * \param[in] value  The minimum value of this option.
- */
-void option_info::set_minimum(std::string const & value)
-{
-    f_minimum_value = value;
-}
-
-
-/** \brief Set the maximum expected value.
- *
- * This function is used to set the maximum value of this parameter.
- *
- * Note that the maximum is not taken in account for the default value.
- *
- * \param[in] value  The maximum value of this option.
- */
-void option_info::set_maximum(std::string const & value)
-{
-    f_maximum_value = value;
-}
-
-
-/** \brief Define a range of acceptable values.
- *
- * This function saves the minimum and maximum values that this option
- * can accept.
- *
- * Until set to a non-empty string, these parameters are considered
- * undefined and thus the boundary won't be checked.
- *
- * \note
- * The default value does not need to be in the range to be considered
- * valid as the default value.
- *
- * \param[in] min  The minimum value acceptable.
- * \param[in] max  The maximum value acceptable.
- */
-void option_info::set_range(std::string const & min, std::string const & max)
-{
-    f_minimum_value = min;
-    f_maximum_value = max;
-}
-
-
-/** \brief Retrieve the minimum value.
- *
- * This function returns the minimum acceptable value for this command
- * line option.
- *
- * \return The minimum value acceptable.
- */
-std::string const & option_info::get_min() const
-{
-    return f_minimum_value;
-}
-
-
-/** \brief Retrieve the maximum value.
- *
- * This function returns the maximum acceptable value for this command
- * line option.
- *
- * \return The maximum value acceptable.
- */
-std::string const & option_info::get_max() const
-{
-    return f_maximum_value;
 }
 
 
@@ -689,7 +650,7 @@ void option_info::set_alias_destination(option_info::pointer_t destination)
 {
     if(destination->has_flag(GETOPT_FLAG_ALIAS))
     {
-        throw getopt_exception_undefined(
+        throw getopt_exception_invalid(
                 "option_info::set_alias(): you can't set an alias as"
                 " an alias of another option.");
     }
@@ -787,30 +748,10 @@ string_list_t const & option_info::get_multiple_separators() const
  */
 void option_info::add_value(std::string const & value)
 {
-    if(has_flag(GETOPT_FLAG_LOCK))
-    {
-        return;
-    }
-
-    if((f_flags & GETOPT_FLAG_MULTIPLE) == 0)
-    {
-        // always replace the existing value,
-        // we can't have more than one
-        //
-        if(f_value.empty())
-        {
-            f_value.push_back(value);
-        }
-        else
-        {
-            f_value[0] = value;
-            f_integer.clear();
-        }
-    }
-    else
-    {
-        f_value.push_back(value);
-    }
+    set_value(has_flag(GETOPT_FLAG_MULTIPLE)
+                    ? f_value.size()
+                    : 0
+            , value);
 }
 
 
@@ -836,14 +777,29 @@ void option_info::set_value(int idx, std::string const & value)
         return;
     }
 
-    if(static_cast<size_t>(idx) > f_value.size())
+    if(has_flag(GETOPT_FLAG_MULTIPLE))
     {
-        throw getopt_exception_undefined(
-                      "option_info::set_value(): no value at index "
-                    + std::to_string(idx)
-                    + " and it is not the last available index + 1 (idx > "
-                    + std::to_string(f_value.size())
-                    + ") so you can't set this value (try add_value() maybe?).");
+        if(static_cast<size_t>(idx) > f_value.size())
+        {
+            throw getopt_exception_logic(
+                          "option_info::set_value(): no value at index "
+                        + std::to_string(idx)
+                        + " and it is not the last available index + 1 (idx > "
+                        + std::to_string(f_value.size())
+                        + ") so you can't set this value (try add_value() maybe?).");
+        }
+    }
+    else
+    {
+        if(idx != 0)
+        {
+            throw getopt_exception_logic(
+                          "option_info::set_value(): single value option \"--"
+                        + f_name
+                        + "\" does not accepts index "
+                        + std::to_string(idx)
+                        + " which is not 0.");
+        }
     }
 
     if(static_cast<size_t>(idx) == f_value.size())
@@ -855,6 +811,18 @@ void option_info::set_value(int idx, std::string const & value)
         f_value[idx] = value;
     }
     f_integer.clear();
+
+    if(!f_value[idx].empty()
+    && !validates(idx))
+    {
+        log << log_level_t::error
+            << "input \""
+            << f_value[idx]
+            << "\" in parameter --"
+            << f_name
+            << " is not considered valid."
+            << end;
+    }
 }
 
 
@@ -891,6 +859,46 @@ void option_info::set_multiple_value(std::string const & value)
     f_value.clear();
 
     split_string(value, f_value, f_multiple_separators);
+
+    if(!has_flag(GETOPT_FLAG_MULTIPLE)
+    && f_value.size() > 1)
+    {
+        f_value.clear();
+        throw getopt_exception_logic(
+                 "option_info::set_multiple_value(): parameter --"
+               + f_name
+               + " expects exactly one parameter. The set_multiple_value() function should not be called with parameters that only accept one value.");
+    }
+
+    if(f_validator != nullptr)
+    {
+        for(size_t idx(0); idx < f_value.size(); )
+        {
+            if(!f_value[idx].empty())
+            {
+                if(!validates(idx))
+                {
+                    // remove all invalids, but only emit the error once
+                    //
+                    log << log_level_t::error
+                        << "input \""
+                        << f_value[idx]
+                        << "\" (from \""
+                        << value
+                        << "\") given to parameter --"
+                        << f_name
+                        << " is not considered valid."
+                        << end;
+
+                    f_value.erase(f_value.begin() + idx);
+                }
+                else
+                {
+                    ++idx;
+                }
+            }
+        }
+    }
 }
 
 
@@ -961,7 +969,9 @@ std::string const & option_info::get_value(int idx) const
                     + std::to_string(idx)
                     + " (idx >= "
                     + std::to_string(f_value.size())
-                    + ") so you can't get this value.");
+                    + ") for --"
+                    + f_name
+                    + " so you can't get this value.");
     }
 
     return f_value[idx];
@@ -970,44 +980,60 @@ std::string const & option_info::get_value(int idx) const
 
 /** \brief Get the value as a long.
  *
+ * This function returns the value converted to a `long`.
+ *
+ * If the value does not represent a valid long value, an error is
+ * emitted through the logger.
+ *
+ * \note
+ * The function will transform all the values in case this is a
+ * GETOPT_FLAG_CONFIGURATION_MULTIPLE option and cache the results.
+ * Calling the function many times with the same index is very fast
+ * after the first time.
+ *
+ * \exception getopt_exception_undefined
+ * If the value was not defined, the function raises this exception.
+ *
  * \param[in] idx  The index of the value to retrieve as a long.
  *
- * \return The value at \p idx converted to a long.
+ * \return The value at \p idx converted to a long or -1 on error.
  */
 long option_info::get_long(int idx) const
 {
     if(static_cast<size_t>(idx) >= f_value.size())
     {
         throw getopt_exception_undefined(
-                      "option_info::get_integer(): no value at index "
+                      "option_info::get_long(): no value at index "
                     + std::to_string(idx)
                     + " (idx >= "
                     + std::to_string(f_value.size())
-                    + ") so you can't get this value.");
+                    + ") for --"
+                    + f_name
+                    + " so you can't get this value.");
     }
 
     if(f_integer.size() != f_value.size())
     {
         // we did not yet convert to integers do that now
         //
-        for(auto const & str : f_value)
+        size_t const max(f_value.size());
+        for(size_t i(f_integer.size()); i < max; ++i)
         {
-            char * e;
-            char const * s(str.c_str());
-            f_integer.push_back(strtol(s, &e, 10));
-            if(e != s + str.length())
+            std::int64_t v;
+            if(!validator_integer::convert_string(f_value[i], v))
             {
                 f_integer.clear();
 
                 log << log_level_t::error
                     << "invalid number ("
-                    << str
+                    << f_value[i]
                     << ") in parameter --"
                     << f_name
                     << "."
                     << end;
                 return -1;
             }
+            f_integer.push_back(v);
         }
     }
 

@@ -40,8 +40,9 @@
 
 // advgetopt lib
 //
-#include "advgetopt/validator.h"
+#include "advgetopt/flags.h"
 #include "advgetopt/utils.h"
+#include "advgetopt/validator.h"
 
 
 // C++ lib
@@ -59,32 +60,6 @@ typedef char32_t            short_name_t;
 
 constexpr short_name_t      NO_SHORT_NAME = L'\0';
 
-
-typedef std::uint32_t       flag_t;
-
-static constexpr flag_t     GETOPT_FLAG_NONE                 = static_cast<flag_t>(0x00000000);
-
-static constexpr flag_t     GETOPT_FLAG_COMMAND_LINE         = static_cast<flag_t>(0x00000001);  // acceptable on the command line
-static constexpr flag_t     GETOPT_FLAG_ENVIRONMENT_VARIABLE = static_cast<flag_t>(0x00000002);  // acceptable in environment variable
-static constexpr flag_t     GETOPT_FLAG_CONFIGURATION_FILE   = static_cast<flag_t>(0x00000004);  // acceptable in configuration files
-
-static constexpr flag_t     GETOPT_FLAG_ALIAS                = static_cast<flag_t>(0x00000010);  // alias, result in another option defined in "help" string
-static constexpr flag_t     GETOPT_FLAG_FLAG                 = static_cast<flag_t>(0x00000020);  // no parameter allowed (--help)
-static constexpr flag_t     GETOPT_FLAG_REQUIRED             = static_cast<flag_t>(0x00000040);  // required (--host 127.0.0.1)
-static constexpr flag_t     GETOPT_FLAG_MULTIPLE             = static_cast<flag_t>(0x00000080);  // any number of parameter is allowed (--files a b c d ...)
-static constexpr flag_t     GETOPT_FLAG_DEFAULT_OPTION       = static_cast<flag_t>(0x00000100);  // where entries go by default (a.k.a. after "--")
-static constexpr flag_t     GETOPT_FLAG_HAS_DEFAULT          = static_cast<flag_t>(0x00000200);  // default value is defined
-
-static constexpr flag_t     GETOPT_FLAG_SHOW_MOST            = static_cast<flag_t>(0x00000000);  // show in usage() when not in GROUP1 or GROUP2
-static constexpr flag_t     GETOPT_FLAG_SHOW_USAGE_ON_ERROR  = static_cast<flag_t>(0x00001000);  // show in usage() when an error occurs
-static constexpr flag_t     GETOPT_FLAG_SHOW_ALL             = static_cast<flag_t>(0x00002000);  // show in usage() when --long-help is used
-static constexpr flag_t     GETOPT_FLAG_SHOW_GROUP1          = static_cast<flag_t>(0x00004000);  // show in usage() when --<group1>-help is used (app dependent)
-static constexpr flag_t     GETOPT_FLAG_SHOW_GROUP2          = static_cast<flag_t>(0x00008000);  // show in usage() when --<group2>-help is used (app dependent)
-
-static constexpr flag_t     GETOPT_FLAG_DYNAMIC              = static_cast<flag_t>(0x20000000);  // this value was found in a configuration file and dynamic parameters are allowed (i.e. no definition for this option was found)
-static constexpr flag_t     GETOPT_FLAG_LOCK                 = static_cast<flag_t>(0x40000000);  // this value is currently locked (can't be modified)
-
-static constexpr flag_t     GETOPT_FLAG_END                  = static_cast<flag_t>(0x80000000);  // mark the end of the list
 
 
 
@@ -126,12 +101,6 @@ public:
     void                        set_validator(validator::pointer_t validator);
     bool                        validates(int idx = 0) const;
     validator::pointer_t        get_validator() const;
-    void                        set_minimum(std::string const & value);
-    void                        set_maximum(std::string const & value);
-
-    void                        set_range(std::string const & min, std::string const & max);
-    std::string const &         get_min() const;
-    std::string const &         get_max() const;
 
     void                        add_child(option_info::pointer_t child);
     map_by_name_t const &       get_children() const;
@@ -161,8 +130,6 @@ private:
     short_name_t                f_short_name = NO_SHORT_NAME;
     flag_t                      f_flags = GETOPT_FLAG_NONE;
     std::string                 f_default_value = std::string();
-    std::string                 f_minimum_value = std::string();
-    std::string                 f_maximum_value = std::string();
     std::string                 f_help = std::string();
     validator::pointer_t        f_validator = validator::pointer_t();
     pointer_t                   f_alias_destination = pointer_t();

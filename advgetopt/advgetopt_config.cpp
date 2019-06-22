@@ -59,6 +59,114 @@ namespace advgetopt
 
 
 
+/** \brief Generate a list of configuration filenames.
+ *
+ * This function goes through the list of filenames and directories and
+ * generates a complete list of all the configuration files that the
+ * system will load when you call the parse_configuration_files()
+ * function.
+ *
+ * Set the flag \p exists to true if you only want the name of files
+ * that currently exists.
+ *
+ * The \p writable file means that we only want files under the
+ * \<project-name>.d folder and the user configuration folder.
+ *
+ * \param[in] exists  Remove files that do not exist from the list.
+ * \param[in] writable  Only return files we consider writable.
+ *
+ * \return The list of configuration filenames.
+ */
+string_list_t getopt::get_configuration_filenames(bool exists, bool writable)
+{
+    string_list_t result;
+
+    if(f_options_environment.f_configuration_files != nullptr)
+    {
+        // load options from configuration files specified as is by caller
+        //
+        for(char const * const * configuration_files(f_options_environment.f_configuration_files)
+          ; *configuration_files != nullptr
+          ; ++configuration_files)
+        {
+            char const * filename(*configuration_files);
+            if(*filename != '\0')
+            {
+                std::string const user_filename(handle_user_directory(filename));
+                if(user_filename == filename)
+                {
+                    if(!writable)
+                    {
+                        result.push_back(user_filename);
+                    }
+
+                    std::string const with_project_name(insert_project_name(user_filename, f_options_environment.f_project_name));
+                    if(!with_project_name.empty())
+                    {
+                        result.push_back(with_project_name);
+                    }
+                }
+                else
+                {
+                    result.push_back(user_filename);
+                }
+            }
+        }
+    }
+
+    if(f_options_environment.f_configuration_filename != nullptr
+    && f_options_environment.f_configuration_directories != nullptr)
+    {
+        std::string const filename(f_options_environment.f_configuration_filename);
+
+        for(char const * const * configuration_directories(f_options_environment.f_configuration_directories)
+          ; *configuration_directories != nullptr
+          ; ++configuration_directories)
+        {
+            char const * directory(*configuration_directories);
+            if(*directory != '\0')
+            {
+                std::string const full_filename(directory + ("/" + filename));
+                std::string const user_filename(handle_user_directory(full_filename));
+                if(user_filename == full_filename)
+                {
+                    if(!writable)
+                    {
+                        result.push_back(user_filename);
+                    }
+
+                    std::string const with_project_name(insert_project_name(user_filename, f_options_environment.f_project_name));
+                    if(!with_project_name.empty())
+                    {
+                        result.push_back(with_project_name);
+                    }
+                }
+                else
+                {
+                    result.push_back(user_filename);
+                }
+            }
+        }
+    }
+
+    if(!exists)
+    {
+        return result;
+    }
+
+    string_list_t existing_files;
+    int const mode(R_OK | (writable ? W_OK : 0));
+    for(auto r : result)
+    {
+        if(access(r.c_str(), mode) == 0)
+        {
+            existing_files.push_back(r);
+        }
+    }
+    return existing_files;
+}
+
+
 /** \brief This function checks for arguments in configuration files.
  *
  * Each configuration file is checked one after another. Each file that is
@@ -97,83 +205,14 @@ namespace advgetopt
  * or match a command.) This exception is raised when such is detected.
  *
  * \sa process_configuration_file()
- * \sa load_configuration_files()
  */
 void getopt::parse_configuration_files()
 {
-    if(f_options_environment.f_configuration_files == nullptr)
+    string_list_t const filenames(get_configuration_filenames(false, false));
+
+    for(auto f : filenames)
     {
-        return;
-    }
-
-    // load options from configuration files specified as is by caller
-    //
-    for(char const * const * configuration_files(f_options_environment.f_configuration_files)
-      ; *configuration_files != nullptr
-      ; ++configuration_files)
-    {
-        char const * filename(*configuration_files);
-        if(*filename != '\0')
-        {
-            load_configuration_files(filename);
-        }
-    }
-}
-
-
-/** \brief Try loading a configuration file.
- *
- * This function attempts to load a configuration file with the specified
- * filename and if a project name is defined, also with that project name
- * added with ".d" appended like so:
- *
- * \code
- *     <filename path>/<project name>.d/<filename basename>
- * \endcode
- *
- * If you are managing your own ".d" feature, make sure to call the
- * process_configuration_file() function directly.
- *
- * The name of the file is not currently modified. It should already
- * include the necessary extension such as ".conf" or ".ini".
- *
- * \todo
- * Added more locations: we want to support a system configuration file
- * under `/etc/<project-name>/`, and also a user defined configuration
- * location under `~/.config/<project-name>/`. There could be others
- * that should be automatic. Right now you can handle all of these
- * with a list of configuration path, but automation is prime.
- *
- * \param[in] filename  The basic name of the configuration file.
- *
- * \sa process_configuration_file()
- * \sa parse_configuration_files()
- */
-void getopt::load_configuration_files(std::string const & filename)
-{
-    process_configuration_file(filename);
-
-    if(f_options_environment.f_project_name != nullptr
-    && *f_options_environment.f_project_name != '\0')
-    {
-        std::string adjusted_filename(filename);
-
-        std::string::size_type const pos(adjusted_filename.find_last_of('/'));
-        if(pos != std::string::npos
-        && pos > 0)
-        {
-            adjusted_filename = adjusted_filename.substr(0, pos + 1)
-                              + f_options_environment.f_project_name
-                              + ".d"
-                              + adjusted_filename.substr(pos);
-        }
-        else
-        {
-            adjusted_filename = f_options_environment.f_project_name
-                              + (".d/" + adjusted_filename);
-        }
-
-        process_configuration_file(adjusted_filename);
+        process_configuration_file(f);
     }
 }
 
@@ -199,7 +238,6 @@ void getopt::load_configuration_files(std::string const & filename)
  * \param[in] filename  The name of the configuration file to check out.
  *
  * \sa parse_configuration_files()
- * \sa load_configuration_files()
  */
 void getopt::process_configuration_file(std::string const & filename)
 {

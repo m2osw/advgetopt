@@ -440,10 +440,11 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
 
         // "--from"
         CATCH_REQUIRE(opt.is_defined("from"));
-        CATCH_REQUIRE(opt.get_string("from") == "");
-        CATCH_REQUIRE(opt.get_long("from") == 0);
-        CATCH_REQUIRE(opt.get_default("from").empty());
         CATCH_REQUIRE(opt.size("from") == 1);
+        CATCH_REQUIRE(opt.get_string("from") == "");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid number () in parameter --from.");
+        CATCH_REQUIRE(opt.get_long("from") == -1);
+        CATCH_REQUIRE(opt.get_default("from").empty());
 
         // "--output"
         CATCH_REQUIRE(opt.is_defined("output"));
@@ -476,10 +477,10 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
 
         // "--from"
         CATCH_REQUIRE(opt.is_defined("from"));
+        CATCH_REQUIRE(opt.size("from") == 1);
         CATCH_REQUIRE(opt.get_string("from") == "1001");
         CATCH_REQUIRE(opt.get_long("from") == 1001);
         CATCH_REQUIRE(opt.get_default("from").empty());
-        CATCH_REQUIRE(opt.size("from") == 1);
 
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "valid_options_files");
@@ -491,10 +492,11 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
 
         // "--from"
         CATCH_REQUIRE(opt.is_defined("from"));
-        CATCH_REQUIRE(opt.get_string("from") == "");
-        CATCH_REQUIRE(opt.get_long("from") == 0);
-        CATCH_REQUIRE(opt.get_default("from").empty());
         CATCH_REQUIRE(opt.size("from") == 1);
+        CATCH_REQUIRE(opt.get_string("from") == "");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid number () in parameter --from.");
+        CATCH_REQUIRE(opt.get_long("from") == -1);
+        CATCH_REQUIRE(opt.get_default("from").empty());
 
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "valid_options_files");

@@ -262,6 +262,7 @@ CATCH_TEST_CASE("options_parser", "[options][valid]")
                   advgetopt::Name("filenames")
                 , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED, advgetopt::GETOPT_FLAG_MULTIPLE, advgetopt::GETOPT_FLAG_DEFAULT_OPTION>())
                 , advgetopt::Help("enter a list of filenames.")
+                , advgetopt::DefaultValue("a.out")
             ),
             advgetopt::end_options()
         };
@@ -340,12 +341,14 @@ CATCH_TEST_CASE("options_parser", "[options][valid]")
         // "--environment-variable-name"
         CATCH_REQUIRE(opt.get_option("environment-variable-name") == nullptr);
         CATCH_REQUIRE_FALSE(opt.is_defined("environment-variable-name"));
+        CATCH_REQUIRE_FALSE(opt.has_default("environment-variable-name"));
         CATCH_REQUIRE(opt.get_default("environment-variable-name").empty());
         CATCH_REQUIRE(opt.size("environment-variable-name") == 0);
 
         // "--configuration-filename"
         CATCH_REQUIRE(opt.get_option("configuration-filenames") == nullptr);
         CATCH_REQUIRE_FALSE(opt.is_defined("configuration-filenames"));
+        CATCH_REQUIRE_FALSE(opt.has_default("configuration-filenames"));
         CATCH_REQUIRE(opt.get_default("configuration-filenames").empty());
         CATCH_REQUIRE(opt.size("configuration-filenames") == 0);
 
@@ -354,6 +357,19 @@ CATCH_TEST_CASE("options_parser", "[options][valid]")
         CATCH_REQUIRE_FALSE(opt.is_defined("path-to-option-definitions"));
         CATCH_REQUIRE(opt.get_default("path-to-option-definitions").empty());
         CATCH_REQUIRE(opt.size("path-to-option-definitions") == 0);
+
+        // "--configuration-filename"
+        CATCH_REQUIRE(opt.get_option("filenames") != nullptr);
+        CATCH_REQUIRE(opt.is_defined("filenames"));
+        CATCH_REQUIRE(opt.get_string("filenames")    == "file1");
+        CATCH_REQUIRE(opt.get_string("filenames", 0) == "file1");
+        CATCH_REQUIRE(opt.get_string("filenames", 1) == "file2");
+        CATCH_REQUIRE(opt.get_string("filenames", 2) == "file3");
+        CATCH_REQUIRE(opt.get_string("filenames", 3) == "file4");
+        CATCH_REQUIRE(opt.get_string("filenames", 4) == "file5");
+        CATCH_REQUIRE(opt.has_default("filenames"));
+        CATCH_REQUIRE(opt.get_default("filenames") == "a.out");
+        CATCH_REQUIRE(opt.size("filenames") == 5);
 
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "options-parser");
@@ -401,6 +417,7 @@ CATCH_TEST_CASE("options_parser", "[options][valid]")
         CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
         CATCH_REQUIRE(opt.get_option('Z') == nullptr);
         CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE_FALSE(opt.has_default("invalid-parameter"));
         CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
         CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
 
@@ -408,6 +425,7 @@ CATCH_TEST_CASE("options_parser", "[options][valid]")
         CATCH_REQUIRE(opt.get_option("verbose") != nullptr);
         CATCH_REQUIRE(opt.get_option('v') != nullptr);
         CATCH_REQUIRE(opt.is_defined("verbose"));
+        CATCH_REQUIRE_FALSE(opt.has_default("verbose"));
         CATCH_REQUIRE(opt.get_default("verbose").empty());
         CATCH_REQUIRE(opt.size("verbose") == 1);
 
@@ -415,6 +433,7 @@ CATCH_TEST_CASE("options_parser", "[options][valid]")
         CATCH_REQUIRE(opt.get_option("help") != nullptr);
         CATCH_REQUIRE(opt.get_option('h') != nullptr);
         CATCH_REQUIRE_FALSE(opt.is_defined("help"));
+        CATCH_REQUIRE_FALSE(opt.has_default("help"));
         CATCH_REQUIRE(opt.get_default("help").empty());
         CATCH_REQUIRE(opt.size("help") == 0);
 
@@ -424,6 +443,7 @@ CATCH_TEST_CASE("options_parser", "[options][valid]")
         CATCH_REQUIRE(opt.get_option('V') == opt.get_option("version"));
         CATCH_REQUIRE(opt.get_option('V') != opt.get_option("verbose"));
         CATCH_REQUIRE_FALSE(opt.is_defined("version"));
+        CATCH_REQUIRE_FALSE(opt.has_default("version"));
         CATCH_REQUIRE(opt.get_default("version").empty());
         CATCH_REQUIRE(opt.size("version") == 0);
 
@@ -431,6 +451,7 @@ CATCH_TEST_CASE("options_parser", "[options][valid]")
         CATCH_REQUIRE(opt.get_option("copyright") != nullptr);
         CATCH_REQUIRE(opt.get_option('C') != nullptr);      // no short name in our definition (which overwrites the system definition)
         CATCH_REQUIRE_FALSE(opt.is_defined("copyright"));
+        CATCH_REQUIRE_FALSE(opt.has_default("copyright"));
         CATCH_REQUIRE(opt.get_default("copyright").empty());
         CATCH_REQUIRE(opt.size("copyright") == 0);
 
@@ -439,12 +460,14 @@ CATCH_TEST_CASE("options_parser", "[options][valid]")
         CATCH_REQUIRE(opt.get_option('L') != nullptr);
         CATCH_REQUIRE(opt.is_defined("license"));
         CATCH_REQUIRE(opt.get_string("license").empty());
+        CATCH_REQUIRE_FALSE(opt.has_default("license"));
         CATCH_REQUIRE(opt.get_default("license").empty());
         CATCH_REQUIRE(opt.size("license") == 1);
 
         // "--build-date"
         CATCH_REQUIRE(opt.get_option("build-date") != nullptr);
         CATCH_REQUIRE_FALSE(opt.is_defined("build-date"));
+        CATCH_REQUIRE_FALSE(opt.has_default("build-date"));
         CATCH_REQUIRE(opt.get_default("build-date").empty());
         CATCH_REQUIRE(opt.size("build-date") == 0);
 
@@ -457,12 +480,14 @@ CATCH_TEST_CASE("options_parser", "[options][valid]")
         // "--configuration-filename"
         CATCH_REQUIRE(opt.get_option("configuration-filenames") != nullptr);
         CATCH_REQUIRE_FALSE(opt.is_defined("configuration-filenames"));
+        CATCH_REQUIRE_FALSE(opt.has_default("configuration-filenames"));
         CATCH_REQUIRE(opt.get_default("configuration-filenames").empty());
         CATCH_REQUIRE(opt.size("configuration-filenames") == 0);
 
         // "--path-to-option-definitions"
         CATCH_REQUIRE(opt.get_option("path-to-option-definitions") != nullptr);
         CATCH_REQUIRE_FALSE(opt.is_defined("path-to-option-definitions"));
+        CATCH_REQUIRE_FALSE(opt.has_default("path-to-option-definitions"));
         CATCH_REQUIRE(opt.get_default("path-to-option-definitions").empty());
         CATCH_REQUIRE(opt.size("path-to-option-definitions") == 0);
 
@@ -474,7 +499,9 @@ CATCH_TEST_CASE("options_parser", "[options][valid]")
 
 
 
-
+// With C++17, all of these invalid cases should be handled in the
+// define_option() and option_flags() templates
+//
 CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
 {
     CATCH_START_SECTION("No options")
@@ -646,6 +673,46 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
                 , advgetopt::getopt_exception_logic
                 , Catch::Matchers::ExceptionMessage(
                           "a long name option must be at least 2 characters."));
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Default option with a short name")
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("verbose")
+                , advgetopt::ShortName('v')
+                , advgetopt::Flags(advgetopt::standalone_command_flags())
+                , advgetopt::Help("print info as we work.")
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("--")
+                , advgetopt::ShortName('f')
+                , advgetopt::Flags(advgetopt::option_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE>())
+                , advgetopt::Help("list of filenames.")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = 0;
+        environment_options.f_help_header = "Usage: short name not acceptable with \"--\"";
+
+        char const * cargv[] =
+        {
+            "tests/option-with-name-too-short",
+            "--verbose",
+            "file.txt",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(environment_options, argc, argv)
+                , advgetopt::getopt_exception_logic
+                , Catch::Matchers::ExceptionMessage(
+                          "option_info::option_info(): the default parameter \"--\" cannot include a short name ('f'.)"));
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Duplicated Options (Long Name)")

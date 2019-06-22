@@ -7,7 +7,7 @@ advgetopt (2.0.0.0~xenial) xenial; urgency=high
    - Moved the version declaration in a separate header.
    - Bumped version to 2.0 (it won't exactly be compatible with 1.x anymore.)
    - Broke up the unit tests in many files to make it easier to manage.
-   - Made the tests be 100% coverage.
+   - Made the tests be 100% coverage on a per library source file.
    - Updated the tests to use snapcatch2.
    - Removed all the exit() calls. usage() now returns a string.
    - Added a logger which by defaults prints in stderr.
@@ -17,9 +17,13 @@ advgetopt (2.0.0.0~xenial) xenial; urgency=high
      not complete).
    - Added system command line options (i.e. --help, --version, ...).
    - Put the hide-warnings utility in the tools/* folder.
+   - Replaced validation of parameters with validators. We have an integer
+     and a regex validator for now. Plans is to also have one for addr and
+     libtld (i.e. domain names, emails.)
   * Added missing BOOST dependency in the CMakeLists.txt.
   * Added an ./mk script to recompile quickly.
   * Added a coverage script.
+  * Added in=C++ to the MAPPING_EXTENSION (Doxygen).
 
  -- Alexis Wilke <alexis@m2osw.com>  Mon, 13 May 2019 00:03:40 -0800
 

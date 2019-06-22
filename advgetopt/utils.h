@@ -51,10 +51,13 @@ namespace advgetopt
 typedef std::vector<std::string>                string_list_t;
 
 
-std::string          unquote(std::string const & s);
-void                 split_string(std::string const & str
-                                , string_list_t & result
-                                , string_list_t const & separators);
+std::string         unquote(std::string const & s);
+void                split_string(std::string const & str
+                               , string_list_t & result
+                               , string_list_t const & separators);
+std::string         insert_project_name(std::string const & filename
+                                      , char const * project_name);
+std::string         handle_user_directory(std::string const & filename);
 
 
 

@@ -47,6 +47,17 @@
 #include    "advgetopt/log.h"
 
 
+// snapdev lib
+//
+#include <snapdev/not_used.h>
+#include <snapdev/tokenize_string.h>
+
+
+// boost lib
+//
+#include <boost/algorithm/string/trim.hpp>
+
+
 // last include
 //
 #include <snapdev/poison.h>
@@ -82,10 +93,13 @@ public:
 
     virtual std::shared_ptr<validator> create(std::string const & data) const
     {
-        static_cast<void>(data); // ignore `data`
-        return std::make_shared<validator_integer>();
+        snap::NOTUSED(data); // ignore `data`
+        return std::make_shared<validator_integer>(data);
     }
 };
+
+validator_integer_factory       g_validator_integer_factory;
+
 
 
 class validator_regex_factory
@@ -107,6 +121,9 @@ public:
         return std::make_shared<validator_regex>(data);
     }
 };
+
+validator_regex_factory     g_validator_regex_factory;
+
 
 
 } // no name namespace
@@ -169,7 +186,7 @@ void validator::register_validator(validator_factory const & factory)
     if(it != g_validator_factories.end())
     {
         throw getopt_exception_logic(
-                  "you have two or more validation factories named \""
+                  "you have two or more validator factories named \""
                 + factory.get_name()
                 + "\".");
     }
@@ -190,6 +207,113 @@ validator::pointer_t validator::create(std::string const & name, std::string con
 
 
 
+
+
+
+/** \brief Initialize the integer validator.
+ *
+ * The constructor accepts a string with values and ranges which are
+ * used to limit the values that can be used with this parameter.
+ *
+ * Remember that the default does not have to be included in these
+ * values. It will still be viewed as \em valid.
+ *
+ * The string uses the following format:
+ *
+ * \code
+ *    start: range
+ *         | start ',' range
+ *
+ *    range: number
+ *         | number '...' number
+ *
+ *    number: [-+]?[0-9]+
+ * \endcode
+ *
+ * Note that a single number is considered to be a range and is managed
+ * the exact same way. A value which matches any of the ranges is considered
+ * valid.
+ *
+ * Example:
+ *
+ * \code
+ *     "-100...100,-1000"
+ * \endcode
+ *
+ * This example allows all values between -100 and +100 inclusive and also
+ * allows the value -1000.
+ *
+ * \param[in] ranges  The ranges used to limit the integer.
+ */
+validator_integer::validator_integer(std::string const & ranges)
+{
+    typedef std::vector<std::string> container_t;
+    container_t range_list;
+    snap::tokenize_string<container_t>(range_list
+                                     , ranges
+                                     , ","
+                                     , true
+                                     , " \t\n\r");
+    range_t range;
+    for(auto r : range_list)
+    {
+        std::string::size_type const pos(r.find("..."));
+        if(pos == std::string::npos)
+        {
+            if(!convert_string(r, range.f_minimum))
+            {
+                log << log_level_t::error
+                    << r
+                    << " is not a valid value for your ranges;"
+                       " it must only digits, optionally preceeded by a sign (+ or -)"
+                       " and not overflow an int64_t value."
+                    << end;
+                continue;
+            }
+            range.f_maximum = range.f_minimum;
+        }
+        else
+        {
+            std::string min_value(r.substr(0, pos));
+            boost::trim(min_value);
+            if(!convert_string(min_value, range.f_minimum))
+            {
+                log << log_level_t::error
+                    << min_value
+                    << " is not a valid value for your ranges;"
+                       " it must only digits, optionally preceeded by a sign (+ or -)"
+                       " and not overflow an int64_t value."
+                    << end;
+                continue;
+            }
+
+            std::string max_value(r.substr(pos + 3));
+            boost::trim(max_value);
+            if(!convert_string(max_value, range.f_maximum))
+            {
+                log << log_level_t::error
+                    << max_value
+                    << " is not a valid value for your ranges;"
+                       " it must only digits, optionally preceeded by a sign (+ or -)"
+                       " and not overflow an int64_t value."
+                    << end;
+                continue;
+            }
+
+            if(range.f_minimum > range.f_maximum)
+            {
+                log << log_level_t::error
+                    << min_value
+                    << " has to be smaller or equal to "
+                    << max_value
+                    << "; you have an invalid range."
+                    << end;
+                continue;
+            }
+        }
+        f_allowed_values.push_back(range);
+    }
+}
 
 
 /** \brief Return the name of this validator.
@@ -222,11 +346,48 @@ std::string const validator_integer::name() const
  */
 bool validator_integer::validate(std::string const & value) const
 {
-    uint64_t integer(0);
+    std::int64_t result(0);
+    if(convert_string(value, result))
+    {
+        if(f_allowed_values.empty())
+        {
+            return true;
+        }
+
+        for(auto f : f_allowed_values)
+        {
+            if(result >= f.f_minimum
+            && result <= f.f_maximum)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    return false;
+}
+
+
+/** \brief Convert a string to an std::int64_t value.
+ *
+ * This function is used to convert a string to an integer with full
+ * boundary verification.
+ *
+ * The result can also get checked against ranges as defined in the
+ * constructor.
+ *
+ * \return true if the conversion succeeded.
+ */
+bool validator_integer::convert_string(std::string const & value, std::int64_t & result)
+{
+    std::uint64_t integer(0);
     char const * s(value.c_str());
 
+    char sign('\0');
     if(*s == '-' || *s == '+')
     {
+        sign = *s;
         ++s;
     }
 
@@ -244,8 +405,22 @@ bool validator_integer::validate(std::string const & value) const
         {
             // valid
             //
-            // TODO: verify for sign overflow
-            //
+            if(sign == '-')
+            {
+                if(integer > 0x8000000000000000ULL)
+                {
+                    return false;
+                }
+                result = -integer;
+            }
+            else
+            {
+                if(integer > 0x7FFFFFFFFFFFFFFFULL)
+                {
+                    return false;
+                }
+                result = integer;
+            }
             return true;
         }
         if(c < '0' || c > '9')
@@ -255,7 +430,7 @@ bool validator_integer::validate(std::string const & value) const
             return false;
         }
 
-        uint64_t const old(integer);
+        std::uint64_t const old(integer);
         integer = integer * 10 + c - '0';
         if(integer < old)
         {
@@ -265,6 +440,12 @@ bool validator_integer::validate(std::string const & value) const
         }
     }
 }
+
+
+
+
+
+
 
 
 
@@ -307,8 +488,13 @@ validator_regex::validator_regex(std::string const & regex)
                 << regex
                 << "\"."
                 << end;
+
+            f_regex = std::regex(std::string(regex.begin() + 1, regex.end()), flags);
         }
-        f_regex = std::regex(std::string(regex.begin() + 1, it), flags);
+        else
+        {
+            f_regex = std::regex(std::string(regex.begin() + 1, it), flags);
+        }
     }
     else
     {

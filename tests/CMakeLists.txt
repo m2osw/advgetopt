@@ -59,10 +59,14 @@ if( CATCH_FOUND )
         arguments.cpp
         data.cpp
         log_for_test.cpp
+        logger.cpp
         logic_errors.cpp
+        option_info.cpp
         options_files.cpp
         options_parser.cpp
         usage.cpp
+        utils.cpp
+        validator.cpp
         valid_config_files.cpp
         valid_config_files_extra.cpp
         version.cpp

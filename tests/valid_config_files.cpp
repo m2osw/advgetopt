@@ -92,14 +92,6 @@ CATCH_TEST_CASE("valid_config_files", "[config][getopt]")
     // some command line options to test against
     const advgetopt::option valid_options_list[] =
     {
-        //{
-        //    '\0',
-        //    advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-        //    nullptr,
-        //    nullptr,
-        //    "Usage: test valid options",
-        //    advgetopt::getopt::argument_mode_t::help_argument
-        //},
         {
             '\0',
             advgetopt::GETOPT_FLAG_COMMAND_LINE,

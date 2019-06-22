@@ -5998,7 +5998,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
             {
                 '\0',
                 advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_MULTIPLE,
-                "--command",
+                "command",
                 nullptr,
                 "there is a --command, but the user tries --verbose!",
                 nullptr

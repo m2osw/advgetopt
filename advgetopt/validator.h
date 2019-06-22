@@ -68,7 +68,7 @@ public:
 
     virtual                     ~validator();
 
-    // new virtuals
+    // virtuals
     //
     virtual std::string const   name() const = 0;
     virtual bool                validate(std::string const & value) const = 0;
@@ -82,10 +82,29 @@ class validator_integer
     : public validator
 {
 public:
+    typedef bool (*to_integer_t)(std::string const & number
+                               , std::int64_t & result);
+
+                                validator_integer(std::string const & data);
+
     // validator implementation
     //
     virtual std::string const   name() const;
     virtual bool                validate(std::string const & value) const;
+
+    static bool                 convert_string(std::string const & number
+                                             , std::int64_t & result);
+
+private:
+    struct range_t
+    {
+        typedef std::vector<range_t>    vector_t;
+
+        std::int64_t            f_minimum = std::numeric_limits<std::int64_t>::min();
+        std::int64_t            f_maximum = std::numeric_limits<std::int64_t>::max();
+    };
+
+    range_t::vector_t           f_allowed_values = range_t::vector_t();
 };
 
 
@@ -93,7 +112,7 @@ class validator_regex
     : public validator
 {
 public:
-                                validator_regex(std::string const & regex);
+                                validator_regex(std::string const & data);
 
     // validator implementation
     //

@@ -12,7 +12,7 @@ testing. Hence the sectioning.
 The following describes each part and the list of test to run to verify
 that part.
 
-## Options Parsing
+## Options Parsing (`advgetopt_options.cpp`)
 
 We have three _parsers_:
 
@@ -31,7 +31,7 @@ with the options.
 
     dev/coverage options_parser,invalid_options_parser,valid_options_files,invalid_options_files
 
-## Arguments Parsing
+## Arguments Parsing (`advgetopt.cpp`)
 
 We have three _parsers_:
 
@@ -49,7 +49,7 @@ into arguments before parsing the arguments in our map of named values.
 
     dev/coverage flag_argument,require_argument,require_arguments,optional_arguments,default_argument,default_arguments,manual_arguments,invalid_getopt_pointers,invalid_getopt_missing_options,invalid_getopt_missing_alias,invalid_getopt_missing_required_option,invalid_default_options,invalid_options
 
-## Configuration Parsing
+## Configuration Parsing (`advgetopt_config.cpp`) NOT COMPLETE
 
 We have three _parsers_:
 
@@ -66,7 +66,7 @@ places in Snap! However, we now have the ability to define an external
 definition for each file so it will be possible to verify configuration files
 properly from any tool.
 
-## Program & Project Names
+## Program & Project Names (`advgetopt_access.cpp`)
 
 The program name is taken from the command line first string (`argv[0]`)
 which is expected to be the path to the program being run.
@@ -79,9 +79,9 @@ These tests make sure that all cases are checked, including a program name
 with backslashes as directory separators (if no slashes are found first.)
 This is a small remain from the days when advgetopt worked on MS-Windows.
 
-    dev/coverage program_name,project_name
+    dev/coverage program_name,project_name,invalid_program_name
 
-## Data Retieval
+## Data Retieval (`advgetopt_data.cpp`)
 
 Once the command line arguments, environment variable, and configuration
 files were parsed, you want to retrieve the data. These test verify that
@@ -89,13 +89,89 @@ the data is returned to you as expected.
 
     dev/coverage string_access,long_access,invalid_option_name,missing_default_value,incompatible_default_value,out_of_range_value
 
-## Usage
+## Usage (`advgetopt_usage.cpp`)
 
 Whenever an error occurs or when a command line option such as `--help`
 is used, the usage screens get printed. This tests verify that the usage
 output works as expected.
 
     dev/coverage usage_function,help_string_percent,help_string_project_name,help_string_build_date,help_string_copyright,help_string_directories,help_string_environment_variable,help_string_configuration_files,help_string_license,help_string_program_name,help_string_build_time,help_string_version
+
+## Logger (`log.cpp`)
+
+The advgetopt uses a logger class so it can generate messages of various
+levels and send them to the console or your callback. If you have a way
+to send the log messages to a log file, for example, setup a callback
+and redirect those messages to your log file instead.
+
+    dev/coverage logger,logger_without_callback,invalid_logger
+
+## Option Info (`option_info.cpp`)
+
+The `option_info` class is used to register options taken from statically
+compiled option tables. The advantage of habing an object is to allow for
+dynamic options to be added at run which mainly happens when loading
+configuration files but can also be allowed on the command line and
+the environment variable.
+
+    dev/coverage option_info_basics,option_info_flags,option_info_default,option_info_help,option_info_validator,option_info_children,option_info_alias,option_info_multiple_separators,option_info_add_value,invalid_option_info
+
+**Note:** This is strongly linked to the Options Parser above. The fact is
+that many cases are handled within the option parser and as a result
+the `option_info` class is not fully checked through the parser.
+
+## Utilities (`utils.cpp`)
+
+We have a few functions used in the library that do not really fit anywhere
+specifically which we put in the utils.cpp file. These tests specifically
+verify those functions.
+
+    dev/coverage utils_unquote,utils_split,utils_insert_project_name,utils_handle_user_directory
+
+
+## Validator (`validator.cpp`)
+
+The validator classes are used to make sure that the data supplied by the
+user is considered valid. For example, it may have to be an integer or
+a an email address.
+
+The following checks all the advgetopt supplied validators. You can create
+some of your own, which, of course, cannot be validated here.
+
+    dev/coverage unknown_validator,integer_validator,regex_validator,invalid_validator
+
+## Version (`version.cpp`)
+
+Check that the version functions work as expected. This also verifies that
+you are running the test that corresponds to your version of the library.
+
+    dev/coverage version
+
+
+
+
+    advgetopt_access.cpp    DONE
+    advgetopt_config.cpp    
+    advgetopt.cpp           DONE
+    advgetopt_data.cpp      DONE
+    advgetopt.h             ----
+    advgetopt_options.cpp   DONE
+    advgetopt_usage.cpp     DONE
+    conf_file.cpp           
+    conf_file.h             ----
+    exception.h             ----
+    flags.h                 ----
+    log.cpp                 DONE
+    log.h                   ----
+    option_info.cpp         DONE
+    option_info.h           ----
+    options.h               ----
+    utils.cpp               DONE
+    utils.h                 ----
+    validator.cpp           DONE
+    validator.h             ----
+    version.cpp             DONE
+    version.h.in            ----
 
 
 

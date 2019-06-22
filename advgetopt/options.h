@@ -38,7 +38,8 @@
 
 // advgetopt lib
 //
-#include    "advgetopt/option_info.h"
+#include    "advgetopt/flags.h"
+
 
 // snapdev lib
 //
@@ -51,142 +52,6 @@ namespace advgetopt
 
 
 
-
-
-template<class none = void>
-constexpr flag_t option_flags_merge()
-{
-    return GETOPT_FLAG_NONE;
-}
-
-
-template<flag_t flag, flag_t ...args>
-constexpr flag_t option_flags_merge()
-{
-    return flag | option_flags_merge<args...>();
-}
-
-
-template<flag_t flag, flag_t ...args>
-constexpr flag_t combine_option_flags()
-{
-    constexpr flag_t result(option_flags_merge<flag, args...>());
-
-    static_assert(static_cast<int>((result & GETOPT_FLAG_FLAG) != 0)
-                + static_cast<int>((result & (GETOPT_FLAG_REQUIRED | GETOPT_FLAG_MULTIPLE | GETOPT_FLAG_DEFAULT_OPTION)) != 0)
-                + static_cast<int>((result & GETOPT_FLAG_END) != 0)
-                        <= 1
-                , "flag GETOPT_FLAG_FLAG is not compatible with any of GETOPT_FLAG_REQUIRED | GETOPT_FLAG_MULTIPLE | GETOPT_FLAG_DEFAULT_OPTION or none of these flags were specified.");
-
-    static_assert(((result & (GETOPT_FLAG_COMMAND_LINE | GETOPT_FLAG_ENVIRONMENT_VARIABLE | GETOPT_FLAG_CONFIGURATION_FILE)) != 0)
-                ^ ((result & GETOPT_FLAG_END) != 0)
-                , "flags must include at least one of GETOPT_FLAG_COMMAND_LINE | GETOPT_FLAG_ENVIRONMENT_VARIABLE | GETOPT_FLAG_CONFIGURATION_FILE or be set to GETOPT_FLAG_END");
-
-    return result;
-}
-
-
-constexpr flag_t end_flags()
-{
-    return combine_option_flags<GETOPT_FLAG_END>();
-}
-
-
-template<flag_t ...args>
-constexpr flag_t optional_flags()
-{
-    constexpr flag_t result(combine_option_flags<args...>());
-
-    static_assert((result & GETOPT_FLAG_END) == 0
-                , "an option_flag() cannot include GETOPT_FLAG_END");
-
-    return result;
-}
-
-
-template<flag_t ...args>
-constexpr flag_t option_flags()
-{
-    constexpr flag_t result(combine_option_flags<GETOPT_FLAG_FLAG, args...>());
-
-    //static_assert((result & (GETOPT_FLAG_ENVIRONMENT_VARIABLE | GETOPT_FLAG_CONFIGURATION_FILE)) == 0
-    //            , "an option_flag() cannot include GETOPT_FLAG_ENVIRONMENT_VARIABLE | GETOPT_FLAG_CONFIGURATION_FILE");
-
-    return result;
-}
-
-
-template<flag_t ...args>
-constexpr flag_t all_flags()
-{
-    constexpr flag_t result(combine_option_flags<GETOPT_FLAG_COMMAND_LINE
-                                               , GETOPT_FLAG_ENVIRONMENT_VARIABLE
-                                               , GETOPT_FLAG_CONFIGURATION_FILE
-                                               , args...>());
-
-    return result;
-}
-
-
-template<flag_t ...args>
-constexpr flag_t standalone_all_flags()
-{
-    constexpr flag_t result(combine_option_flags<GETOPT_FLAG_COMMAND_LINE
-                                               , GETOPT_FLAG_ENVIRONMENT_VARIABLE
-                                               , GETOPT_FLAG_CONFIGURATION_FILE
-                                               , GETOPT_FLAG_FLAG
-                                               , args...>());
-
-    return result;
-}
-
-
-template<flag_t ...args>
-constexpr flag_t standalone_command_flags()
-{
-    constexpr flag_t result(combine_option_flags<GETOPT_FLAG_COMMAND_LINE, GETOPT_FLAG_FLAG, args...>());
-
-    static_assert((result & (GETOPT_FLAG_ENVIRONMENT_VARIABLE | GETOPT_FLAG_CONFIGURATION_FILE)) == 0
-                , "an option_flag() cannot include GETOPT_FLAG_ENVIRONMENT_VARIABLE | GETOPT_FLAG_CONFIGURATION_FILE");
-
-    return result;
-}
-
-
-template<flag_t ...args>
-constexpr flag_t command_flags()
-{
-    constexpr flag_t result(combine_option_flags<GETOPT_FLAG_COMMAND_LINE, args...>());
-
-    static_assert((result & (GETOPT_FLAG_ENVIRONMENT_VARIABLE | GETOPT_FLAG_CONFIGURATION_FILE)) == 0
-                , "an option_flag() cannot include GETOPT_FLAG_ENVIRONMENT_VARIABLE | GETOPT_FLAG_CONFIGURATION_FILE");
-
-    return result;
-}
-
-
-template<flag_t ...args>
-constexpr flag_t var_flags()
-{
-    constexpr flag_t result(combine_option_flags<GETOPT_FLAG_ENVIRONMENT_VARIABLE, args...>());
-
-    static_assert((result & (GETOPT_FLAG_COMMAND_LINE | GETOPT_FLAG_CONFIGURATION_FILE)) == 0
-                , "a config_flag() cannot include GETOPT_FLAG_COMMAND_LINE | GETOPT_FLAG_CONFIGURATION_FILE");
-
-    return result;
-}
-
-
-template<flag_t ...args>
-constexpr flag_t config_flags()
-{
-    constexpr flag_t result(combine_option_flags<GETOPT_FLAG_CONFIGURATION_FILE, GETOPT_FLAG_FLAG, args...>());
-
-    static_assert((result & (GETOPT_FLAG_COMMAND_LINE | GETOPT_FLAG_ENVIRONMENT_VARIABLE)) == 0
-                , "a config_flag() cannot include GETOPT_FLAG_COMMAND_LINE | GETOPT_FLAG_ENVIRONMENT_VARIABLE");
-
-    return result;
-}
 
 
 

@@ -89,6 +89,41 @@ size_t getopt::size(std::string const & name) const
 }
 
 
+/** \brief Check whether an option has a default value.
+ *
+ * Some parameters may be given a default. This function is used to
+ * detect whether such a default value is defined.
+ *
+ * \note
+ * This function is particularly useful in the event the default value
+ * may be an empty string.
+ *
+ * \exception getopt_exception_undefined
+ * The getopt_exception_undefined exception is raised if this function is
+ * called with an empty \p name.
+ *
+ * \param[in] name  The name of the parameter of which you want to know
+ *                  whether it has a default value or not.
+ *
+ * \return true if the default value was defined (even if an empty string.)
+ */
+bool getopt::has_default(std::string const & name) const
+{
+    if(name.empty())
+    {
+        throw getopt_exception_logic("argument name cannot be empty.");
+    }
+
+    option_info::pointer_t opt(get_option(name));
+    if(opt != nullptr)
+    {
+        return opt->has_default();
+    }
+
+    return false;
+}
+
+
 /** \brief Get the default value for this option.
  *
  * When an option is not defined, you may use this function to retrieve its
@@ -96,6 +131,12 @@ size_t getopt::size(std::string const & name) const
  * get_string() or get_long() functions.
  *
  * An option without a default has this function returning nullptr.
+ *
+ * \note
+ * Whether an option has a default value should be checked with the
+ * has_default() function which returns true when the default value
+ * was defined. An option with an empty string as the default is
+ * a valid case which cannot be detected otherwise.
  *
  * \exception getopt_exception_undefined
  * The getopt_exception_undefined exception is raised if this function is
