@@ -160,12 +160,12 @@ you are running the test that corresponds to your version of the library.
     conf_file.cpp           
     conf_file.h             ----
     exception.h             ----
-    flags.h                 ----
+    flags.h                 DONE
     log.cpp                 DONE
     log.h                   ----
     option_info.cpp         DONE
     option_info.h           ----
-    options.h               ----
+    options.h               DONE
     utils.cpp               DONE
     utils.h                 ----
     validator.cpp           DONE

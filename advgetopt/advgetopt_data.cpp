@@ -164,53 +164,6 @@ std::string getopt::get_default(std::string const & name) const
 }
 
 
-/** \brief Get the content of an option as a string.
- *
- * Get the content of the named parameter as a string. Command line options
- * that accept multiple arguments accept the \p idx parameter to
- * specify which item you are interested in.
- *
- * Note that the option must have been specified on the command line or have
- * a default value. For options that do not have a default value, you want
- * to call the is_defined() function first.
- *
- * \exception getopt_exception_undefined
- * The getopt_exception_undefined exception is raised if \p name was not
- * found on the command line and it has no default, or if \p idx is
- * out of bounds.
- *
- * \param[in] name  The name of the option to read.
- * \param[in] idx  The zero based index of a multi-argument command line option.
- *
- * \return The option argument as a string.
- */
-std::string getopt::get_string(std::string const & name, int idx) const
-{
-    option_info::pointer_t opt(get_option(name));
-    if(opt == nullptr)
-    {
-        throw getopt_exception_logic(
-                  "there is no --"
-                + name
-                + " option defined.");
-    }
-
-    if(!opt->is_defined())
-    {
-        if(opt->has_default())
-        {
-            return opt->get_default();
-        }
-        throw getopt_exception_logic(
-                  "the --"
-                + name
-                + " option was not defined on the command line and it has no default.");
-    }
-
-    return opt->get_value(idx);
-}
-
-
 /** \brief This function retrieves an argument as a long value.
  *
  * This function reads the specified argument from the named option and
@@ -314,6 +267,134 @@ long getopt::get_long(std::string const & name, int idx, long min, long max)
     }
 
     return result;
+}
+
+
+/** \brief Get the content of an option as a string.
+ *
+ * Get the content of the named parameter as a string. Command line options
+ * that accept multiple arguments accept the \p idx parameter to
+ * specify which item you are interested in.
+ *
+ * Note that the option must have been specified on the command line or have
+ * a default value. For options that do not have a default value, you want
+ * to call the is_defined() function first.
+ *
+ * \exception getopt_exception_undefined
+ * The getopt_exception_undefined exception is raised if \p name was not
+ * found on the command line and it has no default, or if \p idx is
+ * out of bounds.
+ *
+ * \param[in] name  The name of the option to read.
+ * \param[in] idx  The zero based index of a multi-argument command line option.
+ *
+ * \return The option argument as a string.
+ */
+std::string getopt::get_string(std::string const & name, int idx) const
+{
+    option_info::pointer_t opt(get_option(name));
+    if(opt == nullptr)
+    {
+        throw getopt_exception_logic(
+                  "there is no --"
+                + name
+                + " option defined.");
+    }
+
+    if(!opt->is_defined())
+    {
+        if(opt->has_default())
+        {
+            return opt->get_default();
+        }
+        throw getopt_exception_logic(
+                  "the --"
+                + name
+                + " option was not defined on the command line and it has no default.");
+    }
+
+    return opt->get_value(idx);
+}
+
+
+/** \brief Retrieve the value of an argument.
+ *
+ * This operator returns the value of an argument just like the get_string()
+ * does when the argument is defined. When the argument is not defined and it
+ * has no default, it returns an empty string instead of throwing.
+ *
+ * The function is only capable of returning the very first value. If this
+ * argument has the GETOPT_FLAG_MULTIPLE flag set, you probably want to use
+ * the get_string() instead.
+ *
+ * \param[in] name  The name of the option to retrieve.
+ *
+ * \return The value of that option or an empty string if not defined.
+ */
+std::string getopt::operator [] (std::string const & name) const
+{
+    option_info::pointer_t opt(get_option(name));
+    if(opt == nullptr)
+    {
+        return std::string();
+    }
+
+    if(!opt->is_defined())
+    {
+        if(opt->has_default())
+        {
+            return opt->get_default();
+        }
+        return std::string();
+    }
+
+    return opt->get_value(0);
+}
+
+
+/** \brief Access a parameter in read and write mode.
+ *
+ * This function allows you to access an argument which may or may not
+ * yet exist. It will be created if it does not yet exist.
+ *
+ * The return value is a reference to that parameter. You can read
+ * and write to the reference.
+ *
+ * \note
+ * This operator only allows you to access the very first value of
+ * this option. If the option is marked with GETOPT_FLAG_MULTIPLE,
+ * you may want to use the get_option() function and then handle
+ * the option multiple values manually with the option_info::get_value()
+ * and option_info::set_value().
+ *
+ * \warning
+ * If the option is an alias and the destination is not defined you
+ * can still get an exception raised.
+ *
+ * \param[in] name  The name of the option to access.
+ */
+option_info_ref getopt::operator [] (std::string const & name)
+{
+    if(name.empty())
+    {
+        throw getopt_exception_logic("argument name cannot be empty.");
+    }
+
+    option_info::pointer_t opt(get_option(name));
+    if(opt == nullptr)
+    {
+        if(name.length() == 1)
+        {
+            throw getopt_exception_logic("argument name cannot be one letter if it does not exist in operator [].");
+        }
+
+        // The option doesn't exist yet, create it
+        //
+        opt = std::make_shared<option_info>(name);
+        add_option(opt, std::string());
+    }
+
+    return option_info_ref(opt);
 }
 
 

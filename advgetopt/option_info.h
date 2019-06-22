@@ -144,5 +144,83 @@ private:
 };
 
 
+class option_info_ref
+{
+public:
+                                option_info_ref(option_info::pointer_t opt);
+
+    bool                        empty() const;
+    size_t                      length() const;
+    size_t                      size() const;
+
+                                operator std::string () const;
+
+    option_info_ref &           operator = (char value);
+    option_info_ref &           operator = (char const * value);
+    option_info_ref &           operator = (std::string const & value);
+    option_info_ref &           operator = (option_info_ref const & value);
+
+    option_info_ref &           operator += (char value);
+    option_info_ref &           operator += (char const * value);
+    option_info_ref &           operator += (std::string const & value);
+    option_info_ref &           operator += (option_info_ref const & value);
+
+    std::string                 operator + (char value) const;
+    std::string                 operator + (char const * value) const;
+    std::string                 operator + (std::string const & value) const;
+    std::string                 operator + (option_info_ref const & value) const;
+
+    friend std::string          operator + (char value, option_info_ref const & rhs);
+    friend std::string          operator + (char const * value, option_info_ref const & rhs);
+    friend std::string          operator + (std::string const & value, option_info_ref const & rhs);
+
+    bool                        operator == (char const * value) const;
+    bool                        operator == (std::string const & value) const;
+    bool                        operator == (option_info_ref const & value) const;
+
+    bool                        operator != (char const * value) const;
+    bool                        operator != (std::string const & value) const;
+    bool                        operator != (option_info_ref const & value) const;
+
+    bool                        operator < (char const * value) const;
+    bool                        operator < (std::string const & value) const;
+    bool                        operator < (option_info_ref const & value) const;
+
+    bool                        operator <= (char const * value) const;
+    bool                        operator <= (std::string const & value) const;
+    bool                        operator <= (option_info_ref const & value) const;
+
+    bool                        operator > (char const * value) const;
+    bool                        operator > (std::string const & value) const;
+    bool                        operator > (option_info_ref const & value) const;
+
+    bool                        operator >= (char const * value) const;
+    bool                        operator >= (std::string const & value) const;
+    bool                        operator >= (option_info_ref const & value) const;
+
+    friend bool                 operator == (char const * value, option_info_ref const & rhs);
+    friend bool                 operator == (std::string const & value, option_info_ref const & rhs);
+
+    friend bool                 operator != (char const * value, option_info_ref const & rhs);
+    friend bool                 operator != (std::string const & value, option_info_ref const & rhs);
+
+    friend bool                 operator < (char const * value, option_info_ref const & rhs);
+    friend bool                 operator < (std::string const & value, option_info_ref const & rhs);
+
+    friend bool                 operator <= (char const * value, option_info_ref const & rhs);
+    friend bool                 operator <= (std::string const & value, option_info_ref const & rhs);
+
+    friend bool                 operator > (char const * value, option_info_ref const & rhs);
+    friend bool                 operator > (std::string const & value, option_info_ref const & rhs);
+
+    friend bool                 operator >= (char const * value, option_info_ref const & rhs);
+    friend bool                 operator >= (std::string const & value, option_info_ref const & rhs);
+
+private:
+    option_info::pointer_t      f_opt = nullptr;
+};
+
+
+
 }   // namespace advgetopt
 // vim: ts=4 sw=4 et

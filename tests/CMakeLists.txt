@@ -62,6 +62,7 @@ if( CATCH_FOUND )
         logger.cpp
         logic_errors.cpp
         option_info.cpp
+        option_info_ref.cpp
         options_files.cpp
         options_parser.cpp
         usage.cpp

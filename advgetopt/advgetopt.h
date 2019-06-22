@@ -102,6 +102,8 @@ public:
                                     , long min = std::numeric_limits<long>::min()
                                     , long max = std::numeric_limits<long>::max());
     std::string             get_string(std::string const & name, int idx = 0) const;
+    std::string             operator [] (std::string const & name) const;
+    option_info_ref         operator [] (std::string const & name);
 
     std::string             get_program_name() const;
     std::string             get_program_fullname() const;

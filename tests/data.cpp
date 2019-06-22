@@ -84,12 +84,14 @@ CATCH_TEST_CASE("string_access", "[arguments][valid][getopt]")
         CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
         CATCH_REQUIRE(opt.get_option('Z') == nullptr);
         CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE_FALSE(opt.has_default("invalid-parameter"));
         CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
         CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
 
         // no default
         CATCH_REQUIRE(opt.get_option("--") == nullptr);
         CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE_FALSE(opt.has_default("--"));
         CATCH_REQUIRE(opt.get_default("--").empty());
         CATCH_REQUIRE(opt.size("--") == 0);
 
@@ -99,6 +101,7 @@ CATCH_TEST_CASE("string_access", "[arguments][valid][getopt]")
         CATCH_REQUIRE(opt.get_string("user-name") == "alexis");
         CATCH_REQUIRE(opt.get_string("user-name", 0) == "alexis");
         CATCH_REQUIRE(opt.is_defined("user-name"));
+        CATCH_REQUIRE_FALSE(opt.has_default("user-name"));
         CATCH_REQUIRE(opt.get_default("user-name").empty());
         CATCH_REQUIRE(opt.size("user-name") == 1);
 
@@ -226,6 +229,7 @@ CATCH_TEST_CASE("long_access", "[arguments][valid][getopt]")
         CATCH_REQUIRE(opt.get_string("size", 0) == "9821");
         CATCH_REQUIRE(opt.get_long("size") == 9821);
         CATCH_REQUIRE(opt.get_long("size", 0) == 9821);
+        CATCH_REQUIRE(opt.has_default("size"));
         CATCH_REQUIRE(opt.get_default("size") == default_value_str);
         CATCH_REQUIRE(opt.size("size") == 1);
 
@@ -242,6 +246,7 @@ CATCH_TEST_CASE("long_access", "[arguments][valid][getopt]")
                 , advgetopt::ShortName('s')
                 , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
                 , advgetopt::Help("define the size.")
+                , advgetopt::DefaultValue("")
             ),
             advgetopt::end_options()
         };
@@ -286,6 +291,7 @@ CATCH_TEST_CASE("long_access", "[arguments][valid][getopt]")
         CATCH_REQUIRE(opt.get_string("size", 0) == "9821");
         CATCH_REQUIRE(opt.get_long("size") == 9821);
         CATCH_REQUIRE(opt.get_long("size", 0) == 9821);
+        CATCH_REQUIRE(opt.has_default("size"));
         CATCH_REQUIRE(opt.get_default("size").empty());
         CATCH_REQUIRE(opt.size("size") == 1);
 
@@ -345,6 +351,7 @@ CATCH_TEST_CASE("long_access", "[arguments][valid][getopt]")
         CATCH_REQUIRE(opt.get_string("size", 0) == "839");
         CATCH_REQUIRE(opt.get_long("size") == 839);
         CATCH_REQUIRE(opt.get_long("size", 0) == 839);
+        CATCH_REQUIRE(opt.has_default("size"));
         CATCH_REQUIRE(opt.get_default("size") == "839");
         CATCH_REQUIRE(opt.size("size") == 0);
 
@@ -420,6 +427,24 @@ CATCH_TEST_CASE("invalid_option_name", "[arguments][invalid][getopt]")
         environment_options.f_help_header = "Usage: test get_default() functions";
 
         advgetopt::getopt opt(environment_options);
+
+        CATCH_REQUIRE_THROWS_MATCHES(
+                  opt.has_default("")
+                , advgetopt::getopt_exception_logic
+                , Catch::Matchers::ExceptionMessage(
+                              "argument name cannot be empty."));
+
+        CATCH_REQUIRE_THROWS_MATCHES(
+                  opt.has_default(std::string())
+                , advgetopt::getopt_exception_logic
+                , Catch::Matchers::ExceptionMessage(
+                              "argument name cannot be empty."));
+
+        CATCH_REQUIRE_THROWS_MATCHES(
+                  opt.get_default("")
+                , advgetopt::getopt_exception_logic
+                , Catch::Matchers::ExceptionMessage(
+                              "argument name cannot be empty."));
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.get_default(std::string())
@@ -550,6 +575,7 @@ CATCH_TEST_CASE("missing_default_value", "[arguments][invalid][getopt]")
         CATCH_REQUIRE(opt.get_option("size") != nullptr);
         CATCH_REQUIRE(opt.get_option('s') != nullptr);
         CATCH_REQUIRE_FALSE(opt.is_defined("size"));
+        CATCH_REQUIRE_FALSE(opt.has_default("size"));
         CATCH_REQUIRE(opt.size("size") == 0);
 
         CATCH_REQUIRE_THROWS_MATCHES(
@@ -575,7 +601,7 @@ CATCH_TEST_CASE("missing_default_value", "[arguments][invalid][getopt]")
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify an integer (long) value without arguments and no default")
+    CATCH_START_SECTION("Verify an integer (long) value without arguments and an empty string as default")
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -622,6 +648,7 @@ CATCH_TEST_CASE("missing_default_value", "[arguments][invalid][getopt]")
         CATCH_REQUIRE(opt.get_option("size") != nullptr);
         CATCH_REQUIRE(opt.get_option('s') != nullptr);
         CATCH_REQUIRE_FALSE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.has_default("size"));
         CATCH_REQUIRE(opt.size("size") == 0);
 
         CATCH_REQUIRE_THROWS_MATCHES(
@@ -699,6 +726,8 @@ CATCH_TEST_CASE("incompatible_default_value", "[arguments][invalid][getopt]")
         CATCH_REQUIRE(opt.get_option("size") != nullptr);
         CATCH_REQUIRE(opt.get_option('s') != nullptr);
         CATCH_REQUIRE_FALSE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.has_default("size"));
+        CATCH_REQUIRE(opt.get_default("size") == "undefined"); // this works, it fails with get_long() though
         CATCH_REQUIRE(opt.size("size") == 0);
 
         CATCH_REQUIRE_THROWS_MATCHES(

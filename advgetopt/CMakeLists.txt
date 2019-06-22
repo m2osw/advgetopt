@@ -57,6 +57,7 @@ add_library( ${PROJECT_NAME} SHARED
     conf_file.cpp
     log.cpp
     option_info.cpp
+    option_info_ref.cpp
     utils.cpp
     validator.cpp
     version.cpp
