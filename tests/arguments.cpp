@@ -2670,6 +2670,156 @@ CATCH_TEST_CASE("default_argument", "[arguments][valid][getopt]")
             CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
         }
     CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Verify that we can have a non-require argument with an invalid default")
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("before")
+                , advgetopt::ShortName('b')
+                , advgetopt::Flags(advgetopt::command_flags<>())
+                , advgetopt::Help("appears before.")
+                , advgetopt::DefaultValue("early")
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("out")
+                , advgetopt::ShortName('o')
+                , advgetopt::Flags(advgetopt::command_flags<>())
+                , advgetopt::Help("output filename.")
+                , advgetopt::DefaultValue("default-name")
+                , advgetopt::Validator("/[a-z]+/")
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("after")
+                , advgetopt::ShortName('a')
+                , advgetopt::Flags(advgetopt::command_flags<>())
+                , advgetopt::Help("appears after.")
+                , advgetopt::DefaultValue("late")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = 0;
+        environment_options.f_help_header = "Usage: test simple --out <filename> ... option";
+        environment_options.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
+
+        CATCH_WHEN("no parameters to arguments")
+        {
+            char const * cargv[] =
+            {
+                "/usr/bin/arguments",
+                "--before",
+                "--out",
+                "--after",
+                nullptr
+            };
+            int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+            char ** argv = const_cast<char **>(cargv);
+
+            advgetopt::getopt opt(environment_options, argc, argv);
+
+            // check that the result is valid
+
+            // an invalid parameter, MUST NOT EXIST
+            CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+            CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+            CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+            CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+            CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+            // the valid parameter
+            CATCH_REQUIRE(opt.get_option("before") != nullptr);
+            CATCH_REQUIRE(opt.get_option('b') != nullptr);
+            CATCH_REQUIRE(opt.is_defined("before"));
+            CATCH_REQUIRE(opt.get_string("before").empty());
+            CATCH_REQUIRE(opt.get_string("before", 0).empty());
+            CATCH_REQUIRE(opt.get_default("before") == "early");
+            CATCH_REQUIRE(opt.size("before") == 1);
+
+            // the valid parameter
+            CATCH_REQUIRE(opt.get_option("out") != nullptr);
+            CATCH_REQUIRE(opt.get_option('o') != nullptr);
+            CATCH_REQUIRE(opt.is_defined("out"));
+            CATCH_REQUIRE(opt.get_string("out").empty());
+            CATCH_REQUIRE(opt.get_string("out", 0).empty());
+            CATCH_REQUIRE(opt.get_default("out") == "default-name");
+            CATCH_REQUIRE(opt.size("out") == 1);
+
+            // the valid parameter
+            CATCH_REQUIRE(opt.get_option("after") != nullptr);
+            CATCH_REQUIRE(opt.get_option('a') != nullptr);
+            CATCH_REQUIRE(opt.is_defined("after"));
+            CATCH_REQUIRE(opt.get_string("after").empty());
+            CATCH_REQUIRE(opt.get_string("after", 0).empty());
+            CATCH_REQUIRE(opt.get_default("after") == "late");
+            CATCH_REQUIRE(opt.size("after") == 1);
+
+            // other parameters
+            CATCH_REQUIRE(opt.get_program_name() == "arguments");
+            CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+        }
+
+        CATCH_WHEN("parameters to some arguments")
+        {
+            char const * cargv[] =
+            {
+                "/usr/bin/arguments",
+                "--before",
+                "avant",
+                "--out",
+                "--after",
+                "apres",
+                nullptr
+            };
+            int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+            char ** argv = const_cast<char **>(cargv);
+
+            advgetopt::getopt opt(environment_options, argc, argv);
+
+            // check that the result is valid
+
+            // an invalid parameter, MUST NOT EXIST
+            CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+            CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+            CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+            CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+            CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+            // the valid parameter
+            CATCH_REQUIRE(opt.get_option("before") != nullptr);
+            CATCH_REQUIRE(opt.get_option('b') != nullptr);
+            CATCH_REQUIRE(opt.is_defined("before"));
+            CATCH_REQUIRE(opt.get_string("before") == "avant");
+            CATCH_REQUIRE(opt.get_string("before", 0) == "avant");
+            CATCH_REQUIRE(opt.get_default("before") == "early");
+            CATCH_REQUIRE(opt.size("before") == 1);
+
+            // the valid parameter
+            CATCH_REQUIRE(opt.get_option("out") != nullptr);
+            CATCH_REQUIRE(opt.get_option('o') != nullptr);
+            CATCH_REQUIRE(opt.is_defined("out"));
+            CATCH_REQUIRE(opt.get_string("out").empty());
+            CATCH_REQUIRE(opt.get_string("out", 0).empty());
+            CATCH_REQUIRE(opt.get_default("out") == "default-name");
+            CATCH_REQUIRE(opt.size("out") == 1);
+
+            // the valid parameter
+            CATCH_REQUIRE(opt.get_option("after") != nullptr);
+            CATCH_REQUIRE(opt.get_option('a') != nullptr);
+            CATCH_REQUIRE(opt.is_defined("after"));
+            CATCH_REQUIRE(opt.get_string("after") == "apres");
+            CATCH_REQUIRE(opt.get_string("after", 0) == "apres");
+            CATCH_REQUIRE(opt.get_default("after") == "late");
+            CATCH_REQUIRE(opt.size("after") == 1);
+
+            // other parameters
+            CATCH_REQUIRE(opt.get_program_name() == "arguments");
+            CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+        }
+    CATCH_END_SECTION()
 }
 
 
@@ -4068,7 +4218,7 @@ CATCH_TEST_CASE("invalid_getopt_pointers", "[invalid][getopt][arguments]")
                   std::make_shared<advgetopt::getopt>(*environment_opt)
                 , advgetopt::getopt_exception_logic
                 , Catch::Matchers::ExceptionMessage(
-                              "opt_env pointer cannot be nullptr"));
+                              "opt_env reference cannot point to a nullptr"));
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Create getopt with argc/argv and an environment_opt which is a nullptr.")
@@ -4087,7 +4237,7 @@ CATCH_TEST_CASE("invalid_getopt_pointers", "[invalid][getopt][arguments]")
                   std::make_shared<advgetopt::getopt>(*environment_opt, argc, argv)
                 , advgetopt::getopt_exception_logic
                 , Catch::Matchers::ExceptionMessage(
-                    "opt_env pointer cannot be nullptr"));
+                    "opt_env reference cannot point to a nullptr"));
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Create getopt with argv set to nullptr.")

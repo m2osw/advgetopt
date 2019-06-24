@@ -156,6 +156,11 @@ void getopt::parse_options_info(option const * opts, bool ignore_duplicates)
         o->set_help(opts->f_help);
         o->set_multiple_separators(opts->f_multiple_separators);
 
+        if(opts->f_validator != nullptr)
+        {
+            o->set_validator(opts->f_validator);
+        }
+
         if(o->is_default_option())
         {
             if(f_default_option != nullptr)
@@ -271,40 +276,8 @@ void getopt::parse_options_from_file()
 
         opt->set_help(conf.get_parameter(parameter_name + "::help"));
 
-        std::string const validator_name(conf.get_parameter(parameter_name + "::validator"));
-        if(validator_name.length() >= 2
-        && validator_name[0] == '/')
-        {
-            // the regex is a special case since we do not use the name
-            // to find the validator
-            //
-            validator_regex::pointer_t v(std::make_shared<validator_regex>(validator_name));
-            opt->set_validator(v);
-        }
-        else if(!validator_name.empty())
-        {
-            std::string::size_type const param(validator_name.find('('));
-            std::string name(validator_name);
-            std::string data;
-            if(param != std::string::npos)
-            {
-                if(validator_name.back() != ')')
-                {
-                    throw getopt_exception_logic(
-                              "option \""
-                            + s.first
-                            + "\" has an invalid validator parameter definition: \""
-                            + validator_name
-                            + "\", the ')' is missing in \""
-                            + filename
-                            + "\".");
-                }
-                name = validator_name.substr(0, param);
-                data = unquote(validator_name.substr(param + 1, validator_name.length() - param - 2));
-            }
-            validator::pointer_t v(validator::create(validator_name, data));
-            opt->set_validator(v);
-        }
+        std::string const validator_name_and_params(conf.get_parameter(parameter_name + "::validator"));
+        opt->set_validator(validator_name_and_params);
 
         std::string const alias_name(parameter_name + "::alias");
         if(conf.has_parameter(alias_name))

@@ -718,9 +718,7 @@ CATCH_TEST_CASE("invalid_options_files", "[options][invalid][files]")
         CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(options_environment, sub_argc, sub_argv)
                     , advgetopt::getopt_exception_logic
                     , Catch::Matchers::ExceptionMessage(
-                              "option \"bad-validator\" has an invalid validator parameter definition: \"regex(\"missing ')'\"\", the ')' is missing in \""
-                            + options_filename
-                            + "\"."));
+                              "invalid validator parameter definition: \"regex(\"missing ')'\"\", the ')' is missing."));
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("alias with help")

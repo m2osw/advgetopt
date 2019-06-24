@@ -58,6 +58,21 @@ namespace advgetopt
 // this structure is used to declare your command line options in a
 // constexpr array
 //
+// TODO: plan to transform all the strings in an array with a scheme such
+//       as:
+//
+//          "a:<alias>",
+//          "d:<default>",
+//          "h:<help>",
+//          "n:<name>",
+//          "s:<separator>",
+//          "v:<validator>(<param>, ...)"
+//
+//       our templates should be able to create that array automatically.
+//       This way we avoid many nullptr in so many definitions (i.e. most
+//       our definitions do not have a default, separators, or a validator)
+//       We would also avoid the alias/help overload.
+//
 struct option
 {
     short_name_t        f_short_name = NO_SHORT_NAME;   // letter option (or '\0')
@@ -65,6 +80,7 @@ struct option
     char const *        f_name = nullptr;               // name of the option (i.e. "test" for --test, or nullptr)
     char const *        f_default = nullptr;            // a default value if not nullptr
     char const *        f_help = nullptr;               // help for this option, if nullptr it's a hidden option; if ALIAS then this is the actual alias
+    char const *        f_validator = nullptr;          // the name of a validator and optional parameters between parenthesis
     char const * const *f_multiple_separators = nullptr;// nullptr terminated list of strings used as separators when GETOPT_FLAG_MULTIPLE is set
 };
 
@@ -181,6 +197,21 @@ public:
     }
 };
 
+class Validator
+    : public OptionValue<char const *>
+{
+public:
+    constexpr Validator()
+        : OptionValue<char const *>(nullptr)
+    {
+    }
+
+    constexpr Validator(char const * validator)
+        : OptionValue<char const *>(validator)
+    {
+    }
+};
+
 class Separators
     : public OptionValue<char const * const *>
 {
@@ -232,6 +263,7 @@ constexpr option define_option(ARGS ...args)
         .f_help =                find_option<Alias       >(args..., Alias()) != nullptr
                                     ? find_option<Alias       >(args..., Alias())
                                     : find_option<Help        >(args..., Help()),
+        .f_validator =           find_option<Validator   >(args..., Validator()),
         .f_multiple_separators = find_option<Separators  >(args..., Separators()),
     };
 #pragma GCC diagnostic pop

@@ -314,8 +314,8 @@ std::string option_info_ref::operator + (std::string const & value) const
 
 /** \brief Append the value of this \p value option to this option_info's value.
  *
- * This assignment operator is used to append a string to the existing
- * value of this option.
+ * This operator is used to append two option references to each others and
+ * return the concatenated string as the result.
  *
  * \param[in] value  The other option to read the value from.
  *
@@ -327,6 +327,16 @@ std::string option_info_ref::operator + (option_info_ref const & value) const
 }
 
 
+/** \brief Concatenate a character and an option reference value.
+ *
+ * This operator concatenates the \p value character to the front
+ * of the \p rhs reference.
+ *
+ * \param[in] value  A character to add to the left of the referred value.
+ * \param[in] rhs  The referred value.
+ *
+ * \return The concatenated result.
+ */
 std::string operator + (char value, option_info_ref const & rhs)
 {
     return value + rhs.f_opt->get_value();

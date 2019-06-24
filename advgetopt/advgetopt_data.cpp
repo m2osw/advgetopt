@@ -63,6 +63,62 @@ namespace advgetopt
 
 
 
+/** \brief Check whether a parameter is defined.
+ *
+ * This function returns true if the specified parameter is found as part of
+ * the command line options.
+ *
+ * You must specify the long name of the option if one is defined. Otherwise
+ * the name is the short name. So a --verbose option can be checked with:
+ *
+ * \code
+ *   if(is_defined("verbose")) ...
+ * \endcode
+ *
+ * However, if the option was defined as:
+ *
+ * \code
+ * advgetopt::option options[] =
+ * {
+ *    [...]
+ *    {
+ *       'v',
+ *       0,
+ *       nullptr,
+ *       nullptr,
+ *       "increase verbosity",
+         advgetopt::getopt::no_argument
+ *    },
+ *    [...]
+ * };
+ * \endcode
+ *
+ * then the previous call would fail because "verbose" does not exist in your
+ * table. However, the option is accessible by its short name as a fallback
+ * when it does not have a long name:
+ *
+ * \code
+ *   if(is_defined("v")) ...
+ * \endcode
+ *
+ * \param[in] name  The long (or short if long is undefined) name of the
+ *                  option to check.
+ *
+ * \return true if the option was defined in a configuration file, the
+ *         environment variable, or the command line.
+ */
+bool getopt::is_defined(std::string const & name) const
+{
+    option_info::pointer_t opt(get_option(name));
+    if(opt != nullptr)
+    {
+        return opt->is_defined();
+    }
+
+    return false;
+}
+
+
 /** \brief Retrieve the number of arguments.
  *
  * This function returns the number of arguments that were specified after
@@ -333,6 +389,11 @@ std::string getopt::get_string(std::string const & name, int idx) const
  */
 std::string getopt::operator [] (std::string const & name) const
 {
+    if(name.empty())
+    {
+        throw getopt_exception_logic("argument name cannot be empty.");
+    }
+
     option_info::pointer_t opt(get_option(name));
     if(opt == nullptr)
     {
@@ -391,7 +452,11 @@ option_info_ref getopt::operator [] (std::string const & name)
         // The option doesn't exist yet, create it
         //
         opt = std::make_shared<option_info>(name);
-        add_option(opt, std::string());
+        opt->add_value(std::string());
+    }
+    else if(!opt->is_defined())
+    {
+        opt->add_value(std::string());
     }
 
     return option_info_ref(opt);

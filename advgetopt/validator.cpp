@@ -50,7 +50,6 @@
 // snapdev lib
 //
 #include <snapdev/not_used.h>
-#include <snapdev/tokenize_string.h>
 
 
 // boost lib
@@ -86,12 +85,12 @@ public:
         validator::register_validator(*this);
     }
 
-    virtual std::string get_name() const
+    virtual std::string get_name() const override
     {
         return std::string("integer");
     }
 
-    virtual std::shared_ptr<validator> create(std::string const & data) const
+    virtual std::shared_ptr<validator> create(string_list_t const & data) const override
     {
         snap::NOTUSED(data); // ignore `data`
         return std::make_shared<validator_integer>(data);
@@ -111,12 +110,12 @@ public:
         validator::register_validator(*this);
     }
 
-    virtual std::string get_name() const
+    virtual std::string get_name() const override
     {
         return std::string("regex");
     }
 
-    virtual std::shared_ptr<validator> create(std::string const & data) const
+    virtual std::shared_ptr<validator> create(string_list_t const & data) const override
     {
         return std::make_shared<validator_regex>(data);
     }
@@ -194,7 +193,7 @@ void validator::register_validator(validator_factory const & factory)
 }
 
 
-validator::pointer_t validator::create(std::string const & name, std::string const & data)
+validator::pointer_t validator::create(std::string const & name, string_list_t const & data)
 {
     auto it(g_validator_factories.find(name));
     if(it == g_validator_factories.end())
@@ -203,6 +202,65 @@ validator::pointer_t validator::create(std::string const & name, std::string con
     }
 
     return it->second->create(data);
+}
+
+
+/** \brief Set the validator for this option.
+ *
+ * This function parses the specified name and optional parameters and
+ * create a corresponding validator for this option.
+ *
+ * The \p name_and_params string can be defined as:
+ *
+ * \code
+ *     <validator-name>(<param1>, <param2>, ...)
+ * \endcode
+ *
+ * The list of parameters is optional. There may be an empty, just one,
+ * or any number of parameters. How the parameters are parsed is left
+ * to the validator to decide.
+ *
+ * If the input string is empty, the current validator, if one is
+ * installed, gets removed.
+ *
+ * \param[in] name_and_params  The validator name and parameters.
+ */
+validator::pointer_t validator::create(std::string const & name_and_params)
+{
+    if(name_and_params.empty())
+    {
+        return validator::pointer_t();
+    }
+
+    if(name_and_params.length() >= 2
+    && name_and_params[0] == '/')
+    {
+        // for the regex we have a special case
+        //
+        string_list_t data{name_and_params};
+        return create("regex", data);
+    }
+    else
+    {
+        std::string::size_type const params(name_and_params.find('('));
+        std::string name(name_and_params);
+        string_list_t data;
+        if(params != std::string::npos)
+        {
+            if(name_and_params.back() != ')')
+            {
+                throw getopt_exception_logic(
+                      "invalid validator parameter definition: \""
+                    + name_and_params
+                    + "\", the ')' is missing.");
+            }
+            name = name_and_params.substr(0, params);
+            split_string(name_and_params.substr(params + 1, name_and_params.length() - params - 2)
+                       , data
+                       , {","});
+        }
+        return create(name, data);
+    }
 }
 
 
@@ -245,15 +303,8 @@ validator::pointer_t validator::create(std::string const & name, std::string con
  *
  * \param[in] ranges  The ranges used to limit the integer.
  */
-validator_integer::validator_integer(std::string const & ranges)
+validator_integer::validator_integer(string_list_t const & range_list)
 {
-    typedef std::vector<std::string> container_t;
-    container_t range_list;
-    snap::tokenize_string<container_t>(range_list
-                                     , ranges
-                                     , ","
-                                     , true
-                                     , " \t\n\r");
     range_t range;
     for(auto r : range_list)
     {
@@ -450,8 +501,23 @@ bool validator_integer::convert_string(std::string const & value, std::int64_t &
 
 
 
-validator_regex::validator_regex(std::string const & regex)
+validator_regex::validator_regex(string_list_t const & regex_list)
 {
+    if(regex_list.size() > 1)
+    {
+        log << log_level_t::error
+            << "validator_regex() only supports one parameter; "
+            << regex_list.size()
+            << " were supplied; single or double quotation may be required?"
+            << end;
+        return;
+    }
+
+    std::string regex;
+    if(!regex_list.empty())
+    {
+        regex = regex_list[0];
+    }
     std::regex::flag_type flags =  std::regex_constants::extended;
     if(regex.length() >= 2
     && regex[0] == '/')

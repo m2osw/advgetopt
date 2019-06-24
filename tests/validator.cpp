@@ -63,9 +63,11 @@ CATCH_TEST_CASE("unknown_validator", "[validator][valid][validation]")
     CATCH_START_SECTION("Undefined validator")
         // this is a valid case, it does not throw, it just returns a nullptr
         //
-        advgetopt::validator::pointer_t unknown_validator(advgetopt::validator::create("unknown", std::string()));
+        CATCH_REQUIRE(advgetopt::validator::create("unknown", advgetopt::string_list_t()) == nullptr);
+    CATCH_END_SECTION()
 
-        CATCH_REQUIRE(unknown_validator == nullptr);
+    CATCH_START_SECTION("Empty string")
+        CATCH_REQUIRE(advgetopt::validator::create(std::string()) == nullptr);
     CATCH_END_SECTION()
 }
 
@@ -74,7 +76,7 @@ CATCH_TEST_CASE("unknown_validator", "[validator][valid][validation]")
 CATCH_TEST_CASE("integer_validator", "[validator][valid][validation]")
 {
     CATCH_START_SECTION("Verify the integer validator")
-        advgetopt::validator::pointer_t integer_validator(advgetopt::validator::create("integer", std::string()));
+        advgetopt::validator::pointer_t integer_validator(advgetopt::validator::create("integer", advgetopt::string_list_t()));
 
         CATCH_REQUIRE(integer_validator != nullptr);
         CATCH_REQUIRE(integer_validator->name() == "integer");
@@ -204,7 +206,11 @@ CATCH_TEST_CASE("integer_validator", "[validator][valid][validation]")
                     }
                 }
             }
-            advgetopt::validator::pointer_t integer_validator(advgetopt::validator::create("integer", range));
+            advgetopt::string_list_t range_list;
+            advgetopt::split_string(range
+                       , range_list
+                       , {","});
+            advgetopt::validator::pointer_t integer_validator(advgetopt::validator::create("integer", range_list));
 
             CATCH_REQUIRE(integer_validator != nullptr);
             CATCH_REQUIRE(integer_validator->name() == "integer");
@@ -296,8 +302,12 @@ CATCH_TEST_CASE("integer_validator", "[validator][valid][validation]")
             {
                 standalone_values += ' ';
             }
+            advgetopt::string_list_t range_list;
+            advgetopt::split_string(standalone_values
+                       , range_list
+                       , {","});
 
-            advgetopt::validator::pointer_t integer_validator(advgetopt::validator::create("integer", standalone_values));
+            advgetopt::validator::pointer_t integer_validator(advgetopt::validator::create("integer", range_list));
 
             CATCH_REQUIRE(integer_validator != nullptr);
             CATCH_REQUIRE(integer_validator->name() == "integer");
@@ -334,7 +344,7 @@ CATCH_TEST_CASE("integer_validator", "[validator][valid][validation]")
 CATCH_TEST_CASE("regex_validator", "[validator][valid][validation]")
 {
     CATCH_START_SECTION("Verify the regex validator")
-        advgetopt::validator::pointer_t regex_validator(advgetopt::validator::create("regex", ".*@.*\\..*"));
+        advgetopt::validator::pointer_t regex_validator(advgetopt::validator::create("regex", {".*@.*\\..*"}));
 
         CATCH_REQUIRE(regex_validator != nullptr);
         CATCH_REQUIRE(regex_validator->name() == "regex");
@@ -349,7 +359,7 @@ CATCH_TEST_CASE("regex_validator", "[validator][valid][validation]")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Verify the regex string (case sensitive)")
-        advgetopt::validator::pointer_t regex_validator(advgetopt::validator::create("regex", "/contact@.*\\..*/"));
+        advgetopt::validator::pointer_t regex_validator(advgetopt::validator::create("regex", {"/contact@.*\\..*/"}));
 
         CATCH_REQUIRE(regex_validator != nullptr);
         CATCH_REQUIRE(regex_validator->name() == "regex");
@@ -364,7 +374,22 @@ CATCH_TEST_CASE("regex_validator", "[validator][valid][validation]")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Verify the regex string (case insensitive)")
-        advgetopt::validator::pointer_t regex_validator(advgetopt::validator::create("regex", "/contact@.*\\..*/i"));
+        advgetopt::validator::pointer_t regex_validator(advgetopt::validator::create("regex", {"/contact@.*\\..*/i"}));
+
+        CATCH_REQUIRE(regex_validator != nullptr);
+        CATCH_REQUIRE(regex_validator->name() == "regex");
+
+        CATCH_REQUIRE_FALSE(regex_validator->validate("@m2osw."));
+        CATCH_REQUIRE(regex_validator->validate("contact@m2osw.com"));
+        CATCH_REQUIRE(regex_validator->validate("Contact@m2osw.com"));
+        CATCH_REQUIRE(regex_validator->validate("Contact@M2OSW.com"));
+
+        CATCH_REQUIRE_FALSE(regex_validator->validate("contact@m2osw:com"));
+        CATCH_REQUIRE_FALSE(regex_validator->validate("contact!m2osw.com"));
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Verify direct regex string (case insensitive)")
+        advgetopt::validator::pointer_t regex_validator(advgetopt::validator::create("/contact@.*\\..*/i"));
 
         CATCH_REQUIRE(regex_validator != nullptr);
         CATCH_REQUIRE(regex_validator->name() == "regex");
@@ -398,7 +423,7 @@ CATCH_TEST_CASE("invalid_validator", "[validator][invalid][validation]")
                 return "integer";
             }
 
-            virtual bool validate(std::string const & value) const
+            virtual bool validate(std::string const & value) const override
             {
                 return value == "123";
             }
@@ -412,7 +437,7 @@ CATCH_TEST_CASE("invalid_validator", "[validator][invalid][validation]")
                 return "integer";
             }
 
-            virtual std::shared_ptr<advgetopt::validator> create(std::string const & data) const
+            virtual std::shared_ptr<advgetopt::validator> create(advgetopt::string_list_t const & data) const override
             {
                 snap::NOTUSED(data); // ignore `data`
                 return std::make_shared<duplicate_integer>();
@@ -428,11 +453,11 @@ CATCH_TEST_CASE("invalid_validator", "[validator][invalid][validation]")
 
 
     CATCH_START_SECTION("Verify invalid ranges")
-        std::string range(
-            "abc,"
-            "abc...6,"
-            "3...def,"
-            "10...1");
+        advgetopt::string_list_t range{
+            "abc",
+            "abc...6",
+            "3...def",
+            "10...1"};
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: abc is not a valid value for your ranges; it must only digits, optionally preceeded by a sign (+ or -) and not overflow an int64_t value.");
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: abc is not a valid value for your ranges; it must only digits, optionally preceeded by a sign (+ or -) and not overflow an int64_t value.");
@@ -445,7 +470,7 @@ CATCH_TEST_CASE("invalid_validator", "[validator][invalid][validation]")
     CATCH_START_SECTION("Verify invalid regex flags")
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: unsupported regex flag f in regular expression \"/contact@.*\\..*/f\".");
 
-        advgetopt::validator::pointer_t regex_validator(advgetopt::validator::create("regex", "/contact@.*\\..*/f"));
+        advgetopt::validator::pointer_t regex_validator(advgetopt::validator::create("regex", {"/contact@.*\\..*/f"}));
 
         CATCH_REQUIRE(regex_validator != nullptr);
         CATCH_REQUIRE(regex_validator->name() == "regex");
@@ -476,7 +501,7 @@ CATCH_TEST_CASE("invalid_validator", "[validator][invalid][validation]")
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: unsupported regex flag c in regular expression \"/contact@.*\\..*\".");
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid regex definition, ending / is missing in \"/contact@.*\\..*\".");
 
-        advgetopt::validator::pointer_t regex_validator(advgetopt::validator::create("regex", "/contact@.*\\..*"));
+        advgetopt::validator::pointer_t regex_validator(advgetopt::validator::create("regex", {"/contact@.*\\..*"}));
 
         CATCH_REQUIRE(regex_validator != nullptr);
         CATCH_REQUIRE(regex_validator->name() == "regex");
@@ -488,6 +513,46 @@ CATCH_TEST_CASE("invalid_validator", "[validator][invalid][validation]")
 
         CATCH_REQUIRE_FALSE(regex_validator->validate("contact@m2osw:com"));
         CATCH_REQUIRE_FALSE(regex_validator->validate("contact!m2osw.com"));
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Verify regex refuses more than one parameter")
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+                          "error: validator_regex() only supports one parameter;"
+                          " 2 were supplied;"
+                          " single or double quotation may be required?");
+        advgetopt::validator::create("regex", {"[a-z]+", "[0-9]+"});
+
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+                          "error: validator_regex() only supports one parameter;"
+                          " 2 were supplied;"
+                          " single or double quotation may be required?");
+        advgetopt::validator::create("regex([a-z]+, [0-9]+)");
+
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+                          "error: validator_regex() only supports one parameter;"
+                          " 3 were supplied;"
+                          " single or double quotation may be required?");
+        advgetopt::validator::create("regex", {"[a-z]+", "[0-9]+", "[#!@]"});
+
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+                          "error: validator_regex() only supports one parameter;"
+                          " 3 were supplied;"
+                          " single or double quotation may be required?");
+        advgetopt::validator::create("regex(\"[a-z]+\", \"[0-9]+\", \"[#!@]\")");
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Verify missing ')' in string based create")
+        CATCH_REQUIRE_THROWS_MATCHES(
+                  advgetopt::validator::create("integer(1...7")
+                , advgetopt::getopt_exception_logic
+                , Catch::Matchers::ExceptionMessage(
+                          "invalid validator parameter definition: \"integer(1...7\", the ')' is missing."));
+
+        CATCH_REQUIRE_THROWS_MATCHES(
+                  advgetopt::validator::create("regex([a-z]+")
+                , advgetopt::getopt_exception_logic
+                , Catch::Matchers::ExceptionMessage(
+                          "invalid validator parameter definition: \"regex([a-z]+\", the ')' is missing."));
     CATCH_END_SECTION()
 }
 

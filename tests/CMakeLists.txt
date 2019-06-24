@@ -57,10 +57,10 @@ if( CATCH_FOUND )
 
         access.cpp
         arguments.cpp
+        config.cpp
         data.cpp
         log_for_test.cpp
         logger.cpp
-        logic_errors.cpp
         option_info.cpp
         option_info_ref.cpp
         options_files.cpp
@@ -68,8 +68,6 @@ if( CATCH_FOUND )
         usage.cpp
         utils.cpp
         validator.cpp
-        valid_config_files.cpp
-        valid_config_files_extra.cpp
         version.cpp
     )
 

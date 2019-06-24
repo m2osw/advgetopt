@@ -46,6 +46,11 @@
 #include "advgetopt/log.h"
 
 
+// snapdev lib
+//
+#include <snapdev/not_used.h>
+
+
 // libutf8 lib
 //
 #include    <libutf8/libutf8.h>
@@ -471,6 +476,32 @@ std::string const & option_info::get_help() const
 
 /** \brief Set the validator for this option.
  *
+ * This function parses the specified name and optional parameters and
+ * create a corresponding validator for this option.
+ *
+ * The \p name_and_params string can be defined as:
+ *
+ * \code
+ *     <validator-name>(<param1>, <param2>, ...)
+ * \endcode
+ *
+ * The list of parameters is optional. There may be an empty, just one,
+ * or any number of parameters. How the parameters are parsed is left
+ * to the validator to decide.
+ *
+ * If the input string is empty, the current validator, if one is
+ * installed, gets removed.
+ *
+ * \param[in] name_and_params  The validator name and parameters.
+ */
+void option_info::set_validator(std::string const & name_and_params)
+{
+    f_validator = validator::create(name_and_params);
+}
+
+
+/** \brief Set the validator for this option.
+ *
  * Options may be assigned a validator. Without a validator, any value
  * is considered valid.
  *
@@ -486,6 +517,21 @@ std::string const & option_info::get_help() const
 void option_info::set_validator(validator::pointer_t validator)
 {
     f_validator = validator;
+}
+
+
+/** \brief Clear the validator.
+ *
+ * This function removes the existing validator by resetting the pointer
+ * back to nullptr.
+ *
+ * \param[in] null_ptr  Ignored.
+ */
+void option_info::set_validator(std::nullptr_t null_ptr)
+{
+    snap::NOTUSED(null_ptr);
+
+    f_validator.reset();
 }
 
 
@@ -857,6 +903,7 @@ void option_info::set_value(int idx, std::string const & value)
 void option_info::set_multiple_value(std::string const & value)
 {
     f_value.clear();
+    f_integer.clear();
 
     split_string(value, f_value, f_multiple_separators);
 

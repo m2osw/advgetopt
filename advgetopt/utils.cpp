@@ -91,8 +91,8 @@ std::string unquote(std::string const & s)
  * following:
  *
  * \code
- *     std::vector<std::string> result;
- *     option_info::split_value(string_to_split, result, {","});
+ *     string_list_t result;
+ *     option_info::split_string(string_to_split, result, {","});
  * \endcode
  *
  * If `string_to_split` is set to "a, b, c", then the `result` vector
@@ -111,6 +111,12 @@ std::string unquote(std::string const & s)
  * \note
  * This function is a static so it can be used from anywhere to split
  * strings as required. You do not need to have an option_info instance.
+ *
+ * \todo
+ * See to fix the fact that `a"b"c` becomes `{"a", "b", "c"}` when
+ * there are not separators between `a`, `"b"`, and `c`. To the minimum
+ * we may want to generate an error when such is found (i.e. when a
+ * quote is found and `start < pos` is true.
  *
  * \param[in] str  The string to split.
  * \param[in] result  The vector where the split strings are saved.

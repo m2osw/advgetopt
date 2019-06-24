@@ -100,6 +100,7 @@ CATCH_TEST_CASE("string_access", "[arguments][valid][getopt]")
         CATCH_REQUIRE(opt.get_option('u') != nullptr);
         CATCH_REQUIRE(opt.get_string("user-name") == "alexis");
         CATCH_REQUIRE(opt.get_string("user-name", 0) == "alexis");
+        CATCH_REQUIRE(opt["user-name"] == "alexis");
         CATCH_REQUIRE(opt.is_defined("user-name"));
         CATCH_REQUIRE_FALSE(opt.has_default("user-name"));
         CATCH_REQUIRE(opt.get_default("user-name").empty());
@@ -159,6 +160,7 @@ CATCH_TEST_CASE("string_access", "[arguments][valid][getopt]")
         CATCH_REQUIRE(opt.get_option('u') != nullptr);
         CATCH_REQUIRE(opt.get_string("user-name") == "alexis");
         CATCH_REQUIRE(opt.get_string("user-name", 0) == "alexis");
+        CATCH_REQUIRE(opt["user-name"] == "alexis");
         CATCH_REQUIRE(opt.is_defined("user-name"));
         CATCH_REQUIRE(opt.get_default("user-name").empty());
         CATCH_REQUIRE(opt.size("user-name") == 1);
@@ -227,6 +229,7 @@ CATCH_TEST_CASE("long_access", "[arguments][valid][getopt]")
         CATCH_REQUIRE(opt.is_defined("size"));
         CATCH_REQUIRE(opt.get_string("size") == "9821");
         CATCH_REQUIRE(opt.get_string("size", 0) == "9821");
+        CATCH_REQUIRE(opt["size"] == "9821");
         CATCH_REQUIRE(opt.get_long("size") == 9821);
         CATCH_REQUIRE(opt.get_long("size", 0) == 9821);
         CATCH_REQUIRE(opt.has_default("size"));
@@ -277,6 +280,10 @@ CATCH_TEST_CASE("long_access", "[arguments][valid][getopt]")
         CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
         CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
 
+        // to reach the constant version `opt` has to be constant
+        std::string const array_syntax_invalid_parameter(static_cast<advgetopt::getopt const &>(opt)["invalid-parameter"]);
+        CATCH_REQUIRE(array_syntax_invalid_parameter == std::string());
+
         // no default
         CATCH_REQUIRE(opt.get_option("--") == nullptr);
         CATCH_REQUIRE_FALSE(opt.is_defined("--"));
@@ -289,11 +296,18 @@ CATCH_TEST_CASE("long_access", "[arguments][valid][getopt]")
         CATCH_REQUIRE(opt.is_defined("size"));
         CATCH_REQUIRE(opt.get_string("size") == "9821");
         CATCH_REQUIRE(opt.get_string("size", 0) == "9821");
+        CATCH_REQUIRE(opt["size"] == "9821");
         CATCH_REQUIRE(opt.get_long("size") == 9821);
         CATCH_REQUIRE(opt.get_long("size", 0) == 9821);
         CATCH_REQUIRE(opt.has_default("size"));
         CATCH_REQUIRE(opt.get_default("size").empty());
         CATCH_REQUIRE(opt.size("size") == 1);
+
+        // to access the constant reference we need a constant `opt`...
+        std::string const array_syntax1(static_cast<advgetopt::getopt const &>(opt)["size"]);
+        CATCH_REQUIRE(array_syntax1 == "9821");
+        bool const array_syntax2(static_cast<advgetopt::getopt const &>(opt)["size"] == std::string("9821"));
+        CATCH_REQUIRE(array_syntax2);
 
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
@@ -333,6 +347,7 @@ CATCH_TEST_CASE("long_access", "[arguments][valid][getopt]")
         // an invalid parameter, MUST NOT EXIST
         CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
         CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE(opt["invalid-parameter"] == std::string());
         CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
         CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
         CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
@@ -354,6 +369,9 @@ CATCH_TEST_CASE("long_access", "[arguments][valid][getopt]")
         CATCH_REQUIRE(opt.has_default("size"));
         CATCH_REQUIRE(opt.get_default("size") == "839");
         CATCH_REQUIRE(opt.size("size") == 0);
+
+        // with a constant opt, the array syntax returns the default string
+        CATCH_REQUIRE(static_cast<advgetopt::getopt const &>(opt)["size"] == "839");
 
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
@@ -452,6 +470,53 @@ CATCH_TEST_CASE("invalid_option_name", "[arguments][invalid][getopt]")
                 , Catch::Matchers::ExceptionMessage(
                               "argument name cannot be empty."));
     CATCH_END_SECTION()
+
+    CATCH_START_SECTION("[] operators want a valid name")
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = nullptr;
+        environment_options.f_help_header = "Usage: test get_default() functions";
+
+        advgetopt::getopt opt(environment_options);
+
+        CATCH_REQUIRE_THROWS_MATCHES(
+                  opt[""]
+                , advgetopt::getopt_exception_logic
+                , Catch::Matchers::ExceptionMessage(
+                              "argument name cannot be empty."));
+
+        CATCH_REQUIRE_THROWS_MATCHES(
+                  opt[std::string()]
+                , advgetopt::getopt_exception_logic
+                , Catch::Matchers::ExceptionMessage(
+                              "argument name cannot be empty."));
+
+        CATCH_REQUIRE_THROWS_MATCHES(
+                  opt["g"]
+                , advgetopt::getopt_exception_logic
+                , Catch::Matchers::ExceptionMessage(
+                              "argument name cannot be one letter if it does not exist in operator []."));
+
+        CATCH_REQUIRE_THROWS_MATCHES(
+                  opt[std::string("g")]
+                , advgetopt::getopt_exception_logic
+                , Catch::Matchers::ExceptionMessage(
+                              "argument name cannot be one letter if it does not exist in operator []."));
+
+        advgetopt::getopt const & const_opt(opt);
+
+        CATCH_REQUIRE_THROWS_MATCHES(
+                  const_opt[""]
+                , advgetopt::getopt_exception_logic
+                , Catch::Matchers::ExceptionMessage(
+                              "argument name cannot be empty."));
+
+        CATCH_REQUIRE_THROWS_MATCHES(
+                  const_opt[std::string()]
+                , advgetopt::getopt_exception_logic
+                , Catch::Matchers::ExceptionMessage(
+                              "argument name cannot be empty."));
+    CATCH_END_SECTION()
 }
 
 
@@ -505,6 +570,7 @@ CATCH_TEST_CASE("missing_default_value", "[arguments][invalid][getopt]")
         CATCH_REQUIRE(opt.get_option('s') != nullptr);
         CATCH_REQUIRE_FALSE(opt.is_defined("size"));
         CATCH_REQUIRE(opt.size("size") == 0);
+        CATCH_REQUIRE(static_cast<advgetopt::getopt const &>(opt)["size"].empty());
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.get_string("size")
@@ -523,6 +589,19 @@ CATCH_TEST_CASE("missing_default_value", "[arguments][invalid][getopt]")
                 , advgetopt::getopt_exception_logic
                 , Catch::Matchers::ExceptionMessage(
                               "the --size option was not defined on the command line and it has no default."));
+
+        // this one will create the entry
+        //
+        CATCH_REQUIRE(opt["size"].empty());
+
+        CATCH_REQUIRE(opt.get_string("size").empty());
+        CATCH_REQUIRE(opt.get_string("size", 0).empty());
+
+        CATCH_REQUIRE_THROWS_MATCHES(
+                  opt.get_string("size", 1)
+                , advgetopt::getopt_exception_undefined
+                , Catch::Matchers::ExceptionMessage(
+                              "option_info::get_value(): no value at index 1 (idx >= 1) for --size so you can't get this value."));
 
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
@@ -809,6 +888,7 @@ CATCH_TEST_CASE("out_of_range_value", "[arguments][invalid][getopt]")
         CATCH_REQUIRE(opt.is_defined("size"));
         CATCH_REQUIRE(opt.get_string("size") == "312");
         CATCH_REQUIRE(opt.get_string("size", 0) == "312");
+        CATCH_REQUIRE(opt["size"] == "312");
         CATCH_REQUIRE(opt.get_long("size") == 312);
         CATCH_REQUIRE(opt.get_long("size", 0) == 312);
         CATCH_REQUIRE(opt.get_default("size") == "-300");

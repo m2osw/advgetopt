@@ -250,7 +250,7 @@ void getopt::process_configuration_file(std::string const & filename)
         option_info::pointer_t opt(get_option(param.first));
         if(opt == nullptr)
         {
-            if((f_options_environment.f_environment_flags & GETOPT_ENVIRONMENT_FLAG_DYNAMIC_PARAMETERS) == 0
+            if(!has_flag(GETOPT_ENVIRONMENT_FLAG_DYNAMIC_PARAMETERS)
             || param.first.length() == 1)
             {
                 log << log_level_t::error

@@ -41,7 +41,6 @@
 // advgetopt lib
 //
 #include "advgetopt/flags.h"
-#include "advgetopt/utils.h"
 #include "advgetopt/validator.h"
 
 
@@ -98,7 +97,9 @@ public:
     void                        set_help(char const * help);
     std::string const &         get_help() const;
 
+    void                        set_validator(std::string const & name_and_params);
     void                        set_validator(validator::pointer_t validator);
+    void                        set_validator(std::nullptr_t);
     bool                        validates(int idx = 0) const;
     validator::pointer_t        get_validator() const;
 
@@ -139,7 +140,7 @@ private:
 
     // value read from command line, environment, .conf file
     //
-    std::vector<std::string>    f_value = std::vector<std::string>();
+    string_list_t               f_value = string_list_t();
     mutable std::vector<long>   f_integer = std::vector<long>();
 };
 

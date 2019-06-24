@@ -97,7 +97,6 @@
 
 // advgetopt lib
 //
-#include    "advgetopt/conf_file.h"
 #include    "advgetopt/exception.h"
 #include    "advgetopt/log.h"
 
@@ -418,14 +417,14 @@ getopt::getopt(options_environment const & opt_env)
 {
     if(&opt_env == nullptr)
     {
-        throw getopt_exception_logic("opt_env pointer cannot be nullptr");
+        throw getopt_exception_logic("opt_env reference cannot point to a nullptr");
     }
 
     f_options_environment = opt_env;
 
     parse_options_info(f_options_environment.f_options, false);
     parse_options_from_file();
-    if((f_options_environment.f_environment_flags & GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS) != 0)
+    if(has_flag(GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS))
     {
         parse_options_info(g_system_options, true);
     }
@@ -477,7 +476,7 @@ getopt::getopt(options_environment const & opt_env
     }
     if(&opt_env == nullptr)
     {
-        throw getopt_exception_logic("opt_env pointer cannot be nullptr");
+        throw getopt_exception_logic("opt_env reference cannot point to a nullptr");
     }
 
     f_options_environment = opt_env;
@@ -485,7 +484,7 @@ getopt::getopt(options_environment const & opt_env
     parse_program_name(argv);
     parse_options_info(f_options_environment.f_options, false);
     parse_options_from_file();
-    if((f_options_environment.f_environment_flags & GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS) != 0)
+    if(has_flag(GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS))
     {
         parse_options_info(g_system_options, true);
     }
@@ -500,6 +499,24 @@ getopt::getopt(options_environment const & opt_env
     parse_configuration_files();
     parse_environment_variable();
     parse_arguments(argc, argv, false);
+}
+
+
+/** \brief Check whether an environment flag is set or not.
+ *
+ * This function checks the environment flags for the specified \p flag.
+ * When the flag is set, the function returns true.
+ *
+ * You may test multiple flags at the same time, if any one of them is set,
+ * then the function returns true.
+ *
+ * \param[in] flag  The flag to check out.
+ *
+ * \return true if the flag is set.
+ */
+bool getopt::has_flag(flag_t flag) const
+{
+    return (f_options_environment.f_environment_flags & flag) != 0;
 }
 
 
@@ -570,7 +587,7 @@ void getopt::parse_string(std::string const & str, bool only_environment_variabl
     // this is exactly like the command line only in an environment variable
     // so parse the parameters just like the shell
     //
-    std::vector<std::string> args;
+    string_list_t args;
     std::string a;
     char const * s(str.c_str());
     while(*s != '\0')
@@ -748,7 +765,7 @@ void getopt::parse_arguments(int argc
                     while(i + 1 < argc)
                     {
                         ++i;
-                        add_option(f_default_option, argv[i]);
+                        f_default_option->add_value(argv[i]);
                     }
                 }
                 else
@@ -856,7 +873,7 @@ void getopt::parse_arguments(int argc
 
                     // this is similar to a default option by itself
                     //
-                    add_option(f_default_option, argv[i]);
+                    f_default_option->add_value(argv[i]);
                 }
                 else
                 {
@@ -943,65 +960,9 @@ void getopt::parse_arguments(int argc
                     break;
                 }
             }
-            add_option(f_default_option, argv[i]);
+            f_default_option->add_value(argv[i]);
         }
     }
-}
-
-
-/** \brief Check whether a parameter is defined.
- *
- * This function returns true if the specified parameter is found as part of
- * the command line options.
- *
- * You must specify the long name of the option if one is defined. Otherwise
- * the name is the short name. So a --verbose option can be checked with:
- *
- * \code
- *   if(is_defined("verbose")) ...
- * \endcode
- *
- * However, if the option was defined as:
- *
- * \code
- * advgetopt::option options[] =
- * {
- *    [...]
- *    {
- *       'v',
- *       0,
- *       nullptr,
- *       nullptr,
- *       "increase verbosity",
-         advgetopt::getopt::no_argument
- *    },
- *    [...]
- * };
- * \endcode
- *
- * then the previous call would fail because "verbose" does not exist in your
- * table. However, the option is accessible by its short name as a fallback
- * when it does not have a long name:
- *
- * \code
- *   if(is_defined("v")) ...
- * \endcode
- *
- * \param[in] name  The long (or short if long is undefined) name of the
- *                  option to check.
- *
- * \return true if the option was defined in a configuration file, the
- *         environment variable, or the command line.
- */
-bool getopt::is_defined(std::string const & name) const
-{
-    option_info::pointer_t opt(get_option(name));
-    if(opt != nullptr)
-    {
-        return opt->is_defined();
-    }
-
-    return false;
 }
 
 
@@ -1127,7 +1088,7 @@ void getopt::add_options(option_info::pointer_t opt, int & i, int argc, char ** 
 {
     if(opt->has_flag(GETOPT_FLAG_FLAG))
     {
-        add_option(opt, opt->get_default());
+        opt->add_value(opt->get_default());
     }
     else
     {
@@ -1138,13 +1099,13 @@ void getopt::add_options(option_info::pointer_t opt, int & i, int argc, char ** 
                 do
                 {
                     ++i;
-                    add_option(opt, argv[i]);
+                    opt->add_value(argv[i]);
                 } while(i + 1 < argc && !is_arg(argv[i + 1]));
             }
             else
             {
                 ++i;
-                add_option(opt, argv[i]);
+                opt->add_value(argv[i]);
             }
         }
         else
@@ -1159,7 +1120,11 @@ void getopt::add_options(option_info::pointer_t opt, int & i, int argc, char ** 
             }
             else
             {
-                add_option(opt, opt->get_default());
+                // We need to set something because the value is being
+                // set although no argument was specified (but that's
+                // legal by this argument's definition)
+                //
+                opt->add_value(std::string());
             }
         }
     }
@@ -1221,53 +1186,6 @@ void getopt::add_option_from_string(option_info::pointer_t opt, std::string cons
     // accept an empty value otherwise
     //
     opt->set_value(0, value);
-}
-
-
-/** \brief Add one option to the internal list of options.
- *
- * This function adds the actual option name and value pair to the
- * option list.
- *
- * The name of the option is taken from the first one of these that is
- * defined:
- *
- * \li For options marked as an alias, use the f_help alias
- * \li For options with a long name, use the f_name string
- * \li For options with a short name, use the f_opt character as a name
- * \li In all other cases, use "--" as a fallback
- *
- * If the function is called multiple times with the same option and that
- * option is not marked as a "multiple" argument option, then the function
- * overwrites the current value with the latest passed to this function.
- * In other words, only the last argument in your configuration files,
- * environment variable, or command line options is kept.
- *
- * Options having a "multiple" flag accept multiple calls and each instance
- * is saved in the order found in your configuration files, environment
- * variable, and command line options.
- *
- * \note
- * The value pointer can be set to nullptr in which case it is considered to
- * be equivalent to "" (the empty string.)
- *
- * \note
- * Options that are marked as "no argument" ignore the value parameter
- * altogether.
- *
- * \param[in] opt  The concerned option.
- * \param[in] value  The value to add to that option info.
- */
-void getopt::add_option(option_info::pointer_t opt, std::string const & value)
-{
-    if(opt->has_flag(GETOPT_FLAG_MULTIPLE))
-    {
-        opt->add_value(value);
-    }
-    else
-    {
-        opt->set_value(0, value);
-    }
 }
 
 

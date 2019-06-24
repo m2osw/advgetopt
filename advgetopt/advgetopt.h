@@ -68,6 +68,7 @@ public:
                                  , int argc
                                  , char * argv[]);
 
+    bool                    has_flag(flag_t flag) const;
     void                    reset();
 
     void                    parse_options_info(
@@ -137,8 +138,6 @@ private:
     void                    add_option_from_string(option_info::pointer_t opt
                                                  , std::string const & value
                                                  , std::string const & filename);
-    void                    add_option(option_info::pointer_t opt
-                                     , std::string const & value);
 
     std::string             f_program_fullname = std::string();
     std::string             f_program_name = std::string();

@@ -311,11 +311,14 @@ CATCH_TEST_CASE("option_info_validator", "[option_info][valid][validator]")
         CATCH_REQUIRE(auto_validate.get_validator() == nullptr);
 
         auto_validate.set_value(0, "51");
+        CATCH_REQUIRE(auto_validate.size() == 1);
+        CATCH_REQUIRE(auto_validate.get_value(0) == "51");
+        CATCH_REQUIRE(auto_validate.get_long(0) == 51);
 
         auto_validate.set_validator(nullptr);
         CATCH_REQUIRE(auto_validate.get_validator() == nullptr);
 
-        advgetopt::validator::pointer_t integer_validator(advgetopt::validator::create("integer", "1,2,5,6,8"));
+        advgetopt::validator::pointer_t integer_validator(advgetopt::validator::create("integer", {"1","2","5","6","8"}));
         auto_validate.set_validator(integer_validator);
         CATCH_REQUIRE(auto_validate.get_validator() == integer_validator);
 
@@ -328,7 +331,6 @@ CATCH_TEST_CASE("option_info_validator", "[option_info][valid][validator]")
         auto_validate.set_value(0, "11");
     CATCH_END_SECTION()
 
-
     CATCH_START_SECTION("Check validator (multiple values)")
         advgetopt::option_info auto_validate("validator", 'C');
 
@@ -339,12 +341,15 @@ CATCH_TEST_CASE("option_info_validator", "[option_info][valid][validator]")
 
         CATCH_REQUIRE(auto_validate.get_validator() == nullptr);
 
-        auto_validate.set_value(0, "15");
+        auto_validate.set_value(0, "-15");
+        CATCH_REQUIRE(auto_validate.size() == 1);
+        CATCH_REQUIRE(auto_validate.get_value(0) == "-15");
+        CATCH_REQUIRE(auto_validate.get_long(0) == -15);
 
         auto_validate.set_validator(nullptr);
         CATCH_REQUIRE(auto_validate.get_validator() == nullptr);
 
-        advgetopt::validator::pointer_t integer_validator(advgetopt::validator::create("integer", "-1,2,5,6,18"));
+        advgetopt::validator::pointer_t integer_validator(advgetopt::validator::create("integer", {"-1","2","5","6","18"}));
         auto_validate.set_validator(integer_validator);
         CATCH_REQUIRE(auto_validate.get_validator() == integer_validator);
 
@@ -356,6 +361,112 @@ CATCH_TEST_CASE("option_info_validator", "[option_info][valid][validator]")
         CATCH_REQUIRE(auto_validate.get_long(0) == 6);
         CATCH_REQUIRE(auto_validate.get_value(1) == "18");
         CATCH_REQUIRE(auto_validate.get_long(1) == 18);
+
+        auto_validate.set_validator(nullptr);
+        CATCH_REQUIRE(auto_validate.get_validator() == nullptr);
+
+        auto_validate.set_multiple_value("6,3,18,11");
+        CATCH_REQUIRE(auto_validate.size() == 4);
+        CATCH_REQUIRE(auto_validate.get_value(0) == "6");
+        CATCH_REQUIRE(auto_validate.get_long(0) == 6);
+        CATCH_REQUIRE(auto_validate.get_value(1) == "3");
+        CATCH_REQUIRE(auto_validate.get_long(1) == 3);
+        CATCH_REQUIRE(auto_validate.get_value(2) == "18");
+        CATCH_REQUIRE(auto_validate.get_long(2) == 18);
+        CATCH_REQUIRE(auto_validate.get_value(3) == "11");
+        CATCH_REQUIRE(auto_validate.get_long(3) == 11);
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Check integer validator from string (multiple values)")
+        advgetopt::option_info auto_validate("validator", 'C');
+
+        auto_validate.add_flag(advgetopt::GETOPT_FLAG_MULTIPLE);
+
+        advgetopt::string_list_t list{","};
+        auto_validate.set_multiple_separators(list);
+
+        CATCH_REQUIRE(auto_validate.get_validator() == nullptr);
+
+        auto_validate.set_value(0, "35");
+        CATCH_REQUIRE(auto_validate.size() == 1);
+        CATCH_REQUIRE(auto_validate.get_value(0) == "35");
+        CATCH_REQUIRE(auto_validate.get_long(0) == 35);
+
+        auto_validate.set_validator(nullptr);
+        CATCH_REQUIRE(auto_validate.get_validator() == nullptr);
+
+        auto_validate.set_validator(std::string());
+        CATCH_REQUIRE(auto_validate.get_validator() == nullptr);
+
+        auto_validate.set_validator("integer(-1,2,5,6,18)");
+        CATCH_REQUIRE(auto_validate.get_validator() != nullptr);
+        CATCH_REQUIRE(auto_validate.get_validator()->name() == "integer");
+
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"3\" (from \"6,3,18,11\") given to parameter --validator is not considered valid.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"11\" (from \"6,3,18,11\") given to parameter --validator is not considered valid.");
+        auto_validate.set_multiple_value("6,3,18,11");
+        CATCH_REQUIRE(auto_validate.size() == 2);
+        CATCH_REQUIRE(auto_validate.get_value(0) == "6");
+        CATCH_REQUIRE(auto_validate.get_long(0) == 6);
+        CATCH_REQUIRE(auto_validate.get_value(1) == "18");
+        CATCH_REQUIRE(auto_validate.get_long(1) == 18);
+
+        auto_validate.set_validator(std::string());
+        CATCH_REQUIRE(auto_validate.get_validator() == nullptr);
+
+        auto_validate.set_multiple_value("6,3,18,11");
+        CATCH_REQUIRE(auto_validate.size() == 4);
+        CATCH_REQUIRE(auto_validate.get_value(0) == "6");
+        CATCH_REQUIRE(auto_validate.get_long(0) == 6);
+        CATCH_REQUIRE(auto_validate.get_value(1) == "3");
+        CATCH_REQUIRE(auto_validate.get_long(1) == 3);
+        CATCH_REQUIRE(auto_validate.get_value(2) == "18");
+        CATCH_REQUIRE(auto_validate.get_long(2) == 18);
+        CATCH_REQUIRE(auto_validate.get_value(3) == "11");
+        CATCH_REQUIRE(auto_validate.get_long(3) == 11);
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Check regex validator from string (multiple values)")
+        advgetopt::option_info auto_validate("validator", 'C');
+
+        auto_validate.add_flag(advgetopt::GETOPT_FLAG_MULTIPLE);
+
+        advgetopt::string_list_t list{","};
+        auto_validate.set_multiple_separators(list);
+
+        CATCH_REQUIRE(auto_validate.get_validator() == nullptr);
+
+        auto_validate.set_value(0, "abc");
+        CATCH_REQUIRE(auto_validate.size() == 1);
+        CATCH_REQUIRE(auto_validate.get_value(0) == "abc");
+
+        auto_validate.set_validator(nullptr);
+        CATCH_REQUIRE(auto_validate.get_validator() == nullptr);
+
+        auto_validate.set_validator(std::string());
+        CATCH_REQUIRE(auto_validate.get_validator() == nullptr);
+
+        auto_validate.set_validator("/^[a-z]+$/");
+        CATCH_REQUIRE(auto_validate.get_validator() != nullptr);
+        CATCH_REQUIRE(auto_validate.get_validator()->name() == "regex");
+
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"33\" (from \"abc,qqq,33,zac,pop,45\") given to parameter --validator is not considered valid.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"45\" (from \"abc,qqq,33,zac,pop,45\") given to parameter --validator is not considered valid.");
+        auto_validate.set_multiple_value("abc,qqq,33,zac,pop,45");
+        CATCH_REQUIRE(auto_validate.size() == 4);
+        CATCH_REQUIRE(auto_validate.get_value(0) == "abc");
+        CATCH_REQUIRE(auto_validate.get_value(1) == "qqq");
+        CATCH_REQUIRE(auto_validate.get_value(2) == "zac");
+        CATCH_REQUIRE(auto_validate.get_value(3) == "pop");
+
+        auto_validate.set_validator(std::string());
+        CATCH_REQUIRE(auto_validate.get_validator() == nullptr);
+
+        auto_validate.set_multiple_value("abc,-56,zoc");
+        CATCH_REQUIRE(auto_validate.size() == 3);
+        CATCH_REQUIRE(auto_validate.get_value(0) == "abc");
+        CATCH_REQUIRE(auto_validate.get_value(1) == "-56");
+        CATCH_REQUIRE(auto_validate.get_value(2) == "zoc");
     CATCH_END_SECTION()
 }
 
@@ -1106,6 +1217,15 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
                     " The set_multiple_value() function should not be called with parameters that only accept one value."));
 
         CATCH_REQUIRE(separators.size() == 0);
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Check multiple separators")
+        advgetopt::option_info auto_validate("validator", 'C');
+        CATCH_REQUIRE_THROWS_MATCHES(
+                  auto_validate.set_validator("regex('^[a-z]+$/'")
+                , advgetopt::getopt_exception_logic
+                , Catch::Matchers::ExceptionMessage(
+                    "invalid validator parameter definition: \"regex('^[a-z]+$/'\", the ')' is missing."));
     CATCH_END_SECTION()
 }
 

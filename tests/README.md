@@ -57,14 +57,14 @@ We have three _parsers_:
 * Arguments
 * Configurations
 
-Here we test the Configurations. This is the part of the library which converts
-configuration file data to a map of named values. The configuration code has
-the ability to accept any argument without having a definition to match the
-argument. The idea being that once in a while we need to load a configuration
-file without having access to the argument definitions. This happens in many
-places in Snap! However, we now have the ability to define an external
-definition for each file so it will be possible to verify configuration files
-properly from any tool.
+Here we test the code handle the loading and saving from configuration files.
+This is the part of the library which converts configuration file data to
+a map of named values. The configuration code has the ability to accept any
+argument without having a definition to match the argument. The idea being
+that once in a while we need to load a configuration file without having
+access to the argument definitions. This happens in many places in Snap!
+However, we now have the ability to define an external definition for each
+file so it is possible to verify configuration files properly from any tool.
 
 ## Program & Project Names (`advgetopt_access.cpp`)
 
@@ -109,16 +109,29 @@ and redirect those messages to your log file instead.
 ## Option Info (`option_info.cpp`)
 
 The `option_info` class is used to register options taken from statically
-compiled option tables. The advantage of habing an object is to allow for
-dynamic options to be added at run which mainly happens when loading
+compiled option tables. The advantage of having an object is to allow for
+dynamic options to be added at run-time, which mainly happens when loading
 configuration files but can also be allowed on the command line and
 the environment variable.
 
-    dev/coverage option_info_basics,option_info_flags,option_info_default,option_info_help,option_info_validator,option_info_children,option_info_alias,option_info_multiple_separators,option_info_add_value,invalid_option_info
+    dev/coverage option_info_basics,option_info_flags,option_info_default,option_info_help,option_info_validator,option_info_children,option_info_alias,option_info_multiple_separators,option_info_add_value,option_info_set_value,invalid_option_info
+
+This test also verifies that the arguments can be defined in a configuration
+file.
 
 **Note:** This is strongly linked to the Options Parser above. The fact is
 that many cases are handled within the option parser and as a result
 the `option_info` class is not fully checked through the parser.
+
+## Option Info References (`option_info_ref.cpp`)
+
+The `getopt` objects can be used with the `[]` operator. When the input `this`
+is not constant, the operator returns an `option_info_ref` class which allows
+us to access the first value in read and write modes.
+
+    dev/coverage option_info_ref
+
+This verifies that the reference object is fully covered.
 
 ## Utilities (`utils.cpp`)
 
@@ -148,31 +161,43 @@ you are running the test that corresponds to your version of the library.
     dev/coverage version
 
 
+## Library versus Tests
+
+    +------------------------+---------------------+--------+
+    | Library Filename       | Test Filename       | Status |
+    +------------------------+---------------------+--------+
+    | advgetopt_access.cpp   | access.cpp          |  DONE  |
+    | advgetopt_config.cpp   | config.cpp          |   ?    |
+    | advgetopt.cpp          | arguments.cpp       |  DONE  |
+    | advgetopt_data.cpp     | data.cpp            |  DONE  |
+    | advgetopt_options.cpp  | options_parser.cpp  |  DONE  |
+    |                        | & options_files.cpp |        |
+    | advgetopt_usage.cpp    | usage.cpp           |  DONE  |
+    | conf_file.cpp          |                     |   ?    |
+    | log.cpp                | logger.cpp          |  DONE  |
+    | option_info.cpp        | option_info.cpp     |  DONE  |
+    | option_info_ref.cpp    | option_info_ref.cpp |  DONE  |
+    | utils.cpp              | utils.cpp           |  DONE  |
+    | validator.cpp          | validator.cpp       |  DONE  |
+    | version.cpp            | version.cpp         |  DONE  |
+    +------------------------+---------------------+--------+
+    | advgetopt.h            |                     |  DONE  |
+    | conf_file.h            |                     |  DONE  |
+    | exception.h            |                     |  DONE  |
+    | flags.h                |                     |  DONE  |
+    | log.h                  |                     |  DONE  |
+    | option_info.h          |                     |  DONE  |
+    | options.h              |                     |  DONE  |
+    | utils.h                |                     |  DONE  |
+    | validator.h            |                     |  DONE  |
+    | version.h.in           |                     |  DONE  |
+    +------------------------+---------------------+--------+
+    |                        | log_for_test.cpp    |        |
+    |                        | main.cpp            |        |
+    |                        | main.h              |        |
+    +------------------------+---------------------+--------+
 
 
-    advgetopt_access.cpp    DONE
-    advgetopt_config.cpp    
-    advgetopt.cpp           DONE
-    advgetopt_data.cpp      DONE
-    advgetopt.h             ----
-    advgetopt_options.cpp   DONE
-    advgetopt_usage.cpp     DONE
-    conf_file.cpp           
-    conf_file.h             ----
-    exception.h             ----
-    flags.h                 DONE
-    log.cpp                 DONE
-    log.h                   ----
-    option_info.cpp         DONE
-    option_info.h           ----
-    options.h               DONE
-    utils.cpp               DONE
-    utils.h                 ----
-    validator.cpp           DONE
-    validator.h             ----
-    version.cpp             DONE
-    version.h.in            ----
-
-
+                valid_config_files_extra.cpp
 
 vim: ts=4 sw=4 et

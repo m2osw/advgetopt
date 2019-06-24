@@ -350,7 +350,7 @@ void conf_file::read_configuration()
             if(!sections.empty())
             {
                 log << log_level_t::error
-                    << "`[...]` sections can't be used within a `section { ... }` is not supported on line "
+                    << "`[...]` sections can't be used within a `section { ... }` on line "
                     << f_line
                     << " from configuration file \""
                     << f_filename
@@ -392,7 +392,7 @@ void conf_file::read_configuration()
         {
             sections.push_back(current_section);
             f_sections[current_section + name] = true;
-            current_section = name + "::";
+            current_section += name + "::";
         }
         else
         {

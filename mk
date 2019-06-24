@@ -11,7 +11,7 @@ case $1 in
 "-d")
 	rm -rf ../../../BUILD/contrib/advgetopt/doc/advgetopt-doc-2.0.tar.gz \
 	       ../../../BUILD/contrib/advgetopt/doc/advgetopt-doc-2.0
-	make -C ../../../BUILD/contrib/advgetopt
+	make -j4 -C ../../../BUILD/contrib/advgetopt
 	;;
 
 "-t")
@@ -24,7 +24,7 @@ case $1 in
 	;;
 
 *)
-	make -C ../../../BUILD/contrib/advgetopt
+	make -j4 -C ../../../BUILD/contrib/advgetopt
 	;;
 
 esac

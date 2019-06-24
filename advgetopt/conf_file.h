@@ -51,8 +51,8 @@ namespace advgetopt
 
 enum class line_continuation_t
 {
-    single_line,
-    rfc_822,        // like email/HTTP, whitespace on next line
+    single_line,    // no continuation support
+    rfc_822,        // like email/HTTP, whitespace at start of next line
     msdos,          // '&' at end of line
     unix,           // '\' at end of line
     fortran,        // '&' at start of next line
