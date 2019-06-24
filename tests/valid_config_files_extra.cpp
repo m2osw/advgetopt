@@ -61,8 +61,6 @@ CATCH_TEST_CASE("valid_config_files_extra", "[config][valid]")
     }
     std::string const config_filename(tmpdir + "/advgetopt.config");
 
-    //std::vector<std::string> confs;
-    //confs.push_back(config_filename);
     char const * confs[] =
     {
         config_filename.c_str(),
@@ -79,20 +77,13 @@ CATCH_TEST_CASE("valid_config_files_extra", "[config][valid]")
     // new set of options to test the special "--" option
     advgetopt::option const valid_options_with_multiple_list[] =
     {
-        //{
-        //    '\0',
-        //    advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-        //    nullptr,
-        //    nullptr,
-        //    "Usage: test valid options",
-        //    advgetopt::argument_mode_t::help_argument
-        //},
         {
             '\0',
             advgetopt::GETOPT_FLAG_COMMAND_LINE,
             "valid-parameter",
             nullptr,
             "a valid option",
+            nullptr,
             nullptr
         },
         {
@@ -101,6 +92,7 @@ CATCH_TEST_CASE("valid_config_files_extra", "[config][valid]")
             "verbose",
             nullptr,
             "a verbose like option, select it or not",
+            nullptr,
             nullptr
         },
         {
@@ -109,6 +101,7 @@ CATCH_TEST_CASE("valid_config_files_extra", "[config][valid]")
             "not-specified",
             nullptr,
             "a verbose like option, but never specified anywhere",
+            nullptr,
             nullptr
         },
         {
@@ -117,6 +110,7 @@ CATCH_TEST_CASE("valid_config_files_extra", "[config][valid]")
             "number",
             "111",
             "expect a valid number",
+            nullptr,
             nullptr
         },
         {
@@ -125,6 +119,7 @@ CATCH_TEST_CASE("valid_config_files_extra", "[config][valid]")
             "string",
             "the default string",
             "expect a valid string",
+            nullptr,
             nullptr
         },
         {
@@ -133,11 +128,13 @@ CATCH_TEST_CASE("valid_config_files_extra", "[config][valid]")
             "filenames",
             "a.out",
             "expect multiple strings, may be used after the -- and - is added to it too",
+            nullptr,
             separator_spaces
         },
         {
             '\0',
             advgetopt::GETOPT_FLAG_END,
+            nullptr,
             nullptr,
             nullptr,
             nullptr,
@@ -523,8 +520,9 @@ CATCH_TEST_CASE("valid_config_files_extra", "[config][valid]")
 
             // filenames
             CATCH_REQUIRE(opt.is_defined("filenames"));
-            CATCH_REQUIRE(opt.get_string("filenames") == "a.out"); // same as index = 0
-            CATCH_REQUIRE(opt.get_string("filenames", 0) == "a.out");
+            CATCH_REQUIRE(opt.get_string("filenames").empty()); // same as index = 0
+            CATCH_REQUIRE(opt.get_string("filenames", 0).empty());
+            CATCH_REQUIRE(opt.has_default("filenames"));
             CATCH_REQUIRE(opt.get_default("filenames") == "a.out");
             CATCH_REQUIRE(opt.size("filenames") == 1);
 
@@ -553,8 +551,9 @@ CATCH_TEST_CASE("valid_config_files_extra", "[config][valid]")
 
             // filenames
             CATCH_REQUIRE(opt.is_defined("filenames"));
-            CATCH_REQUIRE(opt.get_string("filenames") == "a.out"); // same as index = 0
-            CATCH_REQUIRE(opt.get_string("filenames", 0) == "a.out");
+            CATCH_REQUIRE(opt.get_string("filenames").empty()); // same as index = 0
+            CATCH_REQUIRE(opt.get_string("filenames", 0).empty());
+            CATCH_REQUIRE(opt.has_default("filenames"));
             CATCH_REQUIRE(opt.get_default("filenames") == "a.out");
             CATCH_REQUIRE(opt.size("filenames") == 1);
 
