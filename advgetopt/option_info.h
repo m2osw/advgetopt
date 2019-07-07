@@ -60,7 +60,8 @@ typedef char32_t            short_name_t;
 constexpr short_name_t      NO_SHORT_NAME = L'\0';
 
 
-
+short_name_t                string_to_short_name(std::string const & name);
+std::string                 short_name_to_string(short_name_t short_name);
 
 
 
@@ -79,6 +80,9 @@ public:
 
     std::string const &         get_name() const;
     short_name_t                get_short_name() const;
+    std::string                 get_basename() const;
+    std::string                 get_section_name() const;
+    string_list_t               get_section_name_list() const;
     bool                        is_default_option() const;
 
     void                        set_flags(flag_t flags);
@@ -97,25 +101,21 @@ public:
     void                        set_help(char const * help);
     std::string const &         get_help() const;
 
-    void                        set_validator(std::string const & name_and_params);
-    void                        set_validator(validator::pointer_t validator);
-    void                        set_validator(std::nullptr_t);
-    bool                        validates(int idx = 0) const;
+    bool                        set_validator(std::string const & name_and_params);
+    bool                        set_validator(validator::pointer_t validator);
+    bool                        set_validator(std::nullptr_t);
     validator::pointer_t        get_validator() const;
 
-    void                        add_child(option_info::pointer_t child);
-    map_by_name_t const &       get_children() const;
-    pointer_t                   get_child(std::string const & name) const;
-    pointer_t                   get_child(short_name_t short_name) const;
     void                        set_alias_destination(option_info::pointer_t destination);
     option_info::pointer_t      get_alias_destination() const;
 
     void                        set_multiple_separators(string_list_t const & separators);
     void                        set_multiple_separators(char const * const * separators);
     string_list_t const &       get_multiple_separators() const;
-    void                        add_value(std::string const & value);
-    void                        set_value(int idx, std::string const & value);
-    void                        set_multiple_value(std::string const & value);
+
+    bool                        add_value(std::string const & value);
+    bool                        set_value(int idx, std::string const & value);
+    bool                        set_multiple_value(std::string const & value);
     bool                        is_defined() const;
     size_t                      size() const;
     std::string const &         get_value(int idx = 0) const;
@@ -125,6 +125,9 @@ public:
     void                        reset();
 
 private:
+    bool                        validate_all_values();
+    bool                        validates(int idx = 0);
+
     // definitions
     //
     std::string                 f_name = std::string();
@@ -134,8 +137,6 @@ private:
     std::string                 f_help = std::string();
     validator::pointer_t        f_validator = validator::pointer_t();
     pointer_t                   f_alias_destination = pointer_t();
-    map_by_name_t               f_children_by_long_name = map_by_name_t();
-    map_by_short_name_t         f_children_by_short_name = map_by_short_name_t();
     string_list_t               f_multiple_separators = string_list_t();
 
     // value read from command line, environment, .conf file

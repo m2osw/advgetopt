@@ -459,9 +459,9 @@ CATCH_TEST_CASE("invalid_validator", "[validator][invalid][validation]")
             "3...def",
             "10...1"};
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: abc is not a valid value for your ranges; it must only digits, optionally preceeded by a sign (+ or -) and not overflow an int64_t value.");
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: abc is not a valid value for your ranges; it must only digits, optionally preceeded by a sign (+ or -) and not overflow an int64_t value.");
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: def is not a valid value for your ranges; it must only digits, optionally preceeded by a sign (+ or -) and not overflow an int64_t value.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: abc is not a valid value for your ranges; it must only be digits, optionally preceeded by a sign (+ or -) and not overflow an int64_t value.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: abc is not a valid value for your ranges; it must only be digits, optionally preceeded by a sign (+ or -) and not overflow an int64_t value.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: def is not a valid value for your ranges; it must only be digits, optionally preceeded by a sign (+ or -) and not overflow an int64_t value.");
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: 10 has to be smaller or equal to 1; you have an invalid range.");
 
         advgetopt::validator::pointer_t integer_validator(advgetopt::validator::create("integer", range));

@@ -49,11 +49,13 @@
 // snapdev lib
 //
 #include <snapdev/not_used.h>
+#include <snapdev/tokenize_string.h>
 
 
 // libutf8 lib
 //
 #include    <libutf8/libutf8.h>
+#include    <libutf8/iterator.h>
 
 
 // boost lib
@@ -72,6 +74,62 @@ namespace advgetopt
 {
 
 
+
+/** \brief Transform a string to a short name.
+ *
+ * This function transforms a string to a short name. The input string
+ * can represent a UTF-8 character that can be used as a short name.
+ *
+ * An empty string is not considered to represent any name and thus
+ * this function returns NO_SHORT_NAME when the input is an empty
+ * string.
+ *
+ * \param[in] name  The name to be checked.
+ *
+ * \return The short name character or NO_SHORT_NAME if it's not a match.
+ */
+short_name_t string_to_short_name(std::string const & name)
+{
+    if(!name.empty())
+    {
+        libutf8::utf8_iterator u8(name);
+        short_name_t const short_name(*u8++);
+        if(u8 == name.end())
+        {
+            return short_name;
+        }
+    }
+
+    return NO_SHORT_NAME;
+}
+
+
+/** \brief Convert a short name to a UTF-8 string.
+ *
+ * This function is the opposite of the to_short_name() except that the
+ * input is expected to be a valid short name or NO_SHORT_NAME.
+ *
+ * When the input is NO_SHORT_NAME, the function outputs an empty string.
+ *
+ * \note
+ * There are other short names that are not really considered valid such
+ * as control characters, the dash (-), and probably most other
+ * punctuation, character codes which are not currently assigned to
+ * any character in Unicode, etc. This function ignores all of those
+ * potential problems.
+ *
+ * \param[in] short_name  The short name to convert to UTF-8.
+ *
+ * \return The short name as a UTF-8 string or an empty string.
+ */
+std::string short_name_to_string(short_name_t short_name)
+{
+    if(short_name == NO_SHORT_NAME)
+    {
+        return std::string();
+    }
+    return libutf8::to_u8string(short_name);
+}
 
 
 /** \brief Create a new option_info object.
@@ -206,6 +264,91 @@ std::string const & option_info::get_name() const
 short_name_t option_info::get_short_name() const
 {
     return f_short_name;
+}
+
+
+/** \brief Retrieve the name of the option without any section names.
+ *
+ * The name of an option can include section names. These
+ * are rarely used on the command line, but they are useful for
+ * configuration files if you want to create multiple layers of
+ * options (a.k.a. sections.)
+ *
+ * This function removes all the section names from the option name
+ * and returns what's left.
+ *
+ * \return The base name without any section names.
+ */
+std::string option_info::get_basename() const
+{
+    std::string::size_type const pos(f_name.rfind("::"));
+    if(pos == std::string::npos)
+    {
+        return f_name;
+    }
+
+    return f_name.substr(pos + 2);
+}
+
+
+/** \brief Retrieve the name of the sections.
+ *
+ * The name of an option can include section names. These
+ * are rarely used on the command line, but they are useful for
+ * configuration files if you want to create multiple layers of
+ * options (a.k.a. sections.)
+ *
+ * This function returns all the section names found in this option
+ * name. The last scope operator gets removed too.
+ *
+ * If the name does not include any sections, then this function returns
+ * an empty string.
+ *
+ * \return The section names without the basename.
+ */
+std::string option_info::get_section_name() const
+{
+    std::string::size_type const pos(f_name.rfind("::"));
+    if(pos == std::string::npos)
+    {
+        return std::string();
+    }
+
+    return f_name.substr(0, pos);
+}
+
+
+/** \brief Retrieve a list of section names.
+ *
+ * The name of an option can include section names. These
+ * are rarely used on the command line, but they are useful for
+ * configuration files if you want to create multiple layers of
+ * options (a.k.a. sections.)
+ *
+ * This function returns a string_list_t of the section names found in
+ * this option name.
+ *
+ * If the name does not include any sections, then this function returns
+ * an empty list.
+ *
+ * \return The list of section name.
+ */
+string_list_t option_info::get_section_name_list() const
+{
+    std::string::size_type const pos(f_name.rfind("::"));
+    if(pos == std::string::npos)
+    {
+        return string_list_t();
+    }
+
+    string_list_t section_list;
+    snap::tokenize_string(section_list
+                        , f_name.substr(0, pos)
+                        , "::"
+                        , true
+                        , std::string()
+                        , &snap::string_predicate<string_list_t>);
+    return section_list;
 }
 
 
@@ -479,24 +622,43 @@ std::string const & option_info::get_help() const
  * This function parses the specified name and optional parameters and
  * create a corresponding validator for this option.
  *
- * The \p name_and_params string can be defined as:
+ * The \p name_and_params string can be defined as one of:
  *
  * \code
+ *     <validator-name>
+ *     <validator-name>()
+ *     <validator-name>(<param1>)
  *     <validator-name>(<param1>, <param2>, ...)
  * \endcode
  *
- * The list of parameters is optional. There may be an empty, just one,
+ * The list of parameters is optional. There may be no, just one,
  * or any number of parameters. How the parameters are parsed is left
  * to the validator to decide.
  *
  * If the input string is empty, the current validator, if one is
  * installed, gets removed.
  *
+ * \note
+ * If the option_info already has a set of values, they get validated
+ * against the new validator. Any value which does not validate gets
+ * removed at once. The validation process also generates an error
+ * when an invalid error is found. Note that it is expected that you
+ * will setup a validator before you start parsing data so this feature
+ * should seldom be used.
+ *
  * \param[in] name_and_params  The validator name and parameters.
+ *
+ * \return true if the validator was installed and all existing values were
+ *         considered valid.
  */
-void option_info::set_validator(std::string const & name_and_params)
+bool option_info::set_validator(std::string const & name_and_params)
 {
     f_validator = validator::create(name_and_params);
+
+    // make sure that all existing values validate against this
+    // new validator
+    //
+    return validate_all_values();
 }
 
 
@@ -512,11 +674,27 @@ void option_info::set_validator(std::string const & name_and_params)
  * available validators before using the library in order to get your
  * options to use said validators.
  *
+ * \note
+ * If the option_info already has a set of values, they get validated
+ * against the new validator. Any value which does not validate gets
+ * removed at once. The validation process also generates an error
+ * when an invalid error is found. Note that it is expected that you
+ * will setup a validator before you start parsing data so this feature
+ * should seldom be used.
+ *
  * \param[in] validator  A pointer to a validator.
+ *
+ * \return true if the validator was installed and all existing values were
+ *         considered valid.
  */
-void option_info::set_validator(validator::pointer_t validator)
+bool option_info::set_validator(validator::pointer_t validator)
 {
     f_validator = validator;
+
+    // make sure that all existing values validate against this
+    // new validator
+    //
+    return validate_all_values();
 }
 
 
@@ -526,47 +704,80 @@ void option_info::set_validator(validator::pointer_t validator)
  * back to nullptr.
  *
  * \param[in] null_ptr  Ignored.
+ *
+ * \return Always true since no validator means any existing values would
+ *         be considered valid.
  */
-void option_info::set_validator(std::nullptr_t null_ptr)
+bool option_info::set_validator(std::nullptr_t null_ptr)
 {
     snap::NOTUSED(null_ptr);
 
     f_validator.reset();
+
+    return true;
 }
 
 
 /** \brief Check a value validity.
  *
- * This function runs the validator::validate() function and returns true
- * if the value is considered valdi.
- *
- * By default, you probably want to set the \p idx parameter to 0. If
- * your option can accept multiple parameters, then larger indexes may
- * be used to check the additional values.
+ * This function us used internally to verify values that get added at
+ * the time they get added. It runs the validator::validate() function
+ * and returns true if the value is considered valid. When the value
+ * does not validate, it returns false and removes the value from the
+ * f_value vector. This means no invalid values are ever kept in an
+ * option_info object.
  *
  * An option without a validator has values that are always valid.
+ * Also, an empty value is always considered valid.
+ *
+ * \note
+ * This function is private since there is no need for the user of
+ * the option_info to ever call it (i.e. it automatically gets called
+ * any time a value gets added to the f_value vector.)
  *
  * \param[in] idx  The value to check.
  *
  * \return true if the value is considered valid, false otherwise.
  */
-bool option_info::validates(int idx) const
+bool option_info::validates(int idx)
 {
     if(static_cast<size_t>(idx) >= f_value.size())
     {
-        throw getopt_exception_undefined(
-                      "option_info::get_value(): no value at index "
-                    + std::to_string(idx)
-                    + " (idx >= "
-                    + std::to_string(f_value.size())
-                    + ") for --"
-                    + f_name
-                    + " so you can't get this value.");
+        throw getopt_exception_undefined(                               // LCOV_EXCL_LINE
+                      "option_info::get_value(): no value at index "    // LCOV_EXCL_LINE
+                    + std::to_string(idx)                               // LCOV_EXCL_LINE
+                    + " (idx >= "                                       // LCOV_EXCL_LINE
+                    + std::to_string(f_value.size())                    // LCOV_EXCL_LINE
+                    + ") for --"                                        // LCOV_EXCL_LINE
+                    + f_name                                            // LCOV_EXCL_LINE
+                    + " so you can't get this value.");                 // LCOV_EXCL_LINE
     }
 
-    return f_validator == nullptr
-                    ? true
-                    : f_validator->validate(f_value[idx]);
+    // the value is considered valid when:
+    //   * there is no validator
+    //   * if the value is empty
+    //   * when the value validate against the specified validator
+    //
+    if(f_validator == nullptr
+    || f_value[idx].empty()
+    || f_validator->validate(f_value[idx]))
+    {
+        return true;
+    }
+
+    log << log_level_t::error
+        << "input \""
+        << f_value[idx]
+        << "\" given to parameter --"
+        << f_name
+        << " is not considered valid."
+        << end;
+
+    // get rid of that value since it does not validate
+    //
+    f_value.erase(f_value.begin() + idx);
+
+    return false;
 }
 
 
@@ -590,97 +801,6 @@ bool option_info::validates(int idx) const
 validator::pointer_t option_info::get_validator() const
 {
     return f_validator;
-}
-
-
-/** \brief Add an acceptable child option.
- *
- * Our system supports a tree like heiarchy of options like one can
- * defined with formats such as Yaml, XML, JSON and .ini (two levels
- * only in that case.)
- *
- * Defining sub-options allows you to define a tree like set of
- * acceptable options.
- *
- * The root is an option_info object which has children which are the
- * first level in your command line and configuration files.
- *
- * \note
- * At this time we do not support more than one level on the command
- * line and in environment variables.
- *
- * \param[in] child  An option to add as a child of this option.
- */
-void option_info::add_child(option_info::pointer_t child)
-{
-    if(child != nullptr)
-    {
-        f_children_by_long_name[child->get_name()] = child;
-        short_name_t c(child->get_short_name());
-        if(c != NO_SHORT_NAME)
-        {
-            f_children_by_short_name[c] = child;
-        }
-    }
-}
-
-
-/** \brief Get a map of this option's children.
- *
- * This function returns a map of this option's children. It is useful
- * to list the options, for example when the usage() function gets called.
- *
- * The map returned is indexed by the long names. We do not give access
- * to the short name map at this point.
- *
- * \return A reference to the map of children options.
- */
-option_info::map_by_name_t const & option_info::get_children() const
-{
-    return f_children_by_long_name;
-}
-
-
-/** \brief Get a map of this option's children.
- *
- * This function returns a map of this option's children. It is useful
- * to list the options, for example when the usage() function gets called.
- *
- * \param[in] name  The long name of the child to retrieve.
- *
- * \return A reference to the map of children options.
- */
-option_info::pointer_t option_info::get_child(std::string const & name) const
-{
-    auto it(f_children_by_long_name.find(name));
-    if(it == f_children_by_long_name.end())
-    {
-        return option_info::pointer_t();
-    }
-
-    return it->second;
-}
-
-
-/** \brief Get a child by name.
- *
- * This function returns a child looking for it by its short name.
- *
- * If no such child is found, the function returns a null pointer.
- *
- * \param[in] short_name  The short name of the child to retrieve.
- *
- * \return A smart pointer to the child.
- */
-option_info::pointer_t option_info::get_child(short_name_t short_name) const
-{
-    auto it(f_children_by_short_name.find(short_name));
-    if(it == f_children_by_short_name.end())
-    {
-        return option_info::pointer_t();
-    }
-
-    return it->second;
 }
 
 
@@ -778,11 +898,11 @@ string_list_t const & option_info::get_multiple_separators() const
 
 /** \brief Add a value to this option.
  *
- * Whenever an option is found it may be followed by one or more value.
+ * Whenever an option is found it may be followed by one or more values.
  * This function is used to add these values to this option.
  *
  * Later you can use the size() function to know how many values were
- * added and the get_value() to retrieve the value.
+ * added and the get_value() to retrieve any one of these values.
  *
  * \warning
  * This function sets the value at offset 0 if it is already defined and
@@ -790,11 +910,15 @@ string_list_t const & option_info::get_multiple_separators() const
  * you can't use this function to add multiple values if this option does
  * not support that feature.
  *
+ * \return true when the value was accepted (no error occurred).
+ *
  * \param[in] value  The value to add to this option.
+ *
+ * \sa set_value()
  */
-void option_info::add_value(std::string const & value)
+bool option_info::add_value(std::string const & value)
 {
-    set_value(has_flag(GETOPT_FLAG_MULTIPLE)
+    return set_value(has_flag(GETOPT_FLAG_MULTIPLE)
                     ? f_value.size()
                     : 0
             , value);
@@ -805,9 +929,17 @@ void option_info::add_value(std::string const & value)
  *
  * This function is generally used to replace an existing value. If the
  * index is set to the size of the existing set of values, then a new
- * value is saved in the table.
+ * value is saved in the vector.
  *
  * This is particularly useful if you want to edit a configuration file.
+ *
+ * If the option comes with a validator, then the value gets checked
+ * against that validator. If that results in an error, the value is
+ * not added to the vector so an invalid value will never be returned
+ * by the option_info class.
+ *
+ * The value does not get added when it currently is locked or when
+ * it does not validate as per the validator of this option_info.
  *
  * \exception getopt_exception_undefined
  * If the index is out of range (too large or negative), then this
@@ -815,12 +947,19 @@ void option_info::add_value(std::string const & value)
  *
  * \param[in] idx  The position of the value to update.
  * \param[in] value  The new value.
+ *
+ * \return true if the set_value() added the value.
+ *
+ * \sa add_value()
+ * \sa validates()
+ * \sa lock()
+ * \sa unlock()
  */
-void option_info::set_value(int idx, std::string const & value)
+bool option_info::set_value(int idx, std::string const & value)
 {
     if(has_flag(GETOPT_FLAG_LOCK))
     {
-        return;
+        return false;
     }
 
     if(has_flag(GETOPT_FLAG_MULTIPLE))
@@ -858,17 +997,7 @@ void option_info::set_value(int idx, std::string const & value)
     }
     f_integer.clear();
 
-    if(!f_value[idx].empty()
-    && !validates(idx))
-    {
-        log << log_level_t::error
-            << "input \""
-            << f_value[idx]
-            << "\" in parameter --"
-            << f_name
-            << " is not considered valid."
-            << end;
-    }
+    return validates(idx);
 }
 
 
@@ -899,8 +1028,13 @@ void option_info::set_value(int idx, std::string const & value)
  * Add support for quoted values
  *
  * \param[in] value  The multi-value to save in this option.
+ *
+ * \return true if all the values in \p value were considered valid.
+ *
+ * \sa add_value()
+ * \sa set_value()
  */
-void option_info::set_multiple_value(std::string const & value)
+bool option_info::set_multiple_value(std::string const & value)
 {
     f_value.clear();
     f_integer.clear();
@@ -914,38 +1048,52 @@ void option_info::set_multiple_value(std::string const & value)
         throw getopt_exception_logic(
                  "option_info::set_multiple_value(): parameter --"
                + f_name
-               + " expects exactly one parameter. The set_multiple_value() function should not be called with parameters that only accept one value.");
+               + " expects zero or one parameter. The set_multiple_value() function should not be called with parameters that only accept one value.");
     }
 
+    return validate_all_values();
+}
+
+
+/** \brief Validate all the values of this option_info object.
+ *
+ * Whenever you change the validator of an option_info, or change
+ * all the values with set_multiple_value(), all the values get
+ * verified using this function. The function removes any value
+ * which does not validate according to the current validator.
+ *
+ * \note
+ * Keep in mind that an empty value is always considered valid,
+ * no matter what the validator is. This is because when you
+ * use an option without a value (i.e. `--order` instead of
+ * `--order asc`) the value is set to the empty string unless
+ * there is a default. This allows you to know that the
+ * option was used without a value, which is useful for some
+ * options.
+ *
+ * \return true if all the values were considered valid.
+ */
+bool option_info::validate_all_values()
+{
+    bool all_valid(true);
     if(f_validator != nullptr)
     {
         for(size_t idx(0); idx < f_value.size(); )
         {
-            if(!f_value[idx].empty())
+            if(!validates(idx))
             {
-                if(!validates(idx))
-                {
-                    // remove all invalids, but only emit the error once
-                    //
-                    log << log_level_t::error
-                        << "input \""
-                        << f_value[idx]
-                        << "\" (from \""
-                        << value
-                        << "\") given to parameter --"
-                        << f_name
-                        << " is not considered valid."
-                        << end;
-
-                    f_value.erase(f_value.begin() + idx);
-                }
-                else
-                {
-                    ++idx;
-                }
+                // the value was removed, so do not increment `idx`
+                //
+                all_valid = false;
+            }
+            else
+            {
+                ++idx;
             }
         }
     }
+
+    return all_valid;
 }
 
 

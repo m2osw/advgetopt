@@ -86,6 +86,14 @@ public:
 };
 
 
+// some initialization failed at run-time
+class getopt_exception_initialization : public getopt_exception
+{
+public:
+    getopt_exception_initialization(std::string const & msg) : getopt_exception(msg) {}
+};
+
+
 
 }   // namespace advgetopt
 

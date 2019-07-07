@@ -95,14 +95,12 @@
 //
 #include    "advgetopt/advgetopt.h"
 
+
 // advgetopt lib
 //
 #include    "advgetopt/exception.h"
 #include    "advgetopt/log.h"
 
-// libutf8 lib
-//
-#include    <libutf8/libutf8.h>
 
 // boost lib
 //
@@ -413,7 +411,6 @@ bool is_arg(char const * a)
  * \sa process_configuration_file()
  */
 getopt::getopt(options_environment const & opt_env)
-    : f_options(std::make_shared<option_info>("root"))
 {
     if(&opt_env == nullptr)
     {
@@ -468,7 +465,6 @@ getopt::getopt(options_environment const & opt_env)
 getopt::getopt(options_environment const & opt_env
              , int argc
              , char * argv[])
-    : f_options(std::make_shared<option_info>("root"))
 {
     if(argv == nullptr)
     {
@@ -489,7 +485,7 @@ getopt::getopt(options_environment const & opt_env
         parse_options_info(g_system_options, true);
     }
 
-    if(f_options->get_children().empty())
+    if(f_options_by_name.empty())
     {
         throw getopt_exception_logic("an empty list of options is not legal, you must defined at least one (i.e. --version, --help...)");
     }
@@ -1030,16 +1026,30 @@ option_info::pointer_t getopt::get_option(std::string const & name, bool exact_o
     {
         opt = f_default_option;
     }
-    else if(name.length() == 1)
-    {
-        opt = f_options->get_child(name[0]);
-    }
     else
     {
-        opt = f_options->get_child(name);
+        short_name_t short_name(string_to_short_name(name));
+        if(short_name != NO_SHORT_NAME)
+        {
+            auto it(f_options_by_short_name.find(short_name));
+            if(it != f_options_by_short_name.end())
+            {
+                opt = it->second;
+            }
+        }
+        else
+        {
+            auto it(f_options_by_name.find(name));
+            if(it != f_options_by_name.end())
+            {
+                opt = it->second;
+            }
+        }
     }
 
-    return exact_option ? opt : get_alias_destination(opt);
+    return exact_option
+            ? opt
+            : get_alias_destination(opt);
 }
 
 
@@ -1061,8 +1071,15 @@ option_info::pointer_t getopt::get_option(std::string const & name, bool exact_o
  */
 option_info::pointer_t getopt::get_option(short_name_t short_name, bool exact_option) const
 {
-    option_info::pointer_t opt(f_options->get_child(short_name));
-    return exact_option ? opt : get_alias_destination(opt);
+    auto it(f_options_by_short_name.find(short_name));
+    if(it == f_options_by_short_name.end())
+    {
+        return option_info::pointer_t();
+    }
+
+    return exact_option
+                ? it->second
+                : get_alias_destination(it->second);
 }
 
 

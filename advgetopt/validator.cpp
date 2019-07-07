@@ -316,7 +316,7 @@ validator_integer::validator_integer(string_list_t const & range_list)
                 log << log_level_t::error
                     << r
                     << " is not a valid value for your ranges;"
-                       " it must only digits, optionally preceeded by a sign (+ or -)"
+                       " it must only be digits, optionally preceeded by a sign (+ or -)"
                        " and not overflow an int64_t value."
                     << end;
                 continue;
@@ -332,7 +332,7 @@ validator_integer::validator_integer(string_list_t const & range_list)
                 log << log_level_t::error
                     << min_value
                     << " is not a valid value for your ranges;"
-                       " it must only digits, optionally preceeded by a sign (+ or -)"
+                       " it must only be digits, optionally preceeded by a sign (+ or -)"
                        " and not overflow an int64_t value."
                     << end;
                 continue;
@@ -345,7 +345,7 @@ validator_integer::validator_integer(string_list_t const & range_list)
                 log << log_level_t::error
                     << max_value
                     << " is not a valid value for your ranges;"
-                       " it must only digits, optionally preceeded by a sign (+ or -)"
+                       " it must only be digits, optionally preceeded by a sign (+ or -)"
                        " and not overflow an int64_t value."
                     << end;
                 continue;

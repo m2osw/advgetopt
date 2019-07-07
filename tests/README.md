@@ -49,7 +49,7 @@ into arguments before parsing the arguments in our map of named values.
 
     dev/coverage flag_argument,require_argument,require_arguments,optional_arguments,default_argument,default_arguments,manual_arguments,invalid_getopt_pointers,invalid_getopt_missing_options,invalid_getopt_missing_alias,invalid_getopt_missing_required_option,invalid_default_options,invalid_options
 
-## Configuration Parsing (`advgetopt_config.cpp`) NOT COMPLETE
+## Configuration Parsing (`advgetopt_config.cpp`)
 
 We have three _parsers_:
 
@@ -65,6 +65,18 @@ that once in a while we need to load a configuration file without having
 access to the argument definitions. This happens in many places in Snap!
 However, we now have the ability to define an external definition for each
 file so it is possible to verify configuration files properly from any tool.
+
+    dev/coverage configuration_filenames,load_configuration_file,load_multiple_configurations,load_invalid_configuration_file
+
+**Note:** Since the parsing first requires the loading of the configuration
+file, these tests partially exercise the configuration loader implementation.
+
+## Configuration Loading (`config_file.cpp`) NOT COMPLETE
+
+This section checks the loading (and saving) of data in a configuration
+file. It also exercises all the supported configuration formats.
+
+    dev/coverage configuration_spaces,configuration_setup,config_line_continuation_tests,config_assignment_operator_tests,config_comment_tests,invalid_configuration_setup,missing_configuration_file
 
 ## Program & Project Names (`advgetopt_access.cpp`)
 
@@ -114,7 +126,7 @@ dynamic options to be added at run-time, which mainly happens when loading
 configuration files but can also be allowed on the command line and
 the environment variable.
 
-    dev/coverage option_info_basics,option_info_flags,option_info_default,option_info_help,option_info_validator,option_info_children,option_info_alias,option_info_multiple_separators,option_info_add_value,option_info_set_value,invalid_option_info
+    dev/coverage to_from_short_name,option_info_basics,option_info_flags,option_info_default,option_info_help,option_info_validator,option_info_alias,option_info_multiple_separators,option_info_add_value,option_info_set_value,option_info_section_functions,invalid_option_info
 
 This test also verifies that the arguments can be defined in a configuration
 file.
@@ -167,13 +179,13 @@ you are running the test that corresponds to your version of the library.
     | Library Filename       | Test Filename       | Status |
     +------------------------+---------------------+--------+
     | advgetopt_access.cpp   | access.cpp          |  DONE  |
-    | advgetopt_config.cpp   | config.cpp          |   ?    |
+    | advgetopt_config.cpp   | config.cpp          |  DONE  |
     | advgetopt.cpp          | arguments.cpp       |  DONE  |
     | advgetopt_data.cpp     | data.cpp            |  DONE  |
     | advgetopt_options.cpp  | options_parser.cpp  |  DONE  |
     |                        | & options_files.cpp |        |
     | advgetopt_usage.cpp    | usage.cpp           |  DONE  |
-    | conf_file.cpp          |                     |   ?    |
+    | conf_file.cpp          | config_File.cpp     |  DONE  |
     | log.cpp                | logger.cpp          |  DONE  |
     | option_info.cpp        | option_info.cpp     |  DONE  |
     | option_info_ref.cpp    | option_info_ref.cpp |  DONE  |
@@ -197,7 +209,5 @@ you are running the test that corresponds to your version of the library.
     |                        | main.h              |        |
     +------------------------+---------------------+--------+
 
-
-                valid_config_files_extra.cpp
 
 vim: ts=4 sw=4 et

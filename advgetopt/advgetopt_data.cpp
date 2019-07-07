@@ -44,10 +44,6 @@
 #include    "advgetopt/exception.h"
 #include    "advgetopt/log.h"
 
-// libutf8 lib
-//
-#include    <libutf8/libutf8.h>
-
 
 // last include
 //

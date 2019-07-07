@@ -42,6 +42,38 @@
 
 
 
+CATCH_TEST_CASE("to_from_short_name", "[option_info][valid][basic][short_name]")
+{
+    CATCH_START_SECTION("Short name to string and back")
+        // wc == '\0' is a special case
+        //
+        CATCH_REQUIRE(advgetopt::NO_SHORT_NAME == L'\0');
+        CATCH_REQUIRE(advgetopt::short_name_to_string(L'\0') == std::string());
+        CATCH_REQUIRE(advgetopt::string_to_short_name(std::string()) == L'\0');
+
+        for(char32_t wc(1); wc < 0x110000; ++wc)
+        {
+            if(wc == 0xD800)
+            {
+                wc = 0xE000;
+            }
+            std::string str(advgetopt::short_name_to_string(wc));
+            CATCH_REQUIRE(advgetopt::string_to_short_name(str) == wc);
+
+            // add a second character to prove that string_to_short_name()
+            // only works with one character
+            //
+            char32_t const second_char(rand() % (0xD800 - 0x20) + 0x20);
+            str += advgetopt::short_name_to_string(second_char);
+            CATCH_REQUIRE(advgetopt::string_to_short_name(str) == advgetopt::NO_SHORT_NAME);
+        }
+    CATCH_END_SECTION()
+}
+
+
+
+
+
 CATCH_TEST_CASE("option_info_basics", "[option_info][valid][basic]")
 {
     CATCH_START_SECTION("Simple option (verify defaults)")
@@ -64,9 +96,6 @@ CATCH_TEST_CASE("option_info_basics", "[option_info][valid][basic]")
         CATCH_REQUIRE(verbose.get_default().empty());
         CATCH_REQUIRE(verbose.get_help().empty());
 
-        CATCH_REQUIRE(verbose.get_children().empty());
-        CATCH_REQUIRE(verbose.get_child("non-existant") == nullptr);
-        CATCH_REQUIRE(verbose.get_child('z') == nullptr);
         CATCH_REQUIRE(verbose.get_alias_destination() == nullptr);
         CATCH_REQUIRE(verbose.get_multiple_separators().empty());
         CATCH_REQUIRE_FALSE(verbose.is_defined());
@@ -319,15 +348,16 @@ CATCH_TEST_CASE("option_info_validator", "[option_info][valid][validator]")
         CATCH_REQUIRE(auto_validate.get_validator() == nullptr);
 
         advgetopt::validator::pointer_t integer_validator(advgetopt::validator::create("integer", {"1","2","5","6","8"}));
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"51\" given to parameter --validator is not considered valid.");
         auto_validate.set_validator(integer_validator);
         CATCH_REQUIRE(auto_validate.get_validator() == integer_validator);
 
         auto_validate.set_value(0, "6");
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"3\" in parameter --validator is not considered valid.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"3\" given to parameter --validator is not considered valid.");
         auto_validate.set_value(0, "3");
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"11\" in parameter --validator is not considered valid.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"11\" given to parameter --validator is not considered valid.");
         auto_validate.set_value(0, "11");
     CATCH_END_SECTION()
 
@@ -350,11 +380,12 @@ CATCH_TEST_CASE("option_info_validator", "[option_info][valid][validator]")
         CATCH_REQUIRE(auto_validate.get_validator() == nullptr);
 
         advgetopt::validator::pointer_t integer_validator(advgetopt::validator::create("integer", {"-1","2","5","6","18"}));
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"-15\" given to parameter --validator is not considered valid.");
         auto_validate.set_validator(integer_validator);
         CATCH_REQUIRE(auto_validate.get_validator() == integer_validator);
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"3\" (from \"6,3,18,11\") given to parameter --validator is not considered valid.");
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"11\" (from \"6,3,18,11\") given to parameter --validator is not considered valid.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"3\" given to parameter --validator is not considered valid.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"11\" given to parameter --validator is not considered valid.");
         auto_validate.set_multiple_value("6,3,18,11");
         CATCH_REQUIRE(auto_validate.size() == 2);
         CATCH_REQUIRE(auto_validate.get_value(0) == "6");
@@ -398,12 +429,13 @@ CATCH_TEST_CASE("option_info_validator", "[option_info][valid][validator]")
         auto_validate.set_validator(std::string());
         CATCH_REQUIRE(auto_validate.get_validator() == nullptr);
 
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"35\" given to parameter --validator is not considered valid.");
         auto_validate.set_validator("integer(-1,2,5,6,18)");
         CATCH_REQUIRE(auto_validate.get_validator() != nullptr);
         CATCH_REQUIRE(auto_validate.get_validator()->name() == "integer");
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"3\" (from \"6,3,18,11\") given to parameter --validator is not considered valid.");
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"11\" (from \"6,3,18,11\") given to parameter --validator is not considered valid.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"3\" given to parameter --validator is not considered valid.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"11\" given to parameter --validator is not considered valid.");
         auto_validate.set_multiple_value("6,3,18,11");
         CATCH_REQUIRE(auto_validate.size() == 2);
         CATCH_REQUIRE(auto_validate.get_value(0) == "6");
@@ -450,8 +482,8 @@ CATCH_TEST_CASE("option_info_validator", "[option_info][valid][validator]")
         CATCH_REQUIRE(auto_validate.get_validator() != nullptr);
         CATCH_REQUIRE(auto_validate.get_validator()->name() == "regex");
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"33\" (from \"abc,qqq,33,zac,pop,45\") given to parameter --validator is not considered valid.");
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"45\" (from \"abc,qqq,33,zac,pop,45\") given to parameter --validator is not considered valid.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"33\" given to parameter --validator is not considered valid.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"45\" given to parameter --validator is not considered valid.");
         auto_validate.set_multiple_value("abc,qqq,33,zac,pop,45");
         CATCH_REQUIRE(auto_validate.size() == 4);
         CATCH_REQUIRE(auto_validate.get_value(0) == "abc");
@@ -470,50 +502,6 @@ CATCH_TEST_CASE("option_info_validator", "[option_info][valid][validator]")
     CATCH_END_SECTION()
 }
 
-
-
-CATCH_TEST_CASE("option_info_children", "[option_info][valid][child]")
-{
-    CATCH_START_SECTION("Check child without short bane")
-        advgetopt::option_info root("root", 'r');
-        advgetopt::option_info::pointer_t child(std::make_shared<advgetopt::option_info>("child"));
-
-        root.add_child(nullptr);
-        CATCH_REQUIRE(root.get_children().empty());
-        CATCH_REQUIRE(root.get_child("child") == nullptr);
-        CATCH_REQUIRE(root.get_child('c') == nullptr);
-
-        root.add_child(advgetopt::option_info::pointer_t());
-        CATCH_REQUIRE(root.get_children().empty());
-        CATCH_REQUIRE(root.get_child("child") == nullptr);
-        CATCH_REQUIRE(root.get_child('c') == nullptr);
-
-        root.add_child(child);
-        CATCH_REQUIRE(root.get_children().size() == 1);
-        CATCH_REQUIRE(root.get_child("child") == child);
-        CATCH_REQUIRE(root.get_child('c') == nullptr);
-    CATCH_END_SECTION()
-
-    CATCH_START_SECTION("Check child with short bane")
-        advgetopt::option_info root("root", 'r');
-        advgetopt::option_info::pointer_t child(std::make_shared<advgetopt::option_info>("child", 'c'));
-
-        root.add_child(nullptr);
-        CATCH_REQUIRE(root.get_children().empty());
-        CATCH_REQUIRE(root.get_child("child") == nullptr);
-        CATCH_REQUIRE(root.get_child('c') == nullptr);
-
-        root.add_child(advgetopt::option_info::pointer_t());
-        CATCH_REQUIRE(root.get_children().empty());
-        CATCH_REQUIRE(root.get_child("child") == nullptr);
-        CATCH_REQUIRE(root.get_child('c') == nullptr);
-
-        root.add_child(child);
-        CATCH_REQUIRE(root.get_children().size() == 1);
-        CATCH_REQUIRE(root.get_child("child") == child);
-        CATCH_REQUIRE(root.get_child('c') == child);
-    CATCH_END_SECTION()
-}
 
 
 
@@ -974,6 +962,54 @@ CATCH_TEST_CASE("option_info_set_value", "[option_info][valid][set][multiple]")
 
 
 
+CATCH_TEST_CASE("option_info_section_functions", "[option_info][valid][add][section]")
+{
+    CATCH_START_SECTION("Value without sections")
+        advgetopt::option_info value("no-sections", 'z');
+
+        CATCH_REQUIRE(value.get_basename() == "no-sections");
+        CATCH_REQUIRE(value.get_section_name() == std::string());
+        CATCH_REQUIRE(value.get_section_name_list().empty());
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Value with one section")
+        advgetopt::option_info value("one::section", 'o');
+
+        CATCH_REQUIRE(value.get_basename() == "section");
+        CATCH_REQUIRE(value.get_section_name() == "one");
+        advgetopt::string_list_t sections(value.get_section_name_list());
+        CATCH_REQUIRE(sections.size() == 1);
+        CATCH_REQUIRE(sections[0] == "one");
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Value with two sections")
+        advgetopt::option_info value("one::two::section", 't');
+
+        CATCH_REQUIRE(value.get_basename() == "section");
+        CATCH_REQUIRE(value.get_section_name() == "one::two");
+        advgetopt::string_list_t sections(value.get_section_name_list());
+        CATCH_REQUIRE(sections.size() == 2);
+        CATCH_REQUIRE(sections[0] == "one");
+        CATCH_REQUIRE(sections[1] == "two");
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Value with three sections")
+        advgetopt::option_info value("s1::s2::s3::section", 'f');
+
+        CATCH_REQUIRE(value.get_basename() == "section");
+        CATCH_REQUIRE(value.get_section_name() == "s1::s2::s3");
+        advgetopt::string_list_t sections(value.get_section_name_list());
+        CATCH_REQUIRE(sections.size() == 3);
+        CATCH_REQUIRE(sections[0] == "s1");
+        CATCH_REQUIRE(sections[1] == "s2");
+        CATCH_REQUIRE(sections[2] == "s3");
+    CATCH_END_SECTION()
+}
+
+
+
+
+
 
 CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
 {
@@ -1025,15 +1061,6 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
                 , advgetopt::getopt_exception_logic
                 , Catch::Matchers::ExceptionMessage(
                           "option_info::option_info(): the short name of an option cannot be the dash (-)."));
-    CATCH_END_SECTION()
-
-    CATCH_START_SECTION("Validation without a value")
-        advgetopt::option_info verbose("verbose", 'v');
-        CATCH_REQUIRE_THROWS_MATCHES(
-                  verbose.validates()
-                , advgetopt::getopt_exception_undefined
-                , Catch::Matchers::ExceptionMessage(
-                          "option_info::get_value(): no value at index 0 (idx >= 0) for --verbose so you can't get this value."));
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Get value when undefined")
@@ -1213,7 +1240,7 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
                   separators.set_multiple_value("n1,n2;n3 n4 ^ n5")
                 , advgetopt::getopt_exception_logic
                 , Catch::Matchers::ExceptionMessage(
-                    "option_info::set_multiple_value(): parameter --names expects exactly one parameter."
+                    "option_info::set_multiple_value(): parameter --names expects zero or one parameter."
                     " The set_multiple_value() function should not be called with parameters that only accept one value."));
 
         CATCH_REQUIRE(separators.size() == 0);

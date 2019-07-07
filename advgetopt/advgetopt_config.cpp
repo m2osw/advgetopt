@@ -241,9 +241,14 @@ void getopt::parse_configuration_files()
  */
 void getopt::process_configuration_file(std::string const & filename)
 {
-    conf_file conf(filename);
+    conf_file_setup conf_setup(filename);
+    if(!conf_setup.is_valid())
+    {
+        return;
+    }
+    conf_file::pointer_t conf(conf_file::get_conf_file(conf_setup));
 
-    for(auto const & param : conf.get_parameters())
+    for(auto const & param : conf->get_parameters())
     {
         // in configuration files we only allow long arguments
         //
@@ -275,7 +280,7 @@ void getopt::process_configuration_file(std::string const & filename)
                 //
                 opt->set_default(param.second);
 
-                f_options->add_child(opt);
+                f_options_by_name[param.first] = opt;
             }
         }
         else
@@ -310,4 +315,3 @@ void getopt::process_configuration_file(std::string const & filename)
 
 } // namespace advgetopt
 // vim: ts=4 sw=4 et
-

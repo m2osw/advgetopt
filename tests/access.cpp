@@ -49,10 +49,9 @@
 
 CATCH_TEST_CASE("program_name", "[program_name][valid][getopt]")
 {
-    CATCH_START_SECTION("Verify a nullptr program name")
+    CATCH_START_SECTION("Verify a nullptr program name in argv[]s")
         advgetopt::options_environment environment_options;
         environment_options.f_project_name = "unittest";
-        environment_options.f_options = nullptr;
         environment_options.f_help_header = "Usage: verify program name handling";
 
         char const * cargv[] =
@@ -215,7 +214,7 @@ CATCH_TEST_CASE("project_name", "[project_name][valid][getopt]")
 
 CATCH_TEST_CASE("invalid_program_name", "[program_name][invalid][getopt]")
 {
-    CATCH_START_SECTION("Verify a nullptr program name")
+    CATCH_START_SECTION("Parsing a nullptr program name throws")
         advgetopt::options_environment environment_options;
         environment_options.f_project_name = "unittest";
         environment_options.f_help_header = "Usage: verify program name handling";

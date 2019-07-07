@@ -58,6 +58,7 @@ if( CATCH_FOUND )
         access.cpp
         arguments.cpp
         config.cpp
+        config_file.cpp
         data.cpp
         log_for_test.cpp
         logger.cpp

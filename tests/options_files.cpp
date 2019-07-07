@@ -530,6 +530,282 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
         CATCH_REQUIRE(opt.get_program_name() == "valid_options_files");
         CATCH_REQUIRE(opt.get_program_fullname() == "tests/unittests/valid_options_files");
 
+
+        // test that the validators do work here (i.e. generate errors as
+        // expected when we use the wrong options.)
+        //
+        {
+            snap::safe_setenv subenv("ADVGETOPT_TEST_OPTIONS"
+                                , "--verbose"
+                                 " --size '1001 meters'"
+                                 " -f valid.cpp"
+                                 " --from auto-build"
+                                 " --more black");
+
+            SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"1001 meters\" given to parameter --size is not considered valid.");
+            SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"valid.cpp\" given to parameter --files is not considered valid.");
+            SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"auto-build\" given to parameter --from is not considered valid.");
+            SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"black\" given to parameter --more is not considered valid.");
+            opt.parse_environment_variable();
+        }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Check with validators in the definition")
+        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir);
+        tmpdir += "/shared/advgetopt-validators-in-table";
+        std::stringstream ss;
+        ss << "mkdir -p " << tmpdir;
+        if(system(ss.str().c_str()) != 0)
+        {
+            std::cerr << "fatal error: creating sub-temporary directory \"" << tmpdir << "\" failed.\n";
+            exit(1);
+        }
+        std::string const options_filename(tmpdir + "/unittest.ini");
+
+        advgetopt::option const valid_options_from_file_list[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("verbose")
+                , advgetopt::ShortName('v')
+                , advgetopt::Flags(advgetopt::standalone_all_flags<>())
+                , advgetopt::Help("a verbose like option, select it or not.")
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::all_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("Specify the size.")
+                , advgetopt::Validator("integer(0...100)")
+                , advgetopt::DefaultValue("31")
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("files")
+                , advgetopt::ShortName('f')
+                , advgetopt::Help("List of file names")
+                , advgetopt::Validator("/.*\\.txt/i")
+                , advgetopt::Flags(advgetopt::all_flags<advgetopt::GETOPT_FLAG_REQUIRED, advgetopt::GETOPT_FLAG_MULTIPLE>())
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("from")
+                , advgetopt::ShortName('F')
+                , advgetopt::Help("Request for the geographcal location representing the origin of the files; optionally you can specify the format")
+                , advgetopt::Validator("integer")
+                , advgetopt::Flags(advgetopt::all_flags<>())
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("more")
+                , advgetopt::ShortName('m')
+                , advgetopt::Help("Allow for more stuff to be added")
+                , advgetopt::Validator("regex(\"purple|yellow|blue|red|green|orange|brown\")")
+                , advgetopt::Flags(advgetopt::all_flags<advgetopt::GETOPT_FLAG_REQUIRED, advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR>())
+                , advgetopt::DefaultValue("More Stuff")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment valid_options_from_file;
+        valid_options_from_file.f_project_name = "unittest";
+        valid_options_from_file.f_options = valid_options_from_file_list;
+        valid_options_from_file.f_options_files_directory = tmpdir.c_str();
+        valid_options_from_file.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
+        valid_options_from_file.f_help_header = "Usage: test valid options from file";
+
+        snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS"
+                            , "--verbose"
+                             " --more purple"
+                             " -f left.txt center.txt right.txt"
+                             " --size 19"
+                             " --from"
+                             " --output destination.txt");
+
+        {
+            std::ofstream options_file;
+            options_file.open(options_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(options_file.good());
+            options_file <<
+                "# Auto-generated\n"
+
+                "[output]\n"
+                "shortname=o\n"
+                "default=a.out\n"
+                "help=output file\n"
+                "allowed=environment-variable\n"
+                "required\n"
+
+                "[license]\n"
+                "shortname=l\n"
+                "help=show this test license\n"
+                "allowed=command-line\n"
+                "no-arguments\n"
+
+                "[licence]\n"
+                "alias=license\n"
+                "allowed=command-line\n"
+                "no-arguments\n"
+            ;
+        }
+
+        char const * sub_cargv[] =
+        {
+            "tests/unittests/valid_options_files",
+            "--verbose",
+            "--licence",
+            nullptr
+        };
+        int const sub_argc(sizeof(sub_cargv) / sizeof(sub_cargv[0]) - 1);
+        char ** sub_argv = const_cast<char **>(sub_cargv);
+
+        advgetopt::getopt opt(valid_options_from_file, sub_argc, sub_argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+
+        // the valid parameter
+        CATCH_REQUIRE(opt.is_defined("verbose"));
+        CATCH_REQUIRE(opt.get_default("verbose").empty());
+        CATCH_REQUIRE(opt.size("verbose") == 1);
+
+        // "--more"
+        CATCH_REQUIRE(opt.is_defined("more"));
+        CATCH_REQUIRE(opt.get_string("more") == "purple");
+        CATCH_REQUIRE(opt.get_default("more") == "More Stuff");
+        CATCH_REQUIRE(opt.size("more") == 1);
+
+        // "--size <value>"
+        CATCH_REQUIRE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_string("size") == "19");
+        CATCH_REQUIRE(opt.get_string("size", 0) == "19");
+        CATCH_REQUIRE(opt.get_default("size") == "31");
+        CATCH_REQUIRE(opt.size("size") == 1);
+        CATCH_REQUIRE(opt.get_long("size") == 19);
+
+        // "--files"
+        CATCH_REQUIRE(opt.is_defined("files"));
+        CATCH_REQUIRE(opt.get_string("files") == "left.txt");
+        CATCH_REQUIRE(opt.get_string("files", 0) == "left.txt");
+        CATCH_REQUIRE(opt.get_string("files", 1) == "center.txt");
+        CATCH_REQUIRE(opt.get_string("files", 2) == "right.txt");
+        CATCH_REQUIRE(opt.get_default("files").empty());
+        CATCH_REQUIRE(opt.size("files") == 3);
+
+        // "--from"
+        CATCH_REQUIRE(opt.is_defined("from"));
+        CATCH_REQUIRE(opt.size("from") == 1);
+        CATCH_REQUIRE(opt.get_string("from") == "");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid number () in parameter --from.");
+        CATCH_REQUIRE(opt.get_long("from") == -1);
+        CATCH_REQUIRE(opt.get_default("from").empty());
+
+        // "--output"
+        CATCH_REQUIRE(opt.is_defined("output"));
+        CATCH_REQUIRE(opt.get_string("output") == "destination.txt"); // same as index = 0
+        CATCH_REQUIRE(opt.get_string("output",  0) == "destination.txt");
+        CATCH_REQUIRE(opt.get_default("output") == "a.out");
+        CATCH_REQUIRE(opt.size("output") == 1);
+
+        // "--from"
+        CATCH_REQUIRE(opt.is_defined("license"));
+        CATCH_REQUIRE(opt.get_string("license") == "");
+        CATCH_REQUIRE(opt.get_default("license").empty());
+        CATCH_REQUIRE(opt.size("license") == 1);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "valid_options_files");
+        CATCH_REQUIRE(opt.get_program_fullname() == "tests/unittests/valid_options_files");
+
+        char const * sub_cargv2[] =
+        {
+            "this/is/ignored",
+            "--from",
+            "1001",
+            nullptr
+        };
+        int const sub_argc2(sizeof(sub_cargv2) / sizeof(sub_cargv2[0]) - 1);
+        char ** sub_argv2 = const_cast<char **>(sub_cargv2);
+
+        opt.parse_arguments(sub_argc2, sub_argv2);
+
+        // "--from"
+        CATCH_REQUIRE(opt.is_defined("from"));
+        CATCH_REQUIRE(opt.size("from") == 1);
+        CATCH_REQUIRE(opt.get_string("from") == "1001");
+        CATCH_REQUIRE(opt.get_long("from") == 1001);
+        CATCH_REQUIRE(opt.get_default("from").empty());
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "valid_options_files");
+        CATCH_REQUIRE(opt.get_program_fullname() == "tests/unittests/valid_options_files");
+
+        // keep the last value...
+        //
+        opt.parse_environment_variable();
+
+        // "--from"
+        CATCH_REQUIRE(opt.is_defined("from"));
+        CATCH_REQUIRE(opt.size("from") == 1);
+        CATCH_REQUIRE(opt.get_string("from") == "");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid number () in parameter --from.");
+        CATCH_REQUIRE(opt.get_long("from") == -1);
+        CATCH_REQUIRE(opt.get_default("from").empty());
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "valid_options_files");
+        CATCH_REQUIRE(opt.get_program_fullname() == "tests/unittests/valid_options_files");
+
+        // a reset will restore the state
+        //
+        opt.reset();
+
+        // the valid parameter
+        CATCH_REQUIRE_FALSE(opt.is_defined("verbose"));
+        CATCH_REQUIRE(opt.get_default("verbose").empty());
+        CATCH_REQUIRE(opt.size("verbose") == 0);
+
+        // "--from"
+        CATCH_REQUIRE_FALSE(opt.is_defined("from"));
+        CATCH_REQUIRE(opt.get_default("from").empty());
+        CATCH_REQUIRE(opt.size("from") == 0);
+
+        opt.parse_environment_variable();
+        opt.parse_arguments(sub_argc2, sub_argv2);
+
+        // "--from"
+        CATCH_REQUIRE(opt.is_defined("from"));
+        CATCH_REQUIRE(opt.get_string("from") == "1001");
+        CATCH_REQUIRE(opt.get_long("from") == 1001);
+        CATCH_REQUIRE(opt.get_default("from").empty());
+        CATCH_REQUIRE(opt.size("from") == 1);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "valid_options_files");
+        CATCH_REQUIRE(opt.get_program_fullname() == "tests/unittests/valid_options_files");
+
+        // test that the validators do work here (i.e. generate errors as
+        // expected when we use the wrong options.)
+        //
+        char const * sub_cargv3[] =
+        {
+            "this/is/ignored",
+            "--size",
+            "1001",
+            "-f",
+            "valid.cpp",
+            "--from",
+            "51",
+            "--more",
+            "black",
+            nullptr
+        };
+        int const sub_argc3(sizeof(sub_cargv3) / sizeof(sub_cargv3[0]) - 1);
+        char ** sub_argv3 = const_cast<char **>(sub_cargv3);
+
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"1001\" given to parameter --size is not considered valid.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"valid.cpp\" given to parameter --files is not considered valid.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"black\" given to parameter --more is not considered valid.");
+        opt.parse_arguments(sub_argc3, sub_argv3);
     CATCH_END_SECTION()
 }
 
@@ -590,12 +866,26 @@ CATCH_TEST_CASE("invalid_options_files", "[options][invalid][files]")
         int const sub_argc(sizeof(sub_cargv) / sizeof(sub_cargv[0]) - 1);
         char ** sub_argv = const_cast<char **>(sub_cargv);
 
-        CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(options_environment, sub_argc, sub_argv)
-                    , advgetopt::getopt_exception_logic
-                    , Catch::Matchers::ExceptionMessage(
-                              "section \"invalid::name\" includes a section separator (::) in \""
-                            + options_filename
-                            + "\". We only support one level."));
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+                    "error: option name \"shortname\" cannot be added to"
+                    " section \"invalid::name\" because this"
+                    " configuration only accepts one section level.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+                    "error: option name \"default\" cannot be added to"
+                    " section \"invalid::name\" because this"
+                    " configuration only accepts one section level.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+                    "error: option name \"help\" cannot be added to"
+                    " section \"invalid::name\" because this"
+                    " configuration only accepts one section level.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+                    "error: option name \"allowed\" cannot be added to"
+                    " section \"invalid::name\" because this"
+                    " configuration only accepts one section level.");
+        advgetopt::getopt::pointer_t opt(std::make_shared<advgetopt::getopt>(options_environment, sub_argc, sub_argv));
+
+        CATCH_REQUIRE(opt->size("invalid::name::shortname") == 0);
+        CATCH_REQUIRE(opt->size("shortname") == 0);
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("short name too long")

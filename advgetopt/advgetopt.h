@@ -139,12 +139,13 @@ private:
                                                  , std::string const & value
                                                  , std::string const & filename);
 
-    std::string             f_program_fullname = std::string();
-    std::string             f_program_name = std::string();
+    std::string                         f_program_fullname = std::string();
+    std::string                         f_program_name = std::string();
 
-    options_environment     f_options_environment = options_environment();
-    option_info::pointer_t  f_options = option_info::pointer_t();
-    option_info::pointer_t  f_default_option = option_info::pointer_t();
+    options_environment                 f_options_environment = options_environment();
+    option_info::map_by_name_t          f_options_by_name = option_info::map_by_name_t();
+    option_info::map_by_short_name_t    f_options_by_short_name = option_info::map_by_short_name_t();
+    option_info::pointer_t              f_default_option = option_info::pointer_t();
 };
 
 

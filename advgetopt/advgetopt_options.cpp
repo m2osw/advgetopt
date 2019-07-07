@@ -53,11 +53,6 @@
 #include    "advgetopt/log.h"
 
 
-// libutf8 lib
-//
-#include    <libutf8/libutf8.h>
-
-
 // last include
 //
 #include <snapdev/poison.h>
@@ -84,7 +79,7 @@ namespace advgetopt
  */
 void getopt::reset()
 {
-    for(auto & opt : f_options->get_children())
+    for(auto & opt : f_options_by_name)
     {
         opt.second->reset();
     }
@@ -141,8 +136,8 @@ void getopt::parse_options_info(option const * opts, bool ignore_duplicates)
             else
             {
                 throw getopt_exception_logic(
-                          std::string("option with short name \"")
-                        + libutf8::to_u8string(opts->f_short_name)
+                          "option with short name \""
+                        + short_name_to_string(opts->f_short_name)
                         + "\" found twice.");
             }
         }
@@ -175,7 +170,11 @@ void getopt::parse_options_info(option const * opts, bool ignore_duplicates)
             f_default_option = o;
         }
 
-        f_options->add_child(o);
+        f_options_by_name[opts->f_name] = o;
+        if(short_name != NO_SHORT_NAME)
+        {
+            f_options_by_short_name[short_name] = o;
+        }
     }
 }
 
@@ -232,29 +231,41 @@ void getopt::parse_options_from_file()
     filename += f_options_environment.f_project_name;
     filename += ".ini";
 
-
-    conf_file conf(filename);
-    conf_file::sections_t const & sections(conf.get_sections());
-    for(auto & s : sections)
+    conf_file_setup conf_setup(filename
+                             , line_continuation_t::unix
+                             , ASSIGNMENT_OPERATOR_EQUAL
+                             , COMMENT_INI | COMMENT_SHELL
+                             , SECTION_OPERATOR_INI_FILE | SECTION_OPERATOR_ONE_SECTION);
+    if(!conf_setup.is_valid())
     {
-        std::string::size_type pos(s.first.find("::"));
+        return;
+    }
+
+    conf_file::pointer_t conf(conf_file::get_conf_file(conf_setup));
+    conf_file::sections_t const & sections(conf->get_sections());
+    for(auto & section_name : sections)
+    {
+        std::string::size_type pos(section_name.find("::"));
         if(pos != std::string::npos)
         {
-            throw getopt_exception_logic(
-                      "section \""
-                    + s.first
-                    + "\" includes a section separator (::) in \""
-                    + filename
-                    + "\". We only support one level.");
+            // this should never happen since we use the
+            // SECTION_OPERATOR_ONE_SECTION flag
+            //
+            throw getopt_exception_logic(                               // LCOV_EXCL_LINE
+                      "section \""                                      // LCOV_EXCL_LINE
+                    + section_name                                      // LCOV_EXCL_LINE
+                    + "\" includes a section separator (::) in \""      // LCOV_EXCL_LINE
+                    + filename                                          // LCOV_EXCL_LINE
+                    + "\". We only support one level.");                // LCOV_EXCL_LINE
         }
 
-        std::string const parameter_name(s.first);
-        std::string const short_name(conf.get_parameter(parameter_name + "::shortname"));
+        std::string const parameter_name(section_name);
+        std::string const short_name(conf->get_parameter(parameter_name + "::shortname"));
         if(short_name.length() > 1)
         {
             throw getopt_exception_logic(
                       "option \""
-                    + s.first
+                    + section_name
                     + "\" has an invalid short name in \""
                     + filename
                     + "\", it can't be more than one character.");
@@ -268,37 +279,37 @@ void getopt::parse_options_from_file()
         option_info::pointer_t opt(std::make_shared<option_info>(parameter_name, sn));
 
         std::string const default_name(parameter_name + "::default");
-        if(conf.has_parameter(default_name))
+        if(conf->has_parameter(default_name))
         {
-            std::string const default_value(conf.get_parameter(default_name));
+            std::string const default_value(conf->get_parameter(default_name));
             opt->set_default(unquote(default_value));
         }
 
-        opt->set_help(conf.get_parameter(parameter_name + "::help"));
+        opt->set_help(conf->get_parameter(parameter_name + "::help"));
 
-        std::string const validator_name_and_params(conf.get_parameter(parameter_name + "::validator"));
+        std::string const validator_name_and_params(conf->get_parameter(parameter_name + "::validator"));
         opt->set_validator(validator_name_and_params);
 
         std::string const alias_name(parameter_name + "::alias");
-        if(conf.has_parameter(alias_name))
+        if(conf->has_parameter(alias_name))
         {
             if(!opt->get_help().empty())
             {
                 throw getopt_exception_logic(
                           "option \""
-                        + s.first
+                        + section_name
                         + "\" is an alias and as such it can't include a help=... parameter in \""
                         + filename
                         + "\".");
             }
-            opt->set_help(conf.get_parameter(alias_name));
+            opt->set_help(conf->get_parameter(alias_name));
             opt->add_flag(GETOPT_FLAG_ALIAS);
         }
 
         std::string const allowed_name(parameter_name + "::allowed");
-        if(conf.has_parameter(allowed_name))
+        if(conf->has_parameter(allowed_name))
         {
-            std::string const allowed_list(conf.get_parameter(allowed_name));
+            std::string const allowed_list(conf->get_parameter(allowed_name));
             string_list_t allowed;
             split_string(allowed_list, allowed, {","});
             for(auto const & a : allowed)
@@ -318,27 +329,31 @@ void getopt::parse_options_from_file()
             }
         }
 
-        if(conf.has_parameter(parameter_name + "::show-usage-on-error"))
+        if(conf->has_parameter(parameter_name + "::show-usage-on-error"))
         {
             opt->add_flag(GETOPT_FLAG_SHOW_USAGE_ON_ERROR);
         }
 
-        if(conf.has_parameter(parameter_name + "::no-arguments"))
+        if(conf->has_parameter(parameter_name + "::no-arguments"))
         {
             opt->add_flag(GETOPT_FLAG_FLAG);
         }
 
-        if(conf.has_parameter(parameter_name + "::multiple"))
+        if(conf->has_parameter(parameter_name + "::multiple"))
         {
             opt->add_flag(GETOPT_FLAG_MULTIPLE);
         }
 
-        if(conf.has_parameter(parameter_name + "::required"))
+        if(conf->has_parameter(parameter_name + "::required"))
         {
             opt->add_flag(GETOPT_FLAG_REQUIRED);
         }
 
-        f_options->add_child(opt);
+        f_options_by_name[parameter_name] = opt;
+        if(sn != NO_SHORT_NAME)
+        {
+            f_options_by_short_name[sn] = opt;
+        }
     }
 }
 
@@ -353,8 +368,7 @@ void getopt::parse_options_from_file()
  */
 void getopt::link_aliases()
 {
-    auto const & children(f_options->get_children());
-    for(auto & c : children)
+    for(auto & c : f_options_by_name)
     {
         if(c.second->has_flag(GETOPT_FLAG_ALIAS))
         {

@@ -38,9 +38,6 @@
 //
 #include    "advgetopt/advgetopt.h"
 
-// libutf8 lib
-//
-#include    <libutf8/libutf8.h>
 
 // C++ lib
 //
@@ -110,7 +107,7 @@ std::string getopt::usage( flag_t show ) const
     std::string save_default;
     std::string save_help;
 
-    for(auto const & opt : f_options->get_children())
+    for(auto const & opt : f_options_by_name)
     {
         std::string const help(opt.second->get_help());
         if(help.empty())
@@ -175,7 +172,7 @@ std::string getopt::usage( flag_t show ) const
             argument << "--" << opt.second->get_name();
             if(opt.second->get_short_name() != NO_SHORT_NAME)
             {
-                argument << " or -" << libutf8::to_u8string(opt.second->get_short_name());
+                argument << " or -" << short_name_to_string(opt.second->get_short_name());
             }
 
             switch(opt.second->get_flags() & (GETOPT_FLAG_FLAG | GETOPT_FLAG_REQUIRED | GETOPT_FLAG_MULTIPLE))
