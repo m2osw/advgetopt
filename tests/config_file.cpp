@@ -1516,9 +1516,12 @@ CATCH_TEST_CASE("config_section_tests")
                 "[]\n"
                 "m=size\n"
                 "z=edge\n"
-                "[z]\n"
+                "[z] # we allow comments here\n"
                 "b=line\n"
                 "b::c=12.72\n"
+                "[p]#nospacenecessary\n"
+                "b=comment\n"
+                "b::c=allowed\n"
             ;
         }
 
@@ -1540,11 +1543,12 @@ CATCH_TEST_CASE("config_section_tests")
         CATCH_REQUIRE(file->get_errno() == 0);
 
         advgetopt::conf_file::sections_t sections(file->get_sections());
-        CATCH_REQUIRE(sections.size() == 2);
+        CATCH_REQUIRE(sections.size() == 3);
         CATCH_REQUIRE(sections.find("a") != sections.end());
         CATCH_REQUIRE(sections.find("z") != sections.end());
+        CATCH_REQUIRE(sections.find("p") != sections.end());
 
-        CATCH_REQUIRE(file->get_parameters().size() == 7);
+        CATCH_REQUIRE(file->get_parameters().size() == 9);
 
         CATCH_REQUIRE(file->has_parameter("a"));
         CATCH_REQUIRE(file->has_parameter("a::b"));
@@ -1553,6 +1557,8 @@ CATCH_TEST_CASE("config_section_tests")
         CATCH_REQUIRE(file->has_parameter("z"));
         CATCH_REQUIRE(file->has_parameter("z::b"));
         CATCH_REQUIRE(file->has_parameter("z::b::c"));
+        CATCH_REQUIRE(file->has_parameter("p::b"));
+        CATCH_REQUIRE(file->has_parameter("p::b::c"));
 
         CATCH_REQUIRE(file->get_parameter("a") == "color");
         CATCH_REQUIRE(file->get_parameter("a::b") == "red");
@@ -1561,6 +1567,8 @@ CATCH_TEST_CASE("config_section_tests")
         CATCH_REQUIRE(file->get_parameter("z") == "edge");
         CATCH_REQUIRE(file->get_parameter("z::b") == "line");
         CATCH_REQUIRE(file->get_parameter("z::b::c") == "12.72");
+        CATCH_REQUIRE(file->get_parameter("p::b") == "comment");
+        CATCH_REQUIRE(file->get_parameter("p::b::c") == "allowed");
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("section operator ini-file & c++")
@@ -2187,6 +2195,385 @@ CATCH_TEST_CASE("invalid_sections")
 
         CATCH_REQUIRE(file->get_parameter("colors::b") == "red");
         CATCH_REQUIRE(file->get_parameter("colors::c") == "blue");
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("data after ']' in INI file")
+        init_tmp_dir("invalid-section-operator", "additional-data");
+
+        {
+            std::ofstream config_file;
+            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "[colors]\n"
+                "b=red\n"
+                "c=blue\n"
+                "\n"
+                "[sizes] comment\n"     // <- missing the comment introducer
+                "q=1000\n"
+                "r=9999\n"
+            ;
+        }
+
+        advgetopt::conf_file_setup setup(g_config_filename
+                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
+                            , advgetopt::COMMENT_SHELL
+                            , advgetopt::SECTION_OPERATOR_INI_FILE);
+
+        CATCH_REQUIRE(setup.is_valid());
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
+        CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
+        CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_INI_FILE);
+
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+                      "error: section names in configuration files cannot be followed by anything other than spaces in"
+                      " \"[sizes] comment\" on line 6 from configuration file \""
+                    + g_config_filename
+                    + "\".");
+        advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+
+        CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
+        CATCH_REQUIRE(file->get_errno() == 0);
+
+        advgetopt::conf_file::sections_t sections(file->get_sections());
+        CATCH_REQUIRE(sections.size() == 1);
+        CATCH_REQUIRE(sections.find("colors") != sections.end());
+
+        CATCH_REQUIRE(file->get_parameters().size() == 4);
+
+        CATCH_REQUIRE(file->has_parameter("colors::b"));
+        CATCH_REQUIRE(file->has_parameter("colors::c"));
+        CATCH_REQUIRE(file->has_parameter("colors::q"));
+        CATCH_REQUIRE(file->has_parameter("colors::r"));
+
+        CATCH_REQUIRE(file->get_parameter("colors::b") == "red");
+        CATCH_REQUIRE(file->get_parameter("colors::c") == "blue");
+        CATCH_REQUIRE(file->get_parameter("colors::q") == "1000");
+        CATCH_REQUIRE(file->get_parameter("colors::r") == "9999");
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("INI file section inside a block is not allowed")
+        init_tmp_dir("invalid-section-operator", "ini-inside-block");
+
+        {
+            std::ofstream config_file;
+            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "[colors]\n"
+                "b=red\n"
+                "c=blue\n"
+                "\n"
+                "block {\n"
+                "  b = block data\n"
+                "  f = filename\n"
+                "  [sizes]\n"       // <-- INI section inside a block not allowed
+                "  q=1000\n"
+                "  r=9999\n"
+                "}\n"
+            ;
+        }
+
+        advgetopt::conf_file_setup setup(g_config_filename
+                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
+                            , advgetopt::COMMENT_SHELL
+                            , advgetopt::SECTION_OPERATOR_BLOCK | advgetopt::SECTION_OPERATOR_INI_FILE);
+
+        CATCH_REQUIRE(setup.is_valid());
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
+        CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
+        CATCH_REQUIRE(setup.get_section_operator() == (advgetopt::SECTION_OPERATOR_BLOCK | advgetopt::SECTION_OPERATOR_INI_FILE));
+
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+                      "error: `[...]` sections can't be used within a `section"
+                      " { ... }` on line 9 from configuration file \""
+                    + g_config_filename
+                    + "\".");
+        advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+
+        CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
+        CATCH_REQUIRE(file->get_errno() == 0);
+
+        advgetopt::conf_file::sections_t sections(file->get_sections());
+        CATCH_REQUIRE(sections.size() == 2);
+        CATCH_REQUIRE(sections.find("colors") != sections.end());
+        CATCH_REQUIRE(sections.find("colors::block") != sections.end());
+
+        CATCH_REQUIRE(file->get_parameters().size() == 6);
+
+        CATCH_REQUIRE(file->has_parameter("colors::b"));
+        CATCH_REQUIRE(file->has_parameter("colors::c"));
+        CATCH_REQUIRE(file->has_parameter("colors::block::b"));
+        CATCH_REQUIRE(file->has_parameter("colors::block::f"));
+        CATCH_REQUIRE(file->has_parameter("colors::block::q"));
+        CATCH_REQUIRE(file->has_parameter("colors::block::r"));
+
+        CATCH_REQUIRE(file->get_parameter("colors::b") == "red");
+        CATCH_REQUIRE(file->get_parameter("colors::c") == "blue");
+        CATCH_REQUIRE(file->get_parameter("colors::block::b") == "block data");
+        CATCH_REQUIRE(file->get_parameter("colors::block::f") == "filename");
+        CATCH_REQUIRE(file->get_parameter("colors::block::q") == "1000");
+        CATCH_REQUIRE(file->get_parameter("colors::block::r") == "9999");
+    CATCH_END_SECTION()
+}
+
+
+
+CATCH_TEST_CASE("invalid_variable_name")
+{
+    CATCH_START_SECTION("empty variable name")
+        init_tmp_dir("invalid-variable-name", "name-missing");
+
+        {
+            std::ofstream config_file;
+            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "=color\n"                  // <-- name missing
+                "a..b=red\n"
+                "a.b.c=142\n"
+            ;
+        }
+
+        advgetopt::conf_file_setup setup(g_config_filename
+                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
+                            , advgetopt::COMMENT_SHELL
+                            , advgetopt::SECTION_OPERATOR_C);
+
+        CATCH_REQUIRE(setup.is_valid());
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
+        CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
+        CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_C);
+
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+                      "error: no option name in \"=color\""
+                      " on line 2 from configuration file \""
+                    + g_config_filename
+                    + "\", missing name before the assignment operator?");
+        advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+
+        CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
+        CATCH_REQUIRE(file->get_errno() == 0);
+
+        advgetopt::conf_file::sections_t sections(file->get_sections());
+        CATCH_REQUIRE(sections.size() == 2);
+        CATCH_REQUIRE(sections.find("a")    != sections.end());
+        CATCH_REQUIRE(sections.find("a::b") != sections.end());
+
+        CATCH_REQUIRE(file->get_parameters().size() == 2);
+
+        CATCH_REQUIRE(file->has_parameter("a::b"));
+        CATCH_REQUIRE(file->has_parameter("a::b::c"));
+
+        CATCH_REQUIRE(file->get_parameter("a::b") == "red");
+        CATCH_REQUIRE(file->get_parameter("a::b::c") == "142");
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("empty variable name after section name")
+        init_tmp_dir("invalid-variable-name", "section-and-name-missing");
+
+        {
+            std::ofstream config_file;
+            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "a..b=red\n"
+                "a.b.=color\n"                  // <-- name missing after section name
+                "a.b.c=142\n"
+            ;
+        }
+
+        advgetopt::conf_file_setup setup(g_config_filename
+                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
+                            , advgetopt::COMMENT_SHELL
+                            , advgetopt::SECTION_OPERATOR_C);
+
+        CATCH_REQUIRE(setup.is_valid());
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
+        CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
+        CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_C);
+
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+                      "error: option name \"a.b.\" cannot end with a section operator or be empty.");
+        advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+
+        CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
+        CATCH_REQUIRE(file->get_errno() == 0);
+
+        advgetopt::conf_file::sections_t sections(file->get_sections());
+        CATCH_REQUIRE(sections.size() == 2);
+        CATCH_REQUIRE(sections.find("a") != sections.end());
+        CATCH_REQUIRE(sections.find("a::b") != sections.end());
+
+        CATCH_REQUIRE(file->get_parameters().size() == 2);
+
+        CATCH_REQUIRE(file->has_parameter("a::b"));
+        CATCH_REQUIRE(file->has_parameter("a::b::c"));
+
+        CATCH_REQUIRE(file->get_parameter("a::b") == "red");
+        CATCH_REQUIRE(file->get_parameter("a::b::c") == "142");
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("variable name starts with a dash")
+        init_tmp_dir("invalid-variable-name", "dash-name");
+
+        {
+            std::ofstream config_file;
+            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "a=color\n"
+                "-bad-dash=reddish\n"            // <-- name starts with '-'
+                "size=412\n"
+            ;
+        }
+
+        advgetopt::conf_file_setup setup(g_config_filename
+                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
+                            , advgetopt::COMMENT_SHELL
+                            , advgetopt::SECTION_OPERATOR_C);
+
+        CATCH_REQUIRE(setup.is_valid());
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
+        CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
+        CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_C);
+
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+                      "error: option names in configuration files cannot"
+                      " start with a dash or an underscore in"
+                      " \"-bad-dash=reddish\" on line 3 from configuration file \""
+                    + g_config_filename
+                    + "\".");
+        advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+
+        CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
+        CATCH_REQUIRE(file->get_errno() == 0);
+
+        CATCH_REQUIRE(file->get_sections().empty());
+
+        CATCH_REQUIRE(file->get_parameters().size() == 2);
+
+        CATCH_REQUIRE(file->has_parameter("a"));
+        CATCH_REQUIRE(file->has_parameter("size"));
+
+        CATCH_REQUIRE(file->get_parameter("a") == "color");
+        CATCH_REQUIRE(file->get_parameter("size") == "412");
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("variable name starts with an underscore")
+        init_tmp_dir("invalid-variable-name", "underscore-name");
+
+        {
+            std::ofstream config_file;
+            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "a_variable=color\n"
+                "_bad_underscore=reddish\n"        // <-- name starts with '_'
+                "pos_and_size=412x33+32-18\n"
+            ;
+        }
+
+        advgetopt::conf_file_setup setup(g_config_filename
+                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
+                            , advgetopt::COMMENT_SHELL
+                            , advgetopt::SECTION_OPERATOR_C);
+
+        CATCH_REQUIRE(setup.is_valid());
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
+        CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
+        CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_C);
+
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+                      "error: option names in configuration files cannot"
+                      " start with a dash or an underscore in"
+                      " \"_bad_underscore=reddish\" on line 3 from configuration file \""
+                    + g_config_filename
+                    + "\".");
+        advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+
+        CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
+        CATCH_REQUIRE(file->get_errno() == 0);
+
+        CATCH_REQUIRE(file->get_sections().empty());
+
+        CATCH_REQUIRE(file->get_parameters().size() == 2);
+
+        CATCH_REQUIRE(file->has_parameter("a-variable"));
+        CATCH_REQUIRE(file->has_parameter("pos-and-size"));
+
+        CATCH_REQUIRE(file->get_parameter("a-variable") == "color");
+        CATCH_REQUIRE(file->get_parameter("pos-and-size") == "412x33+32-18");
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("variable name with spaces")
+        init_tmp_dir("invalid-variable-name", "name-space-more-name");
+
+        {
+            std::ofstream config_file;
+            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "a variable=color\n"
+                "bad space=reddish\n"
+                "pos and size=412x33+32-18\n"
+            ;
+        }
+
+        advgetopt::conf_file_setup setup(g_config_filename
+                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
+                            , advgetopt::COMMENT_SHELL
+                            , advgetopt::SECTION_OPERATOR_C);
+
+        CATCH_REQUIRE(setup.is_valid());
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
+        CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
+        CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_C);
+
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+                      "error: option name from \"a variable=color\" on line"
+                      " 2 in configuration file \""
+                    + g_config_filename
+                    + "\" cannot include a space, missing assignment operator?");
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+                      "error: option name from \"bad space=reddish\" on line"
+                      " 3 in configuration file \""
+                    + g_config_filename
+                    + "\" cannot include a space, missing assignment operator?");
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+                      "error: option name from \"pos and size=412x33+32-18\" on line"
+                      " 4 in configuration file \""
+                    + g_config_filename
+                    + "\" cannot include a space, missing assignment operator?");
+        advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+
+        CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
+        CATCH_REQUIRE(file->get_errno() == 0);
+
+        CATCH_REQUIRE(file->get_sections().empty());
+
+        CATCH_REQUIRE(file->get_parameters().empty());
     CATCH_END_SECTION()
 }
 

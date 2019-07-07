@@ -814,34 +814,34 @@ void conf_file::read_configuration()
         char const * e(nullptr);
         while(!is_assignment_operator(*s)
            && ((f_setup.get_section_operator() & SECTION_OPERATOR_BLOCK) == 0 || (*s != '{' && *s != '}'))
-           && *s != '\0')
+           && ((f_setup.get_section_operator() & SECTION_OPERATOR_INI_FILE) == 0 || *s != ']')
+           && *s != '\0'
+           && !iswspace(*s))
         {
-            if(iswspace(*s))
-            {
-                e = s;
-                while(iswspace(*s))
-                {
-                    ++s;
-                }
-                if(*s != '\0'
-                && !is_assignment_operator(*s)
-                && ((f_setup.get_section_operator() & SECTION_OPERATOR_BLOCK) == 0 || (*s != '{' && *s != '}')))
-                {
-                    log << log_level_t::error
-                        << "option name from \""
-                        << str
-                        << "\" on line "
-                        << f_line
-                        << " in configuration file \""
-                        << f_setup.get_filename()
-                        << "\" cannot include a space, missing assignment operator?"
-                        << end;
-                }
-                break;
-            }
-            else
+            ++s;
+        }
+        if(iswspace(*s))
+        {
+            e = s;
+            while(iswspace(*s))
             {
                 ++s;
+            }
+            if(*s != '\0'
+            && !is_assignment_operator(*s)
+            && (f_setup.get_assignment_operator() & ASSIGNMENT_OPERATOR_SPACE) == 0
+            && ((f_setup.get_section_operator() & SECTION_OPERATOR_BLOCK) == 0 || (*s != '{' && *s != '}')))
+            {
+                log << log_level_t::error
+                    << "option name from \""
+                    << str
+                    << "\" on line "
+                    << f_line
+                    << " in configuration file \""
+                    << f_setup.get_filename()
+                    << "\" cannot include a space, missing assignment operator?"
+                    << end;
+                continue;
             }
         }
         if(e == nullptr)
@@ -877,10 +877,11 @@ void conf_file::read_configuration()
             continue;
         }
         if((f_setup.get_section_operator() & SECTION_OPERATOR_INI_FILE) != 0
-        && name.length() >= 2
+        && name.length() >= 1
         && name[0] == '['
-        && name.back() == ']')
+        && *s == ']')
         {
+            ++s;
             if(!sections.empty())
             {
                 log << log_level_t::error
@@ -896,7 +897,8 @@ void conf_file::read_configuration()
             {
                 ++s;
             }
-            if(*s != '\0')
+            if(*s != '\0'
+            && !is_comment(s))
             {
                 log << log_level_t::error
                     << "section names in configuration files cannot be followed by anything other than spaces in \""
@@ -909,7 +911,7 @@ void conf_file::read_configuration()
                     << end;
                 continue;
             }
-            if(name.length() == 2)
+            if(name.length() == 1)
             {
                 // "[]" removes the section
                 //
@@ -917,7 +919,7 @@ void conf_file::read_configuration()
             }
             else
             {
-                current_section = name.substr(1, name.length() - 2);
+                current_section = name.substr(1);
                 current_section += "::";
             }
         }
