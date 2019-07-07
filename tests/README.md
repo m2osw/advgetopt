@@ -71,7 +71,7 @@ file so it is possible to verify configuration files properly from any tool.
 **Note:** Since the parsing first requires the loading of the configuration
 file, these tests partially exercise the configuration loader implementation.
 
-## Configuration Loading (`config_file.cpp`) NOT COMPLETE
+## Configuration Loading (`conf_file.cpp`) NOT COMPLETE
 
 This section checks the loading (and saving) of data in a configuration
 file. It also exercises all the supported configuration formats.
@@ -185,7 +185,7 @@ you are running the test that corresponds to your version of the library.
     | advgetopt_options.cpp  | options_parser.cpp  |  DONE  |
     |                        | & options_files.cpp |        |
     | advgetopt_usage.cpp    | usage.cpp           |  DONE  |
-    | conf_file.cpp          | config_File.cpp     |  DONE  |
+    | conf_file.cpp          | config_file.cpp     |  DONE  |
     | log.cpp                | logger.cpp          |  DONE  |
     | option_info.cpp        | option_info.cpp     |  DONE  |
     | option_info_ref.cpp    | option_info_ref.cpp |  DONE  |
