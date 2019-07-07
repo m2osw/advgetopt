@@ -366,6 +366,101 @@ CATCH_TEST_CASE("configuration_setup", "[config][getopt]")
 
 
 
+CATCH_TEST_CASE("config_reload_tests")
+{
+    CATCH_START_SECTION("Load a file, update it, verify it does not get reloaded")
+        init_tmp_dir("reload", "load-twice");
+
+        {
+            std::ofstream config_file;
+            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "param=value\n"
+                "changing=without reloading is useless\n"
+                "test=1009\n"
+            ;
+        }
+
+        {
+            advgetopt::conf_file_setup setup(g_config_filename
+                                , advgetopt::line_continuation_t::single_line
+                                , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
+                                , advgetopt::COMMENT_SHELL
+                                , advgetopt::SECTION_OPERATOR_NONE);
+
+            CATCH_REQUIRE(setup.is_valid());
+            CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::single_line);
+            CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
+            CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
+            CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_NONE);
+
+            advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+
+            CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
+            CATCH_REQUIRE(file->get_errno() == 0);
+            CATCH_REQUIRE(file->get_sections().empty());
+            CATCH_REQUIRE(file->get_parameters().size() == 3);
+
+            CATCH_REQUIRE(file->has_parameter("param"));
+            CATCH_REQUIRE(file->has_parameter("changing"));
+            CATCH_REQUIRE(file->has_parameter("test"));
+
+            CATCH_REQUIRE(file->get_parameter("param") == "value");
+            CATCH_REQUIRE(file->get_parameter("changing") == "without reloading is useless");
+            CATCH_REQUIRE(file->get_parameter("test") == "1009");
+        }
+
+        // change all the values now
+        {
+            std::ofstream config_file;
+            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "param=new data\n"
+                "new=this is not even acknowledge\n"
+                "changing=special value\n"
+                "test=9010\n"
+                "level=three\n"
+            ;
+        }
+
+        // "reloading" that very same file has the old data
+        {
+            advgetopt::conf_file_setup setup(g_config_filename
+                                , advgetopt::line_continuation_t::single_line
+                                , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
+                                , advgetopt::COMMENT_SHELL
+                                , advgetopt::SECTION_OPERATOR_NONE);
+
+            CATCH_REQUIRE(setup.is_valid());
+            CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::single_line);
+            CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
+            CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
+            CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_NONE);
+
+            advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+
+            CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
+            CATCH_REQUIRE(file->get_errno() == 0);
+            CATCH_REQUIRE(file->get_sections().empty());
+            CATCH_REQUIRE(file->get_parameters().size() == 3);
+
+            CATCH_REQUIRE(file->has_parameter("param"));
+            CATCH_REQUIRE(file->has_parameter("changing"));
+            CATCH_REQUIRE(file->has_parameter("test"));
+
+            CATCH_REQUIRE(file->get_parameter("param") == "value");
+            CATCH_REQUIRE(file->get_parameter("changing") == "without reloading is useless");
+            CATCH_REQUIRE(file->get_parameter("test") == "1009");
+        }
+    CATCH_END_SECTION()
+}
+
+
+
 CATCH_TEST_CASE("config_line_continuation_tests")
 {
     CATCH_START_SECTION("single_line")
@@ -1209,6 +1304,334 @@ CATCH_TEST_CASE("config_comment_tests")
 
 
 
+CATCH_TEST_CASE("config_section_tests")
+{
+    CATCH_START_SECTION("section operator c (.)")
+        init_tmp_dir("section-operator", "section-c");
+
+        {
+            std::ofstream config_file;
+            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "a=color\n"
+                "a.b=red\n"
+                "a.b.c=122\n"
+                "m=size\n"
+                "z=edge\n"
+                "z.b=line\n"
+                "z.b.c=12.72\n"
+            ;
+        }
+
+        advgetopt::conf_file_setup setup(g_config_filename
+                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
+                            , advgetopt::COMMENT_SHELL
+                            , advgetopt::SECTION_OPERATOR_C);
+
+        CATCH_REQUIRE(setup.is_valid());
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
+        CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
+        CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_C);
+
+        advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+
+        CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
+        CATCH_REQUIRE(file->get_errno() == 0);
+
+        advgetopt::conf_file::sections_t sections(file->get_sections());
+        CATCH_REQUIRE(sections.size() == 4);
+        CATCH_REQUIRE(sections.find("a")    != sections.end());
+        CATCH_REQUIRE(sections.find("a::b") != sections.end());
+        CATCH_REQUIRE(sections.find("z")    != sections.end());
+        CATCH_REQUIRE(sections.find("z::b") != sections.end());
+
+        CATCH_REQUIRE(file->get_parameters().size() == 7);
+
+        CATCH_REQUIRE(file->has_parameter("a"));
+        CATCH_REQUIRE(file->has_parameter("a::b"));
+        CATCH_REQUIRE(file->has_parameter("a::b::c"));
+        CATCH_REQUIRE(file->has_parameter("m"));
+        CATCH_REQUIRE(file->has_parameter("z"));
+        CATCH_REQUIRE(file->has_parameter("z::b"));
+        CATCH_REQUIRE(file->has_parameter("z::b::c"));
+
+        CATCH_REQUIRE(file->get_parameter("a") == "color");
+        CATCH_REQUIRE(file->get_parameter("a::b") == "red");
+        CATCH_REQUIRE(file->get_parameter("a::b::c") == "122");
+        CATCH_REQUIRE(file->get_parameter("m") == "size");
+        CATCH_REQUIRE(file->get_parameter("z") == "edge");
+        CATCH_REQUIRE(file->get_parameter("z::b") == "line");
+        CATCH_REQUIRE(file->get_parameter("z::b::c") == "12.72");
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("section operator c++ (::)")
+        init_tmp_dir("section-operator", "section-cpp");
+
+        {
+            std::ofstream config_file;
+            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "a=color\n"
+                "a::b=red\n"
+                "a::b::c=122\n"
+                "m=size\n"
+                "z=edge\n"
+                "z::b=line\n"
+                "z::b::c=12.72\n"
+            ;
+        }
+
+        advgetopt::conf_file_setup setup(g_config_filename
+                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
+                            , advgetopt::COMMENT_SHELL
+                            , advgetopt::SECTION_OPERATOR_CPP);
+
+        CATCH_REQUIRE(setup.is_valid());
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
+        CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
+        CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_CPP);
+
+        advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+
+        CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
+        CATCH_REQUIRE(file->get_errno() == 0);
+
+        advgetopt::conf_file::sections_t sections(file->get_sections());
+        CATCH_REQUIRE(sections.size() == 4);
+        CATCH_REQUIRE(sections.find("a")    != sections.end());
+        CATCH_REQUIRE(sections.find("a::b") != sections.end());
+        CATCH_REQUIRE(sections.find("z")    != sections.end());
+        CATCH_REQUIRE(sections.find("z::b") != sections.end());
+
+        CATCH_REQUIRE(file->get_parameters().size() == 7);
+
+        CATCH_REQUIRE(file->has_parameter("a"));
+        CATCH_REQUIRE(file->has_parameter("a::b"));
+        CATCH_REQUIRE(file->has_parameter("a::b::c"));
+        CATCH_REQUIRE(file->has_parameter("m"));
+        CATCH_REQUIRE(file->has_parameter("z"));
+        CATCH_REQUIRE(file->has_parameter("z::b"));
+        CATCH_REQUIRE(file->has_parameter("z::b::c"));
+
+        CATCH_REQUIRE(file->get_parameter("a") == "color");
+        CATCH_REQUIRE(file->get_parameter("a::b") == "red");
+        CATCH_REQUIRE(file->get_parameter("a::b::c") == "122");
+        CATCH_REQUIRE(file->get_parameter("m") == "size");
+        CATCH_REQUIRE(file->get_parameter("z") == "edge");
+        CATCH_REQUIRE(file->get_parameter("z::b") == "line");
+        CATCH_REQUIRE(file->get_parameter("z::b::c") == "12.72");
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("section operator block ({ ... })")
+        init_tmp_dir("section-operator", "section-block");
+
+        {
+            std::ofstream config_file;
+            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "a=color\n"
+                "a {\n"
+                "  b=red\n"
+                "  b {\n"
+                "    c=122\n"
+                "  }\n"
+                "}\n"
+                "m=size\n"
+                "z=edge\n"
+                "z {\n"
+                "  b {\n"
+                "    c=12.72\n"
+                "  }\n"
+                "  b=line\n"
+                "}\n"
+            ;
+        }
+
+        advgetopt::conf_file_setup setup(g_config_filename
+                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
+                            , advgetopt::COMMENT_SHELL
+                            , advgetopt::SECTION_OPERATOR_BLOCK);
+
+        CATCH_REQUIRE(setup.is_valid());
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
+        CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
+        CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_BLOCK);
+
+        advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+
+        CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
+        CATCH_REQUIRE(file->get_errno() == 0);
+
+        advgetopt::conf_file::sections_t sections(file->get_sections());
+        CATCH_REQUIRE(sections.size() == 4);
+        CATCH_REQUIRE(sections.find("a")    != sections.end());
+        CATCH_REQUIRE(sections.find("a::b") != sections.end());
+        CATCH_REQUIRE(sections.find("z")    != sections.end());
+        CATCH_REQUIRE(sections.find("z::b") != sections.end());
+
+        CATCH_REQUIRE(file->get_parameters().size() == 7);
+
+        CATCH_REQUIRE(file->has_parameter("a"));
+        CATCH_REQUIRE(file->has_parameter("a::b"));
+        CATCH_REQUIRE(file->has_parameter("a::b::c"));
+        CATCH_REQUIRE(file->has_parameter("m"));
+        CATCH_REQUIRE(file->has_parameter("z"));
+        CATCH_REQUIRE(file->has_parameter("z::b"));
+        CATCH_REQUIRE(file->has_parameter("z::b::c"));
+
+        CATCH_REQUIRE(file->get_parameter("a") == "color");
+        CATCH_REQUIRE(file->get_parameter("a::b") == "red");
+        CATCH_REQUIRE(file->get_parameter("a::b::c") == "122");
+        CATCH_REQUIRE(file->get_parameter("m") == "size");
+        CATCH_REQUIRE(file->get_parameter("z") == "edge");
+        CATCH_REQUIRE(file->get_parameter("z::b") == "line");
+        CATCH_REQUIRE(file->get_parameter("z::b::c") == "12.72");
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("section operator ini file ([...])")
+        init_tmp_dir("section-operator", "section-ini-file");
+
+        {
+            std::ofstream config_file;
+            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "a=color\n"
+                "[a]\n"
+                "b=red\n"
+                "b::c=122\n"
+                "[]\n"
+                "m=size\n"
+                "z=edge\n"
+                "[z]\n"
+                "b=line\n"
+                "b::c=12.72\n"
+            ;
+        }
+
+        advgetopt::conf_file_setup setup(g_config_filename
+                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
+                            , advgetopt::COMMENT_SHELL
+                            , advgetopt::SECTION_OPERATOR_INI_FILE);
+
+        CATCH_REQUIRE(setup.is_valid());
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
+        CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
+        CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_INI_FILE);
+
+        advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+
+        CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
+        CATCH_REQUIRE(file->get_errno() == 0);
+
+        advgetopt::conf_file::sections_t sections(file->get_sections());
+        CATCH_REQUIRE(sections.size() == 2);
+        CATCH_REQUIRE(sections.find("a") != sections.end());
+        CATCH_REQUIRE(sections.find("z") != sections.end());
+
+        CATCH_REQUIRE(file->get_parameters().size() == 7);
+
+        CATCH_REQUIRE(file->has_parameter("a"));
+        CATCH_REQUIRE(file->has_parameter("a::b"));
+        CATCH_REQUIRE(file->has_parameter("a::b::c"));
+        CATCH_REQUIRE(file->has_parameter("m"));
+        CATCH_REQUIRE(file->has_parameter("z"));
+        CATCH_REQUIRE(file->has_parameter("z::b"));
+        CATCH_REQUIRE(file->has_parameter("z::b::c"));
+
+        CATCH_REQUIRE(file->get_parameter("a") == "color");
+        CATCH_REQUIRE(file->get_parameter("a::b") == "red");
+        CATCH_REQUIRE(file->get_parameter("a::b::c") == "122");
+        CATCH_REQUIRE(file->get_parameter("m") == "size");
+        CATCH_REQUIRE(file->get_parameter("z") == "edge");
+        CATCH_REQUIRE(file->get_parameter("z::b") == "line");
+        CATCH_REQUIRE(file->get_parameter("z::b::c") == "12.72");
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("section operator ini-file & c++")
+        init_tmp_dir("section-operator", "section-double");
+
+        {
+            std::ofstream config_file;
+            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "[a]\n"
+                "b=red\n"
+                "b::c=209\n"
+                "::h=high\n"
+                "m=size\n"
+                "[z]\n"
+                "z=edge\n"
+                "::b=line\n"
+                "z::b::c=17.92\n"
+            ;
+        }
+
+        advgetopt::conf_file_setup setup(g_config_filename
+                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
+                            , advgetopt::COMMENT_SHELL
+                            , advgetopt::SECTION_OPERATOR_INI_FILE | advgetopt::SECTION_OPERATOR_CPP);
+
+        CATCH_REQUIRE(setup.is_valid());
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
+        CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
+        CATCH_REQUIRE(setup.get_section_operator() == (advgetopt::SECTION_OPERATOR_INI_FILE | advgetopt::SECTION_OPERATOR_CPP));
+
+        advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+
+        CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
+        CATCH_REQUIRE(file->get_errno() == 0);
+
+        advgetopt::conf_file::sections_t sections(file->get_sections());
+        CATCH_REQUIRE(sections.size() == 4);
+        CATCH_REQUIRE(sections.find("a")       != sections.end());
+        CATCH_REQUIRE(sections.find("a::b")    != sections.end());
+        CATCH_REQUIRE(sections.find("z")       != sections.end());
+        CATCH_REQUIRE(sections.find("z::z::b") != sections.end());
+
+        CATCH_REQUIRE(file->get_parameters().size() == 7);
+
+        CATCH_REQUIRE(file->has_parameter("a::b"));
+        CATCH_REQUIRE(file->has_parameter("a::b::c"));
+        CATCH_REQUIRE(file->has_parameter("h"));
+        CATCH_REQUIRE(file->has_parameter("a::m"));
+        CATCH_REQUIRE(file->has_parameter("z::z"));
+        CATCH_REQUIRE(file->has_parameter("b"));
+        CATCH_REQUIRE(file->has_parameter("z::z::b::c"));
+
+        CATCH_REQUIRE(file->get_parameter("a::b") == "red");
+        CATCH_REQUIRE(file->get_parameter("a::b::c") == "209");
+        CATCH_REQUIRE(file->get_parameter("h") == "high");
+        CATCH_REQUIRE(file->get_parameter("a::m") == "size");
+        CATCH_REQUIRE(file->get_parameter("z::z") == "edge");
+        CATCH_REQUIRE(file->get_parameter("b") == "line");
+        CATCH_REQUIRE(file->get_parameter("z::z::b::c") == "17.92");
+    CATCH_END_SECTION()
+}
+
+
+
+
+
 CATCH_TEST_CASE("invalid_configuration_setup", "[config][getopt][invalid]")
 {
     CATCH_START_SECTION("Empty Filename")
@@ -1249,6 +1672,120 @@ CATCH_TEST_CASE("invalid_configuration_setup", "[config][getopt][invalid]")
                 , advgetopt::getopt_exception_logic
                 , Catch::Matchers::ExceptionMessage(
                               "unexpected line continuation."));
+        }
+    CATCH_END_SECTION()
+}
+
+
+
+
+
+
+
+CATCH_TEST_CASE("config_reload_invalid_setup")
+{
+    CATCH_START_SECTION("Load a file, update it, verify it does not get reloaded")
+        init_tmp_dir("invalid-reload", "load-twice-wrong-parameters");
+
+        {
+            std::ofstream config_file;
+            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "duplicates=work\n"
+                "varying=parameters\n"
+                "however=is\n"
+                "not=valid\n"
+            ;
+        }
+
+        advgetopt::conf_file_setup setup(g_config_filename
+                            , advgetopt::line_continuation_t::single_line
+                            , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
+                            , advgetopt::COMMENT_SHELL
+                            , advgetopt::SECTION_OPERATOR_NONE);
+
+        CATCH_REQUIRE(setup.is_valid());
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::single_line);
+        CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
+        CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
+        CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_NONE);
+
+        advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+
+        CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
+        CATCH_REQUIRE(file->get_errno() == 0);
+        CATCH_REQUIRE(file->get_sections().empty());
+        CATCH_REQUIRE(file->get_parameters().size() == 4);
+
+        CATCH_REQUIRE(file->has_parameter("duplicates"));
+        CATCH_REQUIRE(file->has_parameter("varying"));
+        CATCH_REQUIRE(file->has_parameter("however"));
+        CATCH_REQUIRE(file->has_parameter("not"));
+
+        CATCH_REQUIRE(file->get_parameter("duplicates") == "work");
+        CATCH_REQUIRE(file->get_parameter("varying") == "parameters");
+        CATCH_REQUIRE(file->get_parameter("however") == "is");
+        CATCH_REQUIRE(file->get_parameter("not") == "valid");
+
+        // "reloading" that very same file but with the "wrong" parameters
+        // fails
+        //
+        for(int lc(static_cast<int>(advgetopt::line_continuation_t::single_line));
+            lc <= static_cast<int>(advgetopt::line_continuation_t::semicolon);
+            ++lc)
+        {
+            if(static_cast<advgetopt::line_continuation_t>(lc) == advgetopt::line_continuation_t::single_line)
+            {
+                continue;
+            }
+
+            for(advgetopt::assignment_operator_t ao(0);
+                ao <= advgetopt::ASSIGNMENT_OPERATOR_MASK;
+                ++ao)
+            {
+                if(ao == advgetopt::ASSIGNMENT_OPERATOR_EQUAL)
+                {
+                    continue;
+                }
+
+                for(advgetopt::comment_t c(0);
+                    c < advgetopt::COMMENT_MASK;
+                    ++c)
+                {
+                    if(c == advgetopt::COMMENT_SHELL)
+                    {
+                        continue;
+                    }
+
+                    for(advgetopt::section_operator_t so(0);
+                        so < advgetopt::SECTION_OPERATOR_MASK;
+                        ++so)
+                    {
+                        if(c == advgetopt::SECTION_OPERATOR_NONE)
+                        {
+                            continue;
+                        }
+
+                        advgetopt::conf_file_setup different_setup(g_config_filename
+                                        , static_cast<advgetopt::line_continuation_t>(lc)
+                                        , ao
+                                        , c
+                                        , so);
+
+                        CATCH_REQUIRE_THROWS_MATCHES(
+                              advgetopt::conf_file::get_conf_file(different_setup)
+                            , advgetopt::getopt_exception_logic
+                            , Catch::Matchers::ExceptionMessage(
+                                          "trying to load configuration file \""
+                                        + different_setup.get_config_url()
+                                        + "\" but an existing configuration file with the same name was loaded with URL: \""
+                                        + setup.get_config_url()
+                                        + "\"."));
+                    }
+                }
+            }
         }
     CATCH_END_SECTION()
 }
@@ -1305,6 +1842,355 @@ CATCH_TEST_CASE("missing_configuration_file", "[config][getopt][invalid]")
         }
     CATCH_END_SECTION()
 }
+
+
+CATCH_TEST_CASE("invalid_sections")
+{
+    CATCH_START_SECTION("variable name cannot start with a period when C operator is active")
+        init_tmp_dir("invalid-section-operator", "period-name");
+
+        {
+            std::ofstream config_file;
+            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "a=color\n"
+                "a..b=red\n"
+                ".a.b.c=122\n"
+                "m=size\n"
+                "z=edge\n"
+                "z.b=line\n"
+                "z..b.c=12.72\n"
+            ;
+        }
+
+        advgetopt::conf_file_setup setup(g_config_filename
+                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
+                            , advgetopt::COMMENT_SHELL
+                            , advgetopt::SECTION_OPERATOR_C);
+
+        CATCH_REQUIRE(setup.is_valid());
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
+        CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
+        CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_C);
+
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+                    "error: option name \".a.b.c\" cannot start with"
+                    " a period (.).");
+        advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+
+        CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
+        CATCH_REQUIRE(file->get_errno() == 0);
+
+        advgetopt::conf_file::sections_t sections(file->get_sections());
+        CATCH_REQUIRE(sections.size() == 3);
+        CATCH_REQUIRE(sections.find("a")    != sections.end());
+        CATCH_REQUIRE(sections.find("z")    != sections.end());
+        CATCH_REQUIRE(sections.find("z::b") != sections.end());
+
+        CATCH_REQUIRE(file->get_parameters().size() == 6);
+
+        CATCH_REQUIRE(file->has_parameter("a"));
+        CATCH_REQUIRE(file->has_parameter("a::b"));
+        CATCH_REQUIRE(file->has_parameter("m"));
+        CATCH_REQUIRE(file->has_parameter("z"));
+        CATCH_REQUIRE(file->has_parameter("z::b"));
+        CATCH_REQUIRE(file->has_parameter("z::b::c"));
+
+        CATCH_REQUIRE(file->get_parameter("a") == "color");
+        CATCH_REQUIRE(file->get_parameter("a::b") == "red");
+        CATCH_REQUIRE(file->get_parameter("m") == "size");
+        CATCH_REQUIRE(file->get_parameter("z") == "edge");
+        CATCH_REQUIRE(file->get_parameter("z::b") == "line");
+        CATCH_REQUIRE(file->get_parameter("z::b::c") == "12.72");
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("two section operators one after another can cause trouble")
+        init_tmp_dir("invalid-section-operator", "name-period-cpp-name");
+
+        {
+            std::ofstream config_file;
+            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "a=color\n"
+                "a..b=red\n"
+                "a.::b.c=122\n"
+                "m=size\n"
+                "z=edge\n"
+                "z.b=line\n"
+                "z..b.c=12.72\n"
+            ;
+        }
+
+        advgetopt::conf_file_setup setup(g_config_filename
+                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
+                            , advgetopt::COMMENT_SHELL
+                            , advgetopt::SECTION_OPERATOR_C | advgetopt::SECTION_OPERATOR_CPP);
+
+        CATCH_REQUIRE(setup.is_valid());
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
+        CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
+        CATCH_REQUIRE(setup.get_section_operator() == (advgetopt::SECTION_OPERATOR_C | advgetopt::SECTION_OPERATOR_CPP));
+
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+                    "error: option name \"a.::b.c\" cannot start with"
+                    " a scope operator (::).");
+        advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+
+        CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
+        CATCH_REQUIRE(file->get_errno() == 0);
+
+        advgetopt::conf_file::sections_t sections(file->get_sections());
+        CATCH_REQUIRE(sections.size() == 3);
+        CATCH_REQUIRE(sections.find("a")    != sections.end());
+        CATCH_REQUIRE(sections.find("z")    != sections.end());
+        CATCH_REQUIRE(sections.find("z::b") != sections.end());
+
+        CATCH_REQUIRE(file->get_parameters().size() == 6);
+
+        CATCH_REQUIRE(file->has_parameter("a"));
+        CATCH_REQUIRE(file->has_parameter("a::b"));
+        CATCH_REQUIRE(file->has_parameter("m"));
+        CATCH_REQUIRE(file->has_parameter("z"));
+        CATCH_REQUIRE(file->has_parameter("z::b"));
+        CATCH_REQUIRE(file->has_parameter("z::b::c"));
+
+        CATCH_REQUIRE(file->get_parameter("a") == "color");
+        CATCH_REQUIRE(file->get_parameter("a::b") == "red");
+        CATCH_REQUIRE(file->get_parameter("m") == "size");
+        CATCH_REQUIRE(file->get_parameter("z") == "edge");
+        CATCH_REQUIRE(file->get_parameter("z::b") == "line");
+        CATCH_REQUIRE(file->get_parameter("z::b::c") == "12.72");
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("section operator cannot appear at the end")
+        init_tmp_dir("invalid-section-operator", "name-period-name-cpp");
+
+        {
+            std::ofstream config_file;
+            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "a=color\n"
+                "a..b=red\n"
+                "a.b.c::=122\n"
+                "m=size\n"
+                "z=edge\n"
+                "z.b=line\n"
+                "z..b.c=12.72\n"
+            ;
+        }
+
+        advgetopt::conf_file_setup setup(g_config_filename
+                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
+                            , advgetopt::COMMENT_SHELL
+                            , advgetopt::SECTION_OPERATOR_C | advgetopt::SECTION_OPERATOR_CPP);
+
+        CATCH_REQUIRE(setup.is_valid());
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
+        CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
+        CATCH_REQUIRE(setup.get_section_operator() == (advgetopt::SECTION_OPERATOR_C | advgetopt::SECTION_OPERATOR_CPP));
+
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+                    "error: option name \"a.b.c::\" cannot end with a"
+                    " section operator or be empty.");
+        advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+
+        CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
+        CATCH_REQUIRE(file->get_errno() == 0);
+
+        advgetopt::conf_file::sections_t sections(file->get_sections());
+        CATCH_REQUIRE(sections.size() == 3);
+        CATCH_REQUIRE(sections.find("a")    != sections.end());
+        CATCH_REQUIRE(sections.find("z")    != sections.end());
+        CATCH_REQUIRE(sections.find("z::b") != sections.end());
+
+        CATCH_REQUIRE(file->get_parameters().size() == 6);
+
+        CATCH_REQUIRE(file->has_parameter("a"));
+        CATCH_REQUIRE(file->has_parameter("a::b"));
+        CATCH_REQUIRE(file->has_parameter("m"));
+        CATCH_REQUIRE(file->has_parameter("z"));
+        CATCH_REQUIRE(file->has_parameter("z::b"));
+        CATCH_REQUIRE(file->has_parameter("z::b::c"));
+
+        CATCH_REQUIRE(file->get_parameter("a") == "color");
+        CATCH_REQUIRE(file->get_parameter("a::b") == "red");
+        CATCH_REQUIRE(file->get_parameter("m") == "size");
+        CATCH_REQUIRE(file->get_parameter("z") == "edge");
+        CATCH_REQUIRE(file->get_parameter("z::b") == "line");
+        CATCH_REQUIRE(file->get_parameter("z::b::c") == "12.72");
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("sections not allowed")
+        init_tmp_dir("invalid-section-operator", "section-not-allowed");
+
+        {
+            std::ofstream config_file;
+            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "a=color\n"
+                "a::b=red\n"
+                "m.n=size\n"
+                "z=edge\n"
+            ;
+        }
+
+        // no errors here since we do not detect the sections in this case
+        //
+        advgetopt::conf_file_setup setup(g_config_filename
+                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
+                            , advgetopt::COMMENT_SHELL
+                            , advgetopt::SECTION_OPERATOR_NONE);
+
+        CATCH_REQUIRE(setup.is_valid());
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
+        CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
+        CATCH_REQUIRE(setup.get_section_operator() == (advgetopt::SECTION_OPERATOR_NONE));
+
+        advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+
+        CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
+        CATCH_REQUIRE(file->get_errno() == 0);
+
+        advgetopt::conf_file::sections_t sections(file->get_sections());
+        CATCH_REQUIRE(sections.empty());
+
+        CATCH_REQUIRE(file->get_parameters().size() == 4);
+
+        CATCH_REQUIRE(file->has_parameter("a"));
+        CATCH_REQUIRE(file->has_parameter("a::b"));
+        CATCH_REQUIRE(file->has_parameter("m.n"));
+        CATCH_REQUIRE(file->has_parameter("z"));
+
+        CATCH_REQUIRE(file->get_parameter("a") == "color");
+        CATCH_REQUIRE(file->get_parameter("a::b") == "red");
+        CATCH_REQUIRE(file->get_parameter("m.n") == "size");
+        CATCH_REQUIRE(file->get_parameter("z") == "edge");
+
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+                    "error: option name \"blue::shepard\" cannot be added to"
+                    " section \"j::k\" because there is no section support"
+                    " for this configuration file.");
+        file->set_parameter("j::k", "blue::shepard", "2001");
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("too many sections")
+        init_tmp_dir("invalid-section-operator", "too-many-sections");
+
+        {
+            std::ofstream config_file;
+            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "a=color\n"
+                "a::b=red\n"
+                "m.n.o=size\n"
+                "z=edge\n"
+            ;
+        }
+
+        advgetopt::conf_file_setup setup(g_config_filename
+                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
+                            , advgetopt::COMMENT_SHELL
+                            , advgetopt::SECTION_OPERATOR_C | advgetopt::SECTION_OPERATOR_ONE_SECTION);
+
+        CATCH_REQUIRE(setup.is_valid());
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
+        CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
+        CATCH_REQUIRE(setup.get_section_operator() == (advgetopt::SECTION_OPERATOR_C | advgetopt::SECTION_OPERATOR_ONE_SECTION));
+
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+                    "error: option name \"m.n.o\" cannot be added to section"
+                    " \"m::n\" because this configuration only accepts one"
+                    " section level.");
+        advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+
+        CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
+        CATCH_REQUIRE(file->get_errno() == 0);
+
+        advgetopt::conf_file::sections_t sections(file->get_sections());
+        CATCH_REQUIRE(sections.empty());
+
+        CATCH_REQUIRE(file->get_parameters().size() == 3);
+
+        CATCH_REQUIRE(file->has_parameter("a"));
+        CATCH_REQUIRE(file->has_parameter("a::b"));
+        CATCH_REQUIRE(file->has_parameter("z"));
+
+        CATCH_REQUIRE(file->get_parameter("a") == "color");
+        CATCH_REQUIRE(file->get_parameter("a::b") == "red");
+        CATCH_REQUIRE(file->get_parameter("z") == "edge");
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("all '{' were not closed")
+        init_tmp_dir("invalid-section-operator", "unclosed-brackets");
+
+        {
+            std::ofstream config_file;
+            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "colors {\n"
+                "  b=red\n"
+                "  c=blue\n"
+            ;
+        }
+
+        advgetopt::conf_file_setup setup(g_config_filename
+                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
+                            , advgetopt::COMMENT_SHELL
+                            , advgetopt::SECTION_OPERATOR_BLOCK);
+
+        CATCH_REQUIRE(setup.is_valid());
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
+        CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
+        CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_BLOCK);
+
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+                    "error: unterminated `section { ... }`, the `}` is missing"
+                    " in configuration file "
+                    "\"/home/snapwebsites/snapcpp/contrib/advgetopt/tmp/advgetopt/.config/unclosed-brackets.config\".");
+        advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+
+        CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
+        CATCH_REQUIRE(file->get_errno() == 0);
+
+        advgetopt::conf_file::sections_t sections(file->get_sections());
+        CATCH_REQUIRE(sections.size() == 1);
+        CATCH_REQUIRE(sections.find("colors") != sections.end());
+
+        CATCH_REQUIRE(file->get_parameters().size() == 2);
+
+        CATCH_REQUIRE(file->has_parameter("colors::b"));
+        CATCH_REQUIRE(file->has_parameter("colors::c"));
+
+        CATCH_REQUIRE(file->get_parameter("colors::b") == "red");
+        CATCH_REQUIRE(file->get_parameter("colors::c") == "blue");
+    CATCH_END_SECTION()
+}
+
+
 
 
 

@@ -76,7 +76,7 @@ file, these tests partially exercise the configuration loader implementation.
 This section checks the loading (and saving) of data in a configuration
 file. It also exercises all the supported configuration formats.
 
-    dev/coverage configuration_spaces,configuration_setup,config_line_continuation_tests,config_assignment_operator_tests,config_comment_tests,invalid_configuration_setup,missing_configuration_file
+    dev/coverage configuration_spaces,configuration_setup,config_reload_tests,config_line_continuation_tests,config_assignment_operator_tests,config_comment_tests,config_section_tests,invalid_configuration_setup,config_reload_invalid_setup,missing_configuration_file,invalid_sections
 
 ## Program & Project Names (`advgetopt_access.cpp`)
 

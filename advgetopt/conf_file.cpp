@@ -591,7 +591,7 @@ bool conf_file::set_parameter(std::string const & section, std::string const & n
             << name
             << "\" cannot be added to section \""
             << section_name
-            << "\" because there no section support for this configuration file."
+            << "\" because there is no section support for this configuration file."
             << end;
         return false;
     }
@@ -824,7 +824,8 @@ void conf_file::read_configuration()
                     ++s;
                 }
                 if(*s != '\0'
-                && !is_assignment_operator(*s))
+                && !is_assignment_operator(*s)
+                && ((f_setup.get_section_operator() & SECTION_OPERATOR_BLOCK) == 0 || (*s != '{' && *s != '}')))
                 {
                     log << log_level_t::error
                         << "option name from \""
