@@ -94,6 +94,7 @@ install(
         advgetopt.h
         conf_file.h
         exception.h
+        flags.h
         log.h
         option_info.h
         options.h
