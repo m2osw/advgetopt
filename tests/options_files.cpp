@@ -444,6 +444,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
         CATCH_REQUIRE(opt.get_string("from") == "");
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid number () in parameter --from.");
         CATCH_REQUIRE(opt.get_long("from") == -1);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         CATCH_REQUIRE(opt.get_default("from").empty());
 
         // "--output"
@@ -496,6 +497,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
         CATCH_REQUIRE(opt.get_string("from") == "");
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid number () in parameter --from.");
         CATCH_REQUIRE(opt.get_long("from") == -1);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         CATCH_REQUIRE(opt.get_default("from").empty());
 
         // other parameters
@@ -547,6 +549,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
             SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"auto-build\" given to parameter --from is not considered valid.");
             SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"black\" given to parameter --more is not considered valid.");
             opt.parse_environment_variable();
+            SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         }
     CATCH_END_SECTION()
 
@@ -697,6 +700,10 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
         CATCH_REQUIRE(opt.get_string("from") == "");
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid number () in parameter --from.");
         CATCH_REQUIRE(opt.get_long("from") == -1);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid number () in parameter --from.");
+        CATCH_REQUIRE(opt.get_long("from") == -1);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         CATCH_REQUIRE(opt.get_default("from").empty());
 
         // "--output"
@@ -749,6 +756,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
         CATCH_REQUIRE(opt.get_string("from") == "");
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid number () in parameter --from.");
         CATCH_REQUIRE(opt.get_long("from") == -1);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         CATCH_REQUIRE(opt.get_default("from").empty());
 
         // other parameters
@@ -806,6 +814,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"valid.cpp\" given to parameter --files is not considered valid.");
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"black\" given to parameter --more is not considered valid.");
         opt.parse_arguments(sub_argc3, sub_argv3);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
     CATCH_END_SECTION()
 }
 
@@ -883,6 +892,7 @@ CATCH_TEST_CASE("invalid_options_files", "[options][invalid][files]")
                     " section \"invalid::name\" because this"
                     " configuration only accepts one section level.");
         advgetopt::getopt::pointer_t opt(std::make_shared<advgetopt::getopt>(options_environment, sub_argc, sub_argv));
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         CATCH_REQUIRE(opt->size("invalid::name::shortname") == 0);
         CATCH_REQUIRE(opt->size("shortname") == 0);

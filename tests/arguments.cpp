@@ -4351,6 +4351,7 @@ CATCH_TEST_CASE("invalid_getopt_missing_required_option", "[invalid][getopt][arg
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: option --size expects an argument.");
         advgetopt::getopt opt(environment_options, argc, argv);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
 
@@ -4420,6 +4421,7 @@ CATCH_TEST_CASE("invalid_getopt_missing_required_option", "[invalid][getopt][arg
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: option --size must be given a value.");
         advgetopt::getopt opt(environment_options, argc, argv);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
 
@@ -4489,6 +4491,7 @@ CATCH_TEST_CASE("invalid_getopt_missing_required_option", "[invalid][getopt][arg
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: option --size expects an argument.");
         advgetopt::getopt opt(environment_options, argc, argv);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
 
@@ -4558,6 +4561,7 @@ CATCH_TEST_CASE("invalid_getopt_missing_required_option", "[invalid][getopt][arg
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: option --size expects an argument.");
         advgetopt::getopt opt(environment_options, argc, argv);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
 
@@ -4625,6 +4629,7 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: no default options defined; we do not know what to do of \"file.txt\"; standalone parameters are not accepted by this program.");
         advgetopt::getopt opt(environment_options, argc, argv);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
 
@@ -4690,6 +4695,7 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: default options are not supported on the command line.");
         advgetopt::getopt opt(environment_options, argc, argv);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
 
@@ -4757,6 +4763,7 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: default options are not supported in the environment variable.");
         advgetopt::getopt opt(environment_options, argc, argv);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
 
@@ -4817,6 +4824,7 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: no default options defined; thus -- is not accepted by this program.");
         advgetopt::getopt opt(environment_options, argc, argv);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
 
@@ -4883,6 +4891,7 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: option -- is not supported in the environment variable.");
         advgetopt::getopt opt(environment_options, argc, argv);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
 
@@ -4951,6 +4960,7 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: option -- is not supported in the environment variable.");
         advgetopt::getopt opt(environment_options, argc, argv);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
 
@@ -5011,6 +5021,7 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: no default options defined; thus - is not accepted by this program.");
         advgetopt::getopt opt(environment_options, argc, argv);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
 
@@ -5077,6 +5088,7 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: option - is not supported in the environment variable.");
         advgetopt::getopt opt(environment_options, argc, argv);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
 
@@ -5145,6 +5157,7 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: option - is not supported in the environment variable.");
         advgetopt::getopt opt(environment_options, argc, argv);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
 
@@ -5207,6 +5220,7 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: name missing in \"--=591\".");
         advgetopt::getopt opt(environment_options, argc, argv);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
 
@@ -5257,6 +5271,7 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: option --unknown is not supported.");
         advgetopt::getopt opt(environment_options, argc, argv);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
 
@@ -5310,6 +5325,7 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: option --size is not supported in the environment variable.");
         advgetopt::getopt opt(environment_options, argc, argv);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
 
@@ -5368,6 +5384,7 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: option --size is not supported on the command line.");
         advgetopt::getopt opt(environment_options, argc, argv);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
 
@@ -5428,6 +5445,7 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: option -q is not supported.");
         advgetopt::getopt opt(environment_options, argc, argv);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
 
@@ -5497,6 +5515,7 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: option -s is not supported in the environment variable.");
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: no default options defined; we do not know what to do of \"4551\"; standalone parameters are not accepted by this program.");
         advgetopt::getopt opt(environment_options, argc, argv);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
 
@@ -5570,6 +5589,7 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: option -s is not supported on the command line.");
         //SNAP_CATCH2_NAMESPACE::push_expected_log("error: no default options defined; we do not know what to do of \"4551\"; standalone parameters are not accepted by this program.");
         advgetopt::getopt opt(environment_options, argc, argv);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
 
@@ -5980,6 +6000,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
 
             SNAP_CATCH2_NAMESPACE::push_expected_log("error: no default options defined; we do not know what to do of \"this\"; standalone parameters are not accepted by this program.");
             advgetopt::getopt opt(options_no_defaults, sub_argc, sub_argv);
+            SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         }
         {
             // a '-' by itself is a problem when there is no default because it
@@ -5997,6 +6018,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
 
             SNAP_CATCH2_NAMESPACE::push_expected_log("error: no default options defined; thus - is not accepted by this program.");
             advgetopt::getopt opt(options_no_defaults, sub_argc, sub_argv);
+            SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         }
         {
             // the -- by itself would be fine, but since it represents a
@@ -6016,6 +6038,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
 
             SNAP_CATCH2_NAMESPACE::push_expected_log("error: no default options defined; thus -- is not accepted by this program.");
             advgetopt::getopt opt(options_no_defaults, sub_argc, sub_argv);
+            SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         }
         {
             const char *sub_cargv[] =
@@ -6035,6 +6058,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
 
             SNAP_CATCH2_NAMESPACE::push_expected_log("error: no default options defined; thus -- is not accepted by this program.");
             advgetopt::getopt opt(options_no_defaults, sub_argc, sub_argv);
+            SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         }
         {
             // check that -v, that does not exist, generates a usage error
@@ -6049,6 +6073,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
 
             SNAP_CATCH2_NAMESPACE::push_expected_log("error: option -v is not supported.");
             advgetopt::getopt opt(options_no_defaults, sub_argc, sub_argv);
+            SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         }
 
         // check -- when default does not allowed environment variables
@@ -6104,6 +6129,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
 
             SNAP_CATCH2_NAMESPACE::push_expected_log("error: option - is not supported in the environment variable.");
             advgetopt::getopt opt(options_no_defaults_in_envvar, sub_argc, sub_argv);
+            SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         }
         {
             snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--verbose no default here");
@@ -6122,6 +6148,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
 
             SNAP_CATCH2_NAMESPACE::push_expected_log("error: default options are not supported in the environment variable.");
             advgetopt::getopt opt(options_no_defaults_in_envvar, sub_argc, sub_argv);
+            SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         }
         {
             snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--verbose -- foo bar blah");
@@ -6145,6 +6172,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
 
             SNAP_CATCH2_NAMESPACE::push_expected_log("error: option -- is not supported in the environment variable.");
             advgetopt::getopt opt(options_no_defaults_in_envvar, sub_argc, sub_argv);
+            SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         }
 
         // unnknown long options
@@ -6186,6 +6214,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
 
             SNAP_CATCH2_NAMESPACE::push_expected_log("error: option --verbose is not supported.");
             advgetopt::getopt opt(valid_options_unknown_command_line_option, sub_argc, sub_argv);
+            SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         }
 
         // illegal short or long option in variable
@@ -6223,6 +6252,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
             SNAP_CATCH2_NAMESPACE::push_expected_log("error: option --verbose is not supported in the environment variable.");
             SNAP_CATCH2_NAMESPACE::push_expected_log("error: option --ignore-parameters is not supported.");
             advgetopt::getopt opt(options_illegal_in_variable, argc, argv);
+            SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         }
         {
             // short
@@ -6231,6 +6261,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
             SNAP_CATCH2_NAMESPACE::push_expected_log("error: option -v is not supported in the environment variable.");
             SNAP_CATCH2_NAMESPACE::push_expected_log("error: option --ignore-parameters is not supported.");
             advgetopt::getopt opt(options_illegal_in_variable, argc, argv);
+            SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         }
 
         // configuration file options must have a long name
@@ -6344,6 +6375,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
                                         + "\" cannot include a space, missing assignment operator?");
                 SNAP_CATCH2_NAMESPACE::push_expected_log("error: option --ignore-parameters is not supported.");
                 advgetopt::getopt opt(valid_options, argc, argv);
+            SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
             }
         }
         {
@@ -6364,6 +6396,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
                                         + "\" cannot include a space, missing assignment operator?");
                 SNAP_CATCH2_NAMESPACE::push_expected_log("error: option --ignore-parameters is not supported.");
                 advgetopt::getopt opt(valid_options, argc, argv);
+                SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
             }
         }
         {
@@ -6384,6 +6417,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
                                         + "\", missing name before = sign?");
                 SNAP_CATCH2_NAMESPACE::push_expected_log("error: option --ignore-parameters is not supported.");
                 advgetopt::getopt opt(valid_options, argc, argv);
+                SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
             }
         }
         {
@@ -6404,6 +6438,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
                                         + "\".");
                 SNAP_CATCH2_NAMESPACE::push_expected_log("error: option --ignore-parameters is not supported.");
                 advgetopt::getopt opt(valid_options, argc, argv);
+                SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
             }
         }
         {
@@ -6424,6 +6459,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
                                         + "\".");
                 SNAP_CATCH2_NAMESPACE::push_expected_log("error: option --ignore-parameters is not supported.");
                 advgetopt::getopt opt(valid_options, argc, argv);
+                SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
             }
         }
         {
@@ -6444,6 +6480,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
                                         + "\").");
                 SNAP_CATCH2_NAMESPACE::push_expected_log("error: option --ignore-parameters is not supported.");
                 advgetopt::getopt opt(valid_options, argc, argv);
+                SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
             }
         }
 
@@ -6638,6 +6675,8 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
             CATCH_REQUIRE(s.empty());
             CATCH_REQUIRE_THROWS_AS( s = opt.get_string("string", 100), advgetopt::getopt_exception_undefined);
             CATCH_REQUIRE(s.empty());
+
+            SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
             // reuse all those invalid options with the reset() function
             // and expect the same result
@@ -6922,6 +6961,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
 
                 SNAP_CATCH2_NAMESPACE::push_expected_log("error: option --long expects an argument.");
                 advgetopt::getopt opt(options, argc2, argv2);
+                SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
             }
             {
                 // again with the lone -l (no long name)
@@ -6942,6 +6982,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
 
                 SNAP_CATCH2_NAMESPACE::push_expected_log("error: option --not-in-v2-though expects an argument.");
                 advgetopt::getopt opt(options, argc2, argv2);
+                SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
             }
             {
                 char const * cargv2[] =
@@ -7095,6 +7136,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
 
                 SNAP_CATCH2_NAMESPACE::push_expected_log("error: option --filenames expects an argument.");
                 advgetopt::getopt opt(options, argc2, argv2);
+                SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
             }
             {
                 // second with --filenames
@@ -7109,6 +7151,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
 
                 SNAP_CATCH2_NAMESPACE::push_expected_log("error: option --filenames expects an argument.");
                 advgetopt::getopt opt(options, argc2, argv2);
+                SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
             }
         }
 
@@ -7152,6 +7195,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
 
                 SNAP_CATCH2_NAMESPACE::push_expected_log("error: option --filenames expects an argument.");
                 advgetopt::getopt opt(options, argc2, argv2);
+                SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
             }
         }
     CATCH_END_SECTION()

@@ -50,6 +50,14 @@ namespace advgetopt
 
 
 
+enum class callback_action_t
+{
+    created,
+    updated,
+    erased
+};
+
+
 enum class line_continuation_t
 {
     single_line,    // no continuation support
@@ -72,6 +80,7 @@ constexpr assignment_operator_t ASSIGNMENT_OPERATOR_MASK        = 0x0007;
 
 typedef std::uint_fast16_t      comment_t;
 
+constexpr comment_t             COMMENT_NONE                    = 0x0000;       // no support for comments
 constexpr comment_t             COMMENT_INI                     = 0x0001;       // ; comment
 constexpr comment_t             COMMENT_SHELL                   = 0x0002;       // # comment
 constexpr comment_t             COMMENT_CPP                     = 0x0004;       // // comment
@@ -121,23 +130,31 @@ private:
 
 
 class conf_file
+    : public std::enable_shared_from_this<conf_file>
 {
 public:
     typedef std::shared_ptr<conf_file>              pointer_t;
     typedef std::set<std::string>                   sections_t;
     typedef std::map<std::string, std::string>      parameters_t;
+    typedef std::function<void(pointer_t conf_file, callback_action_t action, std::string const & variable_name, std::string const & value)>
+                                                    callback_t;
 
     static conf_file::pointer_t get_conf_file(conf_file_setup const & setup);
 
+    bool                        save_configuration(bool create_backup = true);
+
     conf_file_setup const &     get_setup() const;
+    void                        set_callback(callback_t callback);
 
     int                         get_errno() const;
+
     sections_t                  get_sections() const;
     parameters_t                get_parameters() const;
-    bool                        has_parameter(std::string const & name) const;
-    std::string                 get_parameter(std::string const & name) const;
-    bool                        set_parameter(std::string const & section, std::string const & name, std::string const & value);
-    bool                        erase_parameter(std::string const & name);
+    bool                        has_parameter(std::string name) const;
+    std::string                 get_parameter(std::string name) const;
+    bool                        set_parameter(std::string section, std::string name, std::string const & value);
+    bool                        erase_parameter(std::string name);
+    bool                        was_modified() const;
 
     bool                        is_assignment_operator(int c) const;
     bool                        is_comment(char const * s) const;
@@ -155,9 +172,12 @@ private:
     int                         f_unget_char = '\0';
     int                         f_line = 0;
     int                         f_errno = 0;
-    sections_t                  f_sections = sections_t();
+    bool                        f_reading = false;
 
+    bool                        f_modified = false;
+    sections_t                  f_sections = sections_t();
     parameters_t                f_parameters = parameters_t();
+    callback_t                  f_callback = callback_t();
 };
 
 

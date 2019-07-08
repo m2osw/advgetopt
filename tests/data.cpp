@@ -896,6 +896,7 @@ CATCH_TEST_CASE("out_of_range_value", "[arguments][invalid][getopt]")
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: 312 is out of bounds (-100..100 inclusive) in parameter --size.");
         CATCH_REQUIRE(opt.get_long("size", 0, -100, 100) == -1);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
@@ -954,6 +955,7 @@ CATCH_TEST_CASE("out_of_range_value", "[arguments][invalid][getopt]")
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: -300 is out of bounds (-100..100 inclusive) in parameter --size.");
         CATCH_REQUIRE(opt.get_long("size", 0, -100, 100) == -1);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");

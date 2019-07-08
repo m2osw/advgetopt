@@ -350,15 +350,18 @@ CATCH_TEST_CASE("option_info_validator", "[option_info][valid][validator]")
         advgetopt::validator::pointer_t integer_validator(advgetopt::validator::create("integer", {"1","2","5","6","8"}));
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"51\" given to parameter --validator is not considered valid.");
         auto_validate.set_validator(integer_validator);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         CATCH_REQUIRE(auto_validate.get_validator() == integer_validator);
 
         auto_validate.set_value(0, "6");
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"3\" given to parameter --validator is not considered valid.");
         auto_validate.set_value(0, "3");
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"11\" given to parameter --validator is not considered valid.");
         auto_validate.set_value(0, "11");
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Check validator (multiple values)")
@@ -382,11 +385,13 @@ CATCH_TEST_CASE("option_info_validator", "[option_info][valid][validator]")
         advgetopt::validator::pointer_t integer_validator(advgetopt::validator::create("integer", {"-1","2","5","6","18"}));
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"-15\" given to parameter --validator is not considered valid.");
         auto_validate.set_validator(integer_validator);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         CATCH_REQUIRE(auto_validate.get_validator() == integer_validator);
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"3\" given to parameter --validator is not considered valid.");
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"11\" given to parameter --validator is not considered valid.");
         auto_validate.set_multiple_value("6,3,18,11");
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         CATCH_REQUIRE(auto_validate.size() == 2);
         CATCH_REQUIRE(auto_validate.get_value(0) == "6");
         CATCH_REQUIRE(auto_validate.get_long(0) == 6);
@@ -431,12 +436,14 @@ CATCH_TEST_CASE("option_info_validator", "[option_info][valid][validator]")
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"35\" given to parameter --validator is not considered valid.");
         auto_validate.set_validator("integer(-1,2,5,6,18)");
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         CATCH_REQUIRE(auto_validate.get_validator() != nullptr);
         CATCH_REQUIRE(auto_validate.get_validator()->name() == "integer");
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"3\" given to parameter --validator is not considered valid.");
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"11\" given to parameter --validator is not considered valid.");
         auto_validate.set_multiple_value("6,3,18,11");
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         CATCH_REQUIRE(auto_validate.size() == 2);
         CATCH_REQUIRE(auto_validate.get_value(0) == "6");
         CATCH_REQUIRE(auto_validate.get_long(0) == 6);
@@ -485,6 +492,7 @@ CATCH_TEST_CASE("option_info_validator", "[option_info][valid][validator]")
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"33\" given to parameter --validator is not considered valid.");
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"45\" given to parameter --validator is not considered valid.");
         auto_validate.set_multiple_value("abc,qqq,33,zac,pop,45");
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         CATCH_REQUIRE(auto_validate.size() == 4);
         CATCH_REQUIRE(auto_validate.get_value(0) == "abc");
         CATCH_REQUIRE(auto_validate.get_value(1) == "qqq");
@@ -1196,6 +1204,7 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid number (100000000000000000000) in parameter --size.");
         CATCH_REQUIRE(size.get_long(0) == -1);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // too large by 1
         //
@@ -1205,6 +1214,7 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid number (9223372036854775808) in parameter --size.");
         CATCH_REQUIRE(size.get_long(0) == -1);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // too small by 1
         //
@@ -1214,6 +1224,7 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid number (-9223372036854775809) in parameter --size.");
         CATCH_REQUIRE(size.get_long(0) == -1);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // not a valid number
         //
@@ -1223,6 +1234,7 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid number (97 potatoes) in parameter --size.");
         CATCH_REQUIRE(size.get_long(0) == -1);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Check multiple separators")

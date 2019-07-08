@@ -277,7 +277,7 @@ CATCH_TEST_CASE("configuration_setup", "[config][getopt]")
                                             CATCH_REQUIRE(it != comments.end());
                                             comments.erase(it);
                                         }
-                                        if(c == 0)
+                                        if(c == advgetopt::COMMENT_NONE)
                                         {
                                             auto it(std::find(comments.begin(), comments.end(), "none"));
                                             CATCH_REQUIRE(it != comments.end());
@@ -383,6 +383,7 @@ CATCH_TEST_CASE("config_reload_tests")
             ;
         }
 
+        advgetopt::conf_file::pointer_t file1;
         {
             advgetopt::conf_file_setup setup(g_config_filename
                                 , advgetopt::line_continuation_t::single_line
@@ -396,20 +397,20 @@ CATCH_TEST_CASE("config_reload_tests")
             CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
             CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_NONE);
 
-            advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+            file1 = advgetopt::conf_file::get_conf_file(setup);
 
-            CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
-            CATCH_REQUIRE(file->get_errno() == 0);
-            CATCH_REQUIRE(file->get_sections().empty());
-            CATCH_REQUIRE(file->get_parameters().size() == 3);
+            CATCH_REQUIRE(file1->get_setup().get_config_url() == setup.get_config_url());
+            CATCH_REQUIRE(file1->get_errno() == 0);
+            CATCH_REQUIRE(file1->get_sections().empty());
+            CATCH_REQUIRE(file1->get_parameters().size() == 3);
 
-            CATCH_REQUIRE(file->has_parameter("param"));
-            CATCH_REQUIRE(file->has_parameter("changing"));
-            CATCH_REQUIRE(file->has_parameter("test"));
+            CATCH_REQUIRE(file1->has_parameter("param"));
+            CATCH_REQUIRE(file1->has_parameter("changing"));
+            CATCH_REQUIRE(file1->has_parameter("test"));
 
-            CATCH_REQUIRE(file->get_parameter("param") == "value");
-            CATCH_REQUIRE(file->get_parameter("changing") == "without reloading is useless");
-            CATCH_REQUIRE(file->get_parameter("test") == "1009");
+            CATCH_REQUIRE(file1->get_parameter("param") == "value");
+            CATCH_REQUIRE(file1->get_parameter("changing") == "without reloading is useless");
+            CATCH_REQUIRE(file1->get_parameter("test") == "1009");
         }
 
         // change all the values now
@@ -443,6 +444,10 @@ CATCH_TEST_CASE("config_reload_tests")
 
             advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
 
+            // exact same pointer
+            //
+            CATCH_REQUIRE(file == file1);
+
             CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
             CATCH_REQUIRE(file->get_errno() == 0);
             CATCH_REQUIRE(file->get_sections().empty());
@@ -456,6 +461,240 @@ CATCH_TEST_CASE("config_reload_tests")
             CATCH_REQUIRE(file->get_parameter("changing") == "without reloading is useless");
             CATCH_REQUIRE(file->get_parameter("test") == "1009");
         }
+    CATCH_END_SECTION()
+}
+
+
+
+CATCH_TEST_CASE("config_duplicated_variables")
+{
+    CATCH_START_SECTION("file with the same variable defined multiple times")
+        init_tmp_dir("duplicated-variable", "multiple");
+
+        {
+            std::ofstream config_file;
+            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "unique    = perfect  \n"
+                "multiple  = defintions\n"
+                "another   = just fine \t\n"
+                "multiple  = value\r\n"
+                "good      = variable \n"
+                "multiple  = set\n"
+                "more      = data\t \n"
+            ;
+        }
+
+        advgetopt::conf_file_setup setup(g_config_filename
+                            , advgetopt::line_continuation_t::single_line
+                            , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
+                            , advgetopt::COMMENT_SHELL
+                            , advgetopt::SECTION_OPERATOR_NONE);
+
+        CATCH_REQUIRE(setup.is_valid());
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::single_line);
+        CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
+        CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
+        CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_NONE);
+
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+                      "warning: parameter \"multiple\" on line 5 in"
+                      " configuration file \""
+                    + g_config_filename
+                    + "\" was found twice in the same configuration file.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+                      "warning: parameter \"multiple\" on line 7 in"
+                      " configuration file \""
+                    + g_config_filename
+                    + "\" was found twice in the same configuration file.");
+        advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
+
+        CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
+        CATCH_REQUIRE(file->get_errno() == 0);
+        CATCH_REQUIRE(file->get_sections().empty());
+        CATCH_REQUIRE(file->get_parameters().size() == 5);
+
+        CATCH_REQUIRE(file->has_parameter("unique"));
+        CATCH_REQUIRE(file->has_parameter("another"));
+        CATCH_REQUIRE(file->has_parameter("good"));
+        CATCH_REQUIRE(file->has_parameter("more"));
+        CATCH_REQUIRE(file->has_parameter("multiple"));
+
+        CATCH_REQUIRE(file->get_parameter("unique") == "perfect");
+        CATCH_REQUIRE(file->get_parameter("another") == "just fine");
+        CATCH_REQUIRE(file->get_parameter("good") == "variable");
+        CATCH_REQUIRE(file->get_parameter("more") == "data");
+        CATCH_REQUIRE(file->get_parameter("multiple") == "set");
+
+        // we get a warning while reading; but not when directly
+        // accessing the file object
+        //
+        CATCH_REQUIRE(file->set_parameter(std::string(), "multiple", "new value"));
+        CATCH_REQUIRE(file->get_parameter("multiple") == "new value");
+    CATCH_END_SECTION()
+}
+
+
+
+CATCH_TEST_CASE("config_callback_calls")
+{
+    CATCH_START_SECTION("setup a callback and test the set_parameter()/erase() functions")
+        init_tmp_dir("callback-variable", "callback");
+
+        {
+            std::ofstream config_file;
+            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "unique     = perfect  \n"
+                "definition = long value here\n"
+                "another    = just fine \t\n"
+                "multiple   = value\r\n"
+                "good       = variable \n"
+                "organized  = set\n"
+                "more       = data\t \n"
+            ;
+        }
+
+        advgetopt::conf_file_setup setup(g_config_filename
+                            , advgetopt::line_continuation_t::single_line
+                            , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
+                            , advgetopt::COMMENT_SHELL
+                            , advgetopt::SECTION_OPERATOR_NONE);
+
+        CATCH_REQUIRE(setup.is_valid());
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::single_line);
+        CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
+        CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
+        CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_NONE);
+
+        advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+
+        struct conf_data
+        {
+            advgetopt::conf_file::pointer_t f_conf_file = advgetopt::conf_file::pointer_t();
+            advgetopt::callback_action_t    f_expected_action = advgetopt::callback_action_t::created;
+            std::string                     f_expected_variable = std::string();
+            std::string                     f_expected_value = std::string();
+        };
+        conf_data cf_data;
+        cf_data.f_conf_file = file;
+
+        struct conf_callback
+        {
+            void operator () (advgetopt::conf_file::pointer_t conf_file
+                            , advgetopt::callback_action_t action
+                            , std::string const & variable_name
+                            , std::string const & value)
+            {
+                CATCH_REQUIRE(conf_file == f_data->f_conf_file);
+                CATCH_REQUIRE(action == f_data->f_expected_action);
+                CATCH_REQUIRE(variable_name == f_data->f_expected_variable);
+                CATCH_REQUIRE(value == f_data->f_expected_value);
+                CATCH_REQUIRE(conf_file->get_parameter(variable_name) == f_data->f_expected_value);
+            }
+
+            conf_data * f_data = nullptr;
+        };
+        conf_callback cf;
+        cf.f_data = &cf_data;
+
+        file->set_callback(cf);
+
+        CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
+        CATCH_REQUIRE(file->get_errno() == 0);
+        CATCH_REQUIRE_FALSE(file->was_modified());
+        CATCH_REQUIRE(file->get_sections().empty());
+        CATCH_REQUIRE(file->get_parameters().size() == 7);
+
+        CATCH_REQUIRE(file->has_parameter("unique"));
+        CATCH_REQUIRE(file->has_parameter("definition"));
+        CATCH_REQUIRE(file->has_parameter("another"));
+        CATCH_REQUIRE(file->has_parameter("multiple"));
+        CATCH_REQUIRE(file->has_parameter("good"));
+        CATCH_REQUIRE(file->has_parameter("organized"));
+        CATCH_REQUIRE(file->has_parameter("more"));
+
+        CATCH_REQUIRE(file->get_parameter("unique") == "perfect");
+        CATCH_REQUIRE(file->get_parameter("definition") == "long value here");
+        CATCH_REQUIRE(file->get_parameter("another") == "just fine");
+        CATCH_REQUIRE(file->get_parameter("multiple") == "value");
+        CATCH_REQUIRE(file->get_parameter("good") == "variable");
+        CATCH_REQUIRE(file->get_parameter("organized") == "set");
+        CATCH_REQUIRE(file->get_parameter("more") == "data");
+
+        // updated action
+        //
+        cf_data.f_expected_action = advgetopt::callback_action_t::updated;
+        cf_data.f_expected_variable = "multiple";
+        cf_data.f_expected_value = "new value";
+        CATCH_REQUIRE(file->set_parameter(std::string(), "multiple", "new value"));
+        CATCH_REQUIRE(file->was_modified());
+        CATCH_REQUIRE(file->get_parameters().size() == 7);
+        CATCH_REQUIRE(file->get_parameter("multiple") == "new value");
+
+        // created action
+        //
+        cf_data.f_expected_action = advgetopt::callback_action_t::created;
+        cf_data.f_expected_variable = "new-param";
+        cf_data.f_expected_value = "with this value";
+        CATCH_REQUIRE(file->set_parameter(std::string(), "new_param", "with this value"));
+        CATCH_REQUIRE(file->was_modified());
+        CATCH_REQUIRE(file->get_parameters().size() == 8);
+        CATCH_REQUIRE(file->has_parameter("new-param"));
+        CATCH_REQUIRE(file->get_parameter("new-param") == "with this value");
+        CATCH_REQUIRE(file->has_parameter("new_param"));
+        CATCH_REQUIRE(file->get_parameter("new_param") == "with this value");
+
+        // updated action when modifying
+        //
+        cf_data.f_expected_action = advgetopt::callback_action_t::updated;
+        cf_data.f_expected_variable = "new-param";
+        cf_data.f_expected_value = "change completely";
+        CATCH_REQUIRE(file->set_parameter(std::string(), "new_param", "change completely"));
+        CATCH_REQUIRE(file->was_modified());
+        CATCH_REQUIRE(file->get_parameters().size() == 8);
+        CATCH_REQUIRE(file->has_parameter("new-param"));
+        CATCH_REQUIRE(file->get_parameter("new-param") == "change completely");
+        CATCH_REQUIRE(file->has_parameter("new_param"));
+        CATCH_REQUIRE(file->get_parameter("new_param") == "change completely");
+
+        // erased action
+        //
+        cf_data.f_expected_action = advgetopt::callback_action_t::erased;
+        cf_data.f_expected_variable = "new-param";
+        cf_data.f_expected_value = std::string();
+        CATCH_REQUIRE(file->erase_parameter("new_param"));
+        CATCH_REQUIRE(file->was_modified());
+        CATCH_REQUIRE(file->get_parameters().size() == 7);
+        CATCH_REQUIRE_FALSE(file->has_parameter("new-param"));
+        CATCH_REQUIRE(file->get_parameter("new-param") == std::string());
+        CATCH_REQUIRE_FALSE(file->has_parameter("new_param"));
+        CATCH_REQUIRE(file->get_parameter("new_param") == std::string());
+        CATCH_REQUIRE_FALSE(file->erase_parameter("new_param"));
+
+        // created action again (because it was erased)
+        //
+        cf_data.f_expected_action = advgetopt::callback_action_t::created;
+        cf_data.f_expected_variable = "new-param";
+        cf_data.f_expected_value = "with this value";
+        CATCH_REQUIRE(file->set_parameter(std::string(), "new_param", "with this value"));
+        CATCH_REQUIRE(file->was_modified());
+        CATCH_REQUIRE(file->get_parameters().size() == 8);
+        CATCH_REQUIRE(file->has_parameter("new-param"));
+        CATCH_REQUIRE(file->get_parameter("new-param") == "with this value");
+        CATCH_REQUIRE(file->has_parameter("new_param"));
+        CATCH_REQUIRE(file->get_parameter("new_param") == "with this value");
+
+        // until you save it remains true even if you were to restore the
+        // state to "normal" (we do not keep a copy of the original value
+        // as found in the file.)
+        //
+        CATCH_REQUIRE(file->was_modified());
     CATCH_END_SECTION()
 }
 
@@ -936,7 +1175,7 @@ CATCH_TEST_CASE("config_assignment_operator_tests")
                 "# Auto-generated\n"
                 "equal=value\n"
                 "\n"
-                "name:value=127\n"
+                "name_value=127\n"
                 "\n"
                 "and=no operator\n"
             ;
@@ -962,11 +1201,11 @@ CATCH_TEST_CASE("config_assignment_operator_tests")
         CATCH_REQUIRE(file->get_parameters().size() == 3);
 
         CATCH_REQUIRE(file->has_parameter("equal"));
-        CATCH_REQUIRE(file->has_parameter("name:value"));
+        CATCH_REQUIRE(file->has_parameter("name-value"));
         CATCH_REQUIRE(file->has_parameter("and"));
 
         CATCH_REQUIRE(file->get_parameter("equal") == "value");
-        CATCH_REQUIRE(file->get_parameter("name:value") == "127");
+        CATCH_REQUIRE(file->get_parameter("name-value") == "127");
         CATCH_REQUIRE(file->get_parameter("and") == "no operator");
     CATCH_END_SECTION()
 
@@ -979,11 +1218,11 @@ CATCH_TEST_CASE("config_assignment_operator_tests")
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
-                "equal=value\n"
+                "equal_value\n"
                 "\n"
                 "name:value=127\n"
                 "\n"
-                "and=no-operator\n"
+                "and_no-operator\n"
             ;
         }
 
@@ -1006,13 +1245,13 @@ CATCH_TEST_CASE("config_assignment_operator_tests")
         CATCH_REQUIRE(file->get_sections().empty());
         CATCH_REQUIRE(file->get_parameters().size() == 3);
 
-        CATCH_REQUIRE(file->has_parameter("equal=value"));
+        CATCH_REQUIRE(file->has_parameter("equal-value"));
         CATCH_REQUIRE(file->has_parameter("name"));
-        CATCH_REQUIRE(file->has_parameter("and=no-operator"));
+        CATCH_REQUIRE(file->has_parameter("and-no-operator"));
 
-        CATCH_REQUIRE(file->get_parameter("equal=value") == std::string());
+        CATCH_REQUIRE(file->get_parameter("equal-value") == std::string());
         CATCH_REQUIRE(file->get_parameter("name") == "value=127");
-        CATCH_REQUIRE(file->get_parameter("and=no-operator") == std::string());
+        CATCH_REQUIRE(file->get_parameter("and-no-operator") == std::string());
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("space")
@@ -1024,11 +1263,11 @@ CATCH_TEST_CASE("config_assignment_operator_tests")
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
-                "equal=value\n"
+                "equal-value\n"
                 "\n"
                 "name 127\n"
                 "\n"
-                "and=no operator\n"
+                "and-no operator\n"
             ;
         }
 
@@ -1051,13 +1290,13 @@ CATCH_TEST_CASE("config_assignment_operator_tests")
         CATCH_REQUIRE(file->get_sections().empty());
         CATCH_REQUIRE(file->get_parameters().size() == 3);
 
-        CATCH_REQUIRE(file->has_parameter("equal=value"));
+        CATCH_REQUIRE(file->has_parameter("equal-value"));
         CATCH_REQUIRE(file->has_parameter("name"));
-        CATCH_REQUIRE(file->has_parameter("and=no"));
+        CATCH_REQUIRE(file->has_parameter("and-no"));
 
-        CATCH_REQUIRE(file->get_parameter("equal=value") == std::string());
+        CATCH_REQUIRE(file->get_parameter("equal-value") == std::string());
         CATCH_REQUIRE(file->get_parameter("name") == "127");
-        CATCH_REQUIRE(file->get_parameter("and=no") == "operator");
+        CATCH_REQUIRE(file->get_parameter("and-no") == "operator");
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("equal_colon_and_space")
@@ -1125,9 +1364,9 @@ CATCH_TEST_CASE("config_comment_tests")
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "; Auto-generated\n"
-                "#ini=comment\n"
+                "ini=comment\n"
                 ";ignore=this one\n"
-                "//is=the semi-colon\n"
+                "is=the semi-colon\n"
                 ";continuation=with Unix\\\n"
                 "also=works for\\\n"
                 "comments\n"
@@ -1153,11 +1392,11 @@ CATCH_TEST_CASE("config_comment_tests")
         CATCH_REQUIRE(file->get_sections().empty());
         CATCH_REQUIRE(file->get_parameters().size() == 2);
 
-        CATCH_REQUIRE(file->has_parameter("#ini"));
-        CATCH_REQUIRE(file->has_parameter("//is"));
+        CATCH_REQUIRE(file->has_parameter("ini"));
+        CATCH_REQUIRE(file->has_parameter("is"));
 
-        CATCH_REQUIRE(file->get_parameter("#ini") == "comment");
-        CATCH_REQUIRE(file->get_parameter("//is") == "the semi-colon");
+        CATCH_REQUIRE(file->get_parameter("ini") == "comment");
+        CATCH_REQUIRE(file->get_parameter("is") == "the semi-colon");
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("shell comment")
@@ -1169,9 +1408,9 @@ CATCH_TEST_CASE("config_comment_tests")
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
-                ";shell=comment\n"
+                "shell=comment\n"
                 "#ignore=this one\n"
-                "//is=the hash (`#`) character\n"
+                "is=the hash (`#`) character\n"
                 "#continuation=with Unix\\\n"
                 "also=works for\\\n"
                 "comments\n"
@@ -1197,11 +1436,11 @@ CATCH_TEST_CASE("config_comment_tests")
         CATCH_REQUIRE(file->get_sections().empty());
         CATCH_REQUIRE(file->get_parameters().size() == 2);
 
-        CATCH_REQUIRE(file->has_parameter(";shell"));
-        CATCH_REQUIRE(file->has_parameter("//is"));
+        CATCH_REQUIRE(file->has_parameter("shell"));
+        CATCH_REQUIRE(file->has_parameter("is"));
 
-        CATCH_REQUIRE(file->get_parameter(";shell") == "comment");
-        CATCH_REQUIRE(file->get_parameter("//is") == "the hash (`#`) character");
+        CATCH_REQUIRE(file->get_parameter("shell") == "comment");
+        CATCH_REQUIRE(file->get_parameter("is") == "the hash (`#`) character");
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("C++ comment")
@@ -1213,9 +1452,9 @@ CATCH_TEST_CASE("config_comment_tests")
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "// Auto-generated\n"
-                ";cpp=comment\n"
+                "cpp=comment\n"
                 "//ignore=this one\n"
-                "#is=the double slash (`//`)\n"
+                "is=the double slash (`//`)\n"
                 "//continuation=with Unix\\\n"
                 "also=works for\\\n"
                 "comments\n"
@@ -1241,11 +1480,11 @@ CATCH_TEST_CASE("config_comment_tests")
         CATCH_REQUIRE(file->get_sections().empty());
         CATCH_REQUIRE(file->get_parameters().size() == 2);
 
-        CATCH_REQUIRE(file->has_parameter(";cpp"));
-        CATCH_REQUIRE(file->has_parameter("#is"));
+        CATCH_REQUIRE(file->has_parameter("cpp"));
+        CATCH_REQUIRE(file->has_parameter("is"));
 
-        CATCH_REQUIRE(file->get_parameter(";cpp") == "comment");
-        CATCH_REQUIRE(file->get_parameter("#is") == "the double slash (`//`)");
+        CATCH_REQUIRE(file->get_parameter("cpp") == "comment");
+        CATCH_REQUIRE(file->get_parameter("is") == "the double slash (`//`)");
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("All three comments")
@@ -1512,16 +1751,16 @@ CATCH_TEST_CASE("config_section_tests")
                 "a=color\n"
                 "[a]\n"
                 "b=red\n"
-                "b::c=122\n"
+                "b-c=122\n"
                 "[]\n"
                 "m=size\n"
                 "z=edge\n"
                 "[z] # we allow comments here\n"
                 "b=line\n"
-                "b::c=12.72\n"
+                "b-c=12.72\n"
                 "[p]#nospacenecessary\n"
                 "b=comment\n"
-                "b::c=allowed\n"
+                "b-c=allowed\n"
             ;
         }
 
@@ -1552,23 +1791,23 @@ CATCH_TEST_CASE("config_section_tests")
 
         CATCH_REQUIRE(file->has_parameter("a"));
         CATCH_REQUIRE(file->has_parameter("a::b"));
-        CATCH_REQUIRE(file->has_parameter("a::b::c"));
+        CATCH_REQUIRE(file->has_parameter("a::b-c"));
         CATCH_REQUIRE(file->has_parameter("m"));
         CATCH_REQUIRE(file->has_parameter("z"));
         CATCH_REQUIRE(file->has_parameter("z::b"));
-        CATCH_REQUIRE(file->has_parameter("z::b::c"));
+        CATCH_REQUIRE(file->has_parameter("z::b-c"));
         CATCH_REQUIRE(file->has_parameter("p::b"));
-        CATCH_REQUIRE(file->has_parameter("p::b::c"));
+        CATCH_REQUIRE(file->has_parameter("p::b-c"));
 
         CATCH_REQUIRE(file->get_parameter("a") == "color");
         CATCH_REQUIRE(file->get_parameter("a::b") == "red");
-        CATCH_REQUIRE(file->get_parameter("a::b::c") == "122");
+        CATCH_REQUIRE(file->get_parameter("a::b-c") == "122");
         CATCH_REQUIRE(file->get_parameter("m") == "size");
         CATCH_REQUIRE(file->get_parameter("z") == "edge");
         CATCH_REQUIRE(file->get_parameter("z::b") == "line");
-        CATCH_REQUIRE(file->get_parameter("z::b::c") == "12.72");
+        CATCH_REQUIRE(file->get_parameter("z::b-c") == "12.72");
         CATCH_REQUIRE(file->get_parameter("p::b") == "comment");
-        CATCH_REQUIRE(file->get_parameter("p::b::c") == "allowed");
+        CATCH_REQUIRE(file->get_parameter("p::b-c") == "allowed");
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("section operator ini-file & c++")
@@ -1635,6 +1874,106 @@ CATCH_TEST_CASE("config_section_tests")
         CATCH_REQUIRE(file->get_parameter("z::z::b::c") == "17.92");
     CATCH_END_SECTION()
 }
+
+
+
+
+CATCH_TEST_CASE("save_config_file")
+{
+    CATCH_START_SECTION("load update save")
+        init_tmp_dir("save-operation", "configuration");
+
+        {
+            std::ofstream config_file;
+            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "a=color\n"
+                "b=red\n"
+                "c=122\n"
+            ;
+        }
+
+        advgetopt::conf_file_setup setup(g_config_filename
+                            , advgetopt::line_continuation_t::single_line
+                            , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
+                            , advgetopt::COMMENT_SHELL
+                            , advgetopt::SECTION_OPERATOR_NONE);
+
+        CATCH_REQUIRE(setup.is_valid());
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::single_line);
+        CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
+        CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
+        CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_NONE);
+
+        advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+
+        CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
+        CATCH_REQUIRE(file->get_errno() == 0);
+
+        advgetopt::conf_file::sections_t sections(file->get_sections());
+        CATCH_REQUIRE(sections.empty());
+
+        CATCH_REQUIRE(file->get_parameters().size() == 3);
+
+        CATCH_REQUIRE(file->has_parameter("a"));
+        CATCH_REQUIRE(file->has_parameter("b"));
+        CATCH_REQUIRE(file->has_parameter("c"));
+
+        CATCH_REQUIRE(file->get_parameter("a") == "color");
+        CATCH_REQUIRE(file->get_parameter("b") == "red");
+        CATCH_REQUIRE(file->get_parameter("c") == "122");
+
+        CATCH_REQUIRE(file->save_configuration());
+
+        // no backup since there was no modification so the save did nothing
+        //
+        CATCH_REQUIRE(access((g_config_filename + ".bak").c_str(), F_OK) != 0);
+
+        file->set_parameter(std::string(), "a", "size");
+        file->set_parameter(std::string(), "b", "tall");
+        file->set_parameter(std::string(), "c", "1920");
+
+        CATCH_REQUIRE(file->save_configuration());
+
+        CATCH_REQUIRE(access((g_config_filename + ".bak").c_str(), F_OK) == 0);
+
+        std::string const new_name(g_config_filename + ".conf2");
+        rename(g_config_filename.c_str(), new_name.c_str());
+
+        advgetopt::conf_file_setup setup2(new_name
+                            , advgetopt::line_continuation_t::single_line
+                            , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
+                            , advgetopt::COMMENT_SHELL
+                            , advgetopt::SECTION_OPERATOR_NONE);
+
+        CATCH_REQUIRE(setup2.is_valid());
+        CATCH_REQUIRE(setup2.get_line_continuation() == advgetopt::line_continuation_t::single_line);
+        CATCH_REQUIRE(setup2.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
+        CATCH_REQUIRE(setup2.get_comment() == advgetopt::COMMENT_SHELL);
+        CATCH_REQUIRE(setup2.get_section_operator() == advgetopt::SECTION_OPERATOR_NONE);
+
+        advgetopt::conf_file::pointer_t file2(advgetopt::conf_file::get_conf_file(setup2));
+
+        CATCH_REQUIRE(file2->get_setup().get_config_url() == setup2.get_config_url());
+        CATCH_REQUIRE(file2->get_errno() == 0);
+
+        CATCH_REQUIRE(file->get_sections().empty());
+
+        CATCH_REQUIRE(file2->get_parameters().size() == 3);
+
+        CATCH_REQUIRE(file2->has_parameter("a"));
+        CATCH_REQUIRE(file2->has_parameter("b"));
+        CATCH_REQUIRE(file2->has_parameter("c"));
+
+        CATCH_REQUIRE(file2->get_parameter("a") == "size");
+        CATCH_REQUIRE(file2->get_parameter("b") == "tall");
+        CATCH_REQUIRE(file2->get_parameter("c") == "1920");
+    CATCH_END_SECTION()
+}
+
+
 
 
 
@@ -1889,6 +2228,7 @@ CATCH_TEST_CASE("invalid_sections")
                     "error: option name \".a.b.c\" cannot start with"
                     " a period (.).");
         advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
         CATCH_REQUIRE(file->get_errno() == 0);
@@ -1951,6 +2291,7 @@ CATCH_TEST_CASE("invalid_sections")
                     "error: option name \"a.::b.c\" cannot start with"
                     " a scope operator (::).");
         advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
         CATCH_REQUIRE(file->get_errno() == 0);
@@ -2013,6 +2354,7 @@ CATCH_TEST_CASE("invalid_sections")
                     "error: option name \"a.b.c::\" cannot end with a"
                     " section operator or be empty.");
         advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
         CATCH_REQUIRE(file->get_errno() == 0);
@@ -2070,7 +2412,13 @@ CATCH_TEST_CASE("invalid_sections")
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == (advgetopt::SECTION_OPERATOR_NONE));
 
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+                "error: parameter \"a::b\" on line 3 in configuration file \""
+                + g_config_filename
+                + "\" includes a character not acceptable for a section or"
+                  " parameter name (controls, space, quotes, and \";#/=:?+\\\".");
         advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
         CATCH_REQUIRE(file->get_errno() == 0);
@@ -2078,15 +2426,15 @@ CATCH_TEST_CASE("invalid_sections")
         advgetopt::conf_file::sections_t sections(file->get_sections());
         CATCH_REQUIRE(sections.empty());
 
-        CATCH_REQUIRE(file->get_parameters().size() == 4);
+        CATCH_REQUIRE(file->get_parameters().size() == 3);
 
         CATCH_REQUIRE(file->has_parameter("a"));
-        CATCH_REQUIRE(file->has_parameter("a::b"));
+        CATCH_REQUIRE_FALSE(file->has_parameter("a::b"));
         CATCH_REQUIRE(file->has_parameter("m.n"));
         CATCH_REQUIRE(file->has_parameter("z"));
 
         CATCH_REQUIRE(file->get_parameter("a") == "color");
-        CATCH_REQUIRE(file->get_parameter("a::b") == "red");
+        CATCH_REQUIRE(file->get_parameter("a::b") == std::string());
         CATCH_REQUIRE(file->get_parameter("m.n") == "size");
         CATCH_REQUIRE(file->get_parameter("z") == "edge");
 
@@ -2095,6 +2443,110 @@ CATCH_TEST_CASE("invalid_sections")
                     " section \"j::k\" because there is no section support"
                     " for this configuration file.");
         file->set_parameter("j::k", "blue::shepard", "2001");
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("invalid characters in names")
+        std::string const bad_chars(
+                    "\x01\x02\x03\x04\x05\x06\x07"
+                "\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F"
+                "\x10\x11\x12\x13\x14\x15\x16\x17"
+                "\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F"
+                "\x20"
+                "'\";#/=:?+\\"
+            );
+        for(auto c : bad_chars)
+        {
+            // white spaces get removed from the line so we cannot test
+            // them in this way
+            //
+            if(std::iswspace(c))
+            {
+                continue;
+            }
+            std::string bc;
+            bc += c;
+
+            for(int pos(0); pos < 3; ++pos)
+            {
+                std::string spos("undefined");
+                std::string bad_char("undefined");
+                switch(pos)
+                {
+                case 0:
+                    spos = "start";
+                    bad_char = bc + "bad-char";
+                    break;
+
+                case 1:
+                    spos = "middle";
+                    bad_char = "bad" + bc + "char";
+                    break;
+
+                case 2:
+                    spos = "end";
+                    bad_char = "bad-char" + bc;
+                    break;
+
+                }
+                init_tmp_dir("invalid-characters", "bad-character-" + std::to_string(static_cast<int>(c)) + "-" + spos);
+
+                {
+                    std::ofstream config_file;
+                    config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+                    CATCH_REQUIRE(config_file.good());
+                    char op(c == '=' ? ':' : '=');
+                    config_file <<
+                           "good" << op << "red\n"
+                        << bad_char << op << "color\n"       // <-- bad char
+                           "fine" << op << "param\n";
+                    ;
+                }
+
+                // no errors here since we do not detect the sections in this case
+                //
+                advgetopt::assignment_operator_t as(c == '='
+                                        ? advgetopt::ASSIGNMENT_OPERATOR_COLON
+                                        : advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
+                advgetopt::conf_file_setup setup(g_config_filename
+                                    , advgetopt::line_continuation_t::unix
+                                    , as
+                                    , advgetopt::COMMENT_NONE
+                                    , advgetopt::SECTION_OPERATOR_NONE);
+
+                CATCH_REQUIRE(setup.is_valid());
+                CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+                CATCH_REQUIRE(setup.get_assignment_operator() == as);
+                CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_NONE);
+                CATCH_REQUIRE(setup.get_section_operator() == (advgetopt::SECTION_OPERATOR_NONE));
+
+                SNAP_CATCH2_NAMESPACE::push_expected_log(
+                          "error: parameter \""
+                        + bad_char
+                        + "\" on line 2 in configuration file \""
+                        + g_config_filename
+                        + "\" includes a character not acceptable for a section or"
+                          " parameter name (controls, space, quotes, and \";#/=:?+\\\".");
+                advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+
+                CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
+                CATCH_REQUIRE(file->get_errno() == 0);
+
+                advgetopt::conf_file::sections_t sections(file->get_sections());
+                CATCH_REQUIRE(sections.empty());
+
+                CATCH_REQUIRE(file->get_parameters().size() == 2);
+
+                CATCH_REQUIRE(file->has_parameter("good"));
+                CATCH_REQUIRE_FALSE(file->has_parameter(bad_char));
+                CATCH_REQUIRE(file->has_parameter("fine"));
+
+                CATCH_REQUIRE(file->get_parameter("good") == "red");
+                CATCH_REQUIRE(file->get_parameter(bad_char) == std::string());
+                CATCH_REQUIRE(file->get_parameter("fine") == "param");
+            }
+        }
+                SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("too many sections")
@@ -2117,25 +2569,27 @@ CATCH_TEST_CASE("invalid_sections")
                             , advgetopt::line_continuation_t::unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
-                            , advgetopt::SECTION_OPERATOR_C | advgetopt::SECTION_OPERATOR_ONE_SECTION);
+                            , advgetopt::SECTION_OPERATOR_CPP | advgetopt::SECTION_OPERATOR_C | advgetopt::SECTION_OPERATOR_ONE_SECTION);
 
         CATCH_REQUIRE(setup.is_valid());
         CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
-        CATCH_REQUIRE(setup.get_section_operator() == (advgetopt::SECTION_OPERATOR_C | advgetopt::SECTION_OPERATOR_ONE_SECTION));
+        CATCH_REQUIRE(setup.get_section_operator() == (advgetopt::SECTION_OPERATOR_CPP | advgetopt::SECTION_OPERATOR_C | advgetopt::SECTION_OPERATOR_ONE_SECTION));
 
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                     "error: option name \"m.n.o\" cannot be added to section"
                     " \"m::n\" because this configuration only accepts one"
                     " section level.");
         advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
         CATCH_REQUIRE(file->get_errno() == 0);
 
         advgetopt::conf_file::sections_t sections(file->get_sections());
-        CATCH_REQUIRE(sections.empty());
+        CATCH_REQUIRE(sections.size() == 1);
+        CATCH_REQUIRE(sections.find("a") != sections.end());
 
         CATCH_REQUIRE(file->get_parameters().size() == 3);
 
@@ -2180,6 +2634,7 @@ CATCH_TEST_CASE("invalid_sections")
                     " in configuration file "
                     "\"/home/snapwebsites/snapcpp/contrib/advgetopt/tmp/advgetopt/.config/unclosed-brackets.config\".");
         advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
         CATCH_REQUIRE(file->get_errno() == 0);
@@ -2234,6 +2689,7 @@ CATCH_TEST_CASE("invalid_sections")
                     + g_config_filename
                     + "\".");
         advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
         CATCH_REQUIRE(file->get_errno() == 0);
@@ -2296,6 +2752,7 @@ CATCH_TEST_CASE("invalid_sections")
                     + g_config_filename
                     + "\".");
         advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
         CATCH_REQUIRE(file->get_errno() == 0);
@@ -2360,6 +2817,7 @@ CATCH_TEST_CASE("invalid_variable_name")
                     + g_config_filename
                     + "\", missing name before the assignment operator?");
         advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
         CATCH_REQUIRE(file->get_errno() == 0);
@@ -2408,6 +2866,7 @@ CATCH_TEST_CASE("invalid_variable_name")
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                       "error: option name \"a.b.\" cannot end with a section operator or be empty.");
         advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
         CATCH_REQUIRE(file->get_errno() == 0);
@@ -2460,6 +2919,7 @@ CATCH_TEST_CASE("invalid_variable_name")
                     + g_config_filename
                     + "\".");
         advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
         CATCH_REQUIRE(file->get_errno() == 0);
@@ -2509,6 +2969,7 @@ CATCH_TEST_CASE("invalid_variable_name")
                     + g_config_filename
                     + "\".");
         advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
         CATCH_REQUIRE(file->get_errno() == 0);
@@ -2567,6 +3028,7 @@ CATCH_TEST_CASE("invalid_variable_name")
                     + g_config_filename
                     + "\" cannot include a space, missing assignment operator?");
         advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
         CATCH_REQUIRE(file->get_errno() == 0);

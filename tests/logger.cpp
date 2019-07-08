@@ -60,12 +60,14 @@ CATCH_TEST_CASE("logger", "[logger][valid][log]")
         advgetopt::log << advgetopt::log_level_t::debug
                        << "Test a regular string."
                        << advgetopt::end;
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("info: Test an std::string.");
         std::string const msg("Test an std::string.");
         advgetopt::log << advgetopt::log_level_t::info
                        << msg
                        << advgetopt::end;
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Verify log integers")
@@ -78,6 +80,7 @@ CATCH_TEST_CASE("logger", "[logger][valid][log]")
                            << v
                            << "."
                            << advgetopt::end;
+            SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         }
 
         {
@@ -88,6 +91,7 @@ CATCH_TEST_CASE("logger", "[logger][valid][log]")
                            << v
                            << "."
                            << advgetopt::end;
+            SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         }
 
         {
@@ -98,6 +102,7 @@ CATCH_TEST_CASE("logger", "[logger][valid][log]")
                            << v
                            << "."
                            << advgetopt::end;
+            SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         }
 
         {
@@ -108,6 +113,7 @@ CATCH_TEST_CASE("logger", "[logger][valid][log]")
                            << v
                            << "."
                            << advgetopt::end;
+            SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         }
 
         // gcc sees this one as a char
@@ -119,6 +125,7 @@ CATCH_TEST_CASE("logger", "[logger][valid][log]")
                            << v
                            << "."
                            << advgetopt::end;
+            SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         }
 
         {
@@ -129,6 +136,7 @@ CATCH_TEST_CASE("logger", "[logger][valid][log]")
                            << v
                            << "."
                            << advgetopt::end;
+            SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         }
 
         {
@@ -139,6 +147,7 @@ CATCH_TEST_CASE("logger", "[logger][valid][log]")
                            << v
                            << "."
                            << advgetopt::end;
+            SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         }
 
         {
@@ -149,6 +158,7 @@ CATCH_TEST_CASE("logger", "[logger][valid][log]")
                            << v
                            << "."
                            << advgetopt::end;
+            SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         }
 
     CATCH_END_SECTION()

@@ -121,6 +121,7 @@ void expected_logs_stack_is_empty()
         {
             std::cerr << "  " << l << std::endl;
         }
+        g_expected_logs.clear();
         throw std::logic_error("a test left an unexpected error message in the g_expected_logs vector.");
     }
 }

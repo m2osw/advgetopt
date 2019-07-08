@@ -748,13 +748,14 @@ CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][
         environment_options.f_help_header = "Testing loading a one letter parameter";
         environment_options.f_configuration_files = confs;
 
+        advgetopt::getopt opt(environment_options);
+
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                   "error: unknown option \"f\" found in configuration file \""
                 + g_config_filename
                 + "\".");
-        advgetopt::getopt opt(environment_options);
-
         opt.process_configuration_file(g_config_filename);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         CATCH_REQUIRE(opt.size("sizes") == 1);
         CATCH_REQUIRE(opt.get_string("sizes") == "-132");
@@ -816,13 +817,14 @@ CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][
         environment_options.f_help_header = "Testing loading a one letter parameter";
         environment_options.f_configuration_files = confs;
 
+        advgetopt::getopt opt(environment_options);
+
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                   "error: unknown option \"f\" found in configuration file \""
                 + g_config_filename
                 + "\".");
-        advgetopt::getopt opt(environment_options);
-
         opt.process_configuration_file(g_config_filename);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         CATCH_REQUIRE(opt.size("sizes") == 1);
         CATCH_REQUIRE(opt.get_string("sizes") == "-132");
@@ -884,13 +886,14 @@ CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][
         environment_options.f_help_header = "Testing loading an unknown parameter and no dynamic allowed";
         environment_options.f_configuration_files = confs;
 
+        advgetopt::getopt opt(environment_options);
+
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                   "error: unknown option \"dynamic\" found in configuration file \""
                 + g_config_filename
                 + "\".");
-        advgetopt::getopt opt(environment_options);
-
         opt.process_configuration_file(g_config_filename);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         CATCH_REQUIRE(opt.size("sizes") == 1);
         CATCH_REQUIRE(opt.get_string("sizes") == "-1001");
@@ -952,13 +955,14 @@ CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][
         environment_options.f_help_header = "Testing loading an unknown parameter and no dynamic allowed";
         environment_options.f_configuration_files = confs;
 
+        advgetopt::getopt opt(environment_options);
+
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                   "error: option \"filenames\" is not supported in configuration files (found in \""
                 + g_config_filename
                 + "\").");
-        advgetopt::getopt opt(environment_options);
-
         opt.process_configuration_file(g_config_filename);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         CATCH_REQUIRE(opt.size("sizes") == 1);
         CATCH_REQUIRE(opt.get_string("sizes") == "-1001");

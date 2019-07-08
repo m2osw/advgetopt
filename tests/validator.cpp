@@ -465,12 +465,14 @@ CATCH_TEST_CASE("invalid_validator", "[validator][invalid][validation]")
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: 10 has to be smaller or equal to 1; you have an invalid range.");
 
         advgetopt::validator::pointer_t integer_validator(advgetopt::validator::create("integer", range));
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Verify invalid regex flags")
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: unsupported regex flag f in regular expression \"/contact@.*\\..*/f\".");
 
         advgetopt::validator::pointer_t regex_validator(advgetopt::validator::create("regex", {"/contact@.*\\..*/f"}));
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         CATCH_REQUIRE(regex_validator != nullptr);
         CATCH_REQUIRE(regex_validator->name() == "regex");
@@ -502,6 +504,7 @@ CATCH_TEST_CASE("invalid_validator", "[validator][invalid][validation]")
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid regex definition, ending / is missing in \"/contact@.*\\..*\".");
 
         advgetopt::validator::pointer_t regex_validator(advgetopt::validator::create("regex", {"/contact@.*\\..*"}));
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         CATCH_REQUIRE(regex_validator != nullptr);
         CATCH_REQUIRE(regex_validator->name() == "regex");
@@ -521,24 +524,28 @@ CATCH_TEST_CASE("invalid_validator", "[validator][invalid][validation]")
                           " 2 were supplied;"
                           " single or double quotation may be required?");
         advgetopt::validator::create("regex", {"[a-z]+", "[0-9]+"});
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                           "error: validator_regex() only supports one parameter;"
                           " 2 were supplied;"
                           " single or double quotation may be required?");
         advgetopt::validator::create("regex([a-z]+, [0-9]+)");
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                           "error: validator_regex() only supports one parameter;"
                           " 3 were supplied;"
                           " single or double quotation may be required?");
         advgetopt::validator::create("regex", {"[a-z]+", "[0-9]+", "[#!@]"});
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                           "error: validator_regex() only supports one parameter;"
                           " 3 were supplied;"
                           " single or double quotation may be required?");
         advgetopt::validator::create("regex(\"[a-z]+\", \"[0-9]+\", \"[#!@]\")");
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Verify missing ')' in string based create")

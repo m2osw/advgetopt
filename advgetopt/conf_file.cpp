@@ -31,8 +31,8 @@
 /** \file
  * \brief Implementation of the option_info class.
  *
- * This is the implementation of the class used to define one command
- * line option.
+ * This is the implementation of the class used to load and save
+ * configuration files.
  */
 
 // self
@@ -49,13 +49,14 @@
 
 // snapdev lib
 //
+#include <snapdev/safe_variable.h>
 #include <snapdev/tokenize_string.h>
 
 
 // boost lib
 //
 #include <boost/algorithm/string/join.hpp>
-
+#include <boost/algorithm/string/replace.hpp>
 
 // C++ lib
 //
@@ -74,19 +75,66 @@ namespace advgetopt
 
 
 
+/** \brief Private conf_file data.
+ *
+ * The conf_file has a few globals used to cache configuration files.
+ * Since it has to work in a multi-thread environment, we also have
+ * a mutex.
+ */
 namespace
 {
 
 
 
+/** \brief A map of configuration files.
+ *
+ * This typedef defines a type used to hold all the configuration files
+ * that were loaded so far.
+ *
+ * The map is indexed by a string representing the full path to the
+ * configuration file.
+ *
+ * The value is a shared pointer to configuration file. Since we may
+ * share that data between multiple users, it made sense to force you
+ * to use a configuration file smart pointer. Note, though, that we
+ * never destroy the pointer until we quit (i.e. you cannot force a
+ * re-load of the configuration file. Changes that happen in memory
+ * are visible to all users, but changes to the actual configuration
+ * file are complete invisible to use.)
+ */
 typedef std::map<std::string, conf_file::pointer_t>     conf_file_map_t;
 
+
+/** \brief The configuration files.
+ *
+ * This global defines a list of configuration files indexed by
+ * filename (full path, but not the URL, just a path.)
+ *
+ * Whenever a configuration file is being retrieved with the
+ * conf_file::get_conf_file() function, it is first searched
+ * in this map. If it exists in the map, that version gets
+ * used (if the URL of the two setups match one to one.)
+ * If there is no such file in the map, then a new one is
+ * created by loading the corresponding file.
+ */
 conf_file_map_t     g_conf_files = conf_file_map_t();
 
 
 class conf_mutex
 {
 public:
+    /** \brief A mutex to protect configuration calls.
+     *
+     * Dealing with configuration files may happen in a multi-threaded
+     * environment. In that case we have to protect many function calls
+     * which access the data because that can change over time.
+     *
+     * \note
+     * The getopt object is already managed on its own:
+     * it reads the parameters on load and then offer constant access
+     * to all of what was loaded, found in an environment variable, or
+     * was handled by parsing the command line arguments.
+     */
     conf_mutex()
     {
         pthread_mutexattr_t mattr;
@@ -114,11 +162,29 @@ public:
         }
     }
 
+    /** \brief Clean up the pthread mutex object.
+     *
+     * This function performs the necessary clean up of the pthread mutex.
+     *
+     * The constructor will have initialized a valid \c f_mutex. That
+     * variable member must be de-initialized before we release this
+     * object.
+     */
     ~conf_mutex()
     {
         pthread_mutex_destroy(&f_mutex);
     }
 
+    /* \brief Lock this mutex.
+     *
+     * This function locks the mutex.
+     *
+     * The lock() and unlock() functions should not be called directly.
+     * Instead you should use the safe_lock object which will make sure
+     * that the two functions get called in pairs as expected (i.e. for
+     * each call to the lock() a corresponding call to unlock() will
+     * automatically happen.)
+     */
     void lock()
     {
         int const err(pthread_mutex_lock(&f_mutex));
@@ -128,6 +194,16 @@ public:
         }
     }
 
+    /** \brief Unlock this mutex.
+     *
+     * This function unlocks the mutex.
+     *
+     * This is \em rarely used to unlock the mutex early.
+     *
+     * \warning
+     * Since a mutex can be locked multiple times (recursively), there is
+     * no protection to know whether it is still locked or not.
+     */
     void unlock()
     {
         int const err(pthread_mutex_unlock(&f_mutex));
@@ -138,26 +214,80 @@ public:
     }
 
 private:
+    /** \brief The Linux mutex.
+     *
+     * This definition is the base Linux mutex as defined by the pthread
+     * implementation under Linux.
+     *
+     * It gets initialized on construction. If the initialization fails,
+     * the constructor function throws so it is always defined when the
+     * object was successfully created.
+     */
     pthread_mutex_t     f_mutex = pthread_mutex_t();
 };
 
+
+/** \brief The configuration file mutex.
+ *
+ * This options are generally viewed as read-only global variables. They
+ * get setup once early on and then used and reused as many times as
+ * required.
+ *
+ * This mutex makes sure that access between multiple thread happens in
+ * a safe manner.
+ */
 conf_mutex g_mutex;
 
+
+
+/** \brief Safely lock/unlock a mutex.
+ *
+ * This function allows for locking and unlocking a mutex in a safe
+ * manner which means that it will always get unlocked when you exit
+ * a context, whether you exit with a return, break, continue or
+ * an exception.
+ *
+ * The constructor locks the mutex.
+ *
+ * The destructor unlocks the mutex.
+ *
+ * When necessary we create a sub-block to make sure that that
+ * the mutex gets released as soon as possible.
+ */
 class safe_lock
 {
 public:
+    /** \brief Lock the mutex.
+     *
+     * The constructor takes a reference to a mutex as input. It saves
+     * that reference and then calls the lock() function on that object.
+     *
+     * \param[in] m  The mutex to lock and unlock.
+     */
     safe_lock(conf_mutex & m)
         : f_mutex(m)
     {
         f_mutex.lock();
     }
 
+    /** \brief Unlock the mutex.
+     *
+     * Whenever we reach the end of the context, unlock the mutex.
+     * This function always calls the unlock and it will happen
+     * even on exceptions or some other early returning within a
+     * function.
+     */
     ~safe_lock()
     {
         f_mutex.unlock();
     }
 
 private:
+    /** \brief The mutex to loack and unlock.
+     *
+     * This variable member holds a reference to the mutex that we
+     * want to lock on construction and unlock on destruction.
+     */
     conf_mutex &        f_mutex;
 };
 
@@ -167,6 +297,38 @@ private:
 
 
 
+
+
+/** \brief Initialize the file setup object.
+ *
+ * This constructor initializes the setup object which can later be used
+ * to search for an existing conf_file or creating a new conf_file.
+ *
+ * The setup holds the various parameters used to know how to load a
+ * configuration file in memory. The parameters include
+ *
+ * \li \p filename -- the name of the file to read as a configuration file.
+ * \li \p line_continuation -- how lines in the files are being read; in
+ * most cases a line in a text file ends when a newline character (`\\n`)
+ * is found; this parameter allows for lines that span (continue) on
+ * multiple text lines. Only one type of continuation or no continue
+ * (a.k.a. "single line") can be used per file.
+ * \li \p assignment_operator -- the character(s) accepted between the
+ * name of a variable and its value; by default this is the equal sign
+ * (`=`). Multiple operators can be accepted.
+ * \li \p comment -- how comments are introduced when supported. Multiple
+ * introducers can be accepted within one file. By default we accept the
+ * Unix Shell (`#`) and INI file (`;`) comment introducers.
+ * \li \p section_operator -- the set of characters accepted as section
+ * separator. By default we accept the INI file syntax (the `[section]`
+ * syntax.)
+ *
+ * \param[in] filename  A valid filename.
+ * \param[in] line_continue  One of the line_continuation_t values.
+ * \param[in] assignment_operator  A set of assignment operator flags.
+ * \param[in] comment  A set of comment flags.
+ * \param[in] section_operator  A set of section operator flags.
+ */
 conf_file_setup::conf_file_setup(
           std::string const & filename
         , line_continuation_t line_continuation
@@ -193,42 +355,204 @@ conf_file_setup::conf_file_setup(
 }
 
 
+/** \brief Check whether the setup is considered valid.
+ *
+ * This function is used to check whether the conf_file_setup is valid or
+ * not. It is valid when everything is in order, which at this point means
+ * the filename is not empty.
+ *
+ * All the other parameters are always viewed as being valid.
+ *
+ * \return true if the conf_file_setup is considered valid.
+ */
 bool conf_file_setup::is_valid() const
 {
     return !f_filename.empty();
 }
 
 
+/** \brief Get the filename.
+ *
+ * When creating a new conf_file_setup, you have to specify a filename.
+ * This function returns that filename after it was canonicalized by
+ * the constructor.
+ *
+ * The canonicalization process computes the full path to the real
+ * file. If such does not exist then no filename is defined, so this
+ * function may return an empty string.
+ *
+ * \return The filename or an empty string if the realpath() could not
+ *         be calculated.
+ */
 std::string const & conf_file_setup::get_filename() const
 {
     return f_filename;
 }
 
 
+/** \brief Get the line continuation setting.
+ *
+ * This function returns the line continuation for this setup.
+ *
+ * This parameter is not a set of flags. We only support one type of
+ * line continuation per file. Many continuations could be contradictory
+ * if used simultaneously.
+ *
+ * The continuation setting is one of the following:
+ *
+ * \li line_continuation_t::single_line -- no continuation support; any
+ * definition must be on one single line.
+ * \li line_continuation_t::rfc_822 -- like email/HTTP, whitespace at
+ * the start of the next line means that the current line continues there;
+ * those whitespaces get removed from the value so if you want a space
+ * between two lines, make sure to finish the current line with a space.
+ * \li line_continuation_t::msdos -- `&` at end of the line.
+ * \li line_continuation_t::unix -- `\` at end of the line.
+ * \li line_continuation_t::fortran -- `&` at the start of the next line;
+ * there cannot be any spaces, the `&` has to be the very first character.
+ * \li line_continuation_t::semicolon -- `;` ends the _line_; when reading
+ * a line with this continuation mode, the reader stops only when it finds
+ * the `;` or EOF (also if a comment is found.)
+ *
+ * \return a line continuation mode.
+ */
 line_continuation_t conf_file_setup::get_line_continuation() const
 {
     return f_line_continuation;
 }
 
 
+/** \brief Get the accepted assignment operators.
+ *
+ * This function returns the set of flags describing the list of
+ * accepted operators one can use to do assignments.
+ *
+ * Right now we support the follow:
+ *
+ * \li ASSIGNMENT_OPERATOR_EQUAL -- the equal (`=`) character, like in
+ * most Unix configuration files and shell scripts.
+ * \li ASSIGNMENT_OPERATOR_COLON -- the colon (`:`) character, like in
+ * email and HTTP headers.
+ * \li ASSIGNMENT_OPERATOR_SPACE -- the space (` `) character; this is
+ * less used, but many Unix configuration files still use this scheme.
+ *
+ * \todo
+ * Add support for additional operators such as:
+ * \todo
+ * \li `+=` -- append data
+ * \li `?=` -- set to this value if not yet set
+ *
+ * \return The set of accepted assignment operators.
+ *
+ * \sa is_assignment_operator()
+ */
 assignment_operator_t conf_file_setup::get_assignment_operator() const
 {
     return f_assignment_operator;
 }
 
 
+/** Get the comment flags.
+ *
+ * This function returns the comment flags. These describe which type
+ * of comments are supported in this configuration file.
+ *
+ * Currently we support:
+ *
+ * \li COMMENT_INI -- INI file like comments, these are introduced with
+ * a semi-colon (`;`) and end with a newline.
+ * \li COMMENT_SHELL -- Unix shell like comments, these are introduced
+ * with a hash (`#`) and end with a newline.
+ * \li COMMENT_CPP -- C++ like comments, these are introduced with two
+ * slashes (`//`) and end with a newline.
+ *
+ * Right now we only support line comments. Configuration entries cannot
+ * include comments. A comment character can be preceeded by spaces and
+ * tabs.
+ *
+ * Line continuation is taken in account with comments. So the following
+ * when the line continuation is set to Unix is one long comment:
+ *
+ * \code
+ *   # line continuation works with comments \
+ *   just like with any other line... because the \
+ *   continuation character and the newline characters \
+ *   just get removed before the get_line() function \
+ *   returns...
+ * \endcode
+ *
+ * \return The comment flags.
+ *
+ * \sa is_comment()
+ */
 comment_t conf_file_setup::get_comment() const
 {
     return f_comment;
 }
 
 
+/** \brief Get the accepted section operators.
+ *
+ * This function returns the flags representing which of the
+ * section operators are accepted.
+ *
+ * We currently support the following types of sections:
+ *
+ * \li SECTION_OPERATOR_NONE -- no sections are accepted.
+ * \li SECTION_OPERATOR_C -- the period (`.`) is viewed as a section/name
+ * separator as when you access a variable member in a structure.
+ * \li SECTION_OPERATOR_CPP -- the scope operator (`::`) is viewed as a
+ * section/name separator; if used at the very beginning, it is viewed
+ * as "global scope" and whatever other section is currently active is
+ * ignored.
+ * \li SECTION_OPERATOR_BLOCK -- the configuration files can include
+ * opening (`{`) and closing (`}`) curvly brackets to group parameters
+ * together; a name must preceed the opening bracket, it represents
+ * the section name.
+ * \li SECTION_OPERATOR_INI_FILE -- like in the MS-DOS .ini files, the
+ * configuration file can include square brackets to mark sections; this
+ * method limits the number of section names to one level.
+ *
+ * \bug
+ * The INI file support does not verify that a section name does not
+ * itself include more sub-sections. For example, the following would
+ * be three section names:
+ * \bug
+ * \code
+ * [a::b::c]
+ * var=123
+ * \endcode
+ * \bug
+ * So in effect, the variable named `var` ends up in section `a`,
+ * sub-section `b`, and sub-sub-section `c` (or section `a::b::c`.)
+ * Before saving the results in the parameters, all section operators
+ * get transformed to the C++ scope (`::`) operator, which is why that
+ * operator used in any name ends up looking like a section separator.
+ */
 section_operator_t conf_file_setup::get_section_operator() const
 {
     return f_section_operator;
 }
 
 
+/** \brief Transform the setup in a URL.
+ *
+ * This function transforms the configuration file setup in a unique URL.
+ * This URL allows us to verify that two setup are the same so when
+ * attempting to reload the same configuration file, we can make sure
+ * you are attempting to do so with the same URL.
+ *
+ * This is because trying to read the same file with, for example, line
+ * continuation set to Unix the first time and then set to MS-DOS the
+ * second time would not load the same thing is either line continuation
+ * was used.
+ *
+ * \todo
+ * We should look into have a set_config_url() or have a constructor
+ * which accepts a URL.
+ *
+ * \return The URL representing this setup.
+ */
 std::string conf_file_setup::get_config_url() const
 {
     if(f_url.empty())
@@ -380,6 +704,25 @@ std::string conf_file_setup::get_config_url() const
  * that new value should be visible by all the users of that configuration
  * file.) Therefore, you can think of a configuration file as a global
  * variable.
+ *
+ * \note
+ * Any number of call this function to load a given file always returns
+ * exactly the same pointer.
+ *
+ * \todo
+ * With the communicator, we will at some point implement a class
+ * used to detect that a file changed, allowing us to get a signal
+ * and reload the file as required. This get_conf_file() function
+ * will greatly benefit from such since that way we can automatically
+ * reload the configuration file. In other words, process A could
+ * make a change, then process B reloads and sees the change that
+ * process A made. Such an implementation will require a proper
+ * locking mechanism of the configuration files while modifications
+ * are being performed.
+ *
+ * \param[in] setup  The settings to be used in this configuration file reader.
+ *
+ * \return A pointer to the configuration file data.
  */
 conf_file::pointer_t conf_file::get_conf_file(conf_file_setup const & setup)
 {
@@ -401,6 +744,101 @@ conf_file::pointer_t conf_file::get_conf_file(conf_file_setup const & setup)
     conf_file::pointer_t cf(new conf_file(setup));
     g_conf_files[setup.get_filename()] = cf;
     return cf;
+}
+
+
+/** \brief Save the configuration file.
+ *
+ * This function saves the current data from this configuration file to
+ * the file. It overwrites the existing file.
+ *
+ * Note that when you load the configuration, you may get data from
+ * many different configuration files. This very file will only
+ * include the data that was loaded from this file, though, and whatever
+ * modifications you made.
+ *
+ * If the conf is not marked as modified, the function returns immediately
+ * with true.
+ *
+ * \param[in] create_backup  Whether to create a backup or not.
+ *
+ * \return true if the save worked as expected.
+ */
+bool conf_file::save_configuration(bool create_backup)
+{
+    if(f_modified)
+    {
+        // create backup?
+        //
+        if(create_backup)
+        {
+            // TODO: offer means to set the backup extension
+            //
+            std::string const backup_filename(f_setup.get_filename() + ".bak");
+
+            if(unlink(backup_filename.c_str()) != 0
+            && errno != ENOENT)
+            {
+                f_errno = errno;   // LCOV_EXCL_LINE
+                return false;      // LCOV_EXCL_LINE
+            }
+
+            if(rename(f_setup.get_filename().c_str(), backup_filename.c_str()) != 0)
+            {
+                f_errno = errno;   // LCOV_EXCL_LINE
+                return false;      // LCOV_EXCL_LINE
+            }
+        }
+
+        // save parameters to file
+        //
+        std::ofstream conf;
+        conf.open(f_setup.get_filename().c_str());
+        if(!conf.is_open())
+        {
+            f_errno = errno;   // LCOV_EXCL_LINE
+            return false;      // LCOV_EXCL_LINE
+        }
+
+        time_t const now(time(nullptr));
+        tm t;
+        gmtime_r(&now, &t);
+        char str_date[16];
+        strftime(str_date, sizeof(str_date), "%Y/%m/%d", &t);
+        char str_time[16];
+        strftime(str_time, sizeof(str_time), "%H:%M:%S", &t);
+
+        // header warning with date & time
+        //
+        conf << "# This file was auto-generated by snap_config.cpp on " << str_date << " at " << str_time << "." << std::endl
+             << "# Making modifications here is likely safe unless the tool handling this" << std::endl
+             << "# configuration file is actively working on it while you do the edits." << std::endl;
+        for(auto p : f_parameters)
+        {
+            conf << p.first << "=";
+
+            // prevent saving \r and \n characters as is when part of the
+            // value; also double \ otherwise reading those back would fail
+            //
+            std::string value(p.second);
+            boost::replace_all(value, "\\", "\\\\");
+            boost::replace_all(value, "\r", "\\r");
+            boost::replace_all(value, "\n", "\\n");
+            boost::replace_all(value, "\t", "\\t");
+            conf << value << std::endl;
+
+            if(!conf)
+            {
+                return false;   // LCOV_EXCL_LINE
+            }
+        }
+
+        // it all worked, it's considered saved now
+        //
+        f_modified = false;
+    }
+
+    return true;
 }
 
 
@@ -445,6 +883,50 @@ conf_file_setup const & conf_file::get_setup() const
 }
 
 
+/** \brief Set a callback to detect when changes happen.
+ *
+ * This function is used to attach a callback to this file. This is
+ * useful if you'd like to know when a change happen to a parameter
+ * in this configuration file.
+ *
+ * The callback gets called when:
+ *
+ * \li The set_parameter() is called and the parameter gets created.
+ * \li The set_parameter() is called and the parameter gets updated.
+ * \li The erase_parameter() is called and the parameter gets erased.
+ *
+ * You can cancel your callback by calling this function again without
+ * a target (i.e. `cf->set_callback(callback_t());`).
+ *
+ * To attach another object to your callback, you can either create
+ * a callback which is attached to your object and a function
+ * member or use std::bind() to attach the object to the function
+ * call.
+ *
+ * \param[in] callback  The new callback std::function.
+ */
+void conf_file::set_callback(callback_t callback)
+{
+    f_callback = callback;
+}
+
+
+/** \brief Get the error number opening/reading the configuration file.
+ *
+ * The class registers the errno value whenever an I/O error happens
+ * while handling the configuration file. In most cases the function
+ * is expected to return 0.
+ *
+ * The ENOENT error should not happen since the setup is going to be
+ * marked as invalid when a configuration file does not exist and
+ * you should not end up creation a conf_file object when that
+ * happens. However, it is expected when you want to make some
+ * changes to a few parameters and save them back to file (i.e. 
+ * the very first time there will be no file under the writable
+ * configuration folder.)
+ *
+ * \return The last errno detected while accessing the configuration file.
+ */
 int conf_file::get_errno() const
 {
     safe_lock lock(g_mutex);
@@ -453,6 +935,23 @@ int conf_file::get_errno() const
 }
 
 
+/** \brief Get a list of sections.
+ *
+ * This function returns a copy of the list of sections defined in
+ * this configuration file. In most cases, you should not need this
+ * function since you are expected to know what parameters may be
+ * defined. There are times though when it can be very practical.
+ * For example, the options_config.cpp makes use of it since each
+ * section is a parameter which we do not know the name of until
+ * we have access to this array of sections.
+ *
+ * \note
+ * We return a list because in a multithread environment another thread
+ * may decide to make changes to the list of parameters which has the
+ * side effect of eventually adding a section.
+ *
+ * \return A copy of the list of sections.
+ */
 conf_file::sections_t conf_file::get_sections() const
 {
     safe_lock lock(g_mutex);
@@ -461,6 +960,18 @@ conf_file::sections_t conf_file::get_sections() const
 }
 
 
+/** \brief Get a list of parameters.
+ *
+ * This function returns a copy of the list of parameters defined in
+ * this configuration file.
+ *
+ * \note
+ * We return a list because in a multithread environment another thread
+ * may decide to make changes to the list of parameters (including
+ * erasing a parameter.)
+ *
+ * \return A copy of the list of parameters.
+ */
 conf_file::parameters_t conf_file::get_parameters() const
 {
     safe_lock lock(g_mutex);
@@ -469,8 +980,25 @@ conf_file::parameters_t conf_file::get_parameters() const
 }
 
 
-bool conf_file::has_parameter(std::string const & name) const
+/** \brief Check whether a parameter is defined.
+ *
+ * This function checks for the existance of a parameter. It is a good
+ * idea to first check for the existance of a parameter since the
+ * get_parameter() function may otherwise return an empty string and
+ * you cannot know whether that empty string means that the parameter
+ * was not defined or it was set to the empty string.
+ *
+ * \param[in] name  The name of the parameter to check.
+ *
+ * \return true if the parameter is defined, false otherwise.
+ *
+ * \sa get_parameter()
+ * \sa set_parameter()
+ */
+bool conf_file::has_parameter(std::string name) const
 {
+    std::replace(name.begin(), name.end(), '_', '-');
+
     safe_lock lock(g_mutex);
 
     auto it(f_parameters.find(name));
@@ -478,8 +1006,27 @@ bool conf_file::has_parameter(std::string const & name) const
 }
 
 
-std::string conf_file::get_parameter(std::string const & name) const
+/** \brief Get the named parameter.
+ *
+ * This function searches for the specified parameter. If that parameter
+ * exists, then its value is returned. Note that the value of a parameter
+ * may be the empty string.
+ *
+ * If the parameter does not exist, the function returns the empty string.
+ * To distinguish between an undefined parameter and a parameter set to
+ * the empty string, use the has_parameter() function.
+ *
+ * \param[in] name  The name of the parameter to retrieve.
+ *
+ * \return The current value of the parameter or an empty string.
+ *
+ * \sa has_parameter()
+ * \sa set_parameter()
+ */
+std::string conf_file::get_parameter(std::string name) const
 {
+    std::replace(name.begin(), name.end(), '_', '-');
+
     safe_lock lock(g_mutex);
 
     auto it(f_parameters.find(name));
@@ -491,34 +1038,107 @@ std::string conf_file::get_parameter(std::string const & name) const
 }
 
 
-bool conf_file::set_parameter(std::string const & section, std::string const & name, std::string const & value)
+/** \brief Set a parameter.
+ *
+ * This function sets a parameter to the specified value.
+ *
+ * The name of the value includes the \p section names and the \p name
+ * parameter concatenated with a C++ scopre operator (::) in between
+ * (unless \p section is the empty string in which case no scope operator
+ * gets added.)
+ *
+ * When the \p name parameter starts with a scope parameter, the \p section
+ * parameter is ignored. This allows one to ignore the current section
+ * (i.e. the last '[...]' or any '\<name> { ... }').
+ *
+ * The \p section parameter is a list of section names separated by
+ * the C++ scope operator (::).
+ *
+ * The \p name parameter may include C (.) and/or C++ (::) section
+ * separators when the configuration file supports those. Internally,
+ * those get moved to the \p section parameter. That allows us to
+ * verify that the number of sections is valid.
+ *
+ * This function may be called any number of time. The last value is
+ * the one kept. While reading the configuration file, though, a warning
+ * is generated when a parameter gets overwritten since this is often the
+ * source of a problem.
+ *
+ * In the following configuration file:
+ *
+ * \code
+ *     var=name
+ *     var=twice
+ * \endcode
+ *
+ * The variable named `var` will be set to `twice` on return and a warning
+ * will have been generated warning about the fact that the variable was
+ * modified while reading the configuration file.
+ *
+ * The full name of the parameter (i.e. section + name) cannot include any
+ * of the following characters:
+ *
+ * \li control characters (any character between 0x00 and 0x1F)
+ * \li a space (0x20)
+ * \li a backslash (`\`)
+ * \li quotation (`"` and `'`)
+ * \li comment (';', '#', '/')
+ * \li assignment ('=', ':', '?', '+')
+ *
+ * \note
+ * The \p section and \p name parameters have any underscore (`_`)
+ * replaced with dashes (`-`) before getting used. The very first
+ * character can be a dash. This allows you to therefore create
+ * parameters which cannot appear in a configuration file, an
+ * environment variable or on the command line (where parameter are
+ * not allowed to start with a dash.)
+ *
+ * \warning
+ * It is important to note that when a \p name includes a C++ scope
+ * operator, the final parameter name looks like it includes a section
+ * name (i.e. the name "a::b", when the C++ section flag is not set,
+ * is accepted as is; so the final parameter name is going to be "a::b"
+ * and therefore it will include what looks like a section name.)
+ * There should not be any concern about this small \em glitch though
+ * since you do not have to accept any such parameter.
+ *
+ * \param[in] section  The list of section or an empty string.
+ * \param[in] name  The name of the parameter.
+ * \param[in] value  The value of the parameter.
+ */
+bool conf_file::set_parameter(std::string section, std::string name, std::string const & value)
 {
     // use the tokenize_string() function because we do not want to support
     // quoted strings in this list of sections which our split_string()
     // does automatically
     //
     string_list_t section_list;
-    snap::tokenize_string(section_list
-                        , section
-                        , "::"
-                        , true
-                        , std::string()
-                        , &snap::string_predicate<string_list_t>);
+
+    std::replace(section.begin(), section.end(), '_', '-');
+    std::replace(name.begin(), name.end(), '_', '-');
 
     char const * n(name.c_str());
 
-    // global scope? if so ignore the section_list (clear it)
+    // global scope? if so ignore the section parameter
     //
     if((f_setup.get_section_operator() & SECTION_OPERATOR_CPP) != 0
     && n[0] == ':'
     && n[1] == ':')
     {
-        section_list.clear();
         do
         {
             ++n;
         }
         while(*n == ':');
+    }
+    else
+    {
+        snap::tokenize_string(section_list
+                            , section
+                            , "::"
+                            , true
+                            , std::string()
+                            , &snap::string_predicate<string_list_t>);
     }
 
     char const * s(n);
@@ -608,6 +1228,79 @@ bool conf_file::set_parameter(std::string const & section, std::string const & n
         return false;
     }
 
+    section_list.push_back(param_name);
+    std::string const full_name(boost::algorithm::join(section_list, "::"));
+
+    // verify that each section name only includes characters we accept
+    // for a parameter name
+    //
+    // WARNING: we do not test with full_name because it includes ':'
+    //
+    for(auto sn : section_list)
+    {
+        for(char const * f(sn.c_str()); *f != '\0'; ++f)
+        {
+            switch(*f)
+            {
+            case '\001':    // forbid controls
+            case '\002':
+            case '\003':
+            case '\004':
+            case '\005':
+            case '\006':
+            case '\007':
+            case '\010':
+            case '\011':
+            case '\012':
+            case '\013':
+            case '\014':
+            case '\015':
+            case '\016':
+            case '\017':
+            case '\020':
+            case '\021':
+            case '\022':
+            case '\023':
+            case '\024':
+            case '\025':
+            case '\026':
+            case '\027':
+            case '\030':
+            case '\031':
+            case '\032':
+            case '\033':
+            case '\034':
+            case '\035':
+            case '\036':
+            case '\037':
+            case ' ':       // forbid spaces
+            case '\'':      // forbid all quotes
+            case '"':       // forbid all quotes
+            case ';':       // forbid all comment operators
+            case '#':       // forbid all comment operators
+            case '/':       // forbid all comment operators
+            case '=':       // forbid all assignment operators
+            case ':':       // forbid all assignment operators
+            case '?':       // forbid all assignment operators (for later)
+            case '+':       // forbid all assignment operators (for later)
+            case '\\':      // forbid backslashes
+                log << log_level_t::error
+                    << "parameter \""
+                    << full_name
+                    << "\" on line "
+                    << f_line
+                    << " in configuration file \""
+                    << f_setup.get_filename()
+                    << "\" includes a character not acceptable for a section or parameter name (controls, space, quotes, and \";#/=:?+\\\"."
+                    << end;
+                return false;
+
+            }
+        }
+    }
+
+    safe_lock lock(g_mutex);
+
     // add the section to the list of sections
     //
     // TODO: should we have a list of all the parent sections? Someone can
@@ -619,17 +1312,121 @@ bool conf_file::set_parameter(std::string const & section, std::string const & n
         f_sections.insert(section_name);
     }
 
-    section_list.push_back(param_name);
-    std::string const full_name(boost::algorithm::join(section_list, "::"));
+    callback_action_t action(callback_action_t::created);
+    auto it(f_parameters.find(full_name));
+    if(it == f_parameters.end())
+    {
+        f_parameters[full_name] = value;
+    }
+    else
+    {
+        if(f_reading)
+        {
+            // this is just a warning; it can be neat to know about such
+            // problems and fix them early
+            //
+            log << log_level_t::warning
+                << "parameter \""
+                << full_name
+                << "\" on line "
+                << f_line
+                << " in configuration file \""
+                << f_setup.get_filename()
+                << "\" was found twice in the same configuration file."
+                << end;
+        }
 
-    safe_lock lock(g_mutex);
+        it->second = value;
 
-    f_parameters[full_name] = value;
+        action = callback_action_t::updated;
+    }
+
+    if(!f_reading)
+    {
+        f_modified = true;
+
+        if(f_callback)
+        {
+            f_callback(shared_from_this(), action, full_name, value);
+        }
+    }
 
     return true;
 }
 
 
+/** \brief Erase the named parameter from this configuration file.
+ *
+ * This function can be used to remove the specified parameter from
+ * this configuration file.
+ *
+ * If that parameter is not defined in the file, then nothing happens.
+ *
+ * \param[in] name  The name of the parameter to remove.
+ *
+ * \return true if the parameter was removed, false if it did not exist.
+ */
+bool conf_file::erase_parameter(std::string name)
+{
+    std::replace(name.begin(), name.end(), '_', '-');
+
+    auto it(f_parameters.find(name));
+    if(it == f_parameters.end())
+    {
+        return false;
+    }
+
+    f_parameters.erase(it);
+
+    if(!f_reading)
+    {
+        f_modified = true;
+
+        if(f_callback)
+        {
+            f_callback(shared_from_this(), callback_action_t::erased, name, std::string());
+        }
+    }
+
+    return true;
+}
+
+
+/** \brief Check whether this configuration file was modified.
+ *
+ * This function returns the value of the f_modified flag which is true
+ * if any value was createed, updated, or erased from the configuration
+ * file since after it was loaded.
+ *
+ * This tells you whether you should call the save() function, assuming
+ * you want to keep such changes.
+ *
+ * \return true if changes were made to this file parameters.
+ */
+bool conf_file::was_modified() const
+{
+    return f_modified;
+}
+
+
+/** \brief Read one characte from the input stream.
+ *
+ * This function reads one character from the input stream and returns it
+ * as an `int`.
+ *
+ * If there is an ungotten character (i.e. ungetc() was called) then that
+ * character is returned.
+ *
+ * When the end of the file is reached, this function returns -1.
+ *
+ * \note
+ * This function is oblivious of UTF-8. It should not matter since any
+ * Unicode character would anyway be treated as is.
+ *
+ * \param[in,out] in  The input stream.
+ *
+ * \return The character read or -1 when EOF is reached.
+ */
 int conf_file::getc(std::ifstream & in)
 {
     if(f_unget_char != '\0')
@@ -651,6 +1448,21 @@ int conf_file::getc(std::ifstream & in)
 }
 
 
+/** \brief Restore one character.
+ *
+ * This function is used whenever we read one additional character to
+ * know whether a certain character followed another. For example, we
+ * check for a `'\\n'` whenever we find a `'\\r'`. However, if the
+ * character right after the `'\\r'` is not a `'\\n'` we call this
+ * ungetc() function so next time we can re-read that same character.
+ *
+ * \note
+ * You can call ungetc() only once between calls to getc(). The
+ * current buffer is just one single character. Right now our
+ * parser doesn't need more than that.
+ *
+ * \param[in] c  The character to restore.
+ */
 void conf_file::ungetc(int c)
 {
     if(f_unget_char != '\0')
@@ -661,6 +1473,24 @@ void conf_file::ungetc(int c)
 }
 
 
+/** \brief Get one line.
+ *
+ * This function reads one line. The function takes the line continuation
+ * setup in account. So for example a line that ends with a backslash
+ * continues on the next line when the line continuation is setup to Unix.
+ *
+ * Note that by default comments are also continued. So a backslash in
+ * Unix mode continues a comment on the next line.
+ *
+ * There is a special case with the semicolon continuation setup. When
+ * the line starts as a comment, it will end on the first standalone
+ * newline (i.e. a comment does not need to end with a semi-colon.)
+ *
+ * \param[in,out] in  The input stream.
+ * \param[out] line  Where the line gets saved.
+ *
+ * \return true if a line was read, false on EOF.
+ */
 bool conf_file::get_line(std::ifstream & in, std::string & line)
 {
     line.clear();
@@ -779,6 +1609,8 @@ bool conf_file::get_line(std::ifstream & in, std::string & line)
  */
 void conf_file::read_configuration()
 {
+    snap::safe_variable<decltype(f_reading)> safe_reading(f_reading, true);
+
     std::ifstream conf(f_setup.get_filename());
     if(!conf)
     {
@@ -948,7 +1780,12 @@ void conf_file::read_configuration()
                 }
             }
             size_t const len(e - s);
-            set_parameter(current_section, name, std::string(s, len));
+            std::string value(s, len);
+            boost::replace_all(value, "\\\\", "\\");
+            boost::replace_all(value, "\\r", "\r");
+            boost::replace_all(value, "\\n", "\n");
+            boost::replace_all(value, "\\t", "\t");
+            set_parameter(current_section, name, value);
         }
     }
     if(!sections.empty())
