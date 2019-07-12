@@ -1,26 +1,4 @@
 
 
 * Confirm that all the configuration functionality from snapwebsites is available
-* Support the equal sign for long parameter (i.e. `--config=/file/name`)
-
-* Look into breaking up the existing tests, especially since some of the old functionality was removed and the concept of re-testing the same options later is not useful.
-* Finish up the unit tests to at least cover 100% of the code.
-
-
-* Reorganize the unit tests by functionality
-
-** DONE
-*** version.cpp -- check the library version
-*** options_files.cpp -- check the loading of options from a file
-*** options_parser.cpp -- check all possibilities in the parser (need more error checking in lib. though)
-
-** Work Required
-*** arguments.cpp -- test command line options covering all cases, valid/invalid
-*** valid_config_files.cpp -- (1) fix name (2) move errors if somewhere else (3) make sure we cover 100%
-
-** Move to other tests
-*** valid_config_files_extra.cpp -- what's that?!
-*** logic_errors.cpp -- remove once we confirm that those 2 tests are done somewhere else
-*** invalid_parameters.cpp -- remove once those tests are somewhere else
-
 

@@ -77,7 +77,7 @@ namespace advgetopt
  *
  * \return The list of configuration filenames.
  */
-string_list_t getopt::get_configuration_filenames(bool exists, bool writable)
+string_list_t getopt::get_configuration_filenames(bool exists, bool writable) const
 {
     string_list_t result;
 

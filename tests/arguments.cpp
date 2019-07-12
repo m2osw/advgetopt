@@ -126,6 +126,7 @@ CATCH_TEST_CASE("flag_argument", "[arguments][valid][getopt]")
             // an invalid parameter, MUST NOT EXIST
             CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
             CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+            CATCH_REQUIRE(opt.get_option('Z', true) == nullptr);
             CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
             CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
             CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
@@ -139,6 +140,7 @@ CATCH_TEST_CASE("flag_argument", "[arguments][valid][getopt]")
             // the valid parameter
             CATCH_REQUIRE(opt.get_option("verbose") != nullptr);
             CATCH_REQUIRE(opt.get_option('v') != nullptr);
+            CATCH_REQUIRE(opt.get_option('v', true) == opt.get_option('v'));
             CATCH_REQUIRE(opt.is_defined("verbose"));
             CATCH_REQUIRE(opt.get_default("verbose").empty());
             CATCH_REQUIRE(opt.size("verbose") == 1);
@@ -187,6 +189,7 @@ CATCH_TEST_CASE("flag_argument", "[arguments][valid][getopt]")
             // an invalid parameter, MUST NOT EXIST
             CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
             CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+            CATCH_REQUIRE(opt.get_option('Z', true) == nullptr);
             CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
             CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
             CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
@@ -199,7 +202,8 @@ CATCH_TEST_CASE("flag_argument", "[arguments][valid][getopt]")
 
             // the valid parameter
             CATCH_REQUIRE(opt.get_option("verbose") != nullptr);
-            CATCH_REQUIRE(opt.get_option('v') != nullptr);
+            CATCH_REQUIRE(opt.get_option('v') == opt.get_option("verbose"));
+            CATCH_REQUIRE(opt.get_option('v', true) == opt.get_option('v'));
             CATCH_REQUIRE(opt.is_defined("verbose"));
             CATCH_REQUIRE(opt.get_default("verbose").empty());
             CATCH_REQUIRE(opt.size("verbose") == 1);
@@ -228,6 +232,7 @@ CATCH_TEST_CASE("flag_argument", "[arguments][valid][getopt]")
             // an invalid parameter, MUST NOT EXIST
             CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
             CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+            CATCH_REQUIRE(opt.get_option('Z', true) == nullptr);
             CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
             CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
             CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
@@ -241,6 +246,7 @@ CATCH_TEST_CASE("flag_argument", "[arguments][valid][getopt]")
             // the valid parameter
             CATCH_REQUIRE(opt.get_option("verbose") != nullptr);
             CATCH_REQUIRE(opt.get_option('v') != nullptr);
+            CATCH_REQUIRE(opt.get_option('v', true) == opt.get_option("verbose"));
             CATCH_REQUIRE(opt.is_defined("verbose"));
             CATCH_REQUIRE(opt.get_default("verbose").empty());
             CATCH_REQUIRE(opt.size("verbose") == 1);
@@ -305,7 +311,7 @@ CATCH_TEST_CASE("flag_argument", "[arguments][valid][getopt]")
 
             // the valid parameter
             CATCH_REQUIRE(opt.get_option("verbose") != nullptr);
-            CATCH_REQUIRE(opt.get_option('v') != nullptr);
+            CATCH_REQUIRE(opt.get_option('v') == opt.get_option("verbose"));
             CATCH_REQUIRE(opt.is_defined("verbose"));
             CATCH_REQUIRE(opt.get_default("verbose").empty());
             CATCH_REQUIRE(opt.size("verbose") == 1);
@@ -361,6 +367,9 @@ CATCH_TEST_CASE("flag_argument", "[arguments][valid][getopt]")
             CATCH_REQUIRE(opt.get_option("verbosity") != nullptr);
             CATCH_REQUIRE(opt.get_option("verbosity") == opt.get_option("verbose"));
             CATCH_REQUIRE(opt.is_defined("verbosity"));
+            CATCH_REQUIRE(opt.get_option('n') == opt.get_option("verbose"));
+            CATCH_REQUIRE(opt.get_option('n', true) == opt.get_option("verbosity", true));
+            CATCH_REQUIRE(opt.get_option('n', true) != opt.get_option("verbose"));
             CATCH_REQUIRE(opt.get_default("verbosity").empty());
             CATCH_REQUIRE(opt.size("verbosity") == 1);
 

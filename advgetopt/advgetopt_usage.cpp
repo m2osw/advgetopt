@@ -42,6 +42,7 @@
 // C++ lib
 //
 #include    <iomanip>
+#include    <iostream>
 
 
 // last include
@@ -238,16 +239,19 @@ std::string getopt::usage( flag_t show ) const
 }
 
 
-/** \brief Change the %p in help strings in the program name.
+/** \brief Change the % flags in help strings.
  *
- * Because the same set of options may be used by different programs,
- * having the usage directly in the list of options may break the
- * usage name. So here we offer a dynamic way of changing the help
- * string with "%p". For example:
+ * This function goes through the help string and replaces the `%\<flag>`
+ * with various content available in the getopt object.
  *
- * \code
- *    "Usage: %p [-opt] filename ..."
- * \endcode
+ * This is helpful for various reasons. For example, you may use the
+ * same set of options in several different programs, in which case the
+ * `%p` is likely useful to print out the name of the program currently
+ * in use.
+ *
+ * Similarly we offer ways to print out lists of configuration files,
+ * the environment variable name & value, etc. The following is the
+ * list of supported flags:
  *
  * \li "%%" -- print out a percent
  * \li "%a" -- print out the project name (a.k.a. application name)
@@ -256,17 +260,32 @@ std::string getopt::usage( flag_t show ) const
  * \li "%d" -- print out the first directory with configuration files.
  * \li "%*d" -- print out the complete list of directories with configuration
  * files.
+ * \li "%e" -- print out the name of the environment variable.
+ * \li "%*e" -- print out the name and value of the environment variable.
  * \li "%f" -- print out the first configuration path and filename.
  * \li "%*f" -- print out all the configuration full paths.
- * \li "%l" -- print out the license
- * \li "%p" -- print out the program basename
- * \li "%*p" -- print out the full program name
- * \li "%t" -- print out the build time
- * \li "%v" -- print out the version
+ * \li "%g" -- print out the list of existing configuration files.
+ * \li "%*g" -- print out the list of all possible configuration files.
+ * \li "%l" -- print out the license.
+ * \li "%o" -- show the configuration filename where changes get written.
+ * \li "%p" -- print out the program basename.
+ * \li "%*p" -- print out the full program name.
+ * \li "%t" -- print out the build time.
+ * \li "%v" -- print out the version.
+ * \li "%w" -- print out the list of all the writable configuration files.
  *
- * \param[in] help  A string that may include '%p'.
+ * Here is an example where the `%p` can be used:
  *
- * \return The string with any '%p' replaced with the program name.
+ * \code
+ *    "Usage: %p [-opt] filename ..."
+ * \endcode
+ *
+ * The other flags are more often used in places like the copyright notice
+ * the footer, the license notice, etc.
+ *
+ * \param[in] help  A string that may include `%` flags.
+ *
+ * \return The string with any '%\<flag>' replaced.
  *
  * \sa parse_program_name()
  */
@@ -356,6 +375,26 @@ std::string getopt::process_help_string(char const * help) const
                     help += 3;
                     break;
 
+                case 'g':
+                    {
+                        string_list_t list(get_configuration_filenames(false, false));
+                        bool first(true);
+                        for(auto n : list)
+                        {
+                            if(first)
+                            {
+                                first = false;
+                            }
+                            else
+                            {
+                                result += ", ";
+                            }
+                            result += n;
+                        }
+                        help += 3;
+                    }
+                    break;
+
                 case 'p':
                     result += f_program_fullname;
                     help += 3;
@@ -414,12 +453,43 @@ std::string getopt::process_help_string(char const * help) const
                 help += 2;
                 break;
 
+            case 'g':
+                {
+                    string_list_t list(get_configuration_filenames(true, false));
+                    bool first(true);
+                    for(auto n : list)
+                    {
+                        if(first)
+                        {
+                            first = false;
+                        }
+                        else
+                        {
+                            result += ", ";
+                        }
+                        result += n;
+                    }
+                    help += 2;
+                }
+                break;
+
             case 'l':
                 if(f_options_environment.f_license != nullptr)
                 {
                     result += f_options_environment.f_license;
                 }
                 help += 2;
+                break;
+
+            case 'o':
+                {
+                    string_list_t const list(get_configuration_filenames(false, true));
+                    if(!list.empty())
+                    {
+                        result += list.back();
+                    }
+                    help += 2;
+                }
                 break;
 
             case 'p':
@@ -441,6 +511,26 @@ std::string getopt::process_help_string(char const * help) const
                     result += f_options_environment.f_version;
                 }
                 help += 2;
+                break;
+
+            case 'w':
+                {
+                    string_list_t const list(get_configuration_filenames(true, true));
+                    bool first(true);
+                    for(auto n : list)
+                    {
+                        if(first)
+                        {
+                            first = false;
+                        }
+                        else
+                        {
+                            result += ", ";
+                        }
+                        result += n;
+                    }
+                    help += 2;
+                }
                 break;
 
             }

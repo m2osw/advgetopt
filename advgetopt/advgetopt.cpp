@@ -197,7 +197,7 @@ option const g_system_options[] =
     define_option(
           Name("build-date")
         , Flags(standalone_command_flags())
-        , Help("print out the time and date when %p was build and exit.")
+        , Help("print out the time and date when %p was built and exit.")
     ),
     define_option(
           Name("environment-variable-name")

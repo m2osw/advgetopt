@@ -76,7 +76,7 @@ file, these tests partially exercise the configuration loader implementation.
 This section checks the loading (and saving) of data in a configuration
 file. It also exercises all the supported configuration formats.
 
-    dev/coverage configuration_spaces,configuration_setup,config_reload_tests,config_duplicated_variables,config_callback_calls,config_line_continuation_tests,config_assignment_operator_tests,config_comment_tests,config_section_tests,invalid_configuration_setup,config_reload_invalid_setup,missing_configuration_file,invalid_sections,invalid_variable_name
+    dev/coverage configuration_spaces,configuration_setup,config_reload_tests,config_duplicated_variables,config_callback_calls,config_line_continuation_tests,config_assignment_operator_tests,config_comment_tests,config_section_tests,save_config_file,invalid_configuration_setup,config_reload_invalid_setup,missing_configuration_file,invalid_sections,invalid_variable_name
 
 ## Program & Project Names (`advgetopt_access.cpp`)
 
@@ -107,7 +107,7 @@ Whenever an error occurs or when a command line option such as `--help`
 is used, the usage screens get printed. This tests verify that the usage
 output works as expected.
 
-    dev/coverage usage_function,help_string_percent,help_string_project_name,help_string_build_date,help_string_copyright,help_string_directories,help_string_environment_variable,help_string_configuration_files,help_string_license,help_string_program_name,help_string_build_time,help_string_version
+    dev/coverage usage_function,help_string_percent,help_string_project_name,help_string_build_date,help_string_copyright,help_string_directories,help_string_environment_variable,help_string_configuration_files,help_string_configuration_files_functions,help_string_license,help_string_program_name,help_string_build_time,help_string_version,help_string_writable_configuration_files
 
 ## Logger (`log.cpp`)
 

@@ -51,10 +51,15 @@ namespace SNAP_CATCH2_NAMESPACE
 
 extern std::string                  g_tmp_dir;
 
+extern std::string                  g_config_filename;
+extern std::string                  g_config_project_filename;
+
 
 void                                push_expected_log(std::string const & message);
 void                                log_for_test(advgetopt::log_level_t level, std::string const & message);
 void                                expected_logs_stack_is_empty();
+
+void                                init_tmp_dir(std::string const & project_name, std::string const & prefname, bool dir = false);
 
 
 } // SNAP_CATCH2_NAMESPACE namespace

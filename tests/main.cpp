@@ -55,7 +55,43 @@ namespace SNAP_CATCH2_NAMESPACE
 {
 
 
-std::string     g_tmp_dir;
+
+std::string                 g_tmp_dir;
+
+std::string                 g_config_filename;
+std::string                 g_config_project_filename;
+
+
+void init_tmp_dir(std::string const & project_name, std::string const & prefname, bool dir)
+{
+    std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir);
+    tmpdir += "/.config";
+    std::stringstream ss;
+    if(dir)
+    {
+        ss << "mkdir -p " << tmpdir << "/" << prefname << "/" << project_name << ".d";
+    }
+    else
+    {
+        ss << "mkdir -p " << tmpdir << "/" << project_name << ".d";
+    }
+    if(system(ss.str().c_str()) != 0)
+    {
+        std::cerr << "fatal error: creating sub-temporary directory \"" << ss.str() << "\" failed.\n";
+        exit(1);
+    }
+    if(dir)
+    {
+        g_config_filename = tmpdir + "/" + prefname;
+        g_config_project_filename = tmpdir + "/" + prefname + "/" + project_name + ".d";
+    }
+    else
+    {
+        g_config_filename = tmpdir + "/" + prefname + ".config";
+        g_config_project_filename = tmpdir + "/" + project_name + ".d/" + prefname + ".config";
+    }
+}
+
 
 
 }

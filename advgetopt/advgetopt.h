@@ -113,7 +113,7 @@ public:
     size_t                  get_configuration_filename_size() const;
     std::string             get_configuration_filename(int idx) const;
     string_list_t           get_configuration_filenames(bool exists
-                                                      , bool writable);
+                                                      , bool writable) const;
 
     std::string             usage(flag_t show = GETOPT_FLAG_SHOW_MOST) const;
     std::string             process_help_string(char const * help) const;

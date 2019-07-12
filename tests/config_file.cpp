@@ -50,32 +50,6 @@
 
 
 
-namespace
-{
-
-
-
-std::string     g_config_filename;
-std::string     g_config_project_filename;
-
-void init_tmp_dir(std::string const & project_name, std::string const & prefname)
-{
-    std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir);
-    tmpdir += "/.config";
-    std::stringstream ss;
-    ss << "mkdir -p " << tmpdir << "/" << project_name << ".d";
-    if(system(ss.str().c_str()) != 0)
-    {
-        std::cerr << "fatal error: creating sub-temporary directory \"" << tmpdir << "\" failed.\n";
-        exit(1);
-    }
-    g_config_filename = tmpdir + "/" + prefname + ".config";
-    g_config_project_filename = tmpdir + "/" + project_name + ".d/" + prefname + ".config";
-}
-
-
-
-} // no name namespace
 
 
 
@@ -112,11 +86,11 @@ CATCH_TEST_CASE("configuration_setup", "[config][getopt]")
             int const id(rand());
             std::string const name("setup-file-" + std::to_string(id));
 
-            init_tmp_dir("setup", name);
+            SNAP_CATCH2_NAMESPACE::init_tmp_dir("setup", name);
 
             {
                 std::ofstream config_file;
-                config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+                config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
                 CATCH_REQUIRE(config_file.good());
                 config_file <<
                     "# Auto-generated\n"
@@ -140,7 +114,7 @@ CATCH_TEST_CASE("configuration_setup", "[config][getopt]")
                             so < advgetopt::SECTION_OPERATOR_MASK;
                             ++so)
                         {
-                            advgetopt::conf_file_setup setup(g_config_filename
+                            advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                                                 , static_cast<advgetopt::line_continuation_t>(lc)
                                                 , ao
                                                 , c
@@ -149,7 +123,7 @@ CATCH_TEST_CASE("configuration_setup", "[config][getopt]")
                             advgetopt::assignment_operator_t real_ao(ao == 0 ? advgetopt::ASSIGNMENT_OPERATOR_EQUAL : ao);
 
                             CATCH_REQUIRE(setup.is_valid());
-                            CATCH_REQUIRE(setup.get_filename() == g_config_filename);
+                            CATCH_REQUIRE(setup.get_filename() == SNAP_CATCH2_NAMESPACE::g_config_filename);
                             CATCH_REQUIRE(setup.get_line_continuation() == static_cast<advgetopt::line_continuation_t>(lc));
                             CATCH_REQUIRE(setup.get_assignment_operator() == real_ao);
                             CATCH_REQUIRE(setup.get_comment() == c);
@@ -159,7 +133,7 @@ CATCH_TEST_CASE("configuration_setup", "[config][getopt]")
 //std::cerr << "+++ " << lc << " / " << ao << " / " << c << " / " << so << " URL [" << url << "]\n";
                             CATCH_REQUIRE(url.substr(0, 8) == "file:///");
 
-                            CATCH_REQUIRE(url.substr(7, g_config_filename.length()) == g_config_filename);
+                            CATCH_REQUIRE(url.substr(7, SNAP_CATCH2_NAMESPACE::g_config_filename.length()) == SNAP_CATCH2_NAMESPACE::g_config_filename);
 
                             std::string::size_type const qm_pos(url.find('?'));
                             if(qm_pos == std::string::npos)
@@ -369,11 +343,11 @@ CATCH_TEST_CASE("configuration_setup", "[config][getopt]")
 CATCH_TEST_CASE("config_reload_tests")
 {
     CATCH_START_SECTION("Load a file, update it, verify it does not get reloaded")
-        init_tmp_dir("reload", "load-twice");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("reload", "load-twice");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -385,7 +359,7 @@ CATCH_TEST_CASE("config_reload_tests")
 
         advgetopt::conf_file::pointer_t file1;
         {
-            advgetopt::conf_file_setup setup(g_config_filename
+            advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                                 , advgetopt::line_continuation_t::single_line
                                 , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                                 , advgetopt::COMMENT_SHELL
@@ -416,7 +390,7 @@ CATCH_TEST_CASE("config_reload_tests")
         // change all the values now
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -430,7 +404,7 @@ CATCH_TEST_CASE("config_reload_tests")
 
         // "reloading" that very same file has the old data
         {
-            advgetopt::conf_file_setup setup(g_config_filename
+            advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                                 , advgetopt::line_continuation_t::single_line
                                 , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                                 , advgetopt::COMMENT_SHELL
@@ -469,11 +443,11 @@ CATCH_TEST_CASE("config_reload_tests")
 CATCH_TEST_CASE("config_duplicated_variables")
 {
     CATCH_START_SECTION("file with the same variable defined multiple times")
-        init_tmp_dir("duplicated-variable", "multiple");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("duplicated-variable", "multiple");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -487,7 +461,7 @@ CATCH_TEST_CASE("config_duplicated_variables")
             ;
         }
 
-        advgetopt::conf_file_setup setup(g_config_filename
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                             , advgetopt::line_continuation_t::single_line
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
@@ -502,12 +476,12 @@ CATCH_TEST_CASE("config_duplicated_variables")
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                       "warning: parameter \"multiple\" on line 5 in"
                       " configuration file \""
-                    + g_config_filename
+                    + SNAP_CATCH2_NAMESPACE::g_config_filename
                     + "\" was found twice in the same configuration file.");
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                       "warning: parameter \"multiple\" on line 7 in"
                       " configuration file \""
-                    + g_config_filename
+                    + SNAP_CATCH2_NAMESPACE::g_config_filename
                     + "\" was found twice in the same configuration file.");
         advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
@@ -542,11 +516,11 @@ CATCH_TEST_CASE("config_duplicated_variables")
 CATCH_TEST_CASE("config_callback_calls")
 {
     CATCH_START_SECTION("setup a callback and test the set_parameter()/erase() functions")
-        init_tmp_dir("callback-variable", "callback");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("callback-variable", "callback");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -560,7 +534,7 @@ CATCH_TEST_CASE("config_callback_calls")
             ;
         }
 
-        advgetopt::conf_file_setup setup(g_config_filename
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                             , advgetopt::line_continuation_t::single_line
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
@@ -703,11 +677,11 @@ CATCH_TEST_CASE("config_callback_calls")
 CATCH_TEST_CASE("config_line_continuation_tests")
 {
     CATCH_START_SECTION("single_line")
-        init_tmp_dir("line-continuation", "single-line");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("line-continuation", "single-line");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -730,7 +704,7 @@ CATCH_TEST_CASE("config_line_continuation_tests")
             ;
         }
 
-        advgetopt::conf_file_setup setup(g_config_filename
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                             , advgetopt::line_continuation_t::single_line
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
@@ -787,11 +761,11 @@ CATCH_TEST_CASE("config_line_continuation_tests")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("rfc822")
-        init_tmp_dir("line-continuation", "rfc822");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("line-continuation", "rfc822");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -814,7 +788,7 @@ CATCH_TEST_CASE("config_line_continuation_tests")
             ;
         }
 
-        advgetopt::conf_file_setup setup(g_config_filename
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                             , advgetopt::line_continuation_t::rfc_822
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
@@ -857,11 +831,11 @@ CATCH_TEST_CASE("config_line_continuation_tests")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("msdos")
-        init_tmp_dir("line-continuation", "msdos");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("line-continuation", "msdos");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -884,7 +858,7 @@ CATCH_TEST_CASE("config_line_continuation_tests")
             ;
         }
 
-        advgetopt::conf_file_setup setup(g_config_filename
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                             , advgetopt::line_continuation_t::msdos
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
@@ -929,11 +903,11 @@ CATCH_TEST_CASE("config_line_continuation_tests")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("unix")
-        init_tmp_dir("line-continuation", "unix");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("line-continuation", "unix");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -956,7 +930,7 @@ CATCH_TEST_CASE("config_line_continuation_tests")
             ;
         }
 
-        advgetopt::conf_file_setup setup(g_config_filename
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                             , advgetopt::line_continuation_t::unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
@@ -1001,11 +975,11 @@ CATCH_TEST_CASE("config_line_continuation_tests")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("fortran")
-        init_tmp_dir("line-continuation", "fortran");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("line-continuation", "fortran");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -1028,7 +1002,7 @@ CATCH_TEST_CASE("config_line_continuation_tests")
             ;
         }
 
-        advgetopt::conf_file_setup setup(g_config_filename
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                             , advgetopt::line_continuation_t::fortran
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
@@ -1073,11 +1047,11 @@ CATCH_TEST_CASE("config_line_continuation_tests")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("semicolon")
-        init_tmp_dir("line-continuation", "semicolon");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("line-continuation", "semicolon");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\r\n"
@@ -1100,7 +1074,7 @@ CATCH_TEST_CASE("config_line_continuation_tests")
             ;
         }
 
-        advgetopt::conf_file_setup setup(g_config_filename
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                             , advgetopt::line_continuation_t::semicolon
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
@@ -1165,11 +1139,11 @@ CATCH_TEST_CASE("config_line_continuation_tests")
 CATCH_TEST_CASE("config_assignment_operator_tests")
 {
     CATCH_START_SECTION("equal")
-        init_tmp_dir("assignment-operator", "equal");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("assignment-operator", "equal");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -1181,7 +1155,7 @@ CATCH_TEST_CASE("config_assignment_operator_tests")
             ;
         }
 
-        advgetopt::conf_file_setup setup(g_config_filename
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                             , advgetopt::line_continuation_t::single_line
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
@@ -1210,11 +1184,11 @@ CATCH_TEST_CASE("config_assignment_operator_tests")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("colon")
-        init_tmp_dir("assignment-operator", "colon");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("assignment-operator", "colon");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -1226,7 +1200,7 @@ CATCH_TEST_CASE("config_assignment_operator_tests")
             ;
         }
 
-        advgetopt::conf_file_setup setup(g_config_filename
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                             , advgetopt::line_continuation_t::single_line
                             , advgetopt::ASSIGNMENT_OPERATOR_COLON
                             , advgetopt::COMMENT_SHELL
@@ -1255,11 +1229,11 @@ CATCH_TEST_CASE("config_assignment_operator_tests")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("space")
-        init_tmp_dir("assignment-operator", "space");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("assignment-operator", "space");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -1271,7 +1245,7 @@ CATCH_TEST_CASE("config_assignment_operator_tests")
             ;
         }
 
-        advgetopt::conf_file_setup setup(g_config_filename
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                             , advgetopt::line_continuation_t::single_line
                             , advgetopt::ASSIGNMENT_OPERATOR_SPACE
                             , advgetopt::COMMENT_SHELL
@@ -1300,11 +1274,11 @@ CATCH_TEST_CASE("config_assignment_operator_tests")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("equal_colon_and_space")
-        init_tmp_dir("assignment-operator", "all");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("assignment-operator", "all");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -1316,7 +1290,7 @@ CATCH_TEST_CASE("config_assignment_operator_tests")
             ;
         }
 
-        advgetopt::conf_file_setup setup(g_config_filename
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                             , advgetopt::line_continuation_t::single_line
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             | advgetopt::ASSIGNMENT_OPERATOR_COLON
@@ -1356,11 +1330,11 @@ CATCH_TEST_CASE("config_assignment_operator_tests")
 CATCH_TEST_CASE("config_comment_tests")
 {
     CATCH_START_SECTION("ini comment")
-        init_tmp_dir("comment", "ini");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("comment", "ini");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "; Auto-generated\n"
@@ -1373,7 +1347,7 @@ CATCH_TEST_CASE("config_comment_tests")
             ;
         }
 
-        advgetopt::conf_file_setup setup(g_config_filename
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                             , advgetopt::line_continuation_t::unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_INI
@@ -1400,11 +1374,11 @@ CATCH_TEST_CASE("config_comment_tests")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("shell comment")
-        init_tmp_dir("comment", "shell");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("comment", "shell");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -1417,7 +1391,7 @@ CATCH_TEST_CASE("config_comment_tests")
             ;
         }
 
-        advgetopt::conf_file_setup setup(g_config_filename
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                             , advgetopt::line_continuation_t::unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
@@ -1444,11 +1418,11 @@ CATCH_TEST_CASE("config_comment_tests")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("C++ comment")
-        init_tmp_dir("comment", "cpp");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("comment", "cpp");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "// Auto-generated\n"
@@ -1461,7 +1435,7 @@ CATCH_TEST_CASE("config_comment_tests")
             ;
         }
 
-        advgetopt::conf_file_setup setup(g_config_filename
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                             , advgetopt::line_continuation_t::unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_CPP
@@ -1488,11 +1462,11 @@ CATCH_TEST_CASE("config_comment_tests")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("All three comments")
-        init_tmp_dir("comment", "all-comments");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("comment", "all-comments");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "// Auto-generated\n"
@@ -1510,7 +1484,7 @@ CATCH_TEST_CASE("config_comment_tests")
             ;
         }
 
-        advgetopt::conf_file_setup setup(g_config_filename
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                             , advgetopt::line_continuation_t::unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_INI | advgetopt::COMMENT_SHELL | advgetopt::COMMENT_CPP
@@ -1546,11 +1520,11 @@ CATCH_TEST_CASE("config_comment_tests")
 CATCH_TEST_CASE("config_section_tests")
 {
     CATCH_START_SECTION("section operator c (.)")
-        init_tmp_dir("section-operator", "section-c");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("section-operator", "section-c");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -1564,7 +1538,7 @@ CATCH_TEST_CASE("config_section_tests")
             ;
         }
 
-        advgetopt::conf_file_setup setup(g_config_filename
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                             , advgetopt::line_continuation_t::unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
@@ -1608,11 +1582,11 @@ CATCH_TEST_CASE("config_section_tests")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("section operator c++ (::)")
-        init_tmp_dir("section-operator", "section-cpp");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("section-operator", "section-cpp");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -1626,7 +1600,7 @@ CATCH_TEST_CASE("config_section_tests")
             ;
         }
 
-        advgetopt::conf_file_setup setup(g_config_filename
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                             , advgetopt::line_continuation_t::unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
@@ -1670,11 +1644,11 @@ CATCH_TEST_CASE("config_section_tests")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("section operator block ({ ... })")
-        init_tmp_dir("section-operator", "section-block");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("section-operator", "section-block");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -1696,7 +1670,7 @@ CATCH_TEST_CASE("config_section_tests")
             ;
         }
 
-        advgetopt::conf_file_setup setup(g_config_filename
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                             , advgetopt::line_continuation_t::unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
@@ -1740,11 +1714,11 @@ CATCH_TEST_CASE("config_section_tests")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("section operator ini file ([...])")
-        init_tmp_dir("section-operator", "section-ini-file");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("section-operator", "section-ini-file");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -1764,7 +1738,7 @@ CATCH_TEST_CASE("config_section_tests")
             ;
         }
 
-        advgetopt::conf_file_setup setup(g_config_filename
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                             , advgetopt::line_continuation_t::unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
@@ -1811,11 +1785,11 @@ CATCH_TEST_CASE("config_section_tests")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("section operator ini-file & c++")
-        init_tmp_dir("section-operator", "section-double");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("section-operator", "section-double");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -1831,7 +1805,7 @@ CATCH_TEST_CASE("config_section_tests")
             ;
         }
 
-        advgetopt::conf_file_setup setup(g_config_filename
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                             , advgetopt::line_continuation_t::unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
@@ -1881,11 +1855,11 @@ CATCH_TEST_CASE("config_section_tests")
 CATCH_TEST_CASE("save_config_file")
 {
     CATCH_START_SECTION("load update save")
-        init_tmp_dir("save-operation", "configuration");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("save-operation", "configuration");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -1895,7 +1869,7 @@ CATCH_TEST_CASE("save_config_file")
             ;
         }
 
-        advgetopt::conf_file_setup setup(g_config_filename
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                             , advgetopt::line_continuation_t::single_line
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
@@ -1929,7 +1903,7 @@ CATCH_TEST_CASE("save_config_file")
 
         // no backup since there was no modification so the save did nothing
         //
-        CATCH_REQUIRE(access((g_config_filename + ".bak").c_str(), F_OK) != 0);
+        CATCH_REQUIRE(access((SNAP_CATCH2_NAMESPACE::g_config_filename + ".bak").c_str(), F_OK) != 0);
 
         file->set_parameter(std::string(), "a", "size");
         file->set_parameter(std::string(), "b", "tall");
@@ -1937,10 +1911,10 @@ CATCH_TEST_CASE("save_config_file")
 
         CATCH_REQUIRE(file->save_configuration());
 
-        CATCH_REQUIRE(access((g_config_filename + ".bak").c_str(), F_OK) == 0);
+        CATCH_REQUIRE(access((SNAP_CATCH2_NAMESPACE::g_config_filename + ".bak").c_str(), F_OK) == 0);
 
-        std::string const new_name(g_config_filename + ".conf2");
-        rename(g_config_filename.c_str(), new_name.c_str());
+        std::string const new_name(SNAP_CATCH2_NAMESPACE::g_config_filename + ".conf2");
+        rename(SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(), new_name.c_str());
 
         advgetopt::conf_file_setup setup2(new_name
                             , advgetopt::line_continuation_t::single_line
@@ -2032,11 +2006,11 @@ CATCH_TEST_CASE("invalid_configuration_setup", "[config][getopt][invalid]")
 CATCH_TEST_CASE("config_reload_invalid_setup")
 {
     CATCH_START_SECTION("Load a file, update it, verify it does not get reloaded")
-        init_tmp_dir("invalid-reload", "load-twice-wrong-parameters");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-reload", "load-twice-wrong-parameters");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -2047,7 +2021,7 @@ CATCH_TEST_CASE("config_reload_invalid_setup")
             ;
         }
 
-        advgetopt::conf_file_setup setup(g_config_filename
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                             , advgetopt::line_continuation_t::single_line
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
@@ -2115,7 +2089,7 @@ CATCH_TEST_CASE("config_reload_invalid_setup")
                             continue;
                         }
 
-                        advgetopt::conf_file_setup different_setup(g_config_filename
+                        advgetopt::conf_file_setup different_setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                                         , static_cast<advgetopt::line_continuation_t>(lc)
                                         , ao
                                         , c
@@ -2144,13 +2118,13 @@ CATCH_TEST_CASE("missing_configuration_file", "[config][getopt][invalid]")
         for(int count(0); count < 5; ++count)
         {
             int const id(rand());
-            std::string const name("setup-file-" + std::to_string(id));
+            std::string const name("delete-file-" + std::to_string(id));
 
-            init_tmp_dir("delete", name);
+            SNAP_CATCH2_NAMESPACE::init_tmp_dir("delete", name);
 
             {
                 std::ofstream config_file;
-                config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+                config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
                 CATCH_REQUIRE(config_file.good());
                 config_file <<
                     "# Auto-generated\n"
@@ -2161,7 +2135,7 @@ CATCH_TEST_CASE("missing_configuration_file", "[config][getopt][invalid]")
             // create the setup while the file still exists
             //
             advgetopt::conf_file_setup setup(
-                          g_config_filename
+                          SNAP_CATCH2_NAMESPACE::g_config_filename
                         , advgetopt::line_continuation_t::unix
                         , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                         , advgetopt::COMMENT_SHELL
@@ -2169,13 +2143,13 @@ CATCH_TEST_CASE("missing_configuration_file", "[config][getopt][invalid]")
 
             // now unlink() that file
             //
-            unlink(g_config_filename.c_str());
+            unlink(SNAP_CATCH2_NAMESPACE::g_config_filename.c_str());
 
             // still valid since we do not check again after the
             // constructor ran
             //
             CATCH_REQUIRE(setup.is_valid());
-            CATCH_REQUIRE(setup.get_filename() == g_config_filename);
+            CATCH_REQUIRE(setup.get_filename() == SNAP_CATCH2_NAMESPACE::g_config_filename);
             CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
             CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
             CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
@@ -2194,11 +2168,11 @@ CATCH_TEST_CASE("missing_configuration_file", "[config][getopt][invalid]")
 CATCH_TEST_CASE("invalid_sections")
 {
     CATCH_START_SECTION("variable name cannot start with a period when C operator is active")
-        init_tmp_dir("invalid-section-operator", "period-name");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-section-operator", "period-name");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -2212,7 +2186,7 @@ CATCH_TEST_CASE("invalid_sections")
             ;
         }
 
-        advgetopt::conf_file_setup setup(g_config_filename
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                             , advgetopt::line_continuation_t::unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
@@ -2257,11 +2231,11 @@ CATCH_TEST_CASE("invalid_sections")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("two section operators one after another can cause trouble")
-        init_tmp_dir("invalid-section-operator", "name-period-cpp-name");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-section-operator", "name-period-cpp-name");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -2275,7 +2249,7 @@ CATCH_TEST_CASE("invalid_sections")
             ;
         }
 
-        advgetopt::conf_file_setup setup(g_config_filename
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                             , advgetopt::line_continuation_t::unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
@@ -2320,11 +2294,11 @@ CATCH_TEST_CASE("invalid_sections")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("section operator cannot appear at the end")
-        init_tmp_dir("invalid-section-operator", "name-period-name-cpp");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-section-operator", "name-period-name-cpp");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -2338,7 +2312,7 @@ CATCH_TEST_CASE("invalid_sections")
             ;
         }
 
-        advgetopt::conf_file_setup setup(g_config_filename
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                             , advgetopt::line_continuation_t::unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
@@ -2383,11 +2357,11 @@ CATCH_TEST_CASE("invalid_sections")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("sections not allowed")
-        init_tmp_dir("invalid-section-operator", "section-not-allowed");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-section-operator", "section-not-allowed");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -2400,7 +2374,7 @@ CATCH_TEST_CASE("invalid_sections")
 
         // no errors here since we do not detect the sections in this case
         //
-        advgetopt::conf_file_setup setup(g_config_filename
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                             , advgetopt::line_continuation_t::unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
@@ -2413,8 +2387,8 @@ CATCH_TEST_CASE("invalid_sections")
         CATCH_REQUIRE(setup.get_section_operator() == (advgetopt::SECTION_OPERATOR_NONE));
 
         SNAP_CATCH2_NAMESPACE::push_expected_log(
-                "error: parameter \"a::b\" on line 3 in configuration file \""
-                + g_config_filename
+                  "error: parameter \"a::b\" on line 3 in configuration file \""
+                + SNAP_CATCH2_NAMESPACE::g_config_filename
                 + "\" includes a character not acceptable for a section or"
                   " parameter name (controls, space, quotes, and \";#/=:?+\\\".");
         advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
@@ -2489,11 +2463,11 @@ CATCH_TEST_CASE("invalid_sections")
                     break;
 
                 }
-                init_tmp_dir("invalid-characters", "bad-character-" + std::to_string(static_cast<int>(c)) + "-" + spos);
+                SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-characters", "bad-character-" + std::to_string(static_cast<int>(c)) + "-" + spos);
 
                 {
                     std::ofstream config_file;
-                    config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+                    config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
                     CATCH_REQUIRE(config_file.good());
                     char op(c == '=' ? ':' : '=');
                     config_file <<
@@ -2508,7 +2482,7 @@ CATCH_TEST_CASE("invalid_sections")
                 advgetopt::assignment_operator_t as(c == '='
                                         ? advgetopt::ASSIGNMENT_OPERATOR_COLON
                                         : advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
-                advgetopt::conf_file_setup setup(g_config_filename
+                advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                                     , advgetopt::line_continuation_t::unix
                                     , as
                                     , advgetopt::COMMENT_NONE
@@ -2524,7 +2498,7 @@ CATCH_TEST_CASE("invalid_sections")
                           "error: parameter \""
                         + bad_char
                         + "\" on line 2 in configuration file \""
-                        + g_config_filename
+                        + SNAP_CATCH2_NAMESPACE::g_config_filename
                         + "\" includes a character not acceptable for a section or"
                           " parameter name (controls, space, quotes, and \";#/=:?+\\\".");
                 advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
@@ -2550,11 +2524,11 @@ CATCH_TEST_CASE("invalid_sections")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("too many sections")
-        init_tmp_dir("invalid-section-operator", "too-many-sections");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-section-operator", "too-many-sections");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -2565,7 +2539,7 @@ CATCH_TEST_CASE("invalid_sections")
             ;
         }
 
-        advgetopt::conf_file_setup setup(g_config_filename
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                             , advgetopt::line_continuation_t::unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
@@ -2603,11 +2577,11 @@ CATCH_TEST_CASE("invalid_sections")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("all '{' were not closed")
-        init_tmp_dir("invalid-section-operator", "unclosed-brackets");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-section-operator", "unclosed-brackets");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -2617,7 +2591,7 @@ CATCH_TEST_CASE("invalid_sections")
             ;
         }
 
-        advgetopt::conf_file_setup setup(g_config_filename
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                             , advgetopt::line_continuation_t::unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
@@ -2632,7 +2606,7 @@ CATCH_TEST_CASE("invalid_sections")
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                     "error: unterminated `section { ... }`, the `}` is missing"
                     " in configuration file "
-                    "\"/home/snapwebsites/snapcpp/contrib/advgetopt/tmp/advgetopt/.config/unclosed-brackets.config\".");
+                    "\"" + SNAP_CATCH2_NAMESPACE::g_config_filename + "\".");
         advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
@@ -2653,11 +2627,11 @@ CATCH_TEST_CASE("invalid_sections")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("data after ']' in INI file")
-        init_tmp_dir("invalid-section-operator", "additional-data");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-section-operator", "additional-data");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -2671,7 +2645,7 @@ CATCH_TEST_CASE("invalid_sections")
             ;
         }
 
-        advgetopt::conf_file_setup setup(g_config_filename
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                             , advgetopt::line_continuation_t::unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
@@ -2686,7 +2660,7 @@ CATCH_TEST_CASE("invalid_sections")
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                       "error: section names in configuration files cannot be followed by anything other than spaces in"
                       " \"[sizes] comment\" on line 6 from configuration file \""
-                    + g_config_filename
+                    + SNAP_CATCH2_NAMESPACE::g_config_filename
                     + "\".");
         advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
@@ -2712,11 +2686,11 @@ CATCH_TEST_CASE("invalid_sections")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("INI file section inside a block is not allowed")
-        init_tmp_dir("invalid-section-operator", "ini-inside-block");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-section-operator", "ini-inside-block");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -2734,7 +2708,7 @@ CATCH_TEST_CASE("invalid_sections")
             ;
         }
 
-        advgetopt::conf_file_setup setup(g_config_filename
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                             , advgetopt::line_continuation_t::unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
@@ -2749,7 +2723,7 @@ CATCH_TEST_CASE("invalid_sections")
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                       "error: `[...]` sections can't be used within a `section"
                       " { ... }` on line 9 from configuration file \""
-                    + g_config_filename
+                    + SNAP_CATCH2_NAMESPACE::g_config_filename
                     + "\".");
         advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
@@ -2785,11 +2759,11 @@ CATCH_TEST_CASE("invalid_sections")
 CATCH_TEST_CASE("invalid_variable_name")
 {
     CATCH_START_SECTION("empty variable name")
-        init_tmp_dir("invalid-variable-name", "name-missing");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-variable-name", "name-missing");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -2799,7 +2773,7 @@ CATCH_TEST_CASE("invalid_variable_name")
             ;
         }
 
-        advgetopt::conf_file_setup setup(g_config_filename
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                             , advgetopt::line_continuation_t::unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
@@ -2814,7 +2788,7 @@ CATCH_TEST_CASE("invalid_variable_name")
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                       "error: no option name in \"=color\""
                       " on line 2 from configuration file \""
-                    + g_config_filename
+                    + SNAP_CATCH2_NAMESPACE::g_config_filename
                     + "\", missing name before the assignment operator?");
         advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
@@ -2837,11 +2811,11 @@ CATCH_TEST_CASE("invalid_variable_name")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("empty variable name after section name")
-        init_tmp_dir("invalid-variable-name", "section-and-name-missing");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-variable-name", "section-and-name-missing");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -2851,7 +2825,7 @@ CATCH_TEST_CASE("invalid_variable_name")
             ;
         }
 
-        advgetopt::conf_file_setup setup(g_config_filename
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                             , advgetopt::line_continuation_t::unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
@@ -2886,11 +2860,11 @@ CATCH_TEST_CASE("invalid_variable_name")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("variable name starts with a dash")
-        init_tmp_dir("invalid-variable-name", "dash-name");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-variable-name", "dash-name");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -2900,7 +2874,7 @@ CATCH_TEST_CASE("invalid_variable_name")
             ;
         }
 
-        advgetopt::conf_file_setup setup(g_config_filename
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                             , advgetopt::line_continuation_t::unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
@@ -2916,7 +2890,7 @@ CATCH_TEST_CASE("invalid_variable_name")
                       "error: option names in configuration files cannot"
                       " start with a dash or an underscore in"
                       " \"-bad-dash=reddish\" on line 3 from configuration file \""
-                    + g_config_filename
+                    + SNAP_CATCH2_NAMESPACE::g_config_filename
                     + "\".");
         advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
@@ -2936,11 +2910,11 @@ CATCH_TEST_CASE("invalid_variable_name")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("variable name starts with an underscore")
-        init_tmp_dir("invalid-variable-name", "underscore-name");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-variable-name", "underscore-name");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -2950,7 +2924,7 @@ CATCH_TEST_CASE("invalid_variable_name")
             ;
         }
 
-        advgetopt::conf_file_setup setup(g_config_filename
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                             , advgetopt::line_continuation_t::unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
@@ -2966,7 +2940,7 @@ CATCH_TEST_CASE("invalid_variable_name")
                       "error: option names in configuration files cannot"
                       " start with a dash or an underscore in"
                       " \"_bad_underscore=reddish\" on line 3 from configuration file \""
-                    + g_config_filename
+                    + SNAP_CATCH2_NAMESPACE::g_config_filename
                     + "\".");
         advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
@@ -2986,11 +2960,11 @@ CATCH_TEST_CASE("invalid_variable_name")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("variable name with spaces")
-        init_tmp_dir("invalid-variable-name", "name-space-more-name");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-variable-name", "name-space-more-name");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -3000,7 +2974,7 @@ CATCH_TEST_CASE("invalid_variable_name")
             ;
         }
 
-        advgetopt::conf_file_setup setup(g_config_filename
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
                             , advgetopt::line_continuation_t::unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
@@ -3015,17 +2989,17 @@ CATCH_TEST_CASE("invalid_variable_name")
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                       "error: option name from \"a variable=color\" on line"
                       " 2 in configuration file \""
-                    + g_config_filename
+                    + SNAP_CATCH2_NAMESPACE::g_config_filename
                     + "\" cannot include a space, missing assignment operator?");
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                       "error: option name from \"bad space=reddish\" on line"
                       " 3 in configuration file \""
-                    + g_config_filename
+                    + SNAP_CATCH2_NAMESPACE::g_config_filename
                     + "\" cannot include a space, missing assignment operator?");
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                       "error: option name from \"pos and size=412x33+32-18\" on line"
                       " 4 in configuration file \""
-                    + g_config_filename
+                    + SNAP_CATCH2_NAMESPACE::g_config_filename
                     + "\" cannot include a space, missing assignment operator?");
         advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();

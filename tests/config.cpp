@@ -48,31 +48,6 @@
 
 
 
-namespace
-{
-
-
-std::string     g_config_filename;
-std::string     g_config_project_filename;
-
-void init_tmp_dir(std::string const & project_name, std::string const & prefname)
-{
-    std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir);
-    tmpdir += "/.config";
-    std::stringstream ss;
-    ss << "mkdir -p " << tmpdir << "/" << project_name << ".d";
-    if(system(ss.str().c_str()) != 0)
-    {
-        std::cerr << "fatal error: creating sub-temporary directory \"" << tmpdir << "\" failed.\n";
-        exit(1);
-    }
-    g_config_filename = tmpdir + "/" + prefname + ".config";
-    g_config_project_filename = tmpdir + "/" + project_name + ".d/" + prefname + ".config";
-}
-
-
-
-} // no name namespace
 
 
 
@@ -80,13 +55,13 @@ void init_tmp_dir(std::string const & project_name, std::string const & prefname
 CATCH_TEST_CASE("configuration_filenames", "[config][getopt][filenames]")
 {
     CATCH_START_SECTION("Configuration Files")
-        init_tmp_dir("unittest-any", "any");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("unittest-any", "any");
 
         advgetopt::options_environment environment_options;
 
         char const * confs[] =
         {
-            g_config_filename.c_str(),
+            SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(),
             ".config/file.mdi",
             "/etc/snapwebsites/server.conf",
             nullptr
@@ -103,8 +78,8 @@ CATCH_TEST_CASE("configuration_filenames", "[config][getopt][filenames]")
         advgetopt::string_list_t const filenames(opt.get_configuration_filenames(false, false));
 
         CATCH_REQUIRE(filenames.size() == 6);
-        CATCH_REQUIRE(filenames[0] == g_config_filename);
-        CATCH_REQUIRE(filenames[1] == g_config_project_filename);
+        CATCH_REQUIRE(filenames[0] == SNAP_CATCH2_NAMESPACE::g_config_filename);
+        CATCH_REQUIRE(filenames[1] == SNAP_CATCH2_NAMESPACE::g_config_project_filename);
         CATCH_REQUIRE(filenames[2] == ".config/file.mdi");
         CATCH_REQUIRE(filenames[3] == ".config/unittest-any.d/file.mdi");
         CATCH_REQUIRE(filenames[4] == "/etc/snapwebsites/server.conf");
@@ -112,14 +87,14 @@ CATCH_TEST_CASE("configuration_filenames", "[config][getopt][filenames]")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Configuration Files (writable)")
-        init_tmp_dir("unittest-writable", "writable");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("unittest-writable", "writable");
 
         advgetopt::options_environment environment_options;
 
         char const * confs[] =
         {
             ".config/file.mdi",
-            g_config_filename.c_str(),
+            SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(),
             "/etc/snapwebsites/server.conf",
             nullptr
         };
@@ -136,24 +111,24 @@ CATCH_TEST_CASE("configuration_filenames", "[config][getopt][filenames]")
 
         CATCH_REQUIRE(filenames.size() == 3);
         CATCH_REQUIRE(filenames[0] == ".config/unittest-writable.d/file.mdi");
-        CATCH_REQUIRE(filenames[1] == g_config_project_filename);
+        CATCH_REQUIRE(filenames[1] == SNAP_CATCH2_NAMESPACE::g_config_project_filename);
         CATCH_REQUIRE(filenames[2] == "/etc/snapwebsites/unittest-writable.d/server.conf");
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Configuration File + Directories")
-        init_tmp_dir("unittest-with-directories", "with-dirs");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("unittest-with-directories", "with-dirs", true);
 
         advgetopt::options_environment environment_options;
 
         char const * dirs[] =
         {
-            g_config_filename.c_str(),
+            SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(),
             ".config",
             "/etc/snapwebsites",
             nullptr
         };
     
-        environment_options.f_project_name = "unittest";
+        environment_options.f_project_name = "unittest-with-directories";
         environment_options.f_options = nullptr;
         environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
         environment_options.f_help_header = "Testing all possible filenames";
@@ -165,23 +140,23 @@ CATCH_TEST_CASE("configuration_filenames", "[config][getopt][filenames]")
         advgetopt::string_list_t const filenames(opt.get_configuration_filenames(false, false));
 
         CATCH_REQUIRE(filenames.size() == 6);
-        CATCH_REQUIRE(filenames[0] == "/home/snapwebsites/snapcpp/contrib/advgetopt/tmp/advgetopt/.config/with-dirs.config/snapfirewall.conf");
-        CATCH_REQUIRE(filenames[1] == "/home/snapwebsites/snapcpp/contrib/advgetopt/tmp/advgetopt/.config/with-dirs.config/unittest.d/snapfirewall.conf");
+        CATCH_REQUIRE(filenames[0] == SNAP_CATCH2_NAMESPACE::g_config_filename + "/snapfirewall.conf");
+        CATCH_REQUIRE(filenames[1] == SNAP_CATCH2_NAMESPACE::g_config_project_filename + "/snapfirewall.conf");
         CATCH_REQUIRE(filenames[2] == ".config/snapfirewall.conf");
-        CATCH_REQUIRE(filenames[3] == ".config/unittest.d/snapfirewall.conf");
+        CATCH_REQUIRE(filenames[3] == ".config/unittest-with-directories.d/snapfirewall.conf");
         CATCH_REQUIRE(filenames[4] == "/etc/snapwebsites/snapfirewall.conf");
-        CATCH_REQUIRE(filenames[5] == "/etc/snapwebsites/unittest.d/snapfirewall.conf");
+        CATCH_REQUIRE(filenames[5] == "/etc/snapwebsites/unittest-with-directories.d/snapfirewall.conf");
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Existing Configuration Files")
 
         CATCH_WHEN("R/W Config must exist--no user defined config")
         {
-            init_tmp_dir("unittest-must-exist", "must-be-here");
+            SNAP_CATCH2_NAMESPACE::init_tmp_dir("unittest-must-exist", "must-be-here");
 
             {
                 std::ofstream config_file;
-                config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+                config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
                 CATCH_REQUIRE(config_file.good());
                 config_file <<
                     "# Auto-generated\n"
@@ -190,11 +165,11 @@ CATCH_TEST_CASE("configuration_filenames", "[config][getopt][filenames]")
                 ;
             }
 
-            unlink(g_config_project_filename.c_str());
+            unlink(SNAP_CATCH2_NAMESPACE::g_config_project_filename.c_str());
 
             char const * confs[] =
             {
-                g_config_filename.c_str(),
+                SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(),
                 ".config/file-which-was-never-created.mdi",
                 "/etc/snapwebsites/not-an-existing-file.conf",
                 nullptr
@@ -212,16 +187,16 @@ CATCH_TEST_CASE("configuration_filenames", "[config][getopt][filenames]")
             advgetopt::string_list_t const filenames(opt.get_configuration_filenames(true, false));
 
             CATCH_REQUIRE(filenames.size() == 1);
-            CATCH_REQUIRE(filenames[0] == g_config_filename);
+            CATCH_REQUIRE(filenames[0] == SNAP_CATCH2_NAMESPACE::g_config_filename);
         }
 
         CATCH_WHEN("R/W Config must exist--user defined config exists")
         {
-            init_tmp_dir("unittest-user-exist", "existing");
+            SNAP_CATCH2_NAMESPACE::init_tmp_dir("unittest-user-exist", "existing");
 
             {
                 std::ofstream config_file;
-                config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+                config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
                 CATCH_REQUIRE(config_file.good());
                 config_file <<
                     "# Auto-generated\n"
@@ -232,7 +207,7 @@ CATCH_TEST_CASE("configuration_filenames", "[config][getopt][filenames]")
 
             {
                 std::ofstream config_file;
-                config_file.open(g_config_project_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+                config_file.open(SNAP_CATCH2_NAMESPACE::g_config_project_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
                 CATCH_REQUIRE(config_file.good());
                 config_file <<
                     "# Auto-generated\n"
@@ -245,7 +220,7 @@ CATCH_TEST_CASE("configuration_filenames", "[config][getopt][filenames]")
             {
                 ".config/file-which-was-never-created.mdi",
                 "/etc/snapwebsites/not-an-existing-file.conf",
-                g_config_filename.c_str(),
+                SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(),
                 nullptr
             };
 
@@ -261,17 +236,17 @@ CATCH_TEST_CASE("configuration_filenames", "[config][getopt][filenames]")
             advgetopt::string_list_t const filenames(opt.get_configuration_filenames(true, false));
 
             CATCH_REQUIRE(filenames.size() == 2);
-            CATCH_REQUIRE(filenames[0] == g_config_filename);
-            CATCH_REQUIRE(filenames[1] == g_config_project_filename);
+            CATCH_REQUIRE(filenames[0] == SNAP_CATCH2_NAMESPACE::g_config_filename);
+            CATCH_REQUIRE(filenames[1] == SNAP_CATCH2_NAMESPACE::g_config_project_filename);
         }
 
         CATCH_WHEN("Writable Config must exist--user defined config exists")
         {
-            init_tmp_dir("unittest-writable-exist", "present");
+            SNAP_CATCH2_NAMESPACE::init_tmp_dir("unittest-writable-exist", "present");
 
             {
                 std::ofstream config_file;
-                config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+                config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
                 CATCH_REQUIRE(config_file.good());
                 config_file <<
                     "# Auto-generated\n"
@@ -282,7 +257,7 @@ CATCH_TEST_CASE("configuration_filenames", "[config][getopt][filenames]")
 
             {
                 std::ofstream config_file;
-                config_file.open(g_config_project_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+                config_file.open(SNAP_CATCH2_NAMESPACE::g_config_project_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
                 CATCH_REQUIRE(config_file.good());
                 config_file <<
                     "# Auto-generated\n"
@@ -294,7 +269,7 @@ CATCH_TEST_CASE("configuration_filenames", "[config][getopt][filenames]")
             char const * confs[] =
             {
                 ".config/file-which-was-never-created.mdi",
-                g_config_filename.c_str(),
+                SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(),
                 "/etc/snapwebsites/not/an-existing-file.conf",
                 nullptr
             };
@@ -311,16 +286,16 @@ CATCH_TEST_CASE("configuration_filenames", "[config][getopt][filenames]")
             advgetopt::string_list_t const filenames(opt.get_configuration_filenames(true, true));
 
             CATCH_REQUIRE(filenames.size() == 1);
-            CATCH_REQUIRE(filenames[0] == g_config_project_filename);
+            CATCH_REQUIRE(filenames[0] == SNAP_CATCH2_NAMESPACE::g_config_project_filename);
         }
 
         CATCH_WHEN("Writable Config must exist--user defined config exists and we test with a user folder")
         {
-            init_tmp_dir("unittest-writable-user", "user-write");
+            SNAP_CATCH2_NAMESPACE::init_tmp_dir("unittest-writable-user", "user-write");
 
             {
                 std::ofstream config_file;
-                config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+                config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
                 CATCH_REQUIRE(config_file.good());
                 config_file <<
                     "# Auto-generated\n"
@@ -331,7 +306,7 @@ CATCH_TEST_CASE("configuration_filenames", "[config][getopt][filenames]")
 
             {
                 std::ofstream config_file;
-                config_file.open(g_config_project_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+                config_file.open(SNAP_CATCH2_NAMESPACE::g_config_project_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
                 CATCH_REQUIRE(config_file.good());
                 config_file <<
                     "# Auto-generated\n"
@@ -343,7 +318,7 @@ CATCH_TEST_CASE("configuration_filenames", "[config][getopt][filenames]")
             char const * confs[] =
             {
                 "~/.config/file-which-was-never-created.mdi",
-                g_config_filename.c_str(),
+                SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(),
                 "/etc/snapwebsites/not/an-existing-file.conf",
                 nullptr
             };
@@ -360,16 +335,20 @@ CATCH_TEST_CASE("configuration_filenames", "[config][getopt][filenames]")
             advgetopt::string_list_t const filenames(opt.get_configuration_filenames(true, true));
 
             CATCH_REQUIRE(filenames.size() == 1);
-            CATCH_REQUIRE(filenames[0] == g_config_project_filename);
+            CATCH_REQUIRE(filenames[0] == SNAP_CATCH2_NAMESPACE::g_config_project_filename);
         }
 
         CATCH_WHEN("R/W Config test must exist--user defined config exists and we test with a user folder")
         {
-            init_tmp_dir("unittest-user-folder", "tilde");
+            SNAP_CATCH2_NAMESPACE::init_tmp_dir("unittest-user-folder", "tilde");
+
+            std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir);
+            tmpdir += "/.config/home-that-never-gets-created";
+            snap::safe_setenv env("HOME", tmpdir);
 
             {
                 std::ofstream config_file;
-                config_file.open(g_config_project_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+                config_file.open(SNAP_CATCH2_NAMESPACE::g_config_project_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
                 CATCH_REQUIRE(config_file.good());
                 config_file <<
                     "# Auto-generated\n"
@@ -382,7 +361,7 @@ CATCH_TEST_CASE("configuration_filenames", "[config][getopt][filenames]")
             {
                 "~/.config/folder-which-was-never-created",
                 "/etc/snapwebsites/not-an-existing-folder",
-                g_config_filename.c_str(),
+                SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(),
                 nullptr
             };
 
@@ -399,11 +378,11 @@ CATCH_TEST_CASE("configuration_filenames", "[config][getopt][filenames]")
             advgetopt::string_list_t const filenames(opt.get_configuration_filenames(false, false));
 
             CATCH_REQUIRE(filenames.size() == 5);
-            CATCH_REQUIRE(filenames[0] == "/home/alexis/.config/folder-which-was-never-created/snapfirewall.conf");
+            CATCH_REQUIRE(filenames[0] == tmpdir + "/.config/folder-which-was-never-created/snapfirewall.conf");
             CATCH_REQUIRE(filenames[1] == "/etc/snapwebsites/not-an-existing-folder/snapfirewall.conf");
             CATCH_REQUIRE(filenames[2] == "/etc/snapwebsites/not-an-existing-folder/unittest-user-folder.d/snapfirewall.conf");
-            CATCH_REQUIRE(filenames[3] == g_config_filename + "/snapfirewall.conf");
-            CATCH_REQUIRE(filenames[4] == g_config_filename + "/unittest-user-folder.d/snapfirewall.conf");
+            CATCH_REQUIRE(filenames[3] == SNAP_CATCH2_NAMESPACE::g_config_filename + "/snapfirewall.conf");
+            CATCH_REQUIRE(filenames[4] == SNAP_CATCH2_NAMESPACE::g_config_filename + "/unittest-user-folder.d/snapfirewall.conf");
         }
     CATCH_END_SECTION()
 }
@@ -413,11 +392,11 @@ CATCH_TEST_CASE("configuration_filenames", "[config][getopt][filenames]")
 CATCH_TEST_CASE("load_configuration_file", "[config][getopt][filenames]")
 {
     CATCH_START_SECTION("Load a Configuration File")
-        init_tmp_dir("load", "tool");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("load", "tool");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -429,7 +408,7 @@ CATCH_TEST_CASE("load_configuration_file", "[config][getopt][filenames]")
         char const * confs[] =
         {
             "~/.config/file-which-was-never-created.mdi",
-            g_config_filename.c_str(),
+            SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(),
             "/etc/snapwebsites/not/an-existing-file.conf",
             nullptr
         };
@@ -467,7 +446,7 @@ CATCH_TEST_CASE("load_configuration_file", "[config][getopt][filenames]")
 
         advgetopt::getopt opt(environment_options);
 
-        opt.process_configuration_file(g_config_filename);
+        opt.process_configuration_file(SNAP_CATCH2_NAMESPACE::g_config_filename);
 
         CATCH_REQUIRE(opt.size("sizes") == 1);
         CATCH_REQUIRE(opt.get_string("sizes") == "132");
@@ -482,11 +461,11 @@ CATCH_TEST_CASE("load_configuration_file", "[config][getopt][filenames]")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Load an Extended Configuration File")
-        init_tmp_dir("load-extended", "extended");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("load-extended", "extended");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -500,7 +479,7 @@ CATCH_TEST_CASE("load_configuration_file", "[config][getopt][filenames]")
         char const * confs[] =
         {
             "~/.config/file-which-was-never-created.mdi",
-            g_config_filename.c_str(),
+            SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(),
             "/etc/snapwebsites/not/an-existing-file.conf",
             nullptr
         };
@@ -538,7 +517,7 @@ CATCH_TEST_CASE("load_configuration_file", "[config][getopt][filenames]")
 
         advgetopt::getopt opt(environment_options);
 
-        opt.process_configuration_file(g_config_filename);
+        opt.process_configuration_file(SNAP_CATCH2_NAMESPACE::g_config_filename);
 
         CATCH_REQUIRE(opt.size("sizes") == 1);
         CATCH_REQUIRE(opt.get_string("sizes") == "132");
@@ -563,7 +542,7 @@ CATCH_TEST_CASE("load_configuration_file", "[config][getopt][filenames]")
 
 CATCH_TEST_CASE("load_multiple_configurations", "[config][getopt][filenames]")
 {
-    init_tmp_dir("multiple", "multiplicity");
+    SNAP_CATCH2_NAMESPACE::init_tmp_dir("multiple", "multiplicity");
 
 //string_list_t getopt::get_configuration_filenames(bool exists, bool writable)
 
@@ -585,7 +564,7 @@ CATCH_TEST_CASE("load_multiple_configurations", "[config][getopt][filenames]")
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -599,7 +578,7 @@ CATCH_TEST_CASE("load_multiple_configurations", "[config][getopt][filenames]")
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_project_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_project_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -622,8 +601,8 @@ CATCH_TEST_CASE("load_multiple_configurations", "[config][getopt][filenames]")
 
         char const * confs[] =
         {
-            g_config_filename.c_str(),
-            g_config_project_filename.c_str(),
+            SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(),
+            SNAP_CATCH2_NAMESPACE::g_config_project_filename.c_str(),
             "~/advgetopt.conf",
             nullptr
         };
@@ -696,11 +675,11 @@ CATCH_TEST_CASE("load_multiple_configurations", "[config][getopt][filenames]")
 CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][invalid]")
 {
     CATCH_START_SECTION("Load with Unexpected Parameter Name (one letter--dynamic allowed)")
-        init_tmp_dir("loading-invalid", "invalid-one-letter");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("loading-invalid", "invalid-one-letter");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -712,7 +691,7 @@ CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][
         char const * confs[] =
         {
             "~/.config/file-which-was-never-created.mdi",
-            g_config_filename.c_str(),
+            SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(),
             "/etc/snapwebsites/not/an-existing-file.conf",
             nullptr
         };
@@ -752,9 +731,9 @@ CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][
 
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                   "error: unknown option \"f\" found in configuration file \""
-                + g_config_filename
+                + SNAP_CATCH2_NAMESPACE::g_config_filename
                 + "\".");
-        opt.process_configuration_file(g_config_filename);
+        opt.process_configuration_file(SNAP_CATCH2_NAMESPACE::g_config_filename);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         CATCH_REQUIRE(opt.size("sizes") == 1);
@@ -765,11 +744,11 @@ CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Load with Unexpected Parameter Name (one letter--no dynamic allowed)")
-        init_tmp_dir("loading-invalid", "invalid-one-letter");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("loading-undefined", "undefined-one-letter");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -781,7 +760,7 @@ CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][
         char const * confs[] =
         {
             "~/.config/file-which-was-never-created.mdi",
-            g_config_filename.c_str(),
+            SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(),
             "/etc/snapwebsites/not/an-existing-file.conf",
             nullptr
         };
@@ -821,9 +800,9 @@ CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][
 
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                   "error: unknown option \"f\" found in configuration file \""
-                + g_config_filename
+                + SNAP_CATCH2_NAMESPACE::g_config_filename
                 + "\".");
-        opt.process_configuration_file(g_config_filename);
+        opt.process_configuration_file(SNAP_CATCH2_NAMESPACE::g_config_filename);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         CATCH_REQUIRE(opt.size("sizes") == 1);
@@ -834,11 +813,11 @@ CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Load with Unexpected Parameter Name (undefined & no dynamic fields are allowed)")
-        init_tmp_dir("loading-invalid", "invalid-dynamic");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("loading-invalid-dynamic", "invalid-dynamic");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -850,7 +829,7 @@ CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][
         char const * confs[] =
         {
             "~/.config/file-which-was-never-created.mdi",
-            g_config_filename.c_str(),
+            SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(),
             "/etc/snapwebsites/not/an-existing-file.conf",
             nullptr
         };
@@ -890,9 +869,9 @@ CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][
 
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                   "error: unknown option \"dynamic\" found in configuration file \""
-                + g_config_filename
+                + SNAP_CATCH2_NAMESPACE::g_config_filename
                 + "\".");
-        opt.process_configuration_file(g_config_filename);
+        opt.process_configuration_file(SNAP_CATCH2_NAMESPACE::g_config_filename);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         CATCH_REQUIRE(opt.size("sizes") == 1);
@@ -903,11 +882,11 @@ CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Load with Parameter not Supported in Configuration Files")
-        init_tmp_dir("loading-invalid-config", "invalid-param-in-config");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("loading-invalid-config", "invalid-param-in-config");
 
         {
             std::ofstream config_file;
-            config_file.open(g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
             CATCH_REQUIRE(config_file.good());
             config_file <<
                 "# Auto-generated\n"
@@ -919,7 +898,7 @@ CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][
         char const * confs[] =
         {
             "~/.config/file-which-was-never-created.mdi",
-            g_config_filename.c_str(),
+            SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(),
             "/etc/snapwebsites/not/an-existing-file.conf",
             nullptr
         };
@@ -959,9 +938,9 @@ CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][
 
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                   "error: option \"filenames\" is not supported in configuration files (found in \""
-                + g_config_filename
+                + SNAP_CATCH2_NAMESPACE::g_config_filename
                 + "\").");
-        opt.process_configuration_file(g_config_filename);
+        opt.process_configuration_file(SNAP_CATCH2_NAMESPACE::g_config_filename);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         CATCH_REQUIRE(opt.size("sizes") == 1);
