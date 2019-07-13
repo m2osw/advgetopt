@@ -57,6 +57,19 @@ namespace advgetopt
 
 
 
+/** \brief Define the name of a group.
+ *
+ * This function can be used to define the "name" of a group.
+ *
+ * The name is used by the usage() function as a label for that group. I
+ * can actually be a phrase or a sentence.
+ */
+void getopt::set_group_name(flag_t group, std::string const & name)
+{
+    f_group_names[group] = name;
+}
+
+
 /** \brief Create a string of the command line arguments.
  *
  * This function assembles the command line arguments in a string and
@@ -108,115 +121,143 @@ std::string getopt::usage( flag_t show ) const
     std::string save_default;
     std::string save_help;
 
-    for(auto const & opt : f_options_by_name)
+    for(flag_t pos(GETOPT_FLAG_GROUP_MINIMUM); pos <= GETOPT_FLAG_GROUP_MAXIMUM; ++pos)
     {
-        std::string const help(opt.second->get_help());
-        if(help.empty())
+        bool group_name_shown(false);
+        flag_t const group(pos << GETOPT_FLAG_GROUP_SHIFT);
+        for(auto const & opt : f_options_by_name)
         {
-            // ignore entries without help
-            //
-            continue;
-        }
-
-        if(opt.second->has_flag(GETOPT_FLAG_ALIAS))
-        {
-            // ignore entries representing an alias
-            //
-            continue;
-        }
-
-        if((show & GETOPT_FLAG_SHOW_ALL) == 0)
-        {
-            if(show != 0)
+            if((opt.second->get_flags() & GETOPT_FLAG_GROUP_MASK) != group)
             {
-                if(!opt.second->has_flag(show))
+                // this could be optimized but we'd probably not see much
+                // difference overall (it's just for usage(), so...)
+                //
+                continue;
+            }
+
+            std::string const help(opt.second->get_help());
+            if(help.empty())
+            {
+                // ignore entries without help
+                //
+                continue;
+            }
+
+            if(opt.second->has_flag(GETOPT_FLAG_ALIAS))
+            {
+                // ignore entries representing an alias
+                //
+                continue;
+            }
+
+            if((show & GETOPT_FLAG_SHOW_ALL) == 0)
+            {
+                if(show != 0)
                 {
-                    // usage selected group is not present in this option, ignore
+                    if(!opt.second->has_flag(show))
+                    {
+                        // usage selected group is not present in this option, ignore
+                        //
+                        continue;
+                    }
+                }
+                else if(opt.second->has_flag(GETOPT_FLAG_SHOW_GROUP1 | GETOPT_FLAG_SHOW_GROUP2))
+                {
+                    // do not show specialized groups
                     //
                     continue;
                 }
             }
-            else if(opt.second->has_flag(GETOPT_FLAG_SHOW_GROUP1 | GETOPT_FLAG_SHOW_GROUP2))
+
+            if(!group_name_shown)
             {
-                // do not show specialized groups
-                //
-                continue;
-            }
-        }
+                group_name_shown = true;
 
-        std::stringstream argument;
-
-        if(opt.second->is_default_option())
-        {
-            switch(opt.second->get_flags() & (GETOPT_FLAG_REQUIRED | GETOPT_FLAG_MULTIPLE))
-            {
-            case 0:
-                argument << "[default argument]";
-                break;
-
-            case GETOPT_FLAG_REQUIRED:
-                argument << "<default argument>";
-                break;
-
-            case GETOPT_FLAG_MULTIPLE:
-                argument << "[default arguments]";
-                break;
-
-            case GETOPT_FLAG_REQUIRED | GETOPT_FLAG_MULTIPLE:
-                argument << "<default arguments>";
-                break;
-
-            }
-        }
-        else
-        {
-            argument << "--" << opt.second->get_name();
-            if(opt.second->get_short_name() != NO_SHORT_NAME)
-            {
-                argument << " or -" << short_name_to_string(opt.second->get_short_name());
+                if(group != GETOPT_FLAG_GROUP_NONE)
+                {
+                    auto it(f_group_names.find(group));
+                    if(it != f_group_names.end())
+                    {
+                        ss << std::endl
+                           << breakup_line(process_help_string(it->second.c_str()), 0, 80);
+                    }
+                }
             }
 
-            switch(opt.second->get_flags() & (GETOPT_FLAG_FLAG | GETOPT_FLAG_REQUIRED | GETOPT_FLAG_MULTIPLE))
+            std::stringstream argument;
+
+            if(opt.second->is_default_option())
             {
-            case 0:
-                argument << " [<arg>]";
-                break;
+                switch(opt.second->get_flags() & (GETOPT_FLAG_REQUIRED | GETOPT_FLAG_MULTIPLE))
+                {
+                case 0:
+                    argument << "[default argument]";
+                    break;
 
-            case GETOPT_FLAG_REQUIRED:
-                argument << " <arg>";
-                break;
+                case GETOPT_FLAG_REQUIRED:
+                    argument << "<default argument>";
+                    break;
 
-            case GETOPT_FLAG_MULTIPLE:
-                argument << " {<arg>}";
-                break;
+                case GETOPT_FLAG_MULTIPLE:
+                    argument << "[default arguments]";
+                    break;
 
-            case GETOPT_FLAG_REQUIRED | GETOPT_FLAG_MULTIPLE:
-                argument << " <arg> {<arg>}";
-                break;
+                case GETOPT_FLAG_REQUIRED | GETOPT_FLAG_MULTIPLE:
+                    argument << "<default arguments>";
+                    break;
 
+                }
             }
-        }
+            else
+            {
+                argument << "--" << opt.second->get_name();
+                if(opt.second->get_short_name() != NO_SHORT_NAME)
+                {
+                    argument << " or -" << short_name_to_string(opt.second->get_short_name());
+                }
 
-        if(opt.second->has_default())
-        {
-            argument << " (default is \""
-                     << opt.second->get_default()
-                     << "\")";
-        }
+                switch(opt.second->get_flags() & (GETOPT_FLAG_FLAG | GETOPT_FLAG_REQUIRED | GETOPT_FLAG_MULTIPLE))
+                {
+                case 0:
+                    argument << " [<arg>]";
+                    break;
 
-        // Output argument string with help
-        //
-        if(opt.second->is_default_option())
-        {
-            save_default = argument.str();
-            save_help = help;
-        }
-        else
-        {
-            ss << format_usage_string(argument.str()
-                                    , process_help_string(help.c_str())
-                                    , 30
-                                    , 80);
+                case GETOPT_FLAG_REQUIRED:
+                    argument << " <arg>";
+                    break;
+
+                case GETOPT_FLAG_MULTIPLE:
+                    argument << " {<arg>}";
+                    break;
+
+                case GETOPT_FLAG_REQUIRED | GETOPT_FLAG_MULTIPLE:
+                    argument << " <arg> {<arg>}";
+                    break;
+
+                }
+            }
+
+            if(opt.second->has_default())
+            {
+                argument << " (default is \""
+                         << opt.second->get_default()
+                         << "\")";
+            }
+
+            // Output argument string with help
+            //
+            if(opt.second->is_default_option())
+            {
+                save_default = argument.str();
+                save_help = help;
+            }
+            else
+            {
+                ss << format_usage_string(argument.str()
+                                        , process_help_string(help.c_str())
+                                        , 30
+                                        , 80);
+            }
         }
     }
 

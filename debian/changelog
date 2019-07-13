@@ -25,6 +25,8 @@ advgetopt (2.0.0.0~xenial) xenial; urgency=high
   * Added an ./mk script to recompile quickly.
   * Added a coverage script.
   * Added in=C++ to the MAPPING_EXTENSION (Doxygen).
+  * Added a grouping mechanism so we can keep options in groups when
+    outputting usage even though they otherwise get sorted now.
 
  -- Alexis Wilke <alexis@m2osw.com>  Mon, 13 May 2019 00:03:40 -0800
 

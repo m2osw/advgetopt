@@ -115,6 +115,7 @@ public:
     string_list_t           get_configuration_filenames(bool exists
                                                       , bool writable) const;
 
+    void                    set_group_name(flag_t group, std::string const & name);
     std::string             usage(flag_t show = GETOPT_FLAG_SHOW_MOST) const;
     std::string             process_help_string(char const * help) const;
     static std::string      breakup_line(
@@ -128,6 +129,8 @@ public:
                                     , size_t const line_width);
 
 private:
+    typedef std::map<flag_t, std::string>       group_name_t;
+
     void                    parse_options_from_file();
     option_info::pointer_t  get_alias_destination(option_info::pointer_t opt) const;
 
@@ -146,6 +149,7 @@ private:
     option_info::map_by_name_t          f_options_by_name = option_info::map_by_name_t();
     option_info::map_by_short_name_t    f_options_by_short_name = option_info::map_by_short_name_t();
     option_info::pointer_t              f_default_option = option_info::pointer_t();
+    group_name_t                        f_group_names = group_name_t();
 };
 
 

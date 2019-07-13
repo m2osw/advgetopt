@@ -72,6 +72,19 @@ static constexpr flag_t     GETOPT_FLAG_SHOW_ALL             = static_cast<flag_
 static constexpr flag_t     GETOPT_FLAG_SHOW_GROUP1          = static_cast<flag_t>(0x00004000);  // show in usage() when --<group1>-help is used (app dependent)
 static constexpr flag_t     GETOPT_FLAG_SHOW_GROUP2          = static_cast<flag_t>(0x00008000);  // show in usage() when --<group2>-help is used (app dependent)
 
+static constexpr flag_t     GETOPT_FLAG_GROUP_MASK           = static_cast<flag_t>(0x00700000);
+static constexpr flag_t     GETOPT_FLAG_GROUP_MINIMUM        = static_cast<flag_t>(0);
+static constexpr flag_t     GETOPT_FLAG_GROUP_MAXIMUM        = static_cast<flag_t>(7);
+static constexpr flag_t     GETOPT_FLAG_GROUP_SHIFT          = static_cast<flag_t>(20);
+static constexpr flag_t     GETOPT_FLAG_GROUP_NONE           = static_cast<flag_t>(0x00000000);  // not in a group
+static constexpr flag_t     GETOPT_FLAG_GROUP_ONE            = static_cast<flag_t>(0x00100000);  // in group 1
+static constexpr flag_t     GETOPT_FLAG_GROUP_TWO            = static_cast<flag_t>(0x00200000);  // in group 2
+static constexpr flag_t     GETOPT_FLAG_GROUP_THREE          = static_cast<flag_t>(0x00300000);  // in group 3
+static constexpr flag_t     GETOPT_FLAG_GROUP_FOUR           = static_cast<flag_t>(0x00400000);  // in group 4
+static constexpr flag_t     GETOPT_FLAG_GROUP_FIVE           = static_cast<flag_t>(0x00500000);  // in group 5
+static constexpr flag_t     GETOPT_FLAG_GROUP_SIX            = static_cast<flag_t>(0x00600000);  // in group 6
+static constexpr flag_t     GETOPT_FLAG_GROUP_SEVEN          = static_cast<flag_t>(0x00700000);  // in group 7
+
 static constexpr flag_t     GETOPT_FLAG_DYNAMIC              = static_cast<flag_t>(0x20000000);  // this value was found in a configuration file and dynamic parameters are allowed (i.e. no definition for this option was found)
 static constexpr flag_t     GETOPT_FLAG_LOCK                 = static_cast<flag_t>(0x40000000);  // this value is currently locked (can't be modified)
 
@@ -89,6 +102,10 @@ constexpr flag_t option_flags_merge()
 template<flag_t flag, flag_t ...args>
 constexpr flag_t option_flags_merge()
 {
+    static_assert((flag & GETOPT_FLAG_GROUP_MASK) == 0
+               || (option_flags_merge<args...>() & GETOPT_FLAG_GROUP_MASK) == 0
+               , "more than one GETOPT_FLAG_GROUP_... is not allowed within one set of flags.");
+
     return flag | option_flags_merge<args...>();
 }
 

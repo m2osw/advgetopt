@@ -56,7 +56,7 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
 
     CATCH_START_SECTION("usage() using \"--filename\" for the default option accepting multiple entries")
     {
-        const advgetopt::option options_list[] =
+        advgetopt::option const options_list[] =
         {
             advgetopt::define_option(
                   advgetopt::Name("validate")
@@ -71,12 +71,17 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
             advgetopt::define_option(
                   advgetopt::Name("out-of-bounds")
                 , advgetopt::ShortName('o')
-                , advgetopt::Flags(advgetopt::optional_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE, advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Flags(advgetopt::optional_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
+                                                           , advgetopt::GETOPT_FLAG_GROUP_TWO
+                                                           , advgetopt::GETOPT_FLAG_REQUIRED>())
                 , advgetopt::Help("valid values from 1 to 9.")
             ),
             advgetopt::define_option(
                   advgetopt::Name("not-specified-and-no-default")
-                , advgetopt::Flags(advgetopt::optional_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE, advgetopt::GETOPT_FLAG_REQUIRED, advgetopt::GETOPT_FLAG_SHOW_GROUP1>())
+                , advgetopt::Flags(advgetopt::optional_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
+                                                           , advgetopt::GETOPT_FLAG_REQUIRED
+                                                           , advgetopt::GETOPT_FLAG_GROUP_TWO
+                                                           , advgetopt::GETOPT_FLAG_SHOW_GROUP1>())
                 , advgetopt::Help("test long without having used the option and no default.")
             ),
             advgetopt::define_option(
@@ -104,13 +109,17 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
             advgetopt::define_option(
                   advgetopt::Name("noisy")
                 , advgetopt::ShortName('n')
-                , advgetopt::Flags(advgetopt::standalone_command_flags<advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR>())
+                , advgetopt::Flags(advgetopt::standalone_command_flags<advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR
+                                                                     , advgetopt::GETOPT_FLAG_GROUP_ONE>())
                 //, advgetopt::Help("make sure everything is unique.") -- do not show in --help
             ),
             advgetopt::define_option(
                   advgetopt::Name("quiet")
                 , advgetopt::ShortName('q')
-                , advgetopt::Flags(advgetopt::optional_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE, advgetopt::GETOPT_FLAG_MULTIPLE, advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR>())
+                , advgetopt::Flags(advgetopt::optional_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
+                                                           , advgetopt::GETOPT_FLAG_MULTIPLE
+                                                           , advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR
+                                                           , advgetopt::GETOPT_FLAG_GROUP_ONE>())
                 , advgetopt::Help("make it quiet (opposite of verbose).")
             ),
             advgetopt::define_option(
@@ -192,7 +201,8 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
         // this initialization works as expected
         //
         advgetopt::getopt opt(options, argc2, argv2);
-
+        opt.set_group_name(advgetopt::GETOPT_FLAG_GROUP_ONE, "Verbosity options:");
+        opt.set_group_name(advgetopt::GETOPT_FLAG_GROUP_TWO, "Special options:");
   
         std::string const footer(advgetopt::getopt::breakup_line(
 "\n"
@@ -236,12 +246,16 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
 "Usage: try this one and we get a throw (valid options + usage calls)\n"
 "   --long <arg>               used to validate that invalid numbers generate an\n"
 "                              error.\n"
-"   --out-of-bounds or -o <arg>\n"
-"                              valid values from 1 to 9.\n"
-"   --quiet or -q {<arg>}      make it quiet (opposite of verbose).\n"
 "   --string <arg>             string parameter.\n"
 "   --unique or -u             make sure everything is unique.\n"
 "   --validate                 this is used to validate different things.\n"
+"\n"
+"Verbosity options:\n"
+"   --quiet or -q {<arg>}      make it quiet (opposite of verbose).\n"
+"\n"
+"Special options:\n"
+"   --out-of-bounds or -o <arg>\n"
+"                              valid values from 1 to 9.\n"
 "   [default arguments]        other parameters are viewed as filenames.\n"
 + footer
                         );
@@ -252,18 +266,22 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
 "Usage: try this one and we get a throw (valid options + usage calls)\n"
 "   --long <arg>               used to validate that invalid numbers generate an\n"
 "                              error.\n"
-"   --not-specified-and-no-default <arg>\n"
-"                              test long without having used the option and no\n"
-"                              default.\n"
 "   --not-specified-with-invalid-default <arg> {<arg>} (default is \"123abc\")\n"
 "                              test that an invalid default value can be returned\n"
 "                              as is.\n"
-"   --out-of-bounds or -o <arg>\n"
-"                              valid values from 1 to 9.\n"
-"   --quiet or -q {<arg>}      make it quiet (opposite of verbose).\n"
 "   --string <arg>             string parameter.\n"
 "   --unique or -u             make sure everything is unique.\n"
 "   --validate                 this is used to validate different things.\n"
+"\n"
+"Verbosity options:\n"
+"   --quiet or -q {<arg>}      make it quiet (opposite of verbose).\n"
+"\n"
+"Special options:\n"
+"   --not-specified-and-no-default <arg>\n"
+"                              test long without having used the option and no\n"
+"                              default.\n"
+"   --out-of-bounds or -o <arg>\n"
+"                              valid values from 1 to 9.\n"
 "   [default arguments]        other parameters are viewed as filenames.\n"
 + footer
                         );
@@ -272,8 +290,10 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
         //
         CATCH_REQUIRE(opt.usage(advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR) ==
 "Usage: try this one and we get a throw (valid options + usage calls)\n"
-"   --quiet or -q {<arg>}      make it quiet (opposite of verbose).\n"
 "   --validate                 this is used to validate different things.\n"
+"\n"
+"Verbosity options:\n"
+"   --quiet or -q {<arg>}      make it quiet (opposite of verbose).\n"
 + footer
                         );
 
@@ -281,6 +301,8 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
         //
         CATCH_REQUIRE(opt.usage(advgetopt::GETOPT_FLAG_SHOW_GROUP1) ==
 "Usage: try this one and we get a throw (valid options + usage calls)\n"
+"\n"
+"Special options:\n"
 "   --not-specified-and-no-default <arg>\n"
 "                              test long without having used the option and no\n"
 "                              default.\n"
