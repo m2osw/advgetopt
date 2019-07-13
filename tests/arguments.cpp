@@ -2018,8 +2018,8 @@ CATCH_TEST_CASE("default_argument", "[arguments][valid][getopt]")
             advgetopt::define_option(
                   advgetopt::Name("out")
                 , advgetopt::ShortName('o')
-                , advgetopt::Flags(advgetopt::optional_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
-                                                           , advgetopt::GETOPT_FLAG_DEFAULT_OPTION>())
+                , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
+                                                      , advgetopt::GETOPT_FLAG_DEFAULT_OPTION>())
                 , advgetopt::Help("output filename.")
             ),
             advgetopt::end_options()
@@ -2305,8 +2305,8 @@ CATCH_TEST_CASE("default_argument", "[arguments][valid][getopt]")
             advgetopt::define_option(
                   advgetopt::Name("out")
                 , advgetopt::ShortName('o')
-                , advgetopt::Flags(advgetopt::optional_flags<advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE
-                                                           , advgetopt::GETOPT_FLAG_DEFAULT_OPTION>())
+                , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE
+                                                      , advgetopt::GETOPT_FLAG_DEFAULT_OPTION>())
                 , advgetopt::Help("output filename.")
             ),
             advgetopt::end_options()
@@ -2840,9 +2840,9 @@ CATCH_TEST_CASE("default_arguments", "[arguments][valid][multiple][getopt]")
             advgetopt::define_option(
                   advgetopt::Name("out")
                 , advgetopt::ShortName('o')
-                , advgetopt::Flags(advgetopt::optional_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
-                                                           , advgetopt::GETOPT_FLAG_DEFAULT_OPTION
-                                                           , advgetopt::GETOPT_FLAG_MULTIPLE>())
+                , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
+                                                      , advgetopt::GETOPT_FLAG_DEFAULT_OPTION
+                                                      , advgetopt::GETOPT_FLAG_MULTIPLE>())
                 , advgetopt::Help("output filename.")
             ),
             advgetopt::end_options()
@@ -3011,9 +3011,9 @@ CATCH_TEST_CASE("default_arguments", "[arguments][valid][multiple][getopt]")
         {
             advgetopt::define_option(
                   advgetopt::Name("--")
-                , advgetopt::Flags(advgetopt::optional_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
-                                                           , advgetopt::GETOPT_FLAG_DEFAULT_OPTION
-                                                           , advgetopt::GETOPT_FLAG_MULTIPLE>())
+                , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
+                                                      , advgetopt::GETOPT_FLAG_DEFAULT_OPTION
+                                                      , advgetopt::GETOPT_FLAG_MULTIPLE>())
                 , advgetopt::Help("output filename.")
             ),
             advgetopt::end_options()
@@ -3179,9 +3179,9 @@ CATCH_TEST_CASE("default_arguments", "[arguments][valid][multiple][getopt]")
             advgetopt::define_option(
                   advgetopt::Name("out")
                 , advgetopt::ShortName('o')
-                , advgetopt::Flags(advgetopt::optional_flags<advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE
-                                                           , advgetopt::GETOPT_FLAG_DEFAULT_OPTION
-                                                           , advgetopt::GETOPT_FLAG_MULTIPLE>())
+                , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE
+                                                      , advgetopt::GETOPT_FLAG_DEFAULT_OPTION
+                                                      , advgetopt::GETOPT_FLAG_MULTIPLE>())
                 , advgetopt::Help("output filename.")
             ),
             advgetopt::end_options()

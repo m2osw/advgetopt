@@ -136,7 +136,7 @@ constexpr flag_t end_flags()
 
 
 template<flag_t ...args>
-constexpr flag_t optional_flags()
+constexpr flag_t any_flags()
 {
     constexpr flag_t result(combine_option_flags<args...>());
 
