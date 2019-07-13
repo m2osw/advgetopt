@@ -23,6 +23,10 @@ case $1 in
 	) 2>&1 | less -SR
 	;;
 
+"-i")
+	make -C ../../../BUILD/contrib/advgetopt install
+	;;
+
 *)
 	make -j4 -C ../../../BUILD/contrib/advgetopt
 	;;
