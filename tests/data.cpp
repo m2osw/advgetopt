@@ -28,19 +28,27 @@
 
 // self
 //
-#include "main.h"
+#include    "main.h"
+
 
 // advgetopt lib
 //
-#include <advgetopt/exception.h>
+#include    <advgetopt/exception.h>
+
 
 // snapdev lib
 //
-#include <snapdev/safe_setenv.h>
+#include    <snapdev/safe_setenv.h>
+
+
+// booost lib
+//
+#include    <boost/preprocessor/stringize.hpp>
+
 
 // C++ lib
 //
-#include <fstream>
+#include    <fstream>
 
 
 
@@ -381,6 +389,1715 @@ CATCH_TEST_CASE("long_access", "[arguments][valid][getopt]")
 
 
 
+CATCH_TEST_CASE("system_flags_version", "[arguments][valid][getopt][system_flags]")
+{
+    CATCH_START_SECTION("Check with the --version system flag")
+        long const major_version(rand());
+        long const minor_version(rand());
+        long const patch_version(rand());
+        long const build_version(rand());
+        std::string const version(std::to_string(major_version)
+                                + "."
+                                + std::to_string(minor_version)
+                                + "."
+                                + std::to_string(patch_version)
+                                + "."
+                                + std::to_string(build_version));
+
+        long const default_value(rand());
+        std::string const default_val(std::to_string(default_value));
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("define the size.")
+                , advgetopt::DefaultValue(default_val.c_str())
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_help_header = "Usage: test system commands";
+        environment_options.f_version = version.c_str();
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--version",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // valid parameter
+        CATCH_REQUIRE(opt.get_option("size") != nullptr);
+        CATCH_REQUIRE(opt.get_option('s') == opt.get_option("size"));
+        CATCH_REQUIRE_FALSE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_string("size") == default_val);
+        CATCH_REQUIRE(opt.get_string("size", 0) == default_val);
+        CATCH_REQUIRE(opt["size"] == default_val);
+        CATCH_REQUIRE(opt.get_long("size") == default_value);
+        CATCH_REQUIRE(opt.get_long("size", 0) == default_value);
+        CATCH_REQUIRE(opt.has_default("size"));
+        CATCH_REQUIRE(opt.get_default("size") == default_val);
+        CATCH_REQUIRE(opt.size("size") == 0);
+
+        // version parameter
+        CATCH_REQUIRE(opt.get_option("version") != nullptr);
+        CATCH_REQUIRE(opt.get_option('V') == opt.get_option("version"));
+        CATCH_REQUIRE(opt.is_defined("version"));
+        CATCH_REQUIRE(opt.get_string("version") == "");
+        CATCH_REQUIRE(opt.get_string("version", 0) == "");
+        CATCH_REQUIRE(opt["version"] == "");
+        CATCH_REQUIRE_FALSE(opt.has_default("version"));
+        CATCH_REQUIRE(opt.get_default("version").empty());
+        CATCH_REQUIRE(opt.size("version") == 1);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+
+        // process system options now
+        std::stringstream ss;
+        advgetopt::flag_t const result(opt.process_system_options(ss));
+        CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_VERSION);
+        CATCH_REQUIRE(ss.str() == version + '\n');
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Check with the --version system flag, without a --version on the command line")
+        long const major_version(rand());
+        long const minor_version(rand());
+        long const patch_version(rand());
+        long const build_version(rand());
+        std::string const version(std::to_string(major_version)
+                                + "."
+                                + std::to_string(minor_version)
+                                + "."
+                                + std::to_string(patch_version)
+                                + "."
+                                + std::to_string(build_version));
+
+        long const default_value(rand());
+        std::string const default_val(std::to_string(default_value));
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("define the size.")
+                , advgetopt::DefaultValue(default_val.c_str())
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_help_header = "Usage: test system commands";
+        environment_options.f_version = version.c_str();
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--size",
+            "1221",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // valid parameter
+        CATCH_REQUIRE(opt.get_option("size") != nullptr);
+        CATCH_REQUIRE(opt.get_option('s') == opt.get_option("size"));
+        CATCH_REQUIRE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_string("size") == "1221");
+        CATCH_REQUIRE(opt.get_string("size", 0) == "1221");
+        CATCH_REQUIRE(opt["size"] == "1221");
+        CATCH_REQUIRE(opt.get_long("size") == 1221);
+        CATCH_REQUIRE(opt.get_long("size", 0) == 1221);
+        CATCH_REQUIRE(opt.has_default("size"));
+        CATCH_REQUIRE(opt.get_default("size") == default_val);
+        CATCH_REQUIRE(opt.size("size") == 1);
+
+        // version parameter
+        CATCH_REQUIRE(opt.get_option("version") != nullptr);
+        CATCH_REQUIRE(opt.get_option('V') == opt.get_option("version"));
+        CATCH_REQUIRE_FALSE(opt.is_defined("version"));
+        CATCH_REQUIRE_FALSE(opt.has_default("version"));
+        CATCH_REQUIRE(opt.get_default("version").empty());
+        CATCH_REQUIRE(opt.size("version") == 0);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+
+        // process system options now
+        std::stringstream ss;
+        advgetopt::flag_t const result(opt.process_system_options(ss));
+        CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_NONE);
+        CATCH_REQUIRE(ss.str().empty());
+    CATCH_END_SECTION()
+}
+
+
+
+CATCH_TEST_CASE("system_flags_help", "[arguments][valid][getopt][system_flags]")
+{
+    CATCH_START_SECTION("Check with the --help system flag")
+    {
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("define the size.")
+                , advgetopt::DefaultValue("33")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_help_header = "Usage: test system commands";
+        environment_options.f_help_footer = "Copyright matters";
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--help",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // valid parameter
+        CATCH_REQUIRE(opt.get_option("size") != nullptr);
+        CATCH_REQUIRE(opt.get_option('s') == opt.get_option("size"));
+        CATCH_REQUIRE_FALSE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_string("size") == "33");
+        CATCH_REQUIRE(opt.get_string("size", 0) == "33");
+        CATCH_REQUIRE(opt["size"] == "33");
+        CATCH_REQUIRE(opt.get_long("size") == 33);
+        CATCH_REQUIRE(opt.get_long("size", 0) == 33);
+        CATCH_REQUIRE(opt.has_default("size"));
+        CATCH_REQUIRE(opt.get_default("size") == "33");
+        CATCH_REQUIRE(opt.size("size") == 0);
+
+        // help parameter
+        CATCH_REQUIRE(opt.get_option("help") != nullptr);
+        CATCH_REQUIRE(opt.get_option('h') == opt.get_option("help"));
+        CATCH_REQUIRE(opt.is_defined("help"));
+        CATCH_REQUIRE(opt.get_string("help") == "");
+        CATCH_REQUIRE(opt.get_string("help", 0) == "");
+        CATCH_REQUIRE(opt["help"] == "");
+        CATCH_REQUIRE_FALSE(opt.has_default("help"));
+        CATCH_REQUIRE(opt.get_default("help").empty());
+        CATCH_REQUIRE(opt.size("help") == 1);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+
+        // process system options now
+        std::stringstream ss;
+        advgetopt::flag_t const result(opt.process_system_options(ss));
+        CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_HELP);
+        CATCH_REQUIRE(ss.str() ==
+"Usage: test system commands\n"
+"   --build-date               print out the time and date when arguments was\n"
+"                              built and exit.\n"
+"   --configuration-filenames  print out the list of configuration files checked\n"
+"                              out by this tool.\n"
+"   --copyright or -C          print out the copyright of arguments and exit.\n"
+"   --environment-variable-name\n"
+"                              print out the name of the environment variable\n"
+"                              supported by arguments (if any.)\n"
+"   --help or -h               print out this help screen and exit.\n"
+"   --license or -L            print out the license of arguments and exit.\n"
+"   --path-to-option-definitions\n"
+"                              print out the path to the option definitons.\n"
+"   --size or -s <arg> (default is \"33\")\n"
+"                              define the size.\n"
+"   --version or -V            print out the version of arguments and exit.\n"
+"\n"
+"Copyright matters\n"
+"\n"
+                    );
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Check with the --help system flag, without a --help on the command line")
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("define the size.")
+                , advgetopt::DefaultValue("33")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_help_header = "Usage: test system commands";
+        environment_options.f_help_footer = "Copyright matters";
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--size",
+            "1221",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // valid parameter
+        CATCH_REQUIRE(opt.get_option("size") != nullptr);
+        CATCH_REQUIRE(opt.get_option('s') == opt.get_option("size"));
+        CATCH_REQUIRE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_string("size") == "1221");
+        CATCH_REQUIRE(opt.get_string("size", 0) == "1221");
+        CATCH_REQUIRE(opt["size"] == "1221");
+        CATCH_REQUIRE(opt.get_long("size") == 1221);
+        CATCH_REQUIRE(opt.get_long("size", 0) == 1221);
+        CATCH_REQUIRE(opt.has_default("size"));
+        CATCH_REQUIRE(opt.get_default("size") == "33");
+        CATCH_REQUIRE(opt.size("size") == 1);
+
+        // help parameter
+        CATCH_REQUIRE(opt.get_option("help") != nullptr);
+        CATCH_REQUIRE(opt.get_option('h') == opt.get_option("help"));
+        CATCH_REQUIRE_FALSE(opt.is_defined("help"));
+        CATCH_REQUIRE_FALSE(opt.has_default("help"));
+        CATCH_REQUIRE(opt.get_default("help").empty());
+        CATCH_REQUIRE(opt.size("help") == 0);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+
+        // process system options now
+        std::stringstream ss;
+        advgetopt::flag_t const result(opt.process_system_options(ss));
+        CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_NONE);
+        CATCH_REQUIRE(ss.str().empty());
+    CATCH_END_SECTION()
+}
+
+
+
+CATCH_TEST_CASE("system_flags_copyright", "[arguments][valid][getopt][system_flags]")
+{
+    CATCH_START_SECTION("Check with the --copyright system flag")
+    {
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("define the size.")
+                , advgetopt::DefaultValue("23")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_copyright = "Copyright (c) " BOOST_PP_STRINGIZE(UTC_BUILD_YEAR) "  Made to Order Software Corporation";
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--copyright",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // valid parameter
+        CATCH_REQUIRE(opt.get_option("size") != nullptr);
+        CATCH_REQUIRE(opt.get_option('s') == opt.get_option("size"));
+        CATCH_REQUIRE_FALSE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_string("size") == "23");
+        CATCH_REQUIRE(opt.get_string("size", 0) == "23");
+        CATCH_REQUIRE(opt["size"] == "23");
+        CATCH_REQUIRE(opt.get_long("size") == 23);
+        CATCH_REQUIRE(opt.get_long("size", 0) == 23);
+        CATCH_REQUIRE(opt.has_default("size"));
+        CATCH_REQUIRE(opt.get_default("size") == "23");
+        CATCH_REQUIRE(opt.size("size") == 0);
+
+        // copyright parameter
+        CATCH_REQUIRE(opt.get_option("copyright") != nullptr);
+        CATCH_REQUIRE(opt.get_option('C') == opt.get_option("copyright"));
+        CATCH_REQUIRE(opt.is_defined("copyright"));
+        CATCH_REQUIRE(opt.get_string("copyright") == "");
+        CATCH_REQUIRE(opt.get_string("copyright", 0) == "");
+        CATCH_REQUIRE(opt["copyright"] == "");
+        CATCH_REQUIRE_FALSE(opt.has_default("copyright"));
+        CATCH_REQUIRE(opt.get_default("copyright").empty());
+        CATCH_REQUIRE(opt.size("copyright") == 1);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+
+        // process system options now
+        std::stringstream ss;
+        advgetopt::flag_t const result(opt.process_system_options(ss));
+        CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_COPYRIGHT);
+        CATCH_REQUIRE(ss.str() == "Copyright (c) " BOOST_PP_STRINGIZE(UTC_BUILD_YEAR) "  Made to Order Software Corporation\n");
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Check with the --copyright system flag, without a --copyright on the command line")
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("define the size.")
+                , advgetopt::DefaultValue("53")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_help_header = "Usage: test system commands";
+        environment_options.f_help_footer = "Copyright matters";
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--size",
+            "1221",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // valid parameter
+        CATCH_REQUIRE(opt.get_option("size") != nullptr);
+        CATCH_REQUIRE(opt.get_option('s') == opt.get_option("size"));
+        CATCH_REQUIRE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_string("size") == "1221");
+        CATCH_REQUIRE(opt.get_string("size", 0) == "1221");
+        CATCH_REQUIRE(opt["size"] == "1221");
+        CATCH_REQUIRE(opt.get_long("size") == 1221);
+        CATCH_REQUIRE(opt.get_long("size", 0) == 1221);
+        CATCH_REQUIRE(opt.has_default("size"));
+        CATCH_REQUIRE(opt.get_default("size") == "53");
+        CATCH_REQUIRE(opt.size("size") == 1);
+
+        // copyright parameter
+        CATCH_REQUIRE(opt.get_option("copyright") != nullptr);
+        CATCH_REQUIRE(opt.get_option('C') == opt.get_option("copyright"));
+        CATCH_REQUIRE_FALSE(opt.is_defined("copyright"));
+        CATCH_REQUIRE_FALSE(opt.has_default("copyright"));
+        CATCH_REQUIRE(opt.get_default("copyright").empty());
+        CATCH_REQUIRE(opt.size("copyright") == 0);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+
+        // process system options now
+        std::stringstream ss;
+        advgetopt::flag_t const result(opt.process_system_options(ss));
+        CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_NONE);
+        CATCH_REQUIRE(ss.str().empty());
+    CATCH_END_SECTION()
+}
+
+
+
+CATCH_TEST_CASE("system_flags_license", "[arguments][valid][getopt][system_flags]")
+{
+    CATCH_START_SECTION("Check with the --license system flag")
+    {
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("define the size.")
+                , advgetopt::DefaultValue("73")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_license = "GPL v2";
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--license",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // valid parameter
+        CATCH_REQUIRE(opt.get_option("size") != nullptr);
+        CATCH_REQUIRE(opt.get_option('s') == opt.get_option("size"));
+        CATCH_REQUIRE_FALSE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_string("size") == "73");
+        CATCH_REQUIRE(opt.get_string("size", 0) == "73");
+        CATCH_REQUIRE(opt["size"] == "73");
+        CATCH_REQUIRE(opt.get_long("size") == 73);
+        CATCH_REQUIRE(opt.get_long("size", 0) == 73);
+        CATCH_REQUIRE(opt.has_default("size"));
+        CATCH_REQUIRE(opt.get_default("size") == "73");
+        CATCH_REQUIRE(opt.size("size") == 0);
+
+        // license parameter
+        CATCH_REQUIRE(opt.get_option("license") != nullptr);
+        CATCH_REQUIRE(opt.get_option('L') == opt.get_option("license"));
+        CATCH_REQUIRE(opt.is_defined("license"));
+        CATCH_REQUIRE(opt.get_string("license") == "");
+        CATCH_REQUIRE(opt.get_string("license", 0) == "");
+        CATCH_REQUIRE(opt["license"] == "");
+        CATCH_REQUIRE_FALSE(opt.has_default("license"));
+        CATCH_REQUIRE(opt.get_default("license").empty());
+        CATCH_REQUIRE(opt.size("license") == 1);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+
+        // process system options now
+        std::stringstream ss;
+        advgetopt::flag_t const result(opt.process_system_options(ss));
+        CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_LICENSE);
+        CATCH_REQUIRE(ss.str() == "GPL v2\n");
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Check with the --license system flag, without a --license on the command line")
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("define the size.")
+                , advgetopt::DefaultValue("103")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_help_header = "Usage: test system commands";
+        environment_options.f_help_footer = "Copyright matters";
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--size",
+            "1221",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // valid parameter
+        CATCH_REQUIRE(opt.get_option("size") != nullptr);
+        CATCH_REQUIRE(opt.get_option('s') == opt.get_option("size"));
+        CATCH_REQUIRE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_string("size") == "1221");
+        CATCH_REQUIRE(opt.get_string("size", 0) == "1221");
+        CATCH_REQUIRE(opt["size"] == "1221");
+        CATCH_REQUIRE(opt.get_long("size") == 1221);
+        CATCH_REQUIRE(opt.get_long("size", 0) == 1221);
+        CATCH_REQUIRE(opt.has_default("size"));
+        CATCH_REQUIRE(opt.get_default("size") == "103");
+        CATCH_REQUIRE(opt.size("size") == 1);
+
+        // license parameter
+        CATCH_REQUIRE(opt.get_option("license") != nullptr);
+        CATCH_REQUIRE(opt.get_option('L') == opt.get_option("license"));
+        CATCH_REQUIRE_FALSE(opt.is_defined("license"));
+        CATCH_REQUIRE_FALSE(opt.has_default("license"));
+        CATCH_REQUIRE(opt.get_default("license").empty());
+        CATCH_REQUIRE(opt.size("license") == 0);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+
+        // process system options now
+        std::stringstream ss;
+        advgetopt::flag_t const result(opt.process_system_options(ss));
+        CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_NONE);
+        CATCH_REQUIRE(ss.str().empty());
+    CATCH_END_SECTION()
+}
+
+
+
+CATCH_TEST_CASE("system_flags_build_date", "[arguments][valid][getopt][system_flags]")
+{
+    CATCH_START_SECTION("Check with the --build-date system flag")
+    {
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("define the size.")
+                , advgetopt::DefaultValue("7301")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--build-date",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // valid parameter
+        CATCH_REQUIRE(opt.get_option("size") != nullptr);
+        CATCH_REQUIRE(opt.get_option('s') == opt.get_option("size"));
+        CATCH_REQUIRE_FALSE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_string("size") == "7301");
+        CATCH_REQUIRE(opt.get_string("size", 0) == "7301");
+        CATCH_REQUIRE(opt["size"] == "7301");
+        CATCH_REQUIRE(opt.get_long("size") == 7301);
+        CATCH_REQUIRE(opt.get_long("size", 0) == 7301);
+        CATCH_REQUIRE(opt.has_default("size"));
+        CATCH_REQUIRE(opt.get_default("size") == "7301");
+        CATCH_REQUIRE(opt.size("size") == 0);
+
+        // build-date parameter
+        CATCH_REQUIRE(opt.get_option("build-date") != nullptr);
+        CATCH_REQUIRE(opt.is_defined("build-date"));
+        CATCH_REQUIRE(opt.get_string("build-date") == "");
+        CATCH_REQUIRE(opt.get_string("build-date", 0) == "");
+        CATCH_REQUIRE(opt["build-date"] == "");
+        CATCH_REQUIRE_FALSE(opt.has_default("build-date"));
+        CATCH_REQUIRE(opt.get_default("build-date").empty());
+        CATCH_REQUIRE(opt.size("build-date") == 1);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+
+        // process system options now
+        std::stringstream ss;
+        advgetopt::flag_t const result(opt.process_system_options(ss));
+        CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_BUILD_DATE);
+        CATCH_REQUIRE(ss.str() == "Built on "
+                                + std::string(environment_options.f_build_date)
+                                + " at "
+                                + environment_options.f_build_time
+                                + "\n");
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Check with the --build-date system flag, without a --build-date on the command line")
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("define the size.")
+                , advgetopt::DefaultValue("103")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_help_header = "Usage: test system commands";
+        environment_options.f_help_footer = "Copyright matters";
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--size",
+            "1221",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // valid parameter
+        CATCH_REQUIRE(opt.get_option("size") != nullptr);
+        CATCH_REQUIRE(opt.get_option('s') == opt.get_option("size"));
+        CATCH_REQUIRE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_string("size") == "1221");
+        CATCH_REQUIRE(opt.get_string("size", 0) == "1221");
+        CATCH_REQUIRE(opt["size"] == "1221");
+        CATCH_REQUIRE(opt.get_long("size") == 1221);
+        CATCH_REQUIRE(opt.get_long("size", 0) == 1221);
+        CATCH_REQUIRE(opt.has_default("size"));
+        CATCH_REQUIRE(opt.get_default("size") == "103");
+        CATCH_REQUIRE(opt.size("size") == 1);
+
+        // build-date parameter
+        CATCH_REQUIRE(opt.get_option("build-date") != nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("build-date"));
+        CATCH_REQUIRE_FALSE(opt.has_default("build-date"));
+        CATCH_REQUIRE(opt.get_default("build-date").empty());
+        CATCH_REQUIRE(opt.size("build-date") == 0);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+
+        // process system options now
+        std::stringstream ss;
+        advgetopt::flag_t const result(opt.process_system_options(ss));
+        CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_NONE);
+        CATCH_REQUIRE(ss.str().empty());
+    CATCH_END_SECTION()
+}
+
+
+
+CATCH_TEST_CASE("system_flags_environment_variable_name", "[arguments][valid][getopt][system_flags]")
+{
+    CATCH_START_SECTION("Check with the --environment-variable-name system flag")
+    {
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("define the size.")
+                , advgetopt::DefaultValue("7301")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_environment_variable_name = "ADVGETOPT_OPTIONS";
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--environment-variable-name",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // valid parameter
+        CATCH_REQUIRE(opt.get_option("size") != nullptr);
+        CATCH_REQUIRE(opt.get_option('s') == opt.get_option("size"));
+        CATCH_REQUIRE_FALSE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_string("size") == "7301");
+        CATCH_REQUIRE(opt.get_string("size", 0) == "7301");
+        CATCH_REQUIRE(opt["size"] == "7301");
+        CATCH_REQUIRE(opt.get_long("size") == 7301);
+        CATCH_REQUIRE(opt.get_long("size", 0) == 7301);
+        CATCH_REQUIRE(opt.has_default("size"));
+        CATCH_REQUIRE(opt.get_default("size") == "7301");
+        CATCH_REQUIRE(opt.size("size") == 0);
+
+        // environment-variable-name parameter
+        CATCH_REQUIRE(opt.get_option("environment-variable-name") != nullptr);
+        CATCH_REQUIRE(opt.is_defined("environment-variable-name"));
+        CATCH_REQUIRE(opt.get_string("environment-variable-name") == "");
+        CATCH_REQUIRE(opt.get_string("environment-variable-name", 0) == "");
+        CATCH_REQUIRE(opt["environment-variable-name"] == "");
+        CATCH_REQUIRE_FALSE(opt.has_default("environment-variable-name"));
+        CATCH_REQUIRE(opt.get_default("environment-variable-name").empty());
+        CATCH_REQUIRE(opt.size("environment-variable-name") == 1);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+
+        // process system options now
+        std::stringstream ss;
+        advgetopt::flag_t const result(opt.process_system_options(ss));
+        CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_ENVIRONMENT_VARIABLE_NAME);
+        CATCH_REQUIRE(ss.str() == "ADVGETOPT_OPTIONS\n");
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Check with the --environment-variable-name system flag, without a --environment-variable-name on the command line")
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("define the size.")
+                , advgetopt::DefaultValue("103")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_help_header = "Usage: test system commands";
+        environment_options.f_help_footer = "Copyright matters";
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--size",
+            "1221",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // valid parameter
+        CATCH_REQUIRE(opt.get_option("size") != nullptr);
+        CATCH_REQUIRE(opt.get_option('s') == opt.get_option("size"));
+        CATCH_REQUIRE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_string("size") == "1221");
+        CATCH_REQUIRE(opt.get_string("size", 0) == "1221");
+        CATCH_REQUIRE(opt["size"] == "1221");
+        CATCH_REQUIRE(opt.get_long("size") == 1221);
+        CATCH_REQUIRE(opt.get_long("size", 0) == 1221);
+        CATCH_REQUIRE(opt.has_default("size"));
+        CATCH_REQUIRE(opt.get_default("size") == "103");
+        CATCH_REQUIRE(opt.size("size") == 1);
+
+        // environment-variable-name parameter
+        CATCH_REQUIRE(opt.get_option("environment-variable-name") != nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("environment-variable-name"));
+        CATCH_REQUIRE_FALSE(opt.has_default("environment-variable-name"));
+        CATCH_REQUIRE(opt.get_default("environment-variable-name").empty());
+        CATCH_REQUIRE(opt.size("environment-variable-name") == 0);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+
+        // process system options now
+        std::stringstream ss;
+        advgetopt::flag_t const result(opt.process_system_options(ss));
+        CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_NONE);
+        CATCH_REQUIRE(ss.str().empty());
+    CATCH_END_SECTION()
+}
+
+
+
+CATCH_TEST_CASE("system_flags_configuration_filenames", "[arguments][valid][getopt][system_flags]")
+{
+    CATCH_START_SECTION("Check with the --configuration-filenames system flag")
+    {
+        snap::safe_setenv env("HOME", "/home/advgetopt");
+
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("define the size.")
+                , advgetopt::DefaultValue("3101")
+            ),
+            advgetopt::end_options()
+        };
+
+        char const * confs[] =
+        {
+            ".config/file.mdi",
+            "/etc/snapwebsites/server.conf",
+            "~/.config/advgetopt/snap.conf",
+            nullptr
+        };
+        char const * dirs[] =
+        {
+            ".config",
+            "/etc/secret",
+            "~/.config/snapwebsites",
+            nullptr
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_configuration_files = confs;
+        environment_options.f_configuration_filename = "snapdb.conf";
+        environment_options.f_configuration_directories = dirs;
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--configuration-filenames",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // valid parameter
+        CATCH_REQUIRE(opt.get_option("size") != nullptr);
+        CATCH_REQUIRE(opt.get_option('s') == opt.get_option("size"));
+        CATCH_REQUIRE_FALSE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_string("size") == "3101");
+        CATCH_REQUIRE(opt.get_string("size", 0) == "3101");
+        CATCH_REQUIRE(opt["size"] == "3101");
+        CATCH_REQUIRE(opt.get_long("size") == 3101);
+        CATCH_REQUIRE(opt.get_long("size", 0) == 3101);
+        CATCH_REQUIRE(opt.has_default("size"));
+        CATCH_REQUIRE(opt.get_default("size") == "3101");
+        CATCH_REQUIRE(opt.size("size") == 0);
+
+        // configuration-filenames parameter
+        CATCH_REQUIRE(opt.get_option("configuration-filenames") != nullptr);
+        CATCH_REQUIRE(opt.is_defined("configuration-filenames"));
+        CATCH_REQUIRE(opt.get_string("configuration-filenames") == "");
+        CATCH_REQUIRE(opt.get_string("configuration-filenames", 0) == "");
+        CATCH_REQUIRE(opt["configuration-filenames"] == "");
+        CATCH_REQUIRE_FALSE(opt.has_default("configuration-filenames"));
+        CATCH_REQUIRE(opt.get_default("configuration-filenames").empty());
+        CATCH_REQUIRE(opt.size("configuration-filenames") == 1);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+
+        // process system options now
+        std::stringstream ss;
+        advgetopt::flag_t const result(opt.process_system_options(ss));
+        CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_CONFIGURATION_FILENAMES);
+        CATCH_REQUIRE(getenv("HOME") != nullptr);
+        std::string const home(getenv("HOME"));
+        CATCH_REQUIRE(ss.str() ==
+"Configuration filenames:\n"
+" . .config/file.mdi\n"
+" . .config/unittest.d/file.mdi\n"
+" . /etc/snapwebsites/server.conf\n"
+" . /etc/snapwebsites/unittest.d/server.conf\n"
+" . " + home + "/.config/advgetopt/snap.conf\n"
+" . .config/snapdb.conf\n"
+" . .config/unittest.d/snapdb.conf\n"
+" . /etc/secret/snapdb.conf\n"
+" . /etc/secret/unittest.d/snapdb.conf\n"
+" . " + home + "/.config/snapwebsites/snapdb.conf\n"
+);
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Check with the --configuration-filenames system flag with --config-dir too")
+    {
+        snap::safe_setenv env("HOME", "/home/advgetopt");
+
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("define the size.")
+                , advgetopt::DefaultValue("3101")
+            ),
+            advgetopt::end_options()
+        };
+
+        char const * confs[] =
+        {
+            ".config/file.mdi",
+            "/etc/snapwebsites/server.conf",
+            "~/.config/advgetopt/snap.conf",
+            nullptr
+        };
+        char const * dirs[] =
+        {
+            ".config",
+            "/etc/secret",
+            "~/.config/snapwebsites",
+            nullptr
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_configuration_files = confs;
+        environment_options.f_configuration_filename = "snapdb.conf";
+        environment_options.f_configuration_directories = dirs;
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--config-dir",
+            "/var/lib/advgetopt",
+            "--configuration-filenames",
+            "--config-dir",
+            "/opt/config",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // valid parameter
+        CATCH_REQUIRE(opt.get_option("size") != nullptr);
+        CATCH_REQUIRE(opt.get_option('s') == opt.get_option("size"));
+        CATCH_REQUIRE_FALSE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_string("size") == "3101");
+        CATCH_REQUIRE(opt.get_string("size", 0) == "3101");
+        CATCH_REQUIRE(opt["size"] == "3101");
+        CATCH_REQUIRE(opt.get_long("size") == 3101);
+        CATCH_REQUIRE(opt.get_long("size", 0) == 3101);
+        CATCH_REQUIRE(opt.has_default("size"));
+        CATCH_REQUIRE(opt.get_default("size") == "3101");
+        CATCH_REQUIRE(opt.size("size") == 0);
+
+        // configuration-filenames parameter
+        CATCH_REQUIRE(opt.get_option("configuration-filenames") != nullptr);
+        CATCH_REQUIRE(opt.is_defined("configuration-filenames"));
+        CATCH_REQUIRE(opt.get_string("configuration-filenames") == "");
+        CATCH_REQUIRE(opt.get_string("configuration-filenames", 0) == "");
+        CATCH_REQUIRE(opt["configuration-filenames"] == "");
+        CATCH_REQUIRE_FALSE(opt.has_default("configuration-filenames"));
+        CATCH_REQUIRE(opt.get_default("configuration-filenames").empty());
+        CATCH_REQUIRE(opt.size("configuration-filenames") == 1);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+
+        // process system options now
+        std::stringstream ss;
+        advgetopt::flag_t const result(opt.process_system_options(ss));
+        CATCH_REQUIRE(result == (advgetopt::SYSTEM_OPTION_CONFIGURATION_FILENAMES
+                               | advgetopt::SYSTEM_OPTION_CONFIG_DIR));
+        CATCH_REQUIRE(getenv("HOME") != nullptr);
+        std::string const home(getenv("HOME"));
+        CATCH_REQUIRE(ss.str() ==
+"Configuration filenames:\n"
+" . .config/file.mdi\n"
+" . .config/unittest.d/file.mdi\n"
+" . /etc/snapwebsites/server.conf\n"
+" . /etc/snapwebsites/unittest.d/server.conf\n"
+" . " + home + "/.config/advgetopt/snap.conf\n"
+" . /var/lib/advgetopt/snapdb.conf\n"
+" . /var/lib/advgetopt/unittest.d/snapdb.conf\n"
+" . /opt/config/snapdb.conf\n"
+" . /opt/config/unittest.d/snapdb.conf\n"
+" . .config/snapdb.conf\n"
+" . .config/unittest.d/snapdb.conf\n"
+" . /etc/secret/snapdb.conf\n"
+" . /etc/secret/unittest.d/snapdb.conf\n"
+" . " + home + "/.config/snapwebsites/snapdb.conf\n"
+);
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Check with the --configuration-filenames system flag without any configuration files")
+    {
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("define the size.")
+                , advgetopt::DefaultValue("3101")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--configuration-filenames",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // valid parameter
+        CATCH_REQUIRE(opt.get_option("size") != nullptr);
+        CATCH_REQUIRE(opt.get_option('s') == opt.get_option("size"));
+        CATCH_REQUIRE_FALSE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_string("size") == "3101");
+        CATCH_REQUIRE(opt.get_string("size", 0) == "3101");
+        CATCH_REQUIRE(opt["size"] == "3101");
+        CATCH_REQUIRE(opt.get_long("size") == 3101);
+        CATCH_REQUIRE(opt.get_long("size", 0) == 3101);
+        CATCH_REQUIRE(opt.has_default("size"));
+        CATCH_REQUIRE(opt.get_default("size") == "3101");
+        CATCH_REQUIRE(opt.size("size") == 0);
+
+        // configuration-filenames parameter
+        CATCH_REQUIRE(opt.get_option("configuration-filenames") != nullptr);
+        CATCH_REQUIRE(opt.is_defined("configuration-filenames"));
+        CATCH_REQUIRE(opt.get_string("configuration-filenames") == "");
+        CATCH_REQUIRE(opt.get_string("configuration-filenames", 0) == "");
+        CATCH_REQUIRE(opt["configuration-filenames"] == "");
+        CATCH_REQUIRE_FALSE(opt.has_default("configuration-filenames"));
+        CATCH_REQUIRE(opt.get_default("configuration-filenames").empty());
+        CATCH_REQUIRE(opt.size("configuration-filenames") == 1);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+
+        // process system options now
+        std::stringstream ss;
+        advgetopt::flag_t const result(opt.process_system_options(ss));
+        CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_CONFIGURATION_FILENAMES);
+        CATCH_REQUIRE(ss.str() == "unittest does not support configuration files.\n");
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Check with the --configuration-filenames system flag, without a --configuration-filenames on the command line")
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("define the size.")
+                , advgetopt::DefaultValue("193")
+            ),
+            advgetopt::end_options()
+        };
+
+        char const * confs[] =
+        {
+            ".config/file.mdi",
+            "/etc/snapwebsites/server.conf",
+            "~/.config/advgetopt/snap.conf",
+            nullptr
+        };
+        char const * dirs[] =
+        {
+            ".config",
+            "/etc/secret",
+            "~/.config/snapwebsites",
+            nullptr
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_help_header = "Usage: test system commands";
+        environment_options.f_help_footer = "Copyright matters";
+        environment_options.f_configuration_files = confs;
+        environment_options.f_configuration_filename = "snapdb.conf";
+        environment_options.f_configuration_directories = dirs;
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--size",
+            "1221",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // valid parameter
+        CATCH_REQUIRE(opt.get_option("size") != nullptr);
+        CATCH_REQUIRE(opt.get_option('s') == opt.get_option("size"));
+        CATCH_REQUIRE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_string("size") == "1221");
+        CATCH_REQUIRE(opt.get_string("size", 0) == "1221");
+        CATCH_REQUIRE(opt["size"] == "1221");
+        CATCH_REQUIRE(opt.get_long("size") == 1221);
+        CATCH_REQUIRE(opt.get_long("size", 0) == 1221);
+        CATCH_REQUIRE(opt.has_default("size"));
+        CATCH_REQUIRE(opt.get_default("size") == "193");
+        CATCH_REQUIRE(opt.size("size") == 1);
+
+        // configuration-filenames parameter
+        CATCH_REQUIRE(opt.get_option("configuration-filenames") != nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("configuration-filenames"));
+        CATCH_REQUIRE_FALSE(opt.has_default("configuration-filenames"));
+        CATCH_REQUIRE(opt.get_default("configuration-filenames").empty());
+        CATCH_REQUIRE(opt.size("configuration-filenames") == 0);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+
+        // process system options now
+        std::stringstream ss;
+        advgetopt::flag_t const result(opt.process_system_options(ss));
+        CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_NONE);
+        CATCH_REQUIRE(ss.str().empty());
+    CATCH_END_SECTION()
+}
+
+
+
+CATCH_TEST_CASE("system_flags_path_to_option_definitions", "[arguments][valid][getopt][system_flags]")
+{
+    CATCH_START_SECTION("Check with the --path-to-option-definitions system flag (Default)")
+    {
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("define the size.")
+                , advgetopt::DefaultValue("7301")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--path-to-option-definitions",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // valid parameter
+        CATCH_REQUIRE(opt.get_option("size") != nullptr);
+        CATCH_REQUIRE(opt.get_option('s') == opt.get_option("size"));
+        CATCH_REQUIRE_FALSE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_string("size") == "7301");
+        CATCH_REQUIRE(opt.get_string("size", 0) == "7301");
+        CATCH_REQUIRE(opt["size"] == "7301");
+        CATCH_REQUIRE(opt.get_long("size") == 7301);
+        CATCH_REQUIRE(opt.get_long("size", 0) == 7301);
+        CATCH_REQUIRE(opt.has_default("size"));
+        CATCH_REQUIRE(opt.get_default("size") == "7301");
+        CATCH_REQUIRE(opt.size("size") == 0);
+
+        // path-to-option-definitions parameter
+        CATCH_REQUIRE(opt.get_option("path-to-option-definitions") != nullptr);
+        CATCH_REQUIRE(opt.is_defined("path-to-option-definitions"));
+        CATCH_REQUIRE(opt.get_string("path-to-option-definitions") == "");
+        CATCH_REQUIRE(opt.get_string("path-to-option-definitions", 0) == "");
+        CATCH_REQUIRE(opt["path-to-option-definitions"] == "");
+        CATCH_REQUIRE_FALSE(opt.has_default("path-to-option-definitions"));
+        CATCH_REQUIRE(opt.get_default("path-to-option-definitions").empty());
+        CATCH_REQUIRE(opt.size("path-to-option-definitions") == 1);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+
+        // process system options now
+        std::stringstream ss;
+        advgetopt::flag_t const result(opt.process_system_options(ss));
+        CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_PATH_TO_OPTION_DEFINITIONS);
+        CATCH_REQUIRE(ss.str() == "/usr/share/advgetopt/options\n");
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Check with the --path-to-option-definitions system flag (Specified)")
+    {
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("define the size.")
+                , advgetopt::DefaultValue("7301")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_options_files_directory = "/opt/advgetopt/configs";
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--path-to-option-definitions",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // valid parameter
+        CATCH_REQUIRE(opt.get_option("size") != nullptr);
+        CATCH_REQUIRE(opt.get_option('s') == opt.get_option("size"));
+        CATCH_REQUIRE_FALSE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_string("size") == "7301");
+        CATCH_REQUIRE(opt.get_string("size", 0) == "7301");
+        CATCH_REQUIRE(opt["size"] == "7301");
+        CATCH_REQUIRE(opt.get_long("size") == 7301);
+        CATCH_REQUIRE(opt.get_long("size", 0) == 7301);
+        CATCH_REQUIRE(opt.has_default("size"));
+        CATCH_REQUIRE(opt.get_default("size") == "7301");
+        CATCH_REQUIRE(opt.size("size") == 0);
+
+        // path-to-option-definitions parameter
+        CATCH_REQUIRE(opt.get_option("path-to-option-definitions") != nullptr);
+        CATCH_REQUIRE(opt.is_defined("path-to-option-definitions"));
+        CATCH_REQUIRE(opt.get_string("path-to-option-definitions") == "");
+        CATCH_REQUIRE(opt.get_string("path-to-option-definitions", 0) == "");
+        CATCH_REQUIRE(opt["path-to-option-definitions"] == "");
+        CATCH_REQUIRE_FALSE(opt.has_default("path-to-option-definitions"));
+        CATCH_REQUIRE(opt.get_default("path-to-option-definitions").empty());
+        CATCH_REQUIRE(opt.size("path-to-option-definitions") == 1);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+
+        // process system options now
+        std::stringstream ss;
+        advgetopt::flag_t const result(opt.process_system_options(ss));
+        CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_PATH_TO_OPTION_DEFINITIONS);
+        CATCH_REQUIRE(ss.str() == "/opt/advgetopt/configs\n");
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Check with the --path-to-option-definitions system flag, without a --path-to-option-definitions on the command line")
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("define the size.")
+                , advgetopt::DefaultValue("303")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_help_header = "Usage: test system commands";
+        environment_options.f_help_footer = "Copyright matters";
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--size",
+            "1919",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // valid parameter
+        CATCH_REQUIRE(opt.get_option("size") != nullptr);
+        CATCH_REQUIRE(opt.get_option('s') == opt.get_option("size"));
+        CATCH_REQUIRE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_string("size") == "1919");
+        CATCH_REQUIRE(opt.get_string("size", 0) == "1919");
+        CATCH_REQUIRE(opt["size"] == "1919");
+        CATCH_REQUIRE(opt.get_long("size") == 1919);
+        CATCH_REQUIRE(opt.get_long("size", 0) == 1919);
+        CATCH_REQUIRE(opt.has_default("size"));
+        CATCH_REQUIRE(opt.get_default("size") == "303");
+        CATCH_REQUIRE(opt.size("size") == 1);
+
+        // environment-variable-name parameter
+        CATCH_REQUIRE(opt.get_option("path-to-option-definitions") != nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("path-to-option-definitions"));
+        CATCH_REQUIRE_FALSE(opt.has_default("path-to-option-definitions"));
+        CATCH_REQUIRE(opt.get_default("path-to-option-definitions").empty());
+        CATCH_REQUIRE(opt.size("path-to-option-definitions") == 0);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+
+        // process system options now
+        std::stringstream ss;
+        advgetopt::flag_t const result(opt.process_system_options(ss));
+        CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_NONE);
+        CATCH_REQUIRE(ss.str().empty());
+    CATCH_END_SECTION()
+}
+
+
+
+
+
+
+
 
 CATCH_TEST_CASE("invalid_option_name", "[arguments][invalid][getopt]")
 {
@@ -590,12 +2307,33 @@ CATCH_TEST_CASE("missing_default_value", "[arguments][invalid][getopt]")
                 , Catch::Matchers::ExceptionMessage(
                               "the --size option was not defined on the command line and it has no default."));
 
-        // this one will create the entry
+        // these do not create an entry (even though it looks like it,
+        // i.e. it would for an std::map)
         //
         CATCH_REQUIRE(opt["size"].empty());
+        CATCH_REQUIRE(opt["size"].length() == 0);
+        CATCH_REQUIRE(opt["size"].size() == 0);
 
-        CATCH_REQUIRE(opt.get_string("size").empty());
-        CATCH_REQUIRE(opt.get_string("size", 0).empty());
+        CATCH_REQUIRE(opt.size("size") == 0);
+
+        CATCH_REQUIRE_THROWS_MATCHES(
+                  opt.get_string("size", 0)
+                , advgetopt::getopt_exception_logic
+                , Catch::Matchers::ExceptionMessage(
+                              "the --size option was not defined on the command line and it has no default."));
+
+        CATCH_REQUIRE_THROWS_MATCHES(
+                  opt.get_string("size", 1)
+                , advgetopt::getopt_exception_logic
+                , Catch::Matchers::ExceptionMessage(
+                              "the --size option was not defined on the command line and it has no default."));
+
+        // now this one does create a value
+        //
+        opt["size"] = "45.3";
+
+        CATCH_REQUIRE(opt.get_string("size") == "45.3");
+        CATCH_REQUIRE(opt.get_string("size", 0) == "45.3");
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.get_string("size", 1)

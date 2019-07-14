@@ -45,11 +45,11 @@
 CATCH_TEST_CASE("to_from_short_name", "[option_info][valid][basic][short_name]")
 {
     CATCH_START_SECTION("Short name to string and back")
-        // wc == '\0' is a special case
+        // wc == U'\0' is a special case
         //
-        CATCH_REQUIRE(advgetopt::NO_SHORT_NAME == L'\0');
-        CATCH_REQUIRE(advgetopt::short_name_to_string(L'\0') == std::string());
-        CATCH_REQUIRE(advgetopt::string_to_short_name(std::string()) == L'\0');
+        CATCH_REQUIRE(advgetopt::NO_SHORT_NAME == U'\0');
+        CATCH_REQUIRE(advgetopt::short_name_to_string(U'\0') == std::string());
+        CATCH_REQUIRE(advgetopt::string_to_short_name(std::string()) == U'\0');
 
         for(char32_t wc(1); wc < 0x110000; ++wc)
         {
@@ -1017,6 +1017,95 @@ CATCH_TEST_CASE("option_info_section_functions", "[option_info][valid][add][sect
 
 
 
+CATCH_TEST_CASE("redefine_option_short_name", "[options][valid][config]")
+{
+    CATCH_START_SECTION("Test adding '-<delta>' to '--config-dir'")
+    {
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("group")
+                , advgetopt::ShortName('g')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("group name.")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_configuration_filename = "snaplog.conf";
+        environment_options.f_help_header = "Usage: test --config-dir";
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "-g",
+            "m2osw",
+            "-L",
+            "-\xE2\xB5\xA0",        // Delta character
+            "/opt/advgetopt/config",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options);
+        opt.parse_program_name(argv);
+
+        CATCH_REQUIRE(opt.get_option("config-dir") != nullptr);
+        opt.set_short_name("config-dir", 0x2D60);
+
+        opt.parse_arguments(argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // the valid parameter
+        CATCH_REQUIRE(opt.get_option("group") != nullptr);
+        CATCH_REQUIRE(opt.get_option('g') == opt.get_option("group"));
+        CATCH_REQUIRE(opt.is_defined("group"));
+        CATCH_REQUIRE(opt.get_string("group") == "m2osw");
+        CATCH_REQUIRE(opt.get_string("group", 0) == "m2osw");
+        CATCH_REQUIRE(opt.get_default("group").empty());
+        CATCH_REQUIRE(opt.size("group") == 1);
+
+        // the license system parameter
+        CATCH_REQUIRE(opt.get_option("license") != nullptr);
+        CATCH_REQUIRE(opt.get_option('L') == opt.get_option("license"));
+        CATCH_REQUIRE(opt.is_defined("license"));
+        CATCH_REQUIRE(opt.get_default("license").empty());
+        CATCH_REQUIRE(opt.size("license") == 1);
+
+        // the config-dir system parameter
+        CATCH_REQUIRE(opt.get_option("config-dir") != nullptr);
+        CATCH_REQUIRE(opt.get_option(static_cast<advgetopt::short_name_t>(0x2D60)) == opt.get_option("config-dir"));
+        CATCH_REQUIRE(opt.is_defined("config-dir"));
+        CATCH_REQUIRE(opt.get_default("config-dir").empty());
+        CATCH_REQUIRE(opt.size("config-dir") == 1);
+        CATCH_REQUIRE(opt.get_string("config-dir") == "/opt/advgetopt/config");
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
+    CATCH_END_SECTION()
+}
+
+
+
+
+
+
+
 
 
 CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
@@ -1202,7 +1291,7 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
         CATCH_REQUIRE(size.size() == 1);
         CATCH_REQUIRE(size.get_value(0) == "100000000000000000000");
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid number (100000000000000000000) in parameter --size.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid number (100000000000000000000) in parameter --size at offset 0.");
         CATCH_REQUIRE(size.get_long(0) == -1);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
@@ -1212,7 +1301,7 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
         CATCH_REQUIRE(size.size() == 1);
         CATCH_REQUIRE(size.get_value(0) == "9223372036854775808");
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid number (9223372036854775808) in parameter --size.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid number (9223372036854775808) in parameter --size at offset 0.");
         CATCH_REQUIRE(size.get_long(0) == -1);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
@@ -1222,7 +1311,7 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
         CATCH_REQUIRE(size.size() == 1);
         CATCH_REQUIRE(size.get_value(0) == "-9223372036854775809");
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid number (-9223372036854775809) in parameter --size.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid number (-9223372036854775809) in parameter --size at offset 0.");
         CATCH_REQUIRE(size.get_long(0) == -1);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
@@ -1232,7 +1321,7 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
         CATCH_REQUIRE(size.size() == 1);
         CATCH_REQUIRE(size.get_value(0) == "97 potatoes");
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid number (97 potatoes) in parameter --size.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid number (97 potatoes) in parameter --size at offset 0.");
         CATCH_REQUIRE(size.get_long(0) == -1);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
     CATCH_END_SECTION()
@@ -1271,6 +1360,70 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
 
 
 
+CATCH_TEST_CASE("check_invalid_config_dir_short_names", "[arguments][invalid][getopt][config]")
+{
+    CATCH_START_SECTION("Trying to set NO_SHORT_NAME as '--config-dir' short name (option_info)")
+    {
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("print")
+                , advgetopt::ShortName(U'p')
+                , advgetopt::Flags(advgetopt::command_flags<>())
+                , advgetopt::Help("output filename.")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_configuration_filename = "snapwatchdog.conf";
+        environment_options.f_help_header = "Usage: test --config-dir";
+
+        advgetopt::getopt opt(environment_options);
+
+        CATCH_REQUIRE(opt.get_option("config-dir") != nullptr);
+        CATCH_REQUIRE_THROWS_MATCHES(
+                  opt.set_short_name("config-dir", advgetopt::NO_SHORT_NAME)
+                , advgetopt::getopt_exception_logic
+                , Catch::Matchers::ExceptionMessage(
+                              "The short name of option \"config-dir\" cannot be set to NO_SHORT_NAME."));
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Trying to change short name of '--version' (option_info)")
+    {
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("print")
+                , advgetopt::ShortName('p')
+                , advgetopt::Flags(advgetopt::command_flags<>())
+                , advgetopt::Help("print all info.")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_configuration_filename = "";
+        environment_options.f_help_header = "Usage: test --config-dir";
+
+        advgetopt::getopt opt(environment_options);
+
+        CATCH_REQUIRE(opt.get_option("version") != nullptr);
+        CATCH_REQUIRE_THROWS_MATCHES(
+                  opt.set_short_name("version", U'v')   // set to lowercase...
+                , advgetopt::getopt_exception_logic
+                , Catch::Matchers::ExceptionMessage(
+                              "The short name of option \"version\" cannot be changed from 'V' to 'v'."));
+    }
+    CATCH_END_SECTION()
+}
 
 
 

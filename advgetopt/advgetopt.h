@@ -48,6 +48,7 @@
 #include    <limits>
 #include    <map>
 #include    <memory>
+#include    <ostream>
 #include    <vector>
 
 
@@ -55,6 +56,22 @@
 namespace advgetopt
 {
 
+
+
+constexpr flag_t            SYSTEM_OPTION_NONE                          = 0x0000;
+
+constexpr flag_t            SYSTEM_OPTION_HELP                          = 0x0001;
+constexpr flag_t            SYSTEM_OPTION_VERSION                       = 0x0002;
+constexpr flag_t            SYSTEM_OPTION_COPYRIGHT                     = 0x0004;
+constexpr flag_t            SYSTEM_OPTION_LICENSE                       = 0x0008;
+constexpr flag_t            SYSTEM_OPTION_BUILD_DATE                    = 0x0010;
+constexpr flag_t            SYSTEM_OPTION_ENVIRONMENT_VARIABLE_NAME     = 0x0020;
+constexpr flag_t            SYSTEM_OPTION_CONFIGURATION_FILENAMES       = 0x0040;
+constexpr flag_t            SYSTEM_OPTION_PATH_TO_OPTION_DEFINITIONS    = 0x0080;
+constexpr flag_t            SYSTEM_OPTION_CONFIG_DIR                    = 0x0100;   // option
+
+constexpr flag_t            SYSTEM_OPTION_COMMANDS_MASK                 = 0x00FF;
+constexpr flag_t            SYSTEM_OPTION_OPTIONS_MASK                  = 0x0100;
 
 
 
@@ -75,6 +92,7 @@ public:
                                       option const * opts
                                     , bool ignore_duplicates = false);
     void                    link_aliases();
+    void                    set_short_name(std::string const & name, short_name_t short_name);
 
     void                    parse_program_name(char * argv[]);
 
@@ -90,6 +108,8 @@ public:
                                       int argc
                                     , char * argv[]
                                     , bool only_environment_variable = false);
+
+    flag_t                  process_system_options(std::basic_ostream<char> & out);
 
     option_info::pointer_t  get_option(std::string const & name, bool exact_option = false) const;
     option_info::pointer_t  get_option(short_name_t name, bool exact_option = false) const;

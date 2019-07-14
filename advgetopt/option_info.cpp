@@ -253,6 +253,48 @@ std::string const & option_info::get_name() const
 }
 
 
+/** \brief Assign a short name to an option.
+ *
+ * This function is used to assign a short name to an option.
+ *
+ * \warning
+ * If you want this function to function as expected (i.e. for the option
+ * to later be found using its short name), make sure to call the
+ * set_short_name() on your getopt object and not directly this function.
+ * This is because the getopt object needs to add the newly named option
+ * to its map of options sorted by short name.
+ *
+ * \exception getopt_exception_logic
+ * Calling this function with an option which already has a short name
+ * results in a logic exception. Also, \p short_name cannot be
+ * NO_SHORT_NAME.
+ *
+ * \param[in] short_name  The short name to assign to this option.
+ */
+void option_info::set_short_name(short_name_t short_name)
+{
+    if(short_name == NO_SHORT_NAME)
+    {
+        throw getopt_exception_logic("The short name of option \""
+                                   + f_name
+                                   + "\" cannot be set to NO_SHORT_NAME.");
+    }
+
+    if(f_short_name != NO_SHORT_NAME)
+    {
+        throw getopt_exception_logic("The short name of option \""
+                                   + f_name
+                                   + "\" cannot be changed from '"
+                                   + short_name_to_string(f_short_name)
+                                   + "' to '"
+                                   + short_name_to_string(short_name)
+                                   + "'.");
+    }
+
+    f_short_name = short_name;
+}
+
+
 /** \brief Get the short name of the option.
  *
  * This function returns the \p short_name of this option.
@@ -1224,6 +1266,8 @@ long option_info::get_long(int idx) const
                     << f_value[i]
                     << ") in parameter --"
                     << f_name
+                    << " at offset "
+                    << i
                     << "."
                     << end;
                 return -1;

@@ -131,7 +131,7 @@ void getopt::parse_options_info(option const * opts, bool ignore_duplicates)
         {
             if(ignore_duplicates)
             {
-                short_name = L'\0';
+                short_name = U'\0';
             }
             else
             {
@@ -218,7 +218,7 @@ void getopt::parse_options_from_file()
     if(f_options_environment.f_options_files_directory == nullptr
     || f_options_environment.f_options_files_directory[0] == '\0')
     {
-        filename = "/usr/share/advgetopt/";
+        filename = "/usr/share/advgetopt/options";
     }
     else
     {
@@ -415,6 +415,69 @@ void getopt::link_aliases()
             c.second->set_alias_destination(alias);
         }
     }
+}
+
+
+/** \brief Assign a short name to an option.
+ *
+ * This function allows for dynamically assigning a short name to an option.
+ * This is useful for cases where a certain number of options may be added
+ * dynamically and may share the same short name or similar situation.
+ *
+ * On our end we like to add `-c` as the short name of the `--config-dir`
+ * command line or environment variable option. However, some of our tools
+ * use `-c` for other reason (i.e. our `cxpath` tool uses `-c` for its
+ * `--compile` option.) So we do not want to have it has a default in
+ * that option. Instead we assign it afterward.
+ *
+ * **IMPORTANT:** To make this call useful, make sure to make it before
+ * you call the parse functions. Setting the short name after the parsing
+ * was done is going to be useless.
+ *
+ * \note
+ * This function requires you to make use of the constructor without the
+ * `argc` and `argv` parameters, add the short name, then run all the
+ * parsing.
+ *
+ * \note
+ * The function calls the option_info::set_short_name() function which
+ * may raise an exception if the option already has a short name (or if
+ * you inadvertendly passed NO_SHORT_NAME.)
+ *
+ * \exception getopt_exception_logic
+ * The same short name cannot be used more than once. This exception is
+ * raised if it is discovered that another option already makes use of
+ * this short name. This exception is also raised if the \p name
+ * parameter does not reference an existing option.
+ *
+ * \param[in] name  The name of the option which is to receive a short name.
+ * \param[in] short_name  The short name to assigned to the \p name option.
+ */
+void getopt::set_short_name(std::string const & name, short_name_t short_name)
+{
+    auto it(f_options_by_short_name.find(short_name));
+    if(it != f_options_by_short_name.end())
+    {
+        throw getopt_exception_logic(
+                  "found another option (\""
+                + it->second->get_name()
+                + "\") with short name '"
+                + short_name_to_string(short_name)
+                + "'.");
+    }
+
+    auto opt(f_options_by_name.find(name));
+    if(opt == f_options_by_name.end())
+    {
+        throw getopt_exception_logic(
+                  "option with name \""
+                + name
+                + "\" not found.");
+    }
+
+    opt->second->set_short_name(short_name);
+
+    f_options_by_short_name[short_name] = opt->second;
 }
 
 

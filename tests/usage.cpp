@@ -191,6 +191,7 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
                                 "   . All Configuration Files = [%*f]\n"
                                 "   . All Existing Configuration Files = [%g]\n"
                                 "   . All Possible Configuration Files = [%*g]\n"
+                                "   . Option File Directory = [%i]\n"
                                 "   . License = [%l]\n"
                                 "   . Output File [%o]\n"
                                 "   . Program Name = [%p]\n"
@@ -238,6 +239,7 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
 "/etc/advgetopt/advgetopt.d/advgetopt.conf, "
 "/etc/advgetopt/advgetopt.d/unittest.d/advgetopt.conf, "
 + tmpdir + "/.config/advgetopt/advgetopt.conf]\n"
+"   . Option File Directory = [/etc/advgetopt]\n"
 "   . License = [MIT]\n"
 "   . Output File [" + tmpdir + "/.config/advgetopt/advgetopt.conf]\n"
 "   . Program Name = [unittest_advgetopt]\n"
@@ -431,7 +433,7 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
         advgetopt::options_environment options;
         options.f_project_name = "unittest";
         options.f_options = options_list;
-        options.f_options_files_directory = "/etc/advgetopt";
+        options.f_options_files_directory = "/usr/share/advgetopt";
         options.f_configuration_files = configuration_files;
         options.f_configuration_filename = "advgetopt.conf";
         options.f_configuration_directories = configuration_directories;
@@ -449,6 +451,7 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
                                 "   . All Configuration Files = [%*f]\n"
                                 "   . All Existing Configuration Files = [%g]\n"
                                 "   . All Possible Configuration Files = [%*g]\n"
+                                "   . Option File Directory = [%i]\n"
                                 "   . License = [%l]\n"
                                 "   . Output File [%o]\n"
                                 "   . Program Name = [%p]\n"
@@ -495,6 +498,7 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
 "/etc/advgetopt/advgetopt.d/advgetopt.conf, "
 "/etc/advgetopt/advgetopt.d/unittest.d/advgetopt.conf, "
 + tmpdir + "/.config/advgetopt/advgetopt.conf]\n"
+"   . Option File Directory = [/usr/share/advgetopt]\n"
 "   . License = [MIT]\n"
 "   . Output File [" + tmpdir + "/.config/advgetopt/advgetopt.conf]\n"
 "   . Program Name = [unittest_advgetopt]\n"
@@ -2673,12 +2677,107 @@ CATCH_TEST_CASE("help_string_configuration_files_functions", "[getopt][usage][co
             "advgetopt.conf",
             "advgetopt.ini",
             "user.config",
-            SNAP_CATCH2_NAMESPACE::g_config_project_filename.c_str(),
+            SNAP_CATCH2_NAMESPACE::g_config_project_filename.c_str(),   // <- this is wrong, it should be done automatically, but we have a name mismatch...
             nullptr
         };
 
         advgetopt::options_environment options;
-        options.f_project_name = "unittest";
+        options.f_project_name = "unittest";        // name mismatch on purpose
+        options.f_options = options_list;
+        options.f_options_files_directory = "/etc/advgetopt";
+        options.f_configuration_files = configuration_files;
+        options.f_configuration_filename = "advgetopt.conf";
+        options.f_configuration_directories = nullptr;
+        options.f_help_header = "Usage: test usage: %g";
+        options.f_help_footer = "Percent Configuration Files: %g";
+        options.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
+        options.f_version = "2.0.1-%g";
+        options.f_license = "MIT-%g";
+        options.f_copyright = "Copyright (c) 2019  Made to Order Software Corp. -- All Rights Reserved %g";
+        options.f_build_date = "Jun  4 2019 %g";
+        options.f_build_time = "23:02:36 %g";
+
+        advgetopt::getopt opt(options, argc, argv);
+
+        CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
+
+        CATCH_REQUIRE(opt.usage() ==
+advgetopt::getopt::breakup_line(
+              "Usage: test usage: "
+            + SNAP_CATCH2_NAMESPACE::g_config_filename
+            + ", "
+            + SNAP_CATCH2_NAMESPACE::g_config_project_filename
+        , 0
+        , 80)
++ advgetopt::getopt::format_usage_string(
+              "--verbose", "inform you of what we're currently working on: "
+            + SNAP_CATCH2_NAMESPACE::g_config_filename + ", "
+            + SNAP_CATCH2_NAMESPACE::g_config_project_filename + "."
+        , 30
+        , 80) + "\n"
++ advgetopt::getopt::breakup_line(
+              "Percent Configuration Files: "
+            + SNAP_CATCH2_NAMESPACE::g_config_filename
+            + ", "
+            + SNAP_CATCH2_NAMESPACE::g_config_project_filename
+        , 0
+        , 80)
+                );
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Percent Configuration Files with g (fully defined)")
+    {
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("config_file_names", "with_existing_g");
+
+        {
+            std::ofstream config_file;
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+            ;
+        }
+
+        {
+            std::ofstream config_file;
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_project_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+            ;
+        }
+
+        const advgetopt::option options_list[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("verbose")
+                , advgetopt::Flags(advgetopt::standalone_command_flags<>())
+                , advgetopt::Help("inform you of what we're currently working on: %g.")
+            ),
+            advgetopt::end_options()
+        };
+        char const * cargv[] =
+        {
+            "tests/unittests/usage",
+            "--verbose",
+            nullptr
+        };
+        int const argc = sizeof(cargv) / sizeof(cargv[0]) - 1;
+        char ** argv = const_cast<char **>(cargv);
+
+        const char * const configuration_files[] =
+        {
+            "system.conf",
+            SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(),
+            "advgetopt.conf",
+            "advgetopt.ini",
+            "user.config",
+            nullptr
+        };
+
+        advgetopt::options_environment options;
+        options.f_project_name = "config_file_names";
         options.f_options = options_list;
         options.f_options_files_directory = "/etc/advgetopt";
         options.f_configuration_files = configuration_files;
@@ -2986,6 +3085,184 @@ advgetopt::getopt::breakup_line(
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
 "Percent Configuration Files: \n"
+                );
+    }
+    CATCH_END_SECTION()
+}
+
+
+
+
+CATCH_TEST_CASE("help_string_option_file_directory", "[getopt][usage][config]")
+{
+    CATCH_START_SECTION("Percent Configuration Files with i (fully defined)")
+    {
+        const advgetopt::option options_list[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("verbose")
+                , advgetopt::Flags(advgetopt::standalone_command_flags<>())
+                , advgetopt::Help("inform you of what we're currently working on: %i.")
+            ),
+            advgetopt::end_options()
+        };
+        char const * cargv[] =
+        {
+            "tests/unittests/usage",
+            "--verbose",
+            nullptr
+        };
+        int const argc = sizeof(cargv) / sizeof(cargv[0]) - 1;
+        char ** argv = const_cast<char **>(cargv);
+
+        const char * const configuration_files[] =
+        {
+            "advgetopt.conf",
+            "advgetopt.ini",
+            nullptr
+        };
+
+        advgetopt::options_environment options;
+        options.f_project_name = "unittest";
+        options.f_options = options_list;
+        options.f_options_files_directory = "/opt/advgetopt/config";
+        options.f_configuration_files = configuration_files;
+        options.f_configuration_filename = "advgetopt.conf";
+        options.f_configuration_directories = nullptr;
+        options.f_help_header = "Usage: test usage: %i";
+        options.f_help_footer = "Percent Configuration Files: %i";
+        options.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
+        options.f_version = "2.0.1-%i";
+        options.f_license = "MIT-%i";
+        options.f_copyright = "Copyright (c) 2019  Made to Order Software Corp. -- All Rights Reserved %i";
+        options.f_build_date = "Jun  4 2019 %i";
+        options.f_build_time = "23:02:36 %i";
+
+        advgetopt::getopt opt(options, argc, argv);
+
+        CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
+
+        CATCH_REQUIRE(opt.usage() ==
+              "Usage: test usage: /opt/advgetopt/config\n"
++ advgetopt::getopt::format_usage_string(
+              "--verbose", "inform you of what we're currently working on: "
+              "/opt/advgetopt/config."
+        , 30
+        , 80) + "\n"
++ advgetopt::getopt::breakup_line(
+              "Percent Configuration Files: /opt/advgetopt/config"
+        , 0
+        , 80)
+                );
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Percent Configuration Files with i (nullptr)")
+    {
+        const advgetopt::option options_list[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("verbose")
+                , advgetopt::Flags(advgetopt::standalone_command_flags<>())
+                , advgetopt::Help("inform you of what we're currently working on: %i.")
+            ),
+            advgetopt::end_options()
+        };
+        char const * cargv[] =
+        {
+            "tests/unittests/usage",
+            "--verbose",
+            nullptr
+        };
+        int const argc = sizeof(cargv) / sizeof(cargv[0]) - 1;
+        char ** argv = const_cast<char **>(cargv);
+
+        const char * const configuration_files[] =
+        {
+            "/ignored/in/this/test",
+            nullptr
+        };
+
+        advgetopt::options_environment options;
+        options.f_project_name = "unittest";
+        options.f_options = options_list;
+        options.f_options_files_directory = nullptr;
+        options.f_configuration_files = configuration_files;
+        options.f_configuration_filename = "advgetopt.conf";
+        options.f_configuration_directories = nullptr;
+        options.f_help_header = "Usage: test usage: %i";
+        options.f_help_footer = "Percent Configuration Files: %i";
+        options.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
+        options.f_version = "2.0.1-%i";
+        options.f_license = "MIT-%i";
+        options.f_copyright = "Copyright (c) 2019  Made to Order Software Corp. -- All Rights Reserved %i";
+        options.f_build_date = "Jun  4 2019 %i";
+        options.f_build_time = "23:02:36 %i";
+
+        advgetopt::getopt opt(options, argc, argv);
+
+        CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
+        CATCH_REQUIRE(opt.usage() ==
+"Usage: test usage: /usr/share/advgetopt/options\n"
+"   --verbose                  inform you of what we're currently working on:\n"
+"                              /usr/share/advgetopt/options.\n"
+"\n"
+"Percent Configuration Files: /usr/share/advgetopt/options\n"
+                );
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Percent Configuration Files with i (empty string)")
+    {
+        const advgetopt::option options_list[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("verbose")
+                , advgetopt::Flags(advgetopt::standalone_command_flags<>())
+                , advgetopt::Help("inform you of what we're currently working on: %i.")
+            ),
+            advgetopt::end_options()
+        };
+        char const * cargv[] =
+        {
+            "tests/unittests/usage",
+            "--verbose",
+            nullptr
+        };
+        int const argc = sizeof(cargv) / sizeof(cargv[0]) - 1;
+        char ** argv = const_cast<char **>(cargv);
+
+        const char * const configuration_files[] =
+        {
+            "/ignored/in/this/test",
+            nullptr
+        };
+
+        advgetopt::options_environment options;
+        options.f_project_name = "unittest";
+        options.f_options = options_list;
+        options.f_options_files_directory = "";
+        options.f_configuration_files = configuration_files;
+        options.f_configuration_filename = "advgetopt.conf";
+        options.f_configuration_directories = nullptr;
+        options.f_help_header = "Usage: test usage: %i";
+        options.f_help_footer = "Percent Configuration Files: %i";
+        options.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
+        options.f_version = "2.0.1-%i";
+        options.f_license = "MIT-%i";
+        options.f_copyright = "Copyright (c) 2019  Made to Order Software Corp. -- All Rights Reserved %i";
+        options.f_build_date = "Jun  4 2019 %i";
+        options.f_build_time = "23:02:36 %i";
+
+        advgetopt::getopt opt(options, argc, argv);
+
+        CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
+        CATCH_REQUIRE(opt.usage() ==
+"Usage: test usage: /usr/share/advgetopt/options\n"
+"   --verbose                  inform you of what we're currently working on:\n"
+"                              /usr/share/advgetopt/options.\n"
+"\n"
+"Percent Configuration Files: /usr/share/advgetopt/options\n"
                 );
     }
     CATCH_END_SECTION()

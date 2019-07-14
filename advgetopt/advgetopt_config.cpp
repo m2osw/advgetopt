@@ -114,17 +114,36 @@ string_list_t getopt::get_configuration_filenames(bool exists, bool writable) co
         }
     }
 
-    if(f_options_environment.f_configuration_filename != nullptr
-    && f_options_environment.f_configuration_directories != nullptr)
+    if(f_options_environment.f_configuration_filename != nullptr)
     {
+        string_list_t directories;
+        if(has_flag(GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS))
+        {
+            if(is_defined("config-dir"))
+            {
+                size_t const max(size("config-dir"));
+                for(size_t idx(0); idx < max; ++idx)
+                {
+                    directories.push_back(get_string("config-dir", idx));
+                }
+            }
+        }
+
+        if(f_options_environment.f_configuration_directories != nullptr)
+        {
+            for(char const * const * configuration_directories(f_options_environment.f_configuration_directories)
+              ; *configuration_directories != nullptr
+              ; ++configuration_directories)
+            {
+                directories.push_back(*configuration_directories);
+            }
+        }
+
         std::string const filename(f_options_environment.f_configuration_filename);
 
-        for(char const * const * configuration_directories(f_options_environment.f_configuration_directories)
-          ; *configuration_directories != nullptr
-          ; ++configuration_directories)
+        for(auto directory : directories)
         {
-            char const * directory(*configuration_directories);
-            if(*directory != '\0')
+            if(!directory.empty())
             {
                 std::string const full_filename(directory + ("/" + filename));
                 std::string const user_filename(handle_user_directory(full_filename));

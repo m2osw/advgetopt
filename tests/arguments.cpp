@@ -2010,6 +2010,498 @@ CATCH_TEST_CASE("optional_arguments", "[arguments][valid][multiple][getopt]")
 }
 
 
+CATCH_TEST_CASE("config_dir_argument", "[arguments][valid][getopt][config]")
+{
+    CATCH_START_SECTION("Verify that we do get the --config-dir option when we have a standalone configuration filename")
+    {
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("out")
+                , advgetopt::ShortName('o')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("output filename.")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_configuration_filename = "snapwatchdog.conf";
+        environment_options.f_help_header = "Usage: test --config-dir";
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--out",
+            "my-filename.out",
+            "--license",
+            "--config-dir",
+            "/opt/m2osw/config",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // the valid parameter
+        CATCH_REQUIRE(opt.get_option("out") != nullptr);
+        CATCH_REQUIRE(opt.get_option('o') == opt.get_option("out"));
+        CATCH_REQUIRE(opt.is_defined("out"));
+        CATCH_REQUIRE(opt.get_string("out") == "my-filename.out");
+        CATCH_REQUIRE(opt.get_string("out", 0) == "my-filename.out");
+        CATCH_REQUIRE(opt.get_default("out").empty());
+        CATCH_REQUIRE(opt.size("out") == 1);
+
+        // the license system parameter
+        CATCH_REQUIRE(opt.get_option("license") != nullptr);
+        CATCH_REQUIRE(opt.get_option('L') != nullptr);
+        CATCH_REQUIRE(opt.is_defined("license"));
+        CATCH_REQUIRE(opt.get_default("license").empty());
+        CATCH_REQUIRE(opt.size("license") == 1);
+
+        // the copyright system parameter
+        CATCH_REQUIRE(opt.get_option("copyright") != nullptr);
+        CATCH_REQUIRE(opt.get_option('C') == opt.get_option("copyright"));
+        CATCH_REQUIRE_FALSE(opt.is_defined("copyright"));
+        CATCH_REQUIRE(opt.get_default("copyright").empty());
+        CATCH_REQUIRE(opt.size("copyright") == 0);
+
+        // the config-dir system parameter
+        CATCH_REQUIRE(opt.get_option("config-dir") != nullptr);
+        CATCH_REQUIRE(opt.is_defined("config-dir"));
+        CATCH_REQUIRE(opt.get_default("config-dir").empty());
+        CATCH_REQUIRE(opt.size("config-dir") == 1);
+        CATCH_REQUIRE(opt.get_string("config-dir") == "/opt/m2osw/config");
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Verify that we do not get the --config-dir option when the standalone configuration filename is nullptr")
+    {
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("out")
+                , advgetopt::ShortName('o')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("output filename.")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_configuration_filename = nullptr;
+        environment_options.f_help_header = "Usage: test --config-dir";
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--out",
+            "my-filename.out",
+            "--license",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // the valid parameter
+        CATCH_REQUIRE(opt.get_option("out") != nullptr);
+        CATCH_REQUIRE(opt.get_option('o') == opt.get_option("out"));
+        CATCH_REQUIRE(opt.is_defined("out"));
+        CATCH_REQUIRE(opt.get_string("out") == "my-filename.out");
+        CATCH_REQUIRE(opt.get_string("out", 0) == "my-filename.out");
+        CATCH_REQUIRE(opt.get_default("out").empty());
+        CATCH_REQUIRE(opt.size("out") == 1);
+
+        // the license system parameter
+        CATCH_REQUIRE(opt.get_option("license") != nullptr);
+        CATCH_REQUIRE(opt.get_option('L') != nullptr);
+        CATCH_REQUIRE(opt.is_defined("license"));
+        CATCH_REQUIRE(opt.get_default("license").empty());
+        CATCH_REQUIRE(opt.size("license") == 1);
+
+        // the copyright system parameter
+        CATCH_REQUIRE(opt.get_option("copyright") != nullptr);
+        CATCH_REQUIRE(opt.get_option('C') == opt.get_option("copyright"));
+        CATCH_REQUIRE_FALSE(opt.is_defined("copyright"));
+        CATCH_REQUIRE(opt.get_default("copyright").empty());
+        CATCH_REQUIRE(opt.size("copyright") == 0);
+
+        // no config-dir system parameter when the configuration filename is missing
+        CATCH_REQUIRE(opt.get_option("config-dir") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("config-dir"));
+        CATCH_REQUIRE(opt.get_default("config-dir").empty());
+        CATCH_REQUIRE(opt.size("config-dir") == 0);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Verify that we do not get the --config-dir option when the standalone configuration filename is \"\"")
+    {
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("out")
+                , advgetopt::ShortName('o')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("output filename.")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_configuration_filename = "";
+        environment_options.f_help_header = "Usage: test --config-dir";
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--out",
+            "my-filename.out",
+            "--license",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // the valid parameter
+        CATCH_REQUIRE(opt.get_option("out") != nullptr);
+        CATCH_REQUIRE(opt.get_option('o') == opt.get_option("out"));
+        CATCH_REQUIRE(opt.is_defined("out"));
+        CATCH_REQUIRE(opt.get_string("out") == "my-filename.out");
+        CATCH_REQUIRE(opt.get_string("out", 0) == "my-filename.out");
+        CATCH_REQUIRE(opt.get_default("out").empty());
+        CATCH_REQUIRE(opt.size("out") == 1);
+
+        // the license system parameter
+        CATCH_REQUIRE(opt.get_option("license") != nullptr);
+        CATCH_REQUIRE(opt.get_option('L') != nullptr);
+        CATCH_REQUIRE(opt.is_defined("license"));
+        CATCH_REQUIRE(opt.get_default("license").empty());
+        CATCH_REQUIRE(opt.size("license") == 1);
+
+        // the copyright system parameter
+        CATCH_REQUIRE(opt.get_option("copyright") != nullptr);
+        CATCH_REQUIRE(opt.get_option('C') == opt.get_option("copyright"));
+        CATCH_REQUIRE_FALSE(opt.is_defined("copyright"));
+        CATCH_REQUIRE(opt.get_default("copyright").empty());
+        CATCH_REQUIRE(opt.size("copyright") == 0);
+
+        // no config-dir system parameter when the configuration filename is missing
+        CATCH_REQUIRE(opt.get_option("config-dir") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("config-dir"));
+        CATCH_REQUIRE(opt.get_default("config-dir").empty());
+        CATCH_REQUIRE(opt.size("config-dir") == 0);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Test adding '-c' to '--config-dir'")
+    {
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("out")
+                , advgetopt::ShortName('o')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("output filename.")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_configuration_filename = "snapwatchdog.conf";
+        environment_options.f_help_header = "Usage: test --config-dir";
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--out",
+            "my-filename.out",
+            "--license",
+            "-c",
+            "/opt/m2osw/config",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options);
+        opt.parse_program_name(argv);
+        opt.link_aliases();
+
+        advgetopt::option_info::pointer_t config_dir(opt.get_option("config-dir"));
+        CATCH_REQUIRE(config_dir != nullptr);
+        opt.set_short_name("config-dir", U'c');
+
+        opt.parse_arguments(argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // the valid parameter
+        CATCH_REQUIRE(opt.get_option("out") != nullptr);
+        CATCH_REQUIRE(opt.get_option('o') == opt.get_option("out"));
+        CATCH_REQUIRE(opt.is_defined("out"));
+        CATCH_REQUIRE(opt.get_string("out") == "my-filename.out");
+        CATCH_REQUIRE(opt.get_string("out", 0) == "my-filename.out");
+        CATCH_REQUIRE(opt.get_default("out").empty());
+        CATCH_REQUIRE(opt.size("out") == 1);
+
+        // the license system parameter
+        CATCH_REQUIRE(opt.get_option("license") != nullptr);
+        CATCH_REQUIRE(opt.get_option('L') != nullptr);
+        CATCH_REQUIRE(opt.is_defined("license"));
+        CATCH_REQUIRE(opt.get_default("license").empty());
+        CATCH_REQUIRE(opt.size("license") == 1);
+
+        // the copyright system parameter
+        CATCH_REQUIRE(opt.get_option("copyright") != nullptr);
+        CATCH_REQUIRE(opt.get_option('C') == opt.get_option("copyright"));
+        CATCH_REQUIRE_FALSE(opt.is_defined("copyright"));
+        CATCH_REQUIRE(opt.get_default("copyright").empty());
+        CATCH_REQUIRE(opt.size("copyright") == 0);
+
+        // the config-dir system parameter
+        CATCH_REQUIRE(opt.get_option("config-dir") != nullptr);
+        CATCH_REQUIRE(opt.is_defined("config-dir"));
+        CATCH_REQUIRE(opt.get_default("config-dir").empty());
+        CATCH_REQUIRE(opt.size("config-dir") == 1);
+        CATCH_REQUIRE(opt.get_string("config-dir") == "/opt/m2osw/config");
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Test our own parsing with '--config-dir' and f_configuration_filename set to nullptr")
+    {
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("out")
+                , advgetopt::ShortName('o')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("output filename.")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_configuration_filename = nullptr;
+        environment_options.f_help_header = "Usage: test --config-dir";
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--out",
+            "my-filename.out",
+            "--license",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options);
+        opt.parse_program_name(argv);
+        opt.link_aliases();
+
+        CATCH_REQUIRE(opt.get_option("config-dir") == nullptr);
+
+        opt.parse_arguments(argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // the valid parameter
+        CATCH_REQUIRE(opt.get_option("out") != nullptr);
+        CATCH_REQUIRE(opt.get_option('o') == opt.get_option("out"));
+        CATCH_REQUIRE(opt.is_defined("out"));
+        CATCH_REQUIRE(opt.get_string("out") == "my-filename.out");
+        CATCH_REQUIRE(opt.get_string("out", 0) == "my-filename.out");
+        CATCH_REQUIRE(opt.get_default("out").empty());
+        CATCH_REQUIRE(opt.size("out") == 1);
+
+        // the license system parameter
+        CATCH_REQUIRE(opt.get_option("license") != nullptr);
+        CATCH_REQUIRE(opt.get_option('L') != nullptr);
+        CATCH_REQUIRE(opt.is_defined("license"));
+        CATCH_REQUIRE(opt.get_default("license").empty());
+        CATCH_REQUIRE(opt.size("license") == 1);
+
+        // the copyright system parameter
+        CATCH_REQUIRE(opt.get_option("copyright") != nullptr);
+        CATCH_REQUIRE(opt.get_option('C') == opt.get_option("copyright"));
+        CATCH_REQUIRE_FALSE(opt.is_defined("copyright"));
+        CATCH_REQUIRE(opt.get_default("copyright").empty());
+        CATCH_REQUIRE(opt.size("copyright") == 0);
+
+        // the config-dir system parameter
+        CATCH_REQUIRE(opt.get_option("config-dir") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("config-dir"));
+        CATCH_REQUIRE(opt.get_default("config-dir").empty());
+        CATCH_REQUIRE(opt.size("config-dir") == 0);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Test our own parsing with '--config-dir' and f_configuration_filename set to \"\"")
+    {
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("out")
+                , advgetopt::ShortName('o')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("output filename.")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_configuration_filename = "";
+        environment_options.f_help_header = "Usage: test --config-dir";
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--out",
+            "my-filename.out",
+            "--license",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options);
+        opt.parse_program_name(argv);
+        opt.link_aliases();
+
+        CATCH_REQUIRE(opt.get_option("config-dir") == nullptr);
+
+        opt.parse_arguments(argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // the valid parameter
+        CATCH_REQUIRE(opt.get_option("out") != nullptr);
+        CATCH_REQUIRE(opt.get_option('o') == opt.get_option("out"));
+        CATCH_REQUIRE(opt.is_defined("out"));
+        CATCH_REQUIRE(opt.get_string("out") == "my-filename.out");
+        CATCH_REQUIRE(opt.get_string("out", 0) == "my-filename.out");
+        CATCH_REQUIRE(opt.get_default("out").empty());
+        CATCH_REQUIRE(opt.size("out") == 1);
+
+        // the license system parameter
+        CATCH_REQUIRE(opt.get_option("license") != nullptr);
+        CATCH_REQUIRE(opt.get_option('L') != nullptr);
+        CATCH_REQUIRE(opt.is_defined("license"));
+        CATCH_REQUIRE(opt.get_default("license").empty());
+        CATCH_REQUIRE(opt.size("license") == 1);
+
+        // the copyright system parameter
+        CATCH_REQUIRE(opt.get_option("copyright") != nullptr);
+        CATCH_REQUIRE(opt.get_option('C') == opt.get_option("copyright"));
+        CATCH_REQUIRE_FALSE(opt.is_defined("copyright"));
+        CATCH_REQUIRE(opt.get_default("copyright").empty());
+        CATCH_REQUIRE(opt.size("copyright") == 0);
+
+        // the config-dir system parameter
+        CATCH_REQUIRE(opt.get_option("config-dir") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("config-dir"));
+        CATCH_REQUIRE(opt.get_default("config-dir").empty());
+        CATCH_REQUIRE(opt.size("config-dir") == 0);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
+    CATCH_END_SECTION()
+}
+
+
 CATCH_TEST_CASE("default_argument", "[arguments][valid][getopt]")
 {
     CATCH_START_SECTION("Verify a simple [<filename>] argument")
@@ -5628,9 +6120,9 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
 
 
 #if 0
-// TODO: break this out in section and even multiple tests
+// TODO: break this out in sections and even multiple tests
 //       the old version would check a command set of options which is
-//       not required (doable/useful) with the new version
+//       not required (doable/useful) with version 2.x
 //
 //       also this test used to work but now that I heavily changed
 //       the configuration file loading process (specifically, added

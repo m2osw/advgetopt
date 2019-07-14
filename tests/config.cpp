@@ -148,6 +148,55 @@ CATCH_TEST_CASE("configuration_filenames", "[config][getopt][filenames]")
         CATCH_REQUIRE(filenames[5] == "/etc/snapwebsites/unittest-with-directories.d/snapfirewall.conf");
     CATCH_END_SECTION()
 
+    CATCH_START_SECTION("Configuration File + Directories + '--config-dir'")
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("unittest-with-directories-and-config-dir", "with-many-dirs", true);
+
+        advgetopt::options_environment environment_options;
+
+        char const * dirs[] =
+        {
+            SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(),
+            ".config",
+            "/etc/advgetopt",
+            nullptr
+        };
+    
+        environment_options.f_project_name = "unittest-with-directories-and-config-dir";
+        environment_options.f_options = nullptr;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_help_header = "Testing all possible filenames";
+        environment_options.f_configuration_filename = "snapmerger.conf";
+        environment_options.f_configuration_directories = dirs;
+
+        char const * cargv[] =
+        {
+            "/usr/bin/config",
+            "--config-dir",
+            "/var/lib/advgetopt",
+            "--config-dir",
+            "/opt/config",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        advgetopt::string_list_t const filenames(opt.get_configuration_filenames(false, false));
+
+        CATCH_REQUIRE(filenames.size() == 10);
+        CATCH_REQUIRE(filenames[0] == "/var/lib/advgetopt/snapmerger.conf");
+        CATCH_REQUIRE(filenames[1] == "/var/lib/advgetopt/unittest-with-directories-and-config-dir.d/snapmerger.conf");
+        CATCH_REQUIRE(filenames[2] == "/opt/config/snapmerger.conf");
+        CATCH_REQUIRE(filenames[3] == "/opt/config/unittest-with-directories-and-config-dir.d/snapmerger.conf");
+        CATCH_REQUIRE(filenames[4] == SNAP_CATCH2_NAMESPACE::g_config_filename + "/snapmerger.conf");
+        CATCH_REQUIRE(filenames[5] == SNAP_CATCH2_NAMESPACE::g_config_project_filename + "/snapmerger.conf");
+        CATCH_REQUIRE(filenames[6] == ".config/snapmerger.conf");
+        CATCH_REQUIRE(filenames[7] == ".config/unittest-with-directories-and-config-dir.d/snapmerger.conf");
+        CATCH_REQUIRE(filenames[8] == "/etc/advgetopt/snapmerger.conf");
+        CATCH_REQUIRE(filenames[9] == "/etc/advgetopt/unittest-with-directories-and-config-dir.d/snapmerger.conf");
+    CATCH_END_SECTION()
+
     CATCH_START_SECTION("Existing Configuration Files")
 
         CATCH_WHEN("R/W Config must exist--no user defined config")
@@ -953,4 +1002,4 @@ CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][
 
 
 
-// vim: ts=4 sw=4 et
+// vim: ts=4 sw=4 et nowrap

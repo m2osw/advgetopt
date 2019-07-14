@@ -102,6 +102,11 @@
 #include    "advgetopt/log.h"
 
 
+// libutf8 lib
+//
+#include    <libutf8/iterator.h>
+
+
 // boost lib
 //
 #include    <boost/algorithm/string/replace.hpp>
@@ -213,6 +218,20 @@ option const g_system_options[] =
           Name("path-to-option-definitions")
         , Flags(standalone_command_flags())
         , Help("print out the path to the option definitons.")
+    ),
+    end_options()
+};
+
+
+option const g_if_configuration_filename_system_options[] =
+{
+    define_option(
+          Name("config-dir")
+        , Flags(any_flags<GETOPT_FLAG_COMMAND_LINE
+                        , GETOPT_FLAG_ENVIRONMENT_VARIABLE
+                        , GETOPT_FLAG_REQUIRED
+                        , GETOPT_FLAG_MULTIPLE>())
+        , Help("add one or more configuration directory paths to search for configuration files.")
     ),
     end_options()
 };
@@ -424,6 +443,11 @@ getopt::getopt(options_environment const & opt_env)
     if(has_flag(GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS))
     {
         parse_options_info(g_system_options, true);
+        if(f_options_environment.f_configuration_filename != nullptr
+        && *f_options_environment.f_configuration_filename != '\0')
+        {
+            parse_options_info(g_if_configuration_filename_system_options, true);
+        }
     }
 }
 
@@ -483,6 +507,11 @@ getopt::getopt(options_environment const & opt_env
     if(has_flag(GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS))
     {
         parse_options_info(g_system_options, true);
+        if(f_options_environment.f_configuration_filename != nullptr
+        && *f_options_environment.f_configuration_filename != '\0')
+        {
+            parse_options_info(g_if_configuration_filename_system_options, true);
+        }
     }
 
     if(f_options_by_name.empty())
@@ -878,18 +907,17 @@ void getopt::parse_arguments(int argc
                     // i gets incremented by add_options() so we have to
                     // keep a copy in `k`
                     //
-                    int const k(i);
-                    int const max(static_cast<int>(strlen(argv[k])));
-                    for(int j = 1; j < max; ++j)
+                    std::string const short_args_string(argv[i] + 1);
+                    for(libutf8::utf8_iterator short_args(short_args_string)
+                      ; short_args != short_args_string.end()
+                      ; ++short_args)
                     {
-                        // TODO: add support for UTF-32 characters
-                        //
-                        option_info::pointer_t opt(get_option(argv[k][j]));
+                        option_info::pointer_t opt(get_option(*short_args));
                         if(opt == nullptr)
                         {
                             log << log_level_t::error
                                 << "option -"
-                                << argv[k][j]
+                                << short_name_to_string(*short_args)
                                 << " is not supported."
                                 << end;
                             break;
@@ -900,7 +928,7 @@ void getopt::parse_arguments(int argc
                             {
                                 log << log_level_t::error
                                     << "option -"
-                                    << argv[k][j]
+                                    << short_name_to_string(*short_args)
                                     << " is not supported in the environment variable."
                                     << end;
                                 break;
@@ -912,7 +940,7 @@ void getopt::parse_arguments(int argc
                             {
                                 log << log_level_t::error
                                     << "option -"
-                                    << argv[k][j]
+                                    << short_name_to_string(*short_args)
                                     << " is not supported on the command line."
                                     << end;
                                 break;

@@ -442,7 +442,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
         CATCH_REQUIRE(opt.is_defined("from"));
         CATCH_REQUIRE(opt.size("from") == 1);
         CATCH_REQUIRE(opt.get_string("from") == "");
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid number () in parameter --from.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid number () in parameter --from at offset 0.");
         CATCH_REQUIRE(opt.get_long("from") == -1);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         CATCH_REQUIRE(opt.get_default("from").empty());
@@ -495,7 +495,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
         CATCH_REQUIRE(opt.is_defined("from"));
         CATCH_REQUIRE(opt.size("from") == 1);
         CATCH_REQUIRE(opt.get_string("from") == "");
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid number () in parameter --from.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid number () in parameter --from at offset 0.");
         CATCH_REQUIRE(opt.get_long("from") == -1);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         CATCH_REQUIRE(opt.get_default("from").empty());
@@ -698,10 +698,10 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
         CATCH_REQUIRE(opt.is_defined("from"));
         CATCH_REQUIRE(opt.size("from") == 1);
         CATCH_REQUIRE(opt.get_string("from") == "");
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid number () in parameter --from.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid number () in parameter --from at offset 0.");
         CATCH_REQUIRE(opt.get_long("from") == -1);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid number () in parameter --from.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid number () in parameter --from at offset 0.");
         CATCH_REQUIRE(opt.get_long("from") == -1);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         CATCH_REQUIRE(opt.get_default("from").empty());
@@ -754,7 +754,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
         CATCH_REQUIRE(opt.is_defined("from"));
         CATCH_REQUIRE(opt.size("from") == 1);
         CATCH_REQUIRE(opt.get_string("from") == "");
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid number () in parameter --from.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid number () in parameter --from at offset 0.");
         CATCH_REQUIRE(opt.get_long("from") == -1);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         CATCH_REQUIRE(opt.get_default("from").empty());

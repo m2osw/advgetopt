@@ -307,6 +307,7 @@ std::string getopt::usage( flag_t show ) const
  * \li "%*f" -- print out all the configuration full paths.
  * \li "%g" -- print out the list of existing configuration files.
  * \li "%*g" -- print out the list of all possible configuration files.
+ * \li "%i" -- print out the directory to option files.
  * \li "%l" -- print out the license.
  * \li "%o" -- show the configuration filename where changes get written.
  * \li "%p" -- print out the program basename.
@@ -512,6 +513,19 @@ std::string getopt::process_help_string(char const * help) const
                     }
                     help += 2;
                 }
+                break;
+
+            case 'i':
+                if(f_options_environment.f_options_files_directory != nullptr
+                && *f_options_environment.f_options_files_directory != '\0')
+                {
+                    result += f_options_environment.f_options_files_directory;
+                }
+                else
+                {
+                    result += "/usr/share/advgetopt/options";
+                }
+                help += 2;
                 break;
 
             case 'l':

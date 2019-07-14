@@ -64,41 +64,31 @@ namespace advgetopt
  * This function returns true if the specified parameter is found as part of
  * the command line options.
  *
- * You must specify the long name of the option if one is defined. Otherwise
- * the name is the short name. So a --verbose option can be checked with:
+ * You must specify the long name of the option. So a `--verbose` option can
+ * be checked with:
  *
  * \code
  *   if(is_defined("verbose")) ...
  * \endcode
  *
- * However, if the option was defined as:
- *
- * \code
- * advgetopt::option options[] =
- * {
- *    [...]
- *    {
- *       'v',
- *       0,
- *       nullptr,
- *       nullptr,
- *       "increase verbosity",
-         advgetopt::getopt::no_argument
- *    },
- *    [...]
- * };
- * \endcode
- *
- * then the previous call would fail because "verbose" does not exist in your
- * table. However, the option is accessible by its short name as a fallback
- * when it does not have a long name:
+ * For options that come with a short name, you may also specify the short
+ * name. This is done with a string in this case. It can be a UTF-8
+ * character. The short name is used if the string represents exactly one
+ * Unicode character. So the following is equivalent to the previous
+ * example, assuming your verbose definition has `v` as the short name:
  *
  * \code
  *   if(is_defined("v")) ...
  * \endcode
  *
- * \param[in] name  The long (or short if long is undefined) name of the
- *                  option to check.
+ * \note
+ * This function returns true when the option was found on the command line,
+ * the environment variable, or a configuration file. It returns false if
+ * the option is defined, but was not specified anywhere by the client using
+ * your program. Also, specifying the option in one of those three locations
+ * when not allowed at that location will not result in this flag being raised.
+ *
+ * \param[in] name  The long name or short name of the option to check.
  *
  * \return true if the option was defined in a configuration file, the
  *         environment variable, or the command line.
@@ -412,10 +402,36 @@ std::string getopt::operator [] (std::string const & name) const
 /** \brief Access a parameter in read and write mode.
  *
  * This function allows you to access an argument which may or may not
- * yet exist. It will be created if it does not yet exist.
+ * yet exist.
  *
  * The return value is a reference to that parameter. You can read
  * and write to the reference.
+ *
+ * A non-existant argument is created only if necessary. That is,
+ * only if you actually use an assignment operator as follow:
+ *
+ * \code
+ *      // straight assignment:
+ *      opt["my-var"] = "123";
+ *
+ *      // or concatenation:
+ *      opt["my-var"] += "append";
+ * \endcode
+ *
+ * In read mode and unless you defined a default, a non-existant argument
+ * is viewed as an empty string or 0 if retrieved as a long:
+ *
+ * \code
+ *      // if non-existant you get an empty string:
+ *      std::string value = opt["non-existant"];
+ *
+ *      // if non-existant you get zero:
+ *      long value = opt["non-existant"].get_long();
+ * \endcode
+ *
+ * The get_long() function may generate an error if the parameter is not
+ * a valid integer. Also when a default is defined, it tries to convert
+ * the default value to a number and if that fails an error is generated.
  *
  * \note
  * This operator only allows you to access the very first value of
@@ -429,6 +445,9 @@ std::string getopt::operator [] (std::string const & name) const
  * can still get an exception raised.
  *
  * \param[in] name  The name of the option to access.
+ *
+ * \return A reference to this option with support for many std::string like
+ *         operators.
  */
 option_info_ref getopt::operator [] (std::string const & name)
 {
@@ -448,14 +467,142 @@ option_info_ref getopt::operator [] (std::string const & name)
         // The option doesn't exist yet, create it
         //
         opt = std::make_shared<option_info>(name);
-        opt->add_value(std::string());
-    }
-    else if(!opt->is_defined())
-    {
-        opt->add_value(std::string());
+        f_options_by_name[name] = opt;
     }
 
     return option_info_ref(opt);
+}
+
+
+/** \brief Process the system options.
+ *
+ * If you have the GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS flag turned on,
+ * then several options are automatically added to your list of supported
+ * options, such as `--version`.
+ *
+ * This function processes these options if any were used by the client.
+ *
+ * If the function finds one or more system flags as being defined, it
+ * returns a non-zero set of SYSTEM_OPTION_... flags. This can be useful
+ * to decide whether to continue processing or not.
+ *
+ * We define a set of flags that can help you decide whether to continue
+ * or exit. In most cases, we propose that you exit your program if any
+ * one of the options was a command. This is done like so:
+ *
+ * \code
+ * if(process_system_options & SYSTEM_OPTION_COMMANDS_MASK) != 0)
+ * {
+ *     exit(1);
+ * }
+ * \endcode
+ *
+ * You may still want to continue, though, if other flags where set,
+ * even if some commands were used. For example, some tools will print
+ * their version and move forward with there work (i.e. compilers often do
+ * that to help with logging all the information about a build process,
+ * including the version of the compiler.)
+ *
+ * \param[in] out  The stream where output is sent if required.
+ *
+ * \return non-zero set of flags if any of the system parameters were processed.
+ */
+flag_t getopt::process_system_options(std::basic_ostream<char> & out)
+{
+    flag_t result(SYSTEM_OPTION_NONE);
+
+    // --version
+    if(is_defined("version"))
+    {
+        out << f_options_environment.f_version << std::endl;
+        result |= SYSTEM_OPTION_VERSION;
+    }
+
+    // --help
+    if(is_defined("help"))
+    {
+        out << usage() << std::endl;
+        result |= SYSTEM_OPTION_HELP;
+    }
+
+    // --copyright
+    if(is_defined("copyright"))
+    {
+        out << f_options_environment.f_copyright << std::endl;
+        result |= SYSTEM_OPTION_COPYRIGHT;
+    }
+
+    // --license
+    if(is_defined("license"))
+    {
+        out << f_options_environment.f_license << std::endl;
+        result |= SYSTEM_OPTION_LICENSE;
+    }
+
+    // --build-date
+    if(is_defined("build-date"))
+    {
+        out << "Built on "
+            << f_options_environment.f_build_date
+            << " at "
+            << f_options_environment.f_build_time
+            << std::endl;
+        result |= SYSTEM_OPTION_BUILD_DATE;
+    }
+
+    // --environment-variable-name
+    if(is_defined("environment-variable-name"))
+    {
+        out << f_options_environment.f_environment_variable_name << std::endl;
+        result |= SYSTEM_OPTION_ENVIRONMENT_VARIABLE_NAME;
+    }
+
+    // --configuration-filenames
+    if(is_defined("configuration-filenames"))
+    {
+        string_list_t list(get_configuration_filenames(false, false));
+        if(list.empty())
+        {
+            out << f_options_environment.f_project_name
+                << " does not support configuration files."
+                << std::endl;
+        }
+        else
+        {
+            out << "Configuration filenames:" << std::endl;
+            for(auto n : list)
+            {
+                out << " . " << n << std::endl;
+            }
+        }
+        result |= SYSTEM_OPTION_CONFIGURATION_FILENAMES;
+    }
+
+    // --path-to-option-definitions
+    if(is_defined("path-to-option-definitions"))
+    {
+        if(f_options_environment.f_options_files_directory == nullptr
+        || *f_options_environment.f_options_files_directory == '\0')
+        {
+            out << "/usr/share/advgetopt/options" << std::endl;
+        }
+        else
+        {
+            out << f_options_environment.f_options_files_directory << std::endl;
+        }
+        result |= SYSTEM_OPTION_PATH_TO_OPTION_DEFINITIONS;
+    }
+
+    // --config-dir
+    if(is_defined("config-dir"))
+    {
+        // these are automatically used in the get_configuration_filenames()
+        // function, there is nothing for us to do here
+        //
+        result |= SYSTEM_OPTION_CONFIG_DIR;
+    }
+
+    return result;
 }
 
 

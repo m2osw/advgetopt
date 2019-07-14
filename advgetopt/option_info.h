@@ -57,7 +57,7 @@ namespace advgetopt
 
 typedef char32_t            short_name_t;
 
-constexpr short_name_t      NO_SHORT_NAME = L'\0';
+constexpr short_name_t      NO_SHORT_NAME = U'\0';
 
 
 short_name_t                string_to_short_name(std::string const & name);
@@ -79,6 +79,7 @@ public:
                                 option_info(std::string const & name, short_name_t short_name = NO_SHORT_NAME);
 
     std::string const &         get_name() const;
+    void                        set_short_name(short_name_t short_name);
     short_name_t                get_short_name() const;
     std::string                 get_basename() const;
     std::string                 get_section_name() const;
@@ -154,27 +155,35 @@ public:
     bool                        empty() const;
     size_t                      length() const;
     size_t                      size() const;
+    long                        get_long() const;
 
                                 operator std::string () const;
 
     option_info_ref &           operator = (char value);
+    option_info_ref &           operator = (char32_t value);
     option_info_ref &           operator = (char const * value);
     option_info_ref &           operator = (std::string const & value);
     option_info_ref &           operator = (option_info_ref const & value);
 
     option_info_ref &           operator += (char value);
+    option_info_ref &           operator += (char32_t value);
     option_info_ref &           operator += (char const * value);
     option_info_ref &           operator += (std::string const & value);
     option_info_ref &           operator += (option_info_ref const & value);
 
     std::string                 operator + (char value) const;
+    std::string                 operator + (char32_t value) const;
     std::string                 operator + (char const * value) const;
     std::string                 operator + (std::string const & value) const;
     std::string                 operator + (option_info_ref const & value) const;
 
     friend std::string          operator + (char value, option_info_ref const & rhs);
+    friend std::string          operator + (char32_t value, option_info_ref const & rhs);
     friend std::string          operator + (char const * value, option_info_ref const & rhs);
     friend std::string          operator + (std::string const & value, option_info_ref const & rhs);
+
+                                operator bool () const;
+    bool                        operator ! () const;
 
     bool                        operator == (char const * value) const;
     bool                        operator == (std::string const & value) const;
@@ -219,10 +228,15 @@ public:
     friend bool                 operator >= (std::string const & value, option_info_ref const & rhs);
 
 private:
-    option_info::pointer_t      f_opt = nullptr;
+    option_info::pointer_t      f_opt = option_info::pointer_t();
 };
 
 
-
 }   // namespace advgetopt
+
+
+std::string operator + (char32_t value, std::string const & rhs);
+std::string operator + (std::string const & lhs, char32_t value);
+
+
 // vim: ts=4 sw=4 et

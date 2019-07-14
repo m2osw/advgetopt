@@ -29,7 +29,7 @@ This makes use of the code in link with the configuration file, so it
 covers some of that code, but only to the extend necessary for support
 with the options.
 
-    dev/coverage options_parser,invalid_options_parser,valid_options_files,invalid_options_files
+    dev/coverage options_parser,define_option_short_name,valid_options_files,invalid_options_parser,invalid_options_files,invalid_config_dir_short_name
 
 ## Arguments Parsing (`advgetopt.cpp`)
 
@@ -47,7 +47,7 @@ is done separately because it is really large on its own. It does test the
 command line and variable, though. The variable includes parsing a string
 into arguments before parsing the arguments in our map of named values.
 
-    dev/coverage flag_argument,require_argument,require_arguments,optional_arguments,default_argument,default_arguments,manual_arguments,invalid_getopt_pointers,invalid_getopt_missing_options,invalid_getopt_missing_alias,invalid_getopt_missing_required_option,invalid_default_options,invalid_options
+    dev/coverage flag_argument,require_argument,require_arguments,optional_arguments,config_dir_argument,default_argument,default_arguments,manual_arguments,invalid_getopt_pointers,invalid_getopt_missing_options,invalid_getopt_missing_alias,invalid_getopt_missing_required_option,invalid_default_options,invalid_options
 
 ## Configuration Parsing (`advgetopt_config.cpp`)
 
@@ -99,7 +99,7 @@ Once the command line arguments, environment variable, and configuration
 files were parsed, you want to retrieve the data. These test verify that
 the data is returned to you as expected.
 
-    dev/coverage string_access,long_access,invalid_option_name,missing_default_value,incompatible_default_value,out_of_range_value
+    dev/coverage string_access,long_access,system_flags_version,system_flags_help,system_flags_copyright,system_flags_license,system_flags_build_date,system_flags_environment_variable_name,system_flags_configuration_filenames,system_flags_path_to_option_definitions,invalid_option_name,missing_default_value,incompatible_default_value,out_of_range_value
 
 ## Usage (`advgetopt_usage.cpp`)
 
@@ -107,7 +107,7 @@ Whenever an error occurs or when a command line option such as `--help`
 is used, the usage screens get printed. This tests verify that the usage
 output works as expected.
 
-    dev/coverage usage_function,help_string_percent,help_string_project_name,help_string_build_date,help_string_copyright,help_string_directories,help_string_environment_variable,help_string_configuration_files,help_string_configuration_files_functions,help_string_license,help_string_program_name,help_string_build_time,help_string_version,help_string_writable_configuration_files
+    dev/coverage usage_function,help_string_percent,help_string_project_name,help_string_build_date,help_string_copyright,help_string_directories,help_string_environment_variable,help_string_configuration_files,help_string_configuration_files_functions,help_string_option_file_directory,help_string_license,help_string_program_name,help_string_build_time,help_string_version,help_string_writable_configuration_files
 
 ## Logger (`log.cpp`)
 
@@ -126,7 +126,7 @@ dynamic options to be added at run-time, which mainly happens when loading
 configuration files but can also be allowed on the command line and
 the environment variable.
 
-    dev/coverage to_from_short_name,option_info_basics,option_info_flags,option_info_default,option_info_help,option_info_validator,option_info_alias,option_info_multiple_separators,option_info_add_value,option_info_set_value,option_info_section_functions,invalid_option_info
+    dev/coverage to_from_short_name,option_info_basics,option_info_flags,option_info_default,option_info_help,option_info_validator,option_info_alias,option_info_multiple_separators,option_info_add_value,option_info_set_value,option_info_section_functions,redefine_option_short_name,invalid_option_info,check_invalid_config_dir_short_names
 
 This test also verifies that the arguments can be defined in a configuration
 file.
@@ -141,7 +141,7 @@ The `getopt` objects can be used with the `[]` operator. When the input `this`
 is not constant, the operator returns an `option_info_ref` class which allows
 us to access the first value in read and write modes.
 
-    dev/coverage option_info_ref
+    dev/coverage option_info_ref,option_info_ref_with_valid_default,option_info_ref_with_invalid_default
 
 This verifies that the reference object is fully covered.
 
@@ -210,4 +210,4 @@ you are running the test that corresponds to your version of the library.
     +------------------------+---------------------+--------+
 
 
-vim: ts=4 sw=4 et
+vim: ts=4 sw=4 et wrap
