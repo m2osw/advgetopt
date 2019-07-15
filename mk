@@ -3,6 +3,8 @@
 # Sample script to run make without having to retype the long path each time
 # This will work if you built the environment using our ~/bin/build-snap script
 
+PROCESSORS=4
+
 case $1 in
 "-l")
 	make -C ../../../BUILD/contrib/advgetopt 2>&1 | less -SR
@@ -11,7 +13,7 @@ case $1 in
 "-d")
 	rm -rf ../../../BUILD/contrib/advgetopt/doc/advgetopt-doc-2.0.tar.gz \
 	       ../../../BUILD/contrib/advgetopt/doc/advgetopt-doc-2.0
-	make -j4 -C ../../../BUILD/contrib/advgetopt
+	make -j${PROCESSORS} -C ../../../BUILD/contrib/advgetopt
 	;;
 
 "-t")
@@ -27,8 +29,13 @@ case $1 in
 	make -C ../../../BUILD/contrib/advgetopt install
 	;;
 
+"")
+	make -j${PROCESSORS} -C ../../../BUILD/contrib/advgetopt
+	;;
+
 *)
-	make -j4 -C ../../../BUILD/contrib/advgetopt
+	echo "error: unknown command line option $1"
+	exit 1
 	;;
 
 esac
