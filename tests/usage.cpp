@@ -32,6 +32,7 @@
 
 // advgetopt lib
 //
+#include <advgetopt/flags.h>
 #include <advgetopt/exception.h>
 
 // snapdev lib
@@ -73,7 +74,7 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
                   advgetopt::Name("out-of-bounds")
                 , advgetopt::ShortName('o')
                 , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
-                                                           , advgetopt::GETOPT_FLAG_GROUP_TWO
+                                                           , advgetopt::GETOPT_FLAG_GROUP_OPTIONS
                                                            , advgetopt::GETOPT_FLAG_REQUIRED>())
                 , advgetopt::Help("valid values from 1 to 9.")
             ),
@@ -81,7 +82,7 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
                   advgetopt::Name("not-specified-and-no-default")
                 , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
                                                            , advgetopt::GETOPT_FLAG_REQUIRED
-                                                           , advgetopt::GETOPT_FLAG_GROUP_TWO
+                                                           , advgetopt::GETOPT_FLAG_GROUP_OPTIONS
                                                            , advgetopt::GETOPT_FLAG_SHOW_GROUP1>())
                 , advgetopt::Help("test long without having used the option and no default.")
             ),
@@ -97,7 +98,7 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
             advgetopt::define_option(
                   advgetopt::Name("not-specified-string-without-default")
                 , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
-                                                           , advgetopt::GETOPT_FLAG_REQUIRED>())
+                                                      , advgetopt::GETOPT_FLAG_REQUIRED>())
                 , advgetopt::Alias("string")
             ),
             advgetopt::define_option(
@@ -116,7 +117,7 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
                   advgetopt::Name("noisy")
                 , advgetopt::ShortName('n')
                 , advgetopt::Flags(advgetopt::standalone_command_flags<advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR
-                                                                     , advgetopt::GETOPT_FLAG_GROUP_ONE>())
+                                                                     , advgetopt::GETOPT_FLAG_GROUP_COMMANDS>())
                 //, advgetopt::Help("make sure everything is unique.") -- do not show in --help
             ),
             advgetopt::define_option(
@@ -125,7 +126,7 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
                 , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
                                                            , advgetopt::GETOPT_FLAG_MULTIPLE
                                                            , advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR
-                                                           , advgetopt::GETOPT_FLAG_GROUP_ONE>())
+                                                           , advgetopt::GETOPT_FLAG_GROUP_COMMANDS>())
                 , advgetopt::Help("make it quiet (opposite of verbose).")
             ),
             advgetopt::define_option(
@@ -170,6 +171,21 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
             nullptr
         };
 
+        advgetopt::group_description const groups[] =
+        {
+            advgetopt::define_group(
+                  advgetopt::GroupNumber(advgetopt::GETOPT_FLAG_GROUP_COMMANDS)
+                , advgetopt::GroupName("verbosity")
+                , advgetopt::GroupDescription("Verbosity options:")
+            ),
+            advgetopt::define_group(
+                  advgetopt::GroupNumber(advgetopt::GETOPT_FLAG_GROUP_OPTIONS)
+                , advgetopt::GroupName("option")
+                , advgetopt::GroupDescription("Special options:")
+            ),
+            advgetopt::end_groups()
+        };
+
         advgetopt::options_environment options;
         options.f_project_name = "unittest";
         options.f_options = options_list;
@@ -206,13 +222,33 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
         options.f_copyright = "Copyright (c) 2019  Made to Order Software Corp. -- All Rights Reserved";
         options.f_build_date = "Jun  4 2019";
         options.f_build_time = "23:02:36";
+        options.f_groups = groups;
 
         // this initialization works as expected
         //
         advgetopt::getopt opt(options, argc2, argv2);
-        opt.set_group_name(advgetopt::GETOPT_FLAG_GROUP_ONE, "Verbosity options:");
-        opt.set_group_name(advgetopt::GETOPT_FLAG_GROUP_TWO, "Special options:");
-  
+
+        {
+            advgetopt::group_description const * verbosity_group(opt.find_group(advgetopt::GETOPT_FLAG_GROUP_COMMANDS));
+            CATCH_REQUIRE(verbosity_group != nullptr);
+            CATCH_REQUIRE(verbosity_group->f_group == advgetopt::GETOPT_FLAG_GROUP_COMMANDS);
+            CATCH_REQUIRE(verbosity_group->f_name == std::string("verbosity"));
+            CATCH_REQUIRE(verbosity_group->f_description == std::string("Verbosity options:"));
+        }
+
+        {
+            advgetopt::group_description const * option_group(opt.find_group(advgetopt::GETOPT_FLAG_GROUP_OPTIONS));
+            CATCH_REQUIRE(option_group != nullptr);
+            CATCH_REQUIRE(option_group->f_group == advgetopt::GETOPT_FLAG_GROUP_OPTIONS);
+            CATCH_REQUIRE(option_group->f_name == std::string("option"));
+            CATCH_REQUIRE(option_group->f_description == std::string("Special options:"));
+        }
+
+        {
+            advgetopt::group_description const * group_seven(opt.find_group(advgetopt::GETOPT_FLAG_GROUP_SEVEN));
+            CATCH_REQUIRE(group_seven == nullptr);
+        }
+
         std::string const footer(advgetopt::getopt::breakup_line(
 "\n"
 "And this is the footer where we can include many parameters:\n"
@@ -252,13 +288,15 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
         // test a standard "--help" type of option
         //
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: try this one and we get a throw (valid options + usage calls)\n"
 "   --long <arg>               used to validate that invalid numbers generate an\n"
 "                              error.\n"
+"   --option-help              show help from the \"option\" group of options.\n"
 "   --string <arg>             string parameter.\n"
 "   --unique or -u             make sure everything is unique.\n"
 "   --validate                 this is used to validate different things.\n"
+"   --verbosity-help           show help from the \"verbosity\" group of options.\n"
 "\n"
 "Verbosity options:\n"
 "   --quiet or -q {<arg>}      make it quiet (opposite of verbose).\n"
@@ -272,16 +310,18 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
 
         // test a "--help-all" type of option
         //
-        CATCH_REQUIRE(opt.usage(advgetopt::GETOPT_FLAG_SHOW_ALL) ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(advgetopt::GETOPT_FLAG_SHOW_ALL),
 "Usage: try this one and we get a throw (valid options + usage calls)\n"
 "   --long <arg>               used to validate that invalid numbers generate an\n"
 "                              error.\n"
 "   --not-specified-with-invalid-default <arg> {<arg>} (default is \"123abc\")\n"
 "                              test that an invalid default value can be returned\n"
 "                              as is.\n"
+"   --option-help              show help from the \"option\" group of options.\n"
 "   --string <arg>             string parameter.\n"
 "   --unique or -u             make sure everything is unique.\n"
 "   --validate                 this is used to validate different things.\n"
+"   --verbosity-help           show help from the \"verbosity\" group of options.\n"
 "\n"
 "Verbosity options:\n"
 "   --quiet or -q {<arg>}      make it quiet (opposite of verbose).\n"
@@ -298,7 +338,7 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
 
         // pretend an error occurred
         //
-        CATCH_REQUIRE(opt.usage(advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR) ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR),
 "Usage: try this one and we get a throw (valid options + usage calls)\n"
 "   --validate                 this is used to validate different things.\n"
 "\n"
@@ -309,7 +349,7 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
 
         // show GROUP1
         //
-        CATCH_REQUIRE(opt.usage(advgetopt::GETOPT_FLAG_SHOW_GROUP1) ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(advgetopt::GETOPT_FLAG_SHOW_GROUP1),
 "Usage: try this one and we get a throw (valid options + usage calls)\n"
 "\n"
 "Special options:\n"
@@ -321,7 +361,7 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
 
         // show GROUP2
         //
-        CATCH_REQUIRE(opt.usage(advgetopt::GETOPT_FLAG_SHOW_GROUP2) ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(advgetopt::GETOPT_FLAG_SHOW_GROUP2),
 "Usage: try this one and we get a throw (valid options + usage calls)\n"
 "   --not-specified-with-invalid-default <arg> {<arg>} (default is \"123abc\")\n"
 "                              test that an invalid default value can be returned\n"
@@ -471,6 +511,8 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
         //
         advgetopt::getopt opt(options, argc2, argv2);
 
+        CATCH_REQUIRE(opt.find_group(advgetopt::GETOPT_FLAG_GROUP_COMMANDS) == nullptr);
+        CATCH_REQUIRE(opt.find_group(advgetopt::GETOPT_FLAG_GROUP_OPTIONS) == nullptr);
   
         std::string const footer(advgetopt::getopt::breakup_line(
 "\n"
@@ -511,7 +553,7 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
         // test a standard "--help" type of option
         //
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: try this one and we get a throw (valid options + usage calls)\n"
 "   --long <arg>               used to validate that invalid numbers generate an\n"
 "                              error.\n"
@@ -527,7 +569,7 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
 
         // test a "--help-all" type of option
         //
-        CATCH_REQUIRE(opt.usage(advgetopt::GETOPT_FLAG_SHOW_ALL) ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(advgetopt::GETOPT_FLAG_SHOW_ALL),
 "Usage: try this one and we get a throw (valid options + usage calls)\n"
 "   --long <arg>               used to validate that invalid numbers generate an\n"
 "                              error.\n"
@@ -549,7 +591,7 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
 
         // pretend an error occurred
         //
-        CATCH_REQUIRE(opt.usage(advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR) ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR),
 "Usage: try this one and we get a throw (valid options + usage calls)\n"
 "   --quiet or -q {<arg>}      make it quiet (opposite of verbose).\n"
 "   --validate                 this is used to validate different things.\n"
@@ -558,7 +600,7 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
 
         // show GROUP1
         //
-        CATCH_REQUIRE(opt.usage(advgetopt::GETOPT_FLAG_SHOW_GROUP1) ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(advgetopt::GETOPT_FLAG_SHOW_GROUP1),
 "Usage: try this one and we get a throw (valid options + usage calls)\n"
 "   --not-specified-and-no-default <arg>\n"
 "                              test long without having used the option and no\n"
@@ -568,7 +610,7 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
 
         // show GROUP2
         //
-        CATCH_REQUIRE(opt.usage(advgetopt::GETOPT_FLAG_SHOW_GROUP2) ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(advgetopt::GETOPT_FLAG_SHOW_GROUP2),
 "Usage: try this one and we get a throw (valid options + usage calls)\n"
 "   --not-specified-with-invalid-default <arg> {<arg>} (default is \"123abc\")\n"
 "                              test that an invalid default value can be returned\n"
@@ -675,7 +717,7 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
 //            {
 //                CATCH_REQUIRE_THROWS_AS(opt.usage(static_cast<advgetopt::getopt::status_t>(i), "test no error, warnings, errors..."), advgetopt::getopt_exception_exiting);
 //            }
-        CATCH_REQUIRE(opt.usage(advgetopt::GETOPT_FLAG_SHOW_ALL) ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(advgetopt::GETOPT_FLAG_SHOW_ALL),
 "Usage: try this one and we get a throw (valid options + usage calls bis)\n"
 "   --long <arg>               used to validate that invalid numbers generate an\n"
 "                              error.\n"
@@ -806,7 +848,7 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
 //            {
 //                CATCH_REQUIRE_THROWS_AS(opt.usage(static_cast<advgetopt::getopt::status_t>(i), "test no error, warnings, errors..."), advgetopt::getopt_exception_exiting);
 //            }
-        CATCH_REQUIRE(opt.usage(advgetopt::GETOPT_FLAG_SHOW_ALL) ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(advgetopt::GETOPT_FLAG_SHOW_ALL),
 "Usage: unittest_advgetopt try this one and we get a throw (valid options + usage\n"
 "calls bis)\n"
 "   --long <arg>               used to validate that invalid numbers generate an\n"
@@ -889,7 +931,7 @@ CATCH_TEST_CASE("help_string_percent", "[getopt][usage]")
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: %\n"
 "   --this-is-a-very-long-argument-so-we-can-see-that-such-a-crazy-long-option-(w\n"
 "   ho-does-that-though)-gets-broken-up-as-expected\n"
@@ -948,7 +990,7 @@ CATCH_TEST_CASE("help_string_project_name", "[getopt][usage]")
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: unittest\n"
 "   --verbose                  inform you of what we're currently working on:\n"
 "                              unittest.\n"
@@ -997,7 +1039,7 @@ CATCH_TEST_CASE("help_string_project_name", "[getopt][usage]")
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
@@ -1045,7 +1087,7 @@ CATCH_TEST_CASE("help_string_project_name", "[getopt][usage]")
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
@@ -1098,7 +1140,7 @@ CATCH_TEST_CASE("help_string_build_date", "[getopt][usage]")
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: Jun  4 2019 %b\n"
 "   --verbose                  inform you of what we're currently working on: Jun\n"
 "                              4 2019 %b.\n"
@@ -1147,7 +1189,7 @@ CATCH_TEST_CASE("help_string_build_date", "[getopt][usage]")
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
@@ -1195,7 +1237,7 @@ CATCH_TEST_CASE("help_string_build_date", "[getopt][usage]")
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
@@ -1265,7 +1307,7 @@ CATCH_TEST_CASE("help_string_copyright", "[getopt][usage]")
 //    std::cerr << "[" << a[idx] << "] == [" << b[idx] << "] = " << (a[idx] == b[idx] ? "TRUE" : "FALSE") << "\n";
 //}
 
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: Copyright (c) 2019  Made to Order Software Corp. -- All\n"
 "Rights Reserved %c\n"
 "   --verbose                  inform you of what we're currently working on:\n"
@@ -1317,7 +1359,7 @@ CATCH_TEST_CASE("help_string_copyright", "[getopt][usage]")
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
@@ -1365,7 +1407,7 @@ CATCH_TEST_CASE("help_string_copyright", "[getopt][usage]")
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
@@ -1429,7 +1471,7 @@ CATCH_TEST_CASE("help_string_directories", "[getopt][usage][config]")
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
 
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: /etc/sys/advgetopt\n"
 "   --verbose                  inform you of what we're currently working on:\n"
 "                              /etc/sys/advgetopt.\n"
@@ -1488,7 +1530,7 @@ CATCH_TEST_CASE("help_string_directories", "[getopt][usage][config]")
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
 
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: /etc/sys/advgetopt, /etc/advgetopt,\n"
 "/etc/advgetopt/advgetopt.d, ~/.config/advgetopt\n"
 "   --verbose                  inform you of what we're currently working on:\n"
@@ -1540,7 +1582,7 @@ CATCH_TEST_CASE("help_string_directories", "[getopt][usage][config]")
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
@@ -1588,7 +1630,7 @@ CATCH_TEST_CASE("help_string_directories", "[getopt][usage][config]")
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
@@ -1641,7 +1683,7 @@ CATCH_TEST_CASE("help_string_directories", "[getopt][usage][config]")
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
@@ -1694,7 +1736,7 @@ CATCH_TEST_CASE("help_string_directories", "[getopt][usage][config]")
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
@@ -1750,7 +1792,7 @@ CATCH_TEST_CASE("help_string_environment_variable", "[getopt][usage]")
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
 
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: ADVGETOPT_TEST_OPTIONS\n"
 "   --verbose                  inform you of what we're currently working on:\n"
 "                              ADVGETOPT_TEST_OPTIONS.\n"
@@ -1799,7 +1841,7 @@ CATCH_TEST_CASE("help_string_environment_variable", "[getopt][usage]")
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
 
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: ADVGETOPT_TEST_OPTIONS\n"
 "   --verbose                  inform you of what we're currently working on:\n"
 "                              ADVGETOPT_TEST_OPTIONS.\n"
@@ -1850,7 +1892,7 @@ CATCH_TEST_CASE("help_string_environment_variable", "[getopt][usage]")
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
 
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: ADVGETOPT_TEST_OPTIONS=--verbose\n"
 "   --verbose                  inform you of what we're currently working on:\n"
 "                              ADVGETOPT_TEST_OPTIONS=--verbose.\n"
@@ -1899,7 +1941,7 @@ CATCH_TEST_CASE("help_string_environment_variable", "[getopt][usage]")
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
 
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: ADVGETOPT_TEST_OPTIONS (not set)\n"
 "   --verbose                  inform you of what we're currently working on:\n"
 "                              ADVGETOPT_TEST_OPTIONS (not set).\n"
@@ -1949,7 +1991,7 @@ CATCH_TEST_CASE("help_string_environment_variable", "[getopt][usage]")
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
@@ -1996,7 +2038,7 @@ CATCH_TEST_CASE("help_string_environment_variable", "[getopt][usage]")
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
@@ -2045,7 +2087,7 @@ CATCH_TEST_CASE("help_string_environment_variable", "[getopt][usage]")
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
@@ -2092,7 +2134,7 @@ CATCH_TEST_CASE("help_string_environment_variable", "[getopt][usage]")
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
@@ -2142,7 +2184,7 @@ CATCH_TEST_CASE("help_string_environment_variable", "[getopt][usage]")
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
@@ -2190,7 +2232,7 @@ CATCH_TEST_CASE("help_string_environment_variable", "[getopt][usage]")
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
@@ -2239,7 +2281,7 @@ CATCH_TEST_CASE("help_string_environment_variable", "[getopt][usage]")
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
@@ -2286,7 +2328,7 @@ CATCH_TEST_CASE("help_string_environment_variable", "[getopt][usage]")
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
@@ -2351,7 +2393,7 @@ CATCH_TEST_CASE("help_string_configuration_files", "[getopt][usage][config]")
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
 
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: system.conf\n"
 "   --verbose                  inform you of what we're currently working on:\n"
 "                              system.conf.\n"
@@ -2410,7 +2452,7 @@ CATCH_TEST_CASE("help_string_configuration_files", "[getopt][usage][config]")
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
 
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: system.conf, advgetopt.conf, advgetopt.ini, user.config\n"
 "   --verbose                  inform you of what we're currently working on:\n"
 "                              system.conf, advgetopt.conf, advgetopt.ini,\n"
@@ -2461,7 +2503,7 @@ CATCH_TEST_CASE("help_string_configuration_files", "[getopt][usage][config]")
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
@@ -2509,7 +2551,7 @@ CATCH_TEST_CASE("help_string_configuration_files", "[getopt][usage][config]")
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
@@ -2562,7 +2604,7 @@ CATCH_TEST_CASE("help_string_configuration_files", "[getopt][usage][config]")
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
@@ -2615,7 +2657,7 @@ CATCH_TEST_CASE("help_string_configuration_files", "[getopt][usage][config]")
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
@@ -2701,7 +2743,7 @@ CATCH_TEST_CASE("help_string_configuration_files_functions", "[getopt][usage][co
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
 
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 advgetopt::getopt::breakup_line(
               "Usage: test usage: "
             + SNAP_CATCH2_NAMESPACE::g_config_filename
@@ -2796,7 +2838,7 @@ advgetopt::getopt::breakup_line(
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
 
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 advgetopt::getopt::breakup_line(
               "Usage: test usage: "
             + SNAP_CATCH2_NAMESPACE::g_config_filename
@@ -2870,7 +2912,7 @@ advgetopt::getopt::breakup_line(
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
 
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: system.conf, unittest.d/system.conf, advgetopt.conf,\n"
 "unittest.d/advgetopt.conf, advgetopt.ini, unittest.d/advgetopt.ini, user.config,\n"
 "unittest.d/user.config\n"
@@ -2926,7 +2968,7 @@ advgetopt::getopt::breakup_line(
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
@@ -2974,7 +3016,7 @@ advgetopt::getopt::breakup_line(
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
@@ -3027,7 +3069,7 @@ advgetopt::getopt::breakup_line(
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
@@ -3080,7 +3122,7 @@ advgetopt::getopt::breakup_line(
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
@@ -3142,7 +3184,7 @@ CATCH_TEST_CASE("help_string_option_file_directory", "[getopt][usage][config]")
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
 
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
               "Usage: test usage: /opt/advgetopt/config\n"
 + advgetopt::getopt::format_usage_string(
               "--verbose", "inform you of what we're currently working on: "
@@ -3202,7 +3244,7 @@ CATCH_TEST_CASE("help_string_option_file_directory", "[getopt][usage][config]")
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: /usr/share/advgetopt/options\n"
 "   --verbose                  inform you of what we're currently working on:\n"
 "                              /usr/share/advgetopt/options.\n"
@@ -3257,7 +3299,7 @@ CATCH_TEST_CASE("help_string_option_file_directory", "[getopt][usage][config]")
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: /usr/share/advgetopt/options\n"
 "   --verbose                  inform you of what we're currently working on:\n"
 "                              /usr/share/advgetopt/options.\n"
@@ -3313,7 +3355,7 @@ CATCH_TEST_CASE("help_string_license", "[getopt][usage]")
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
 
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: MIT-%l\n"
 "   --verbose                  inform you of what we're currently working on:\n"
 "                              MIT-%l.\n"
@@ -3362,7 +3404,7 @@ CATCH_TEST_CASE("help_string_license", "[getopt][usage]")
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
@@ -3410,7 +3452,7 @@ CATCH_TEST_CASE("help_string_license", "[getopt][usage]")
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
@@ -3474,7 +3516,7 @@ CATCH_TEST_CASE("help_string_configuration_output_file", "[getopt][usage][config
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
 
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
               "Usage: test usage: unittest.d/user.config\n"
               "   --verbose                  inform you of what we're currently working on:\n"
               "                              unittest.d/user.config.\n"
@@ -3523,7 +3565,7 @@ CATCH_TEST_CASE("help_string_configuration_output_file", "[getopt][usage][config
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
@@ -3576,7 +3618,7 @@ CATCH_TEST_CASE("help_string_configuration_output_file", "[getopt][usage][config
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
@@ -3633,7 +3675,7 @@ CATCH_TEST_CASE("help_string_program_name", "[getopt][usage]")
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
 
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: usage\n"
 "   --verbose                  inform you of what we're currently working on:\n"
 "                              usage.\n"
@@ -3683,7 +3725,7 @@ CATCH_TEST_CASE("help_string_program_name", "[getopt][usage]")
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
 
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: tests/unittests/usage\n"
 "   --verbose                  inform you of what we're currently working on:\n"
 "                              tests/unittests/usage.\n"
@@ -3724,7 +3766,7 @@ CATCH_TEST_CASE("help_string_program_name", "[getopt][usage]")
         advgetopt::getopt opt(options);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
@@ -3779,7 +3821,7 @@ CATCH_TEST_CASE("help_string_build_time", "[getopt][usage]")
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: 23:02:36 %t\n"
 "   --verbose                  inform you of what we're currently working on:\n"
 "                              23:02:36 %t.\n"
@@ -3828,7 +3870,7 @@ CATCH_TEST_CASE("help_string_build_time", "[getopt][usage]")
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
@@ -3876,7 +3918,7 @@ CATCH_TEST_CASE("help_string_build_time", "[getopt][usage]")
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
@@ -3930,7 +3972,7 @@ CATCH_TEST_CASE("help_string_version", "[getopt][usage]")
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: 2.0.1-%v\n"
 "   --verbose                  inform you of what we're currently working on:\n"
 "                              2.0.1-%v.\n"
@@ -3979,7 +4021,7 @@ CATCH_TEST_CASE("help_string_version", "[getopt][usage]")
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
@@ -4027,7 +4069,7 @@ CATCH_TEST_CASE("help_string_version", "[getopt][usage]")
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
@@ -4114,7 +4156,7 @@ CATCH_TEST_CASE("help_string_writable_configuration_files", "[getopt][usage][con
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
 
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 advgetopt::getopt::breakup_line(
               "Usage: test usage: "
             + SNAP_CATCH2_NAMESPACE::g_config_project_filename
@@ -4229,7 +4271,7 @@ advgetopt::getopt::breakup_line(
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
 
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 advgetopt::getopt::breakup_line(
               "Usage: test usage: "
             + SNAP_CATCH2_NAMESPACE::g_config_project_filename
@@ -4294,7 +4336,7 @@ advgetopt::getopt::breakup_line(
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
@@ -4347,12 +4389,119 @@ advgetopt::getopt::breakup_line(
         advgetopt::getopt opt(options, argc, argv);
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
-        CATCH_REQUIRE(opt.usage() ==
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
 "Usage: test usage: \n"
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
 "Percent Configuration Files: \n"
                 );
+    }
+    CATCH_END_SECTION()
+}
+
+
+
+
+CATCH_TEST_CASE("invalid_group_for_find_group", "[getopt][usage][config][invalid]")
+{
+    CATCH_START_SECTION("find_group() with invalid flags")
+    {
+        for(int idx(0); idx < 32; ++idx)
+        {
+            advgetopt::flag_t const invalid_group(1UL << idx);
+            if((invalid_group & ~advgetopt::GETOPT_FLAG_GROUP_MASK) == 0)
+            {
+                // this is a valid group, skip
+                //
+                continue;
+            }
+
+            advgetopt::group_description const groups[] =
+            {
+                advgetopt::define_group(
+                      advgetopt::GroupNumber(advgetopt::GETOPT_FLAG_GROUP_COMMANDS)
+                ),
+                advgetopt::define_group(
+                      advgetopt::GroupNumber(advgetopt::GETOPT_FLAG_GROUP_OPTIONS)
+                ),
+                advgetopt::end_groups()
+            };
+
+
+            advgetopt::options_environment options;
+            options.f_project_name = "unittest";
+            options.f_groups = groups;
+            advgetopt::getopt opt(options);
+
+            CATCH_REQUIRE_THROWS_MATCHES(
+                      opt.find_group(invalid_group)
+                    , advgetopt::getopt_exception_logic
+                    , Catch::Matchers::ExceptionMessage(
+                                  "group parameter must represent a valid group."));
+        }
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("find_group() with GETOPT_FLAG_GROUP_NONE")
+    {
+        advgetopt::group_description const groups[] =
+        {
+            advgetopt::define_group(
+                  advgetopt::GroupNumber(advgetopt::GETOPT_FLAG_GROUP_COMMANDS)
+            ),
+            advgetopt::define_group(
+                  advgetopt::GroupNumber(advgetopt::GETOPT_FLAG_GROUP_OPTIONS)
+            ),
+            advgetopt::end_groups()
+        };
+
+        advgetopt::options_environment options;
+        options.f_project_name = "unittest";
+        options.f_groups = groups;
+        advgetopt::getopt opt(options);
+
+        CATCH_REQUIRE_THROWS_MATCHES(
+                  opt.find_group(advgetopt::GETOPT_FLAG_GROUP_NONE)
+                , advgetopt::getopt_exception_logic
+                , Catch::Matchers::ExceptionMessage(
+                              "group NONE cannot be assigned a name so you cannot search for it."));
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("find_group() with invalid group definitions")
+    {
+        // define groups without name nor description
+        // (later the define_group() will err at compile time on those
+        // so we'll have to switch to a "manual" definition instead to
+        // verify that this indeed fails as expected.)
+        //
+        advgetopt::group_description const groups[] =
+        {
+            advgetopt::define_group(
+                  advgetopt::GroupNumber(advgetopt::GETOPT_FLAG_GROUP_COMMANDS)
+            ),
+            advgetopt::define_group(
+                  advgetopt::GroupNumber(advgetopt::GETOPT_FLAG_GROUP_OPTIONS)
+            ),
+            advgetopt::end_groups()
+        };
+
+        advgetopt::options_environment options;
+        options.f_project_name = "unittest";
+        options.f_groups = groups;
+        advgetopt::getopt opt(options);
+
+        CATCH_REQUIRE_THROWS_MATCHES(
+                  opt.find_group(advgetopt::GETOPT_FLAG_GROUP_COMMANDS)
+                , advgetopt::getopt_exception_logic
+                , Catch::Matchers::ExceptionMessage(
+                              "at least one of a group name or description must be defined (a non-empty string)."));
+
+        CATCH_REQUIRE_THROWS_MATCHES(
+                  opt.find_group(advgetopt::GETOPT_FLAG_GROUP_OPTIONS)
+                , advgetopt::getopt_exception_logic
+                , Catch::Matchers::ExceptionMessage(
+                              "at least one of a group name or description must be defined (a non-empty string)."));
     }
     CATCH_END_SECTION()
 }

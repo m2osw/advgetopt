@@ -73,12 +73,6 @@ namespace
 advgetopt::option const g_options[] =
 {
     advgetopt::define_option(
-          advgetopt::Name("help")
-        , advgetopt::ShortName('h')
-        , advgetopt::Flags(advgetopt::standalone_command_flags<advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR>())
-        , advgetopt::Help("Show usage and exit.")
-    ),
-    advgetopt::define_option(
           advgetopt::Name("output")
         , advgetopt::ShortName('o')
         , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
@@ -90,11 +84,6 @@ advgetopt::option const g_options[] =
         , advgetopt::Flags(advgetopt::option_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
                                                  , advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE
                                                  , advgetopt::GETOPT_FLAG_CONFIGURATION_FILE>())
-        , advgetopt::Help("Show commands being executed.")
-    ),
-    advgetopt::define_option(
-          advgetopt::Name("version")
-        , advgetopt::Flags(advgetopt::standalone_command_flags<>())
         , advgetopt::Help("Show commands being executed.")
     ),
     advgetopt::define_option(
@@ -131,7 +120,7 @@ advgetopt::options_environment const g_options_environment =
     .f_configuration_files = g_configuration_files,
     .f_configuration_filename = nullptr,
     .f_configuration_directories = nullptr,
-    .f_environment_flags = 0,
+    .f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS,
     .f_help_header = "Usage: %p [-<opt>] <configuration file>\n"
                      "where -<opt> is one or more of:",
     .f_help_footer = "%c",

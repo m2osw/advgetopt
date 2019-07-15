@@ -292,19 +292,144 @@ constexpr option end_options()
 
 
 
-constexpr flag_t    GETOPT_ENVIRONMENT_FLAG_DYNAMIC_PARAMETERS  = 0x0001;   // accept parameters that are not declared
-constexpr flag_t    GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS   = 0x0002;   // add system parameters (i.e. --help, --version, etc.)
+struct group_description
+{
+    flag_t          f_group = GETOPT_FLAG_GROUP_NONE;   // the default is used to mark the end of the list
+    char const *    f_name = nullptr;                   // for --<name>-help
+    char const *    f_description = nullptr;            // for usage() output
+};
+
+
+
+
+template<typename T>
+class GroupValue
+{
+public:
+    typedef T   value_t;
+
+    constexpr GroupValue<T>(T const v)
+        : f_value(v)
+    {
+    }
+
+    constexpr value_t get() const
+    {
+        return f_value;
+    }
+
+private:
+    value_t     f_value;
+};
+
+class GroupNumber
+    : public OptionValue<flag_t>
+{
+public:
+    constexpr GroupNumber()
+        : OptionValue<flag_t>(GETOPT_FLAG_GROUP_NONE)
+    {
+    }
+
+    constexpr GroupNumber(flag_t group)
+        : OptionValue<flag_t>(group)
+    {
+    }
+};
+
+class GroupName
+    : public GroupValue<char const *>
+{
+public:
+    constexpr GroupName()
+        : GroupValue<char const *>(nullptr)
+    {
+    }
+
+    constexpr GroupName(char const * name)
+        : GroupValue<char const *>(name)
+    {
+    }
+};
+
+class GroupDescription
+    : public GroupValue<char const *>
+{
+public:
+    constexpr GroupDescription()
+        : GroupValue<char const *>(nullptr)
+    {
+    }
+
+    constexpr GroupDescription(char const * description)
+        : GroupValue<char const *>(description)
+    {
+    }
+};
+
+
+template<typename T, typename F, class ...ARGS>
+constexpr typename std::enable_if<std::is_same<T, F>::value, typename T::value_t>::type find_group(F first, ARGS ...args)
+{
+    snap::NOTUSED(args...);
+    return first.get();
+}
+
+
+template<typename T, typename F, class ...ARGS>
+constexpr typename std::enable_if<!std::is_same<T, F>::value, typename T::value_t>::type find_group(F first, ARGS ...args)
+{
+    snap::NOTUSED(first);
+    return find_group<T>(args...);
+}
+
+
+
+template<class ...ARGS>
+constexpr group_description define_group(ARGS ...args)
+{
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+    group_description grp =
+    {
+        .f_group =              find_group<GroupNumber     >(args..., GroupNumber()),
+        .f_name =               find_group<GroupName       >(args..., GroupName()),
+        .f_description =        find_group<GroupDescription>(args..., GroupDescription()),
+    };
+#pragma GCC diagnostic pop
+
+    return grp;
+}
+
+
+constexpr group_description end_groups()
+{
+    // the defaults are what we expect to end the list of groups
+    return define_group();
+}
+
+
+
+
+
+
+
+
+constexpr flag_t    GETOPT_ENVIRONMENT_FLAG_DYNAMIC_PARAMETERS          = 0x0001;   // accept parameters that are not declared
+
+constexpr flag_t    GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS           = 0x0002;   // add system parameters (i.e. --help, --version, etc.)
+constexpr flag_t    GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS   = 0x0004;   // add & process system parameters
 
 
 struct options_environment
 {
-    char const *                f_project_name = nullptr;               // project/application name--used as filename for the .conf files
+    char const *                f_project_name = nullptr;               // project/application name--used as filename for the .conf files (%a)
     option const *              f_options = nullptr;                    // raw options
     char const *                f_options_files_directory = nullptr;    // directory to check for option files (default "/usr/shared/advgetopt")
-    char const *                f_environment_variable_name = nullptr;  // environment variable with additional options
-    char const * const *        f_configuration_files = nullptr;        // nullptr terminated array of full paths to configuration files
-    char const *                f_configuration_filename = nullptr;     // the configuration filename to search in f_configuration_directories
-    char const * const *        f_configuration_directories = nullptr;  // nullptr terminated array of paths only to configuration files
+    char const *                f_environment_variable_name = nullptr;  // environment variable with additional options (%e)
+    char const * const *        f_configuration_files = nullptr;        // nullptr terminated array of full paths to configuration files (%f)
+    char const *                f_configuration_filename = nullptr;     // the configuration filename to search in f_configuration_directories (%g)
+    char const * const *        f_configuration_directories = nullptr;  // nullptr terminated array of paths only to configuration files (%d)
     flag_t                      f_environment_flags = 0;                // GETOPT_ENVIRONMENT_FLAG_...
     char const *                f_help_header = nullptr;                // show on --help
     char const *                f_help_footer = nullptr;                // show on --help
@@ -313,6 +438,7 @@ struct options_environment
     char const *                f_copyright = nullptr;                  // show on --copyright and %c
     char const *                f_build_date = __DATE__;                // available to parameter %b
     char const *                f_build_time = __TIME__;                // available to parameter %t
+    group_description const *   f_groups = nullptr;                     // nullptr terminated array of group names
 };
 
 

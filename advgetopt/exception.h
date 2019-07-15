@@ -87,11 +87,32 @@ public:
 
 
 // some initialization failed at run-time
-class getopt_exception_initialization : public getopt_exception
+class getopt_exception_initialization : public getopt_exception                             // LCOV_EXCL_LINE
 {
 public:
-    getopt_exception_initialization(std::string const & msg) : getopt_exception(msg) {}
+    getopt_exception_initialization(std::string const & msg) : getopt_exception(msg) {}     // LCOV_EXCL_LINE
 };
+
+
+// the process is viewed as done, exit now
+class getopt_exception_exit : public getopt_exception
+{
+public:
+    getopt_exception_exit(std::string const & msg, int code)
+        : getopt_exception(msg)
+        , f_code(code)
+    {
+    }
+
+    int code() const
+    {
+        return f_code;
+    }
+
+private:
+    int             f_code;
+};
+
 
 
 

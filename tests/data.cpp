@@ -663,7 +663,7 @@ CATCH_TEST_CASE("system_flags_help", "[arguments][valid][getopt][system_flags]")
         std::stringstream ss;
         advgetopt::flag_t const result(opt.process_system_options(ss));
         CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_HELP);
-        CATCH_REQUIRE(ss.str() ==
+        CATCH_REQUIRE_LONG_STRING(ss.str(),
 "Usage: test system commands\n"
 "   --build-date               print out the time and date when arguments was\n"
 "                              built and exit.\n"
@@ -1348,6 +1348,168 @@ CATCH_TEST_CASE("system_flags_environment_variable_name", "[arguments][valid][ge
         advgetopt::flag_t const result(opt.process_system_options(ss));
         CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_ENVIRONMENT_VARIABLE_NAME);
         CATCH_REQUIRE(ss.str() == "ADVGETOPT_OPTIONS\n");
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Check with the --environment-variable-name system flag with nullptr")
+    {
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("define the size.")
+                , advgetopt::DefaultValue("7301")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_environment_variable_name = nullptr;
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--environment-variable-name",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // valid parameter
+        CATCH_REQUIRE(opt.get_option("size") != nullptr);
+        CATCH_REQUIRE(opt.get_option('s') == opt.get_option("size"));
+        CATCH_REQUIRE_FALSE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_string("size") == "7301");
+        CATCH_REQUIRE(opt.get_string("size", 0) == "7301");
+        CATCH_REQUIRE(opt["size"] == "7301");
+        CATCH_REQUIRE(opt.get_long("size") == 7301);
+        CATCH_REQUIRE(opt.get_long("size", 0) == 7301);
+        CATCH_REQUIRE(opt.has_default("size"));
+        CATCH_REQUIRE(opt.get_default("size") == "7301");
+        CATCH_REQUIRE(opt.size("size") == 0);
+
+        // environment-variable-name parameter
+        CATCH_REQUIRE(opt.get_option("environment-variable-name") != nullptr);
+        CATCH_REQUIRE(opt.is_defined("environment-variable-name"));
+        CATCH_REQUIRE(opt.get_string("environment-variable-name") == "");
+        CATCH_REQUIRE(opt.get_string("environment-variable-name", 0) == "");
+        CATCH_REQUIRE(opt["environment-variable-name"] == "");
+        CATCH_REQUIRE_FALSE(opt.has_default("environment-variable-name"));
+        CATCH_REQUIRE(opt.get_default("environment-variable-name").empty());
+        CATCH_REQUIRE(opt.size("environment-variable-name") == 1);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+
+        // process system options now
+        std::stringstream ss;
+        advgetopt::flag_t const result(opt.process_system_options(ss));
+        CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_ENVIRONMENT_VARIABLE_NAME);
+        CATCH_REQUIRE(ss.str() == "unittest does not support an environment variable.\n");
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Check with the --environment-variable-name system flag with \"\"")
+    {
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("define the size.")
+                , advgetopt::DefaultValue("7301")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_environment_variable_name = "";
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--environment-variable-name",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // valid parameter
+        CATCH_REQUIRE(opt.get_option("size") != nullptr);
+        CATCH_REQUIRE(opt.get_option('s') == opt.get_option("size"));
+        CATCH_REQUIRE_FALSE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_string("size") == "7301");
+        CATCH_REQUIRE(opt.get_string("size", 0) == "7301");
+        CATCH_REQUIRE(opt["size"] == "7301");
+        CATCH_REQUIRE(opt.get_long("size") == 7301);
+        CATCH_REQUIRE(opt.get_long("size", 0) == 7301);
+        CATCH_REQUIRE(opt.has_default("size"));
+        CATCH_REQUIRE(opt.get_default("size") == "7301");
+        CATCH_REQUIRE(opt.size("size") == 0);
+
+        // environment-variable-name parameter
+        CATCH_REQUIRE(opt.get_option("environment-variable-name") != nullptr);
+        CATCH_REQUIRE(opt.is_defined("environment-variable-name"));
+        CATCH_REQUIRE(opt.get_string("environment-variable-name") == "");
+        CATCH_REQUIRE(opt.get_string("environment-variable-name", 0) == "");
+        CATCH_REQUIRE(opt["environment-variable-name"] == "");
+        CATCH_REQUIRE_FALSE(opt.has_default("environment-variable-name"));
+        CATCH_REQUIRE(opt.get_default("environment-variable-name").empty());
+        CATCH_REQUIRE(opt.size("environment-variable-name") == 1);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+
+        // process system options now
+        std::stringstream ss;
+        advgetopt::flag_t const result(opt.process_system_options(ss));
+        CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_ENVIRONMENT_VARIABLE_NAME);
+        CATCH_REQUIRE(ss.str() == "unittest does not support an environment variable.\n");
     }
     CATCH_END_SECTION()
 

@@ -388,7 +388,7 @@ CATCH_TEST_CASE("options_parser", "[options][valid]")
             advgetopt::define_option(
                   advgetopt::Name("licence")    // to allow French spelling
                 , advgetopt::Alias("license")
-                , advgetopt::Flags(advgetopt::standalone_command_flags())
+                , advgetopt::Flags(advgetopt::standalone_command_flags<advgetopt::GETOPT_FLAG_GROUP_COMMANDS>())
             ),
             advgetopt::end_options()
         };
@@ -985,7 +985,8 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
             advgetopt::define_option(
                   advgetopt::Name("licence")    // to allow French spelling
                 , advgetopt::Alias("license")
-                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>()) // not a match
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_GROUP_COMMANDS
+                                                          , advgetopt::GETOPT_FLAG_REQUIRED>()) // not a match
             ),
             advgetopt::end_options()
         };
@@ -1008,8 +1009,8 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(environment_options, argc, argv)
                 , advgetopt::getopt_exception_logic
                 , Catch::Matchers::ExceptionMessage(
-                          "the flags of alias \"licence\" (0x41) are different"
-                          " than the flags of \"license\" (0x21)."));
+                          "the flags of alias \"licence\" (0x100041) are different"
+                          " than the flags of \"license\" (0x100021)."));
     CATCH_END_SECTION()
 }
 

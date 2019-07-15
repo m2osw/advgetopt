@@ -39,10 +39,22 @@
 #include    "advgetopt/advgetopt.h"
 
 
+// advgetopt lib
+//
+#include    "advgetopt/exception.h"
+
+
 // C++ lib
 //
 #include    <iomanip>
 #include    <iostream>
+
+
+// C lib
+//
+//#include    <unistd.h>
+#include    <unistd.h>
+#include    <sys/ioctl.h>
 
 
 // last include
@@ -57,16 +69,92 @@ namespace advgetopt
 
 
 
-/** \brief Define the name of a group.
+/** \brief Transform group names in --\<name>-help commands.
  *
- * This function can be used to define the "name" of a group.
- *
- * The name is used by the usage() function as a label for that group. I
- * can actually be a phrase or a sentence.
+ * This function allows for the group names to be transformed into help
+ * command line options.
  */
-void getopt::set_group_name(flag_t group, std::string const & name)
+void getopt::parse_options_from_group_names()
 {
-    f_group_names[group] = name;
+    if(f_options_environment.f_groups == nullptr)
+    {
+        // no groups, ignore
+        //
+        return;
+    }
+
+    for(group_description const * grp = f_options_environment.f_groups
+      ; grp->f_group != GETOPT_FLAG_GROUP_NONE
+      ; ++grp)
+    {
+        // the name is not mandatory, without it you do not get the command
+        // line option but still get the group description
+        //
+        if(grp->f_name != nullptr
+        && *grp->f_name != '\0')
+        {
+            std::string const name(grp->f_name);
+            std::string const option_name(name + "-help");
+            option_info::pointer_t opt(std::make_shared<option_info>(option_name));
+            opt->add_flag(GETOPT_FLAG_COMMAND_LINE | GETOPT_FLAG_FLAG);
+            opt->set_help("show help from the \""
+                        + name
+                        + "\" group of options.");
+            f_options_by_name[option_name] = opt;
+        }
+    }
+}
+
+
+/** \brief Search for \p group in the list of group names.
+ *
+ * This function is used to search for the name of a group.
+ *
+ * Groups are used by the usage() function to list options by some user
+ * selected group.
+ *
+ * For example, it is often that a tool has a set of commands such as
+ * `--delete` and a set of options such as `--verbose`. These can represent
+ * to clear groups of commands and options.
+ *
+ * \param[in] group  The group to look for (i.e. GETOPT_FLAG_GROUP_ONE).
+ *
+ * \return The group structure or nullptr when not found.
+ */
+group_description const * getopt::find_group(flag_t group) const
+{
+    if(f_options_environment.f_groups == nullptr)
+    {
+        return nullptr;
+    }
+
+    if((group & ~GETOPT_FLAG_GROUP_MASK) != 0)
+    {
+        throw getopt_exception_logic("group parameter must represent a valid group.");
+    }
+    if(group == GETOPT_FLAG_GROUP_NONE)
+    {
+        throw getopt_exception_logic("group NONE cannot be assigned a name so you cannot search for it.");
+    }
+
+    for(group_description const * grp(f_options_environment.f_groups)
+      ; grp->f_group != GETOPT_FLAG_GROUP_NONE
+      ; ++grp)
+    {
+        if(group == grp->f_group)
+        {
+            if((grp->f_name == nullptr || *grp->f_name == '\0')
+            && (grp->f_description == nullptr || *grp->f_description == '\0'))
+            {
+                throw getopt_exception_logic("at least one of a group name or description must be defined (a non-empty string).");
+            }
+            return grp;
+        }
+    }
+
+    // group not defined
+    //
+    return nullptr;
 }
 
 
@@ -116,21 +204,29 @@ std::string getopt::usage( flag_t show ) const
           | GETOPT_FLAG_SHOW_GROUP1
           | GETOPT_FLAG_SHOW_GROUP2;
 
-    ss << breakup_line(process_help_string(f_options_environment.f_help_header), 0, 80);
+    size_t const line_width(get_line_width());
+    ss << breakup_line(process_help_string(f_options_environment.f_help_header), 0, line_width);
 
     std::string save_default;
     std::string save_help;
 
-    for(flag_t pos(GETOPT_FLAG_GROUP_MINIMUM); pos <= GETOPT_FLAG_GROUP_MAXIMUM; ++pos)
+    flag_t group_max(GETOPT_FLAG_GROUP_MAXIMUM);
+    if(f_options_environment.f_groups == nullptr)
+    {
+        group_max = GETOPT_FLAG_GROUP_MINIMUM;
+    }
+
+    for(flag_t pos(GETOPT_FLAG_GROUP_MINIMUM); pos <= group_max; ++pos)
     {
         bool group_name_shown(false);
         flag_t const group(pos << GETOPT_FLAG_GROUP_SHIFT);
         for(auto const & opt : f_options_by_name)
         {
-            if((opt.second->get_flags() & GETOPT_FLAG_GROUP_MASK) != group)
+            if((opt.second->get_flags() & GETOPT_FLAG_GROUP_MASK) != group
+            && f_options_environment.f_groups != nullptr)
             {
                 // this could be optimized but we'd probably not see much
-                // difference overall (it's just for usage(), so...)
+                // difference overall and it's just for the usage() call
                 //
                 continue;
             }
@@ -175,11 +271,11 @@ std::string getopt::usage( flag_t show ) const
 
                 if(group != GETOPT_FLAG_GROUP_NONE)
                 {
-                    auto it(f_group_names.find(group));
-                    if(it != f_group_names.end())
+                    group_description const * grp(find_group(group));
+                    if(grp != nullptr)
                     {
                         ss << std::endl
-                           << breakup_line(process_help_string(it->second.c_str()), 0, 80);
+                           << breakup_line(process_help_string(grp->f_description), 0, line_width);
                     }
                 }
             }
@@ -256,7 +352,7 @@ std::string getopt::usage( flag_t show ) const
                 ss << format_usage_string(argument.str()
                                         , process_help_string(help.c_str())
                                         , 30
-                                        , 80);
+                                        , line_width);
             }
         }
     }
@@ -266,14 +362,14 @@ std::string getopt::usage( flag_t show ) const
         ss << format_usage_string(save_default
                                 , process_help_string(save_help.c_str())
                                 , 30
-                                , 80);
+                                , line_width);
     }
 
     if(f_options_environment.f_help_footer != nullptr
     && f_options_environment.f_help_footer[0] != '\0')
     {
         ss << std::endl;
-        ss << breakup_line(process_help_string(f_options_environment.f_help_footer), 0, 80);
+        ss << breakup_line(process_help_string(f_options_environment.f_help_footer), 0, line_width);
     }
 
     return ss.str();
@@ -770,6 +866,38 @@ std::string getopt::breakup_line(std::string line
     }
 
     return ss.str();
+}
+
+
+
+/** \brief Retrieve the width of one line in your console.
+ *
+ * This function retrieves the width of the console in number of characters.
+ *
+ * If the process is not connected to a TTY, then the function returns 80.
+ *
+ * If the width is less than 40, the function returns 40.
+ *
+ * \return The width of the console screen.
+ */
+size_t getopt::get_line_width()
+{
+    std::int64_t cols(80);
+
+    if(isatty(STDOUT_FILENO))
+    {
+        // when running coverage, the output is redirected for logging purposes
+        // which means that isatty() returns false -- so at this time I just
+        // exclude those since they are unreachable from my standard Unit Tests
+        //
+        winsize w;
+        if(ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) != -1)                      // LCOV_EXCL_LINE
+        {
+            cols = std::max(static_cast<unsigned short>(40), w.ws_col);     // LCOV_EXCL_LINE
+        }
+    }
+
+    return cols;
 }
 
 

@@ -47,7 +47,7 @@ is done separately because it is really large on its own. It does test the
 command line and variable, though. The variable includes parsing a string
 into arguments before parsing the arguments in our map of named values.
 
-    dev/coverage flag_argument,require_argument,require_arguments,optional_arguments,config_dir_argument,default_argument,default_arguments,manual_arguments,invalid_getopt_pointers,invalid_getopt_missing_options,invalid_getopt_missing_alias,invalid_getopt_missing_required_option,invalid_default_options,invalid_options
+    dev/coverage flag_argument,require_argument,require_arguments,optional_arguments,config_dir_argument,default_argument,default_arguments,manual_arguments,auto_process_system_arguments,invalid_getopt_pointers,invalid_getopt_missing_options,invalid_getopt_missing_alias,invalid_getopt_missing_required_option,invalid_default_options,invalid_options
 
 ## Configuration Parsing (`advgetopt_config.cpp`)
 
@@ -107,7 +107,7 @@ Whenever an error occurs or when a command line option such as `--help`
 is used, the usage screens get printed. This tests verify that the usage
 output works as expected.
 
-    dev/coverage usage_function,help_string_percent,help_string_project_name,help_string_build_date,help_string_copyright,help_string_directories,help_string_environment_variable,help_string_configuration_files,help_string_configuration_files_functions,help_string_option_file_directory,help_string_license,help_string_program_name,help_string_build_time,help_string_version,help_string_writable_configuration_files
+    dev/coverage usage_function,help_string_percent,help_string_project_name,help_string_build_date,help_string_copyright,help_string_directories,help_string_environment_variable,help_string_configuration_files,help_string_configuration_files_functions,help_string_option_file_directory,help_string_license,help_string_program_name,help_string_build_time,help_string_version,help_string_writable_configuration_files,invalid_group_for_find_group
 
 ## Logger (`log.cpp`)
 

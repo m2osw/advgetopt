@@ -178,45 +178,45 @@ option const g_system_options[] =
     define_option(
           Name("help")
         , ShortName('h')
-        , Flags(standalone_command_flags())
+        , Flags(standalone_command_flags<GETOPT_FLAG_GROUP_COMMANDS>())
         , Help("print out this help screen and exit.")
     ),
     define_option(
           Name("version")
         , ShortName('V')
-        , Flags(standalone_command_flags())
+        , Flags(standalone_command_flags<GETOPT_FLAG_GROUP_COMMANDS>())
         , Help("print out the version of %p and exit.")
     ),
     define_option(
           Name("copyright")
         , ShortName('C')
-        , Flags(standalone_command_flags())
+        , Flags(standalone_command_flags<GETOPT_FLAG_GROUP_COMMANDS>())
         , Help("print out the copyright of %p and exit.")
     ),
     define_option(
           Name("license")
         , ShortName('L')
-        , Flags(standalone_command_flags())
+        , Flags(standalone_command_flags<GETOPT_FLAG_GROUP_COMMANDS>())
         , Help("print out the license of %p and exit.")
     ),
     define_option(
           Name("build-date")
-        , Flags(standalone_command_flags())
+        , Flags(standalone_command_flags<GETOPT_FLAG_GROUP_COMMANDS>())
         , Help("print out the time and date when %p was built and exit.")
     ),
     define_option(
           Name("environment-variable-name")
-        , Flags(standalone_command_flags())
+        , Flags(standalone_command_flags<GETOPT_FLAG_GROUP_COMMANDS>())
         , Help("print out the name of the environment variable supported by %p (if any.)")
     ),
     define_option(
           Name("configuration-filenames")
-        , Flags(standalone_command_flags())
+        , Flags(standalone_command_flags<GETOPT_FLAG_GROUP_COMMANDS>())
         , Help("print out the list of configuration files checked out by this tool.")
     ),
     define_option(
           Name("path-to-option-definitions")
-        , Flags(standalone_command_flags())
+        , Flags(standalone_command_flags<GETOPT_FLAG_GROUP_COMMANDS>())
         , Help("print out the path to the option definitons.")
     ),
     end_options()
@@ -230,7 +230,8 @@ option const g_if_configuration_filename_system_options[] =
         , Flags(any_flags<GETOPT_FLAG_COMMAND_LINE
                         , GETOPT_FLAG_ENVIRONMENT_VARIABLE
                         , GETOPT_FLAG_REQUIRED
-                        , GETOPT_FLAG_MULTIPLE>())
+                        , GETOPT_FLAG_MULTIPLE
+                        , GETOPT_FLAG_GROUP_OPTIONS>())
         , Help("add one or more configuration directory paths to search for configuration files.")
     ),
     end_options()
@@ -420,6 +421,11 @@ bool is_arg(char const * a)
  * first arguments of your command line which we do not get on
  * construction in this case.
  *
+ * \important
+ * Since the arguments are not known to the getopt system yet, the
+ * GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS is not used in
+ * this case.
+ *
  * \param[in] opt_env  The list of options that your program supports.
  *
  * \sa link_aliases()
@@ -440,7 +446,8 @@ getopt::getopt(options_environment const & opt_env)
 
     parse_options_info(f_options_environment.f_options, false);
     parse_options_from_file();
-    if(has_flag(GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS))
+    parse_options_from_group_names();
+    if(has_flag(GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS | GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS))
     {
         parse_options_info(g_system_options, true);
         if(f_options_environment.f_configuration_filename != nullptr
@@ -504,7 +511,8 @@ getopt::getopt(options_environment const & opt_env
     parse_program_name(argv);
     parse_options_info(f_options_environment.f_options, false);
     parse_options_from_file();
-    if(has_flag(GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS))
+    parse_options_from_group_names();
+    if(has_flag(GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS | GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS))
     {
         parse_options_info(g_system_options, true);
         if(f_options_environment.f_configuration_filename != nullptr
@@ -524,6 +532,15 @@ getopt::getopt(options_environment const & opt_env
     parse_configuration_files();
     parse_environment_variable();
     parse_arguments(argc, argv, false);
+
+    if(has_flag(GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS))
+    {
+        flag_t result(process_system_options(std::cout));
+        if((result & SYSTEM_OPTION_COMMANDS_MASK) != 0)
+        {
+            throw getopt_exception_exit("system option processed.", 0);
+        }
+    }
 }
 
 

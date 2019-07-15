@@ -36,11 +36,19 @@
 
 // snapdev lib
 //
+#include <snapdev/ostream_to_buf.h>
 #include <snapdev/safe_setenv.h>
 
 // C++ lib
 //
 #include <fstream>
+#include <sstream>
+
+
+
+
+
+
 
 
 
@@ -4706,6 +4714,184 @@ CATCH_TEST_CASE("manual_arguments", "[arguments][valid][getopt]")
                 , advgetopt::getopt_exception_undefined
                 , Catch::Matchers::ExceptionMessage(
                               "getopt::get_alias_destination(): alias is missing. Did you call link_aliases()?"));
+    CATCH_END_SECTION()
+}
+
+
+CATCH_TEST_CASE("auto_process_system_arguments", "[arguments][valid][getopt]")
+{
+    CATCH_START_SECTION("Test auto-processing of system arguments (with many CATCH_WHEN)")
+    {
+        advgetopt::options_environment options;
+        options.f_project_name = "unittest";
+        options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS;
+        options.f_help_header = "Usage: testing system arguments.";
+        options.f_version = "2.0.1";
+        options.f_license = "MIT";
+        options.f_copyright = "Copyright (c) 2019  Made to Order Software Corp. -- All Rights Reserved";
+        options.f_build_date = "Jun  4 2019";
+        options.f_build_time = "23:02:36";
+
+        CATCH_WHEN("Testing --version")
+        {
+            char const * cargv[] =
+            {
+                "tests/system-arguments",
+                "--version",
+                nullptr
+            };
+            int const argc = sizeof(cargv) / sizeof(cargv[0]) - 1;
+            char ** argv = const_cast<char **>(cargv);
+
+            // do our own try/catch because we want to test the message
+            // and exit code of the exception and it's easier to do it
+            // this way
+            //
+            snap::ostream_to_buf<char> out(std::cout);
+            try
+            {
+                advgetopt::getopt::pointer_t opt(std::make_shared<advgetopt::getopt>(options, argc, argv));
+
+                // if it returns opt cannot be nullptr
+                //
+                CATCH_REQUIRE(opt == nullptr);
+            }
+            catch(advgetopt::getopt_exception_exit const & e)
+            {
+                // this is the expected route
+                //
+                CATCH_REQUIRE(e.what() == std::string("system option processed."));
+                CATCH_REQUIRE(e.code() == 0);
+                CATCH_REQUIRE(out.str() == "2.0.1\n");
+            }
+            catch(std::exception const & e)
+            {
+                // no other exception is considered valid here
+                //
+                CATCH_REQUIRE(e.what() == std::string("no other exception was expected..."));
+            }
+        }
+
+        CATCH_WHEN("Testing --copyright")
+        {
+            char const * cargv[] =
+            {
+                "tests/system-arguments",
+                "--copyright",
+                nullptr
+            };
+            int const argc = sizeof(cargv) / sizeof(cargv[0]) - 1;
+            char ** argv = const_cast<char **>(cargv);
+
+            // do our own try/catch because we want to test the message
+            // and exit code of the exception and it's easier to do it
+            // this way
+            //
+            snap::ostream_to_buf<char> out(std::cout);
+            try
+            {
+                advgetopt::getopt::pointer_t opt(std::make_shared<advgetopt::getopt>(options, argc, argv));
+
+                // if it returns opt cannot be nullptr
+                //
+                CATCH_REQUIRE(opt == nullptr);
+            }
+            catch(advgetopt::getopt_exception_exit const & e)
+            {
+                // this is the expected route
+                //
+                CATCH_REQUIRE(e.what() == std::string("system option processed."));
+                CATCH_REQUIRE(e.code() == 0);
+                CATCH_REQUIRE(out.str() == "Copyright (c) 2019  Made to Order Software Corp. -- All Rights Reserved\n");
+            }
+            catch(std::exception const & e)
+            {
+                // no other exception is considered valid here
+                //
+                CATCH_REQUIRE(e.what() == std::string("no other exception was expected..."));
+            }
+        }
+
+        CATCH_WHEN("Testing --build-date")
+        {
+            char const * cargv[] =
+            {
+                "tests/system-arguments",
+                "--build-date",
+                nullptr
+            };
+            int const argc = sizeof(cargv) / sizeof(cargv[0]) - 1;
+            char ** argv = const_cast<char **>(cargv);
+
+            // do our own try/catch because we want to test the message
+            // and exit code of the exception and it's easier to do it
+            // this way
+            //
+            snap::ostream_to_buf<char> out(std::cout);
+            try
+            {
+                advgetopt::getopt::pointer_t opt(std::make_shared<advgetopt::getopt>(options, argc, argv));
+
+                // if it returns opt cannot be nullptr
+                //
+                CATCH_REQUIRE(opt == nullptr);
+            }
+            catch(advgetopt::getopt_exception_exit const & e)
+            {
+                // this is the expected route
+                //
+                CATCH_REQUIRE(e.what() == std::string("system option processed."));
+                CATCH_REQUIRE(e.code() == 0);
+                CATCH_REQUIRE(out.str() == "Built on Jun  4 2019 at 23:02:36\n");
+            }
+            catch(std::exception const & e)
+            {
+                // no other exception is considered valid here
+                //
+                CATCH_REQUIRE(e.what() == std::string("no other exception was expected..."));
+            }
+        }
+
+        CATCH_WHEN("Testing -L (For --license)")
+        {
+            char const * cargv[] =
+            {
+                "tests/system-arguments",
+                "-L",
+                nullptr
+            };
+            int const argc = sizeof(cargv) / sizeof(cargv[0]) - 1;
+            char ** argv = const_cast<char **>(cargv);
+
+            // do our own try/catch because we want to test the message
+            // and exit code of the exception and it's easier to do it
+            // this way
+            //
+            snap::ostream_to_buf<char> out(std::cout);
+            try
+            {
+                advgetopt::getopt::pointer_t opt(std::make_shared<advgetopt::getopt>(options, argc, argv));
+
+                // if it returns opt cannot be nullptr
+                //
+                CATCH_REQUIRE(opt == nullptr);
+            }
+            catch(advgetopt::getopt_exception_exit const & e)
+            {
+                // this is the expected route
+                //
+                CATCH_REQUIRE(e.what() == std::string("system option processed."));
+                CATCH_REQUIRE(e.code() == 0);
+                CATCH_REQUIRE(out.str() == "MIT\n");
+            }
+            catch(std::exception const & e)
+            {
+                // no other exception is considered valid here
+                //
+                CATCH_REQUIRE(e.what() == std::string("no other exception was expected..."));
+            }
+        }
+    }
     CATCH_END_SECTION()
 }
 

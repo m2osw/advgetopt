@@ -553,7 +553,17 @@ flag_t getopt::process_system_options(std::basic_ostream<char> & out)
     // --environment-variable-name
     if(is_defined("environment-variable-name"))
     {
-        out << f_options_environment.f_environment_variable_name << std::endl;
+        if(f_options_environment.f_environment_variable_name == nullptr
+        || *f_options_environment.f_environment_variable_name == '\0')
+        {
+            out << f_options_environment.f_project_name
+                << " does not support an environment variable."
+                << std::endl;
+        }
+        else
+        {
+            out << f_options_environment.f_environment_variable_name << std::endl;
+        }
         result |= SYSTEM_OPTION_ENVIRONMENT_VARIABLE_NAME;
     }
 
