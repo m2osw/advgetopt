@@ -595,6 +595,20 @@ CATCH_TEST_CASE("system_flags_help", "[arguments][valid][getopt][system_flags]")
                 , advgetopt::Help("define the size.")
                 , advgetopt::DefaultValue("33")
             ),
+            advgetopt::define_option(
+                  advgetopt::Name("obscure")
+                , advgetopt::ShortName('o')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED
+                                                          , advgetopt::GETOPT_FLAG_SHOW_GROUP1>())
+                , advgetopt::Help("obscure command, hidden by default.")
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("secret")
+                , advgetopt::ShortName('S')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED
+                                                          , advgetopt::GETOPT_FLAG_SHOW_GROUP2>())
+                , advgetopt::Help("even more secret command, hidden by default.")
+            ),
             advgetopt::end_options()
         };
 
@@ -675,8 +689,128 @@ CATCH_TEST_CASE("system_flags_help", "[arguments][valid][getopt][system_flags]")
 "                              supported by arguments (if any.)\n"
 "   --help or -h               print out this help screen and exit.\n"
 "   --license or -L            print out the license of arguments and exit.\n"
+"   --long-help                show all the help from all the available options.\n"
 "   --path-to-option-definitions\n"
 "                              print out the path to the option definitons.\n"
+"   --size or -s <arg> (default is \"33\")\n"
+"                              define the size.\n"
+"   --version or -V            print out the version of arguments and exit.\n"
+"\n"
+"Copyright matters\n"
+"\n"
+                    );
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Check with the --long-help system flag")
+    {
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("define the size.")
+                , advgetopt::DefaultValue("33")
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("obscure")
+                , advgetopt::ShortName('o')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED
+                                                          , advgetopt::GETOPT_FLAG_SHOW_GROUP1>())
+                , advgetopt::Help("obscure command, hidden by default.")
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("secret")
+                , advgetopt::ShortName('S')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED
+                                                          , advgetopt::GETOPT_FLAG_SHOW_GROUP2>())
+                , advgetopt::Help("even more secret command, hidden by default.")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_help_header = "Usage: test system commands";
+        environment_options.f_help_footer = "Copyright matters";
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--long-help",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // valid parameter
+        CATCH_REQUIRE(opt.get_option("size") != nullptr);
+        CATCH_REQUIRE(opt.get_option('s') == opt.get_option("size"));
+        CATCH_REQUIRE_FALSE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_string("size") == "33");
+        CATCH_REQUIRE(opt.get_string("size", 0) == "33");
+        CATCH_REQUIRE(opt["size"] == "33");
+        CATCH_REQUIRE(opt.get_long("size") == 33);
+        CATCH_REQUIRE(opt.get_long("size", 0) == 33);
+        CATCH_REQUIRE(opt.has_default("size"));
+        CATCH_REQUIRE(opt.get_default("size") == "33");
+        CATCH_REQUIRE(opt.size("size") == 0);
+
+        // help parameter
+        CATCH_REQUIRE(opt.get_option("long-help") != nullptr);
+        CATCH_REQUIRE(opt.is_defined("long-help"));
+        CATCH_REQUIRE(opt.get_string("long-help") == "");
+        CATCH_REQUIRE(opt.get_string("long-help", 0) == "");
+        CATCH_REQUIRE(opt["long-help"] == "");
+        CATCH_REQUIRE_FALSE(opt.has_default("long-help"));
+        CATCH_REQUIRE(opt.get_default("long-help").empty());
+        CATCH_REQUIRE(opt.size("long-help") == 1);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+
+        // process system options now
+        std::stringstream ss;
+        advgetopt::flag_t const result(opt.process_system_options(ss));
+        CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_HELP);
+        CATCH_REQUIRE_LONG_STRING(ss.str(),
+"Usage: test system commands\n"
+"   --build-date               print out the time and date when arguments was\n"
+"                              built and exit.\n"
+"   --configuration-filenames  print out the list of configuration files checked\n"
+"                              out by this tool.\n"
+"   --copyright or -C          print out the copyright of arguments and exit.\n"
+"   --environment-variable-name\n"
+"                              print out the name of the environment variable\n"
+"                              supported by arguments (if any.)\n"
+"   --help or -h               print out this help screen and exit.\n"
+"   --license or -L            print out the license of arguments and exit.\n"
+"   --long-help                show all the help from all the available options.\n"
+"   --obscure or -o <arg>      obscure command, hidden by default.\n"
+"   --path-to-option-definitions\n"
+"                              print out the path to the option definitons.\n"
+"   --secret or -S <arg>       even more secret command, hidden by default.\n"
 "   --size or -s <arg> (default is \"33\")\n"
 "                              define the size.\n"
 "   --version or -V            print out the version of arguments and exit.\n"
@@ -764,6 +898,265 @@ CATCH_TEST_CASE("system_flags_help", "[arguments][valid][getopt][system_flags]")
         advgetopt::flag_t const result(opt.process_system_options(ss));
         CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_NONE);
         CATCH_REQUIRE(ss.str().empty());
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Check with the --commmands-help system flag")
+    {
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED
+                                                          , advgetopt::GETOPT_FLAG_GROUP_COMMANDS>())
+                , advgetopt::Help("define the size.")
+                , advgetopt::DefaultValue("33")
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("obscure")
+                , advgetopt::ShortName('o')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED
+                                                          , advgetopt::GETOPT_FLAG_GROUP_COMMANDS>())
+                , advgetopt::Help("obscure command, hidden by default.")
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("secret")
+                , advgetopt::ShortName('S')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED
+                                                          , advgetopt::GETOPT_FLAG_GROUP_OPTIONS>())
+                , advgetopt::Help("even more secret command, hidden by default.")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::group_description const groups[] =
+        {
+            advgetopt::define_group(
+                  advgetopt::GroupNumber(advgetopt::GETOPT_FLAG_GROUP_COMMANDS)
+                , advgetopt::GroupName("commands")
+                , advgetopt::GroupDescription("Commands:")
+            ),
+            advgetopt::define_group(
+                  advgetopt::GroupNumber(advgetopt::GETOPT_FLAG_GROUP_OPTIONS)
+                , advgetopt::GroupName("option")
+                , advgetopt::GroupDescription("Options:")
+            ),
+            advgetopt::end_groups()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_help_header = "Usage: test system commands";
+        environment_options.f_help_footer = "Copyright matters";
+        environment_options.f_groups = groups;
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--commands-help",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // valid parameter
+        CATCH_REQUIRE(opt.get_option("size") != nullptr);
+        CATCH_REQUIRE(opt.get_option('s') == opt.get_option("size"));
+        CATCH_REQUIRE_FALSE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_string("size") == "33");
+        CATCH_REQUIRE(opt.get_string("size", 0) == "33");
+        CATCH_REQUIRE(opt["size"] == "33");
+        CATCH_REQUIRE(opt.get_long("size") == 33);
+        CATCH_REQUIRE(opt.get_long("size", 0) == 33);
+        CATCH_REQUIRE(opt.has_default("size"));
+        CATCH_REQUIRE(opt.get_default("size") == "33");
+        CATCH_REQUIRE(opt.size("size") == 0);
+
+        // help parameter
+        CATCH_REQUIRE(opt.get_option("commands-help") != nullptr);
+        CATCH_REQUIRE(opt.is_defined("commands-help"));
+        CATCH_REQUIRE(opt.get_string("commands-help") == "");
+        CATCH_REQUIRE(opt.get_string("commands-help", 0) == "");
+        CATCH_REQUIRE(opt["commands-help"] == "");
+        CATCH_REQUIRE_FALSE(opt.has_default("commands-help"));
+        CATCH_REQUIRE(opt.get_default("commands-help").empty());
+        CATCH_REQUIRE(opt.size("commands-help") == 1);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+
+        // process system options now
+        std::stringstream ss;
+        advgetopt::flag_t const result(opt.process_system_options(ss));
+        CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_HELP);
+        CATCH_REQUIRE_LONG_STRING(ss.str(),
+"Usage: test system commands\n"
+"\n"
+"Commands:\n"
+"   --build-date               print out the time and date when arguments was\n"
+"                              built and exit.\n"
+"   --commands-help            show help from the \"commands\" group of options.\n"
+"   --configuration-filenames  print out the list of configuration files checked\n"
+"                              out by this tool.\n"
+"   --copyright or -C          print out the copyright of arguments and exit.\n"
+"   --environment-variable-name\n"
+"                              print out the name of the environment variable\n"
+"                              supported by arguments (if any.)\n"
+"   --help or -h               print out this help screen and exit.\n"
+"   --license or -L            print out the license of arguments and exit.\n"
+"   --obscure or -o <arg>      obscure command, hidden by default.\n"
+"   --option-help              show help from the \"option\" group of options.\n"
+"   --path-to-option-definitions\n"
+"                              print out the path to the option definitons.\n"
+"   --size or -s <arg> (default is \"33\")\n"
+"                              define the size.\n"
+"   --version or -V            print out the version of arguments and exit.\n"
+"\n"
+"Copyright matters\n"
+"\n"
+                    );
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Check with the --options-help system flag")
+    {
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED
+                                                          , advgetopt::GETOPT_FLAG_GROUP_COMMANDS>())
+                , advgetopt::Help("define the size.")
+                , advgetopt::DefaultValue("33")
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("obscure")
+                , advgetopt::ShortName('o')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED
+                                                          , advgetopt::GETOPT_FLAG_GROUP_COMMANDS>())
+                , advgetopt::Help("obscure command, hidden by default.")
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("secret")
+                , advgetopt::ShortName('S')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED
+                                                          , advgetopt::GETOPT_FLAG_GROUP_OPTIONS>())
+                , advgetopt::Help("even more secret command, hidden by default.")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::group_description const groups[] =
+        {
+            advgetopt::define_group(
+                  advgetopt::GroupNumber(advgetopt::GETOPT_FLAG_GROUP_COMMANDS)
+                , advgetopt::GroupName("commands")
+                , advgetopt::GroupDescription("Commands:")
+            ),
+            advgetopt::define_group(
+                  advgetopt::GroupNumber(advgetopt::GETOPT_FLAG_GROUP_OPTIONS)
+                , advgetopt::GroupName("options")
+                , advgetopt::GroupDescription("Options:")
+            ),
+            advgetopt::end_groups()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_help_header = "Usage: test system commands";
+        environment_options.f_help_footer = "Copyright matters";
+        environment_options.f_groups = groups;
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--options-help",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // valid parameter
+        CATCH_REQUIRE(opt.get_option("size") != nullptr);
+        CATCH_REQUIRE(opt.get_option('s') == opt.get_option("size"));
+        CATCH_REQUIRE_FALSE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_string("size") == "33");
+        CATCH_REQUIRE(opt.get_string("size", 0) == "33");
+        CATCH_REQUIRE(opt["size"] == "33");
+        CATCH_REQUIRE(opt.get_long("size") == 33);
+        CATCH_REQUIRE(opt.get_long("size", 0) == 33);
+        CATCH_REQUIRE(opt.has_default("size"));
+        CATCH_REQUIRE(opt.get_default("size") == "33");
+        CATCH_REQUIRE(opt.size("size") == 0);
+
+        // help parameter
+        CATCH_REQUIRE(opt.get_option("options-help") != nullptr);
+        CATCH_REQUIRE(opt.is_defined("options-help"));
+        CATCH_REQUIRE(opt.get_string("options-help") == "");
+        CATCH_REQUIRE(opt.get_string("options-help", 0) == "");
+        CATCH_REQUIRE(opt["options-help"] == "");
+        CATCH_REQUIRE_FALSE(opt.has_default("options-help"));
+        CATCH_REQUIRE(opt.get_default("options-help").empty());
+        CATCH_REQUIRE(opt.size("options-help") == 1);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+
+        // process system options now
+        std::stringstream ss;
+        advgetopt::flag_t const result(opt.process_system_options(ss));
+        CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_HELP);
+        CATCH_REQUIRE_LONG_STRING(ss.str(),
+"Usage: test system commands\n"
+"\n"
+"Options:\n"
+"   --secret or -S <arg>       even more secret command, hidden by default.\n"
+"\n"
+"Copyright matters\n"
+"\n"
+                    );
+    }
     CATCH_END_SECTION()
 }
 

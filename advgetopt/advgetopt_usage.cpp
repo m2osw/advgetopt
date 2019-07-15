@@ -76,9 +76,27 @@ namespace advgetopt
  */
 void getopt::parse_options_from_group_names()
 {
+    // add the --long-help if at least one option uses the GROUP1 or GROUP2
+    //
+    for(auto it(f_options_by_name.begin())
+      ; it != f_options_by_name.end()
+      ; ++it)
+    {
+        if(it->second->has_flag(GETOPT_FLAG_SHOW_GROUP1 | GETOPT_FLAG_SHOW_GROUP2))
+        {
+            option_info::pointer_t opt(std::make_shared<option_info>("long-help"));
+            opt->add_flag(GETOPT_FLAG_COMMAND_LINE
+                        | GETOPT_FLAG_FLAG
+                        | GETOPT_FLAG_GROUP_COMMANDS);
+            opt->set_help("show all the help from all the available options.");
+            f_options_by_name["long-help"] = opt;
+            break;
+        }
+    }
+
     if(f_options_environment.f_groups == nullptr)
     {
-        // no groups, ignore
+        // no groups, ignore following loop
         //
         return;
     }
@@ -96,7 +114,9 @@ void getopt::parse_options_from_group_names()
             std::string const name(grp->f_name);
             std::string const option_name(name + "-help");
             option_info::pointer_t opt(std::make_shared<option_info>(option_name));
-            opt->add_flag(GETOPT_FLAG_COMMAND_LINE | GETOPT_FLAG_FLAG);
+            opt->add_flag(GETOPT_FLAG_COMMAND_LINE
+                        | GETOPT_FLAG_FLAG
+                        | GETOPT_FLAG_GROUP_COMMANDS);
             opt->set_help("show help from the \""
                         + name
                         + "\" group of options.");
@@ -197,6 +217,8 @@ std::string getopt::usage( flag_t show ) const
 {
     std::stringstream ss;
 
+    flag_t specific_group(show & GETOPT_FLAG_GROUP_MASK);
+
     // ignore all the non-show flags
     //
     show &= GETOPT_FLAG_SHOW_USAGE_ON_ERROR
@@ -210,13 +232,22 @@ std::string getopt::usage( flag_t show ) const
     std::string save_default;
     std::string save_help;
 
+    flag_t pos(GETOPT_FLAG_GROUP_MINIMUM);
     flag_t group_max(GETOPT_FLAG_GROUP_MAXIMUM);
     if(f_options_environment.f_groups == nullptr)
     {
         group_max = GETOPT_FLAG_GROUP_MINIMUM;
+        specific_group = GETOPT_FLAG_GROUP_NONE;
+    }
+    else if(specific_group != GETOPT_FLAG_GROUP_NONE)
+    {
+        // only display that specific group if asked to do so
+        //
+        pos = specific_group >> GETOPT_FLAG_GROUP_SHIFT;
+        group_max = pos;
     }
 
-    for(flag_t pos(GETOPT_FLAG_GROUP_MINIMUM); pos <= group_max; ++pos)
+    for(; pos <= group_max; ++pos)
     {
         bool group_name_shown(false);
         flag_t const group(pos << GETOPT_FLAG_GROUP_SHIFT);

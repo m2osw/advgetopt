@@ -525,6 +525,36 @@ flag_t getopt::process_system_options(std::basic_ostream<char> & out)
         result |= SYSTEM_OPTION_HELP;
     }
 
+    // --long-help
+    if(is_defined("long-help"))
+    {
+        out << usage(GETOPT_FLAG_SHOW_ALL) << std::endl;
+        result |= SYSTEM_OPTION_HELP;
+    }
+
+    if(f_options_environment.f_groups != nullptr)
+    {
+        for(group_description const * grp = f_options_environment.f_groups
+          ; grp->f_group != GETOPT_FLAG_GROUP_NONE
+          ; ++grp)
+        {
+            // the name is not mandatory, without it you do not get the command
+            // line option but still get the group description
+            //
+            if(grp->f_name != nullptr
+            && *grp->f_name != '\0')
+            {
+                std::string const name(grp->f_name);
+                std::string const option_name(name + "-help");
+                if(is_defined(option_name))
+                {
+                    out << usage(grp->f_group) << std::endl;
+                    result |= SYSTEM_OPTION_HELP;
+                }
+            }
+        }
+    }
+
     // --copyright
     if(is_defined("copyright"))
     {

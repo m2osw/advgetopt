@@ -74,24 +74,24 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
                   advgetopt::Name("out-of-bounds")
                 , advgetopt::ShortName('o')
                 , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
-                                                           , advgetopt::GETOPT_FLAG_GROUP_OPTIONS
-                                                           , advgetopt::GETOPT_FLAG_REQUIRED>())
+                                                      , advgetopt::GETOPT_FLAG_GROUP_OPTIONS
+                                                      , advgetopt::GETOPT_FLAG_REQUIRED>())
                 , advgetopt::Help("valid values from 1 to 9.")
             ),
             advgetopt::define_option(
                   advgetopt::Name("not-specified-and-no-default")
                 , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
-                                                           , advgetopt::GETOPT_FLAG_REQUIRED
-                                                           , advgetopt::GETOPT_FLAG_GROUP_OPTIONS
-                                                           , advgetopt::GETOPT_FLAG_SHOW_GROUP1>())
+                                                      , advgetopt::GETOPT_FLAG_REQUIRED
+                                                      , advgetopt::GETOPT_FLAG_GROUP_OPTIONS
+                                                      , advgetopt::GETOPT_FLAG_SHOW_GROUP1>())
                 , advgetopt::Help("test long without having used the option and no default.")
             ),
             advgetopt::define_option(
                   advgetopt::Name("not-specified-with-invalid-default")
                 , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
-                                                           , advgetopt::GETOPT_FLAG_REQUIRED
-                                                           , advgetopt::GETOPT_FLAG_MULTIPLE
-                                                           , advgetopt::GETOPT_FLAG_SHOW_GROUP2>())
+                                                      , advgetopt::GETOPT_FLAG_REQUIRED
+                                                      , advgetopt::GETOPT_FLAG_MULTIPLE
+                                                      , advgetopt::GETOPT_FLAG_SHOW_GROUP2>())
                 , advgetopt::Help("test that an invalid default value can be returned as is.")
                 , advgetopt::DefaultValue("123abc")
             ),
@@ -104,7 +104,7 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
             advgetopt::define_option(
                   advgetopt::Name("string")
                 , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
-                                                           , advgetopt::GETOPT_FLAG_REQUIRED>())
+                                                      , advgetopt::GETOPT_FLAG_REQUIRED>())
                 , advgetopt::Help("string parameter.")
             ),
             advgetopt::define_option(
@@ -124,9 +124,9 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
                   advgetopt::Name("quiet")
                 , advgetopt::ShortName('q')
                 , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
-                                                           , advgetopt::GETOPT_FLAG_MULTIPLE
-                                                           , advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR
-                                                           , advgetopt::GETOPT_FLAG_GROUP_COMMANDS>())
+                                                      , advgetopt::GETOPT_FLAG_MULTIPLE
+                                                      , advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR
+                                                      , advgetopt::GETOPT_FLAG_GROUP_COMMANDS>())
                 , advgetopt::Help("make it quiet (opposite of verbose).")
             ),
             advgetopt::define_option(
@@ -292,14 +292,15 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
 "Usage: try this one and we get a throw (valid options + usage calls)\n"
 "   --long <arg>               used to validate that invalid numbers generate an\n"
 "                              error.\n"
-"   --option-help              show help from the \"option\" group of options.\n"
 "   --string <arg>             string parameter.\n"
 "   --unique or -u             make sure everything is unique.\n"
 "   --validate                 this is used to validate different things.\n"
-"   --verbosity-help           show help from the \"verbosity\" group of options.\n"
 "\n"
 "Verbosity options:\n"
+"   --long-help                show all the help from all the available options.\n"
+"   --option-help              show help from the \"option\" group of options.\n"
 "   --quiet or -q {<arg>}      make it quiet (opposite of verbose).\n"
+"   --verbosity-help           show help from the \"verbosity\" group of options.\n"
 "\n"
 "Special options:\n"
 "   --out-of-bounds or -o <arg>\n"
@@ -317,14 +318,15 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
 "   --not-specified-with-invalid-default <arg> {<arg>} (default is \"123abc\")\n"
 "                              test that an invalid default value can be returned\n"
 "                              as is.\n"
-"   --option-help              show help from the \"option\" group of options.\n"
 "   --string <arg>             string parameter.\n"
 "   --unique or -u             make sure everything is unique.\n"
 "   --validate                 this is used to validate different things.\n"
-"   --verbosity-help           show help from the \"verbosity\" group of options.\n"
 "\n"
 "Verbosity options:\n"
+"   --long-help                show all the help from all the available options.\n"
+"   --option-help              show help from the \"option\" group of options.\n"
 "   --quiet or -q {<arg>}      make it quiet (opposite of verbose).\n"
+"   --verbosity-help           show help from the \"verbosity\" group of options.\n"
 "\n"
 "Special options:\n"
 "   --not-specified-and-no-default <arg>\n"
@@ -557,6 +559,7 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
 "Usage: try this one and we get a throw (valid options + usage calls)\n"
 "   --long <arg>               used to validate that invalid numbers generate an\n"
 "                              error.\n"
+"   --long-help                show all the help from all the available options.\n"
 "   --out-of-bounds or -o <arg>\n"
 "                              valid values from 1 to 9.\n"
 "   --quiet or -q {<arg>}      make it quiet (opposite of verbose).\n"
@@ -573,6 +576,7 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
 "Usage: try this one and we get a throw (valid options + usage calls)\n"
 "   --long <arg>               used to validate that invalid numbers generate an\n"
 "                              error.\n"
+"   --long-help                show all the help from all the available options.\n"
 "   --not-specified-and-no-default <arg>\n"
 "                              test long without having used the option and no\n"
 "                              default.\n"
@@ -721,6 +725,7 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
 "Usage: try this one and we get a throw (valid options + usage calls bis)\n"
 "   --long <arg>               used to validate that invalid numbers generate an\n"
 "                              error.\n"
+"   --long-help                show all the help from all the available options.\n"
 "   --not-in-v2-though or -l <arg>\n"
 "                              long with just a letter.\n"
 "   --not-specified-and-no-default <arg>\n"
@@ -764,28 +769,36 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
             advgetopt::define_option(
                   advgetopt::Name("out-of-bounds")
                 , advgetopt::ShortName('o')
-                , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE, advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
+                                                      , advgetopt::GETOPT_FLAG_REQUIRED>())
                 , advgetopt::Help("valid values from 1 to 9.")
             ),
             advgetopt::define_option(
                   advgetopt::Name("not-specified-and-no-default")
-                , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE, advgetopt::GETOPT_FLAG_REQUIRED, advgetopt::GETOPT_FLAG_SHOW_GROUP1>())
+                , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
+                                                      , advgetopt::GETOPT_FLAG_REQUIRED
+                                                      , advgetopt::GETOPT_FLAG_SHOW_GROUP1>())
                 , advgetopt::Help("test long without having used the option and no default.")
             ),
             advgetopt::define_option(
                   advgetopt::Name("not-specified-with-invalid-default")
-                , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE, advgetopt::GETOPT_FLAG_REQUIRED, advgetopt::GETOPT_FLAG_MULTIPLE, advgetopt::GETOPT_FLAG_SHOW_GROUP2>())
+                , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
+                                                      , advgetopt::GETOPT_FLAG_REQUIRED
+                                                      , advgetopt::GETOPT_FLAG_MULTIPLE
+                                                      , advgetopt::GETOPT_FLAG_SHOW_GROUP2>())
                 , advgetopt::Help("test that an invalid default value can be returned as is.")
                 , advgetopt::DefaultValue("123abc")
             ),
             advgetopt::define_option(
                   advgetopt::Name("not-specified-string-without-default")
-                , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE, advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
+                                                      , advgetopt::GETOPT_FLAG_REQUIRED>())
                 , advgetopt::Alias("string")
             ),
             advgetopt::define_option(
                   advgetopt::Name("string")
-                , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE, advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
+                                                      , advgetopt::GETOPT_FLAG_REQUIRED>())
                 , advgetopt::Help("string parameter.")
             ),
             advgetopt::define_option(
@@ -797,18 +810,23 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
             advgetopt::define_option(
                   advgetopt::Name("quiet")
                 , advgetopt::ShortName('q')
-                , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE, advgetopt::GETOPT_FLAG_MULTIPLE, advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR>())
+                , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
+                                                      , advgetopt::GETOPT_FLAG_MULTIPLE
+                                                      , advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR>())
                 , advgetopt::Help("make it quiet (opposite of verbose).")
             ),
             advgetopt::define_option(
                   advgetopt::Name("option-argument")
-                , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE, advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR>())
+                , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
+                                                      , advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR>())
                 , advgetopt::Help("command line option which accepts an optional argument.")
             ),
             advgetopt::define_option(
                   advgetopt::Name("not-in-v2-though")
                 , advgetopt::ShortName('l')
-                , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE, advgetopt::GETOPT_FLAG_REQUIRED, advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR>())
+                , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
+                                                      , advgetopt::GETOPT_FLAG_REQUIRED
+                                                      , advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR>())
                 , advgetopt::Help("long with just a letter.")
             ),
             advgetopt::define_option(
@@ -853,6 +871,7 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
 "calls bis)\n"
 "   --long <arg>               used to validate that invalid numbers generate an\n"
 "                              error.\n"
+"   --long-help                show all the help from all the available options.\n"
 "   --not-in-v2-though or -l <arg>\n"
 "                              long with just a letter.\n"
 "   --not-specified-and-no-default <arg>\n"

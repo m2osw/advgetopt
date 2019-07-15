@@ -142,27 +142,40 @@ namespace
  *
  * \li `--help`
  *
- * Print out the usage() and exits.
+ * Print out the usage() with most of the command line arguments.
+ *
+ * \li '--long-help'
+ *
+ * Print all the command line arguments with usage().
+ *
+ * The long help is is only added if the list of options include at least
+ * one group flag (GETOPT_FLAG_SHOW_GROUP1 or GETOPT_FLAG_SHOW_GROUP2).
+ *
+ * \li '--\<name>-help'
+ *
+ * Print the help from the group named \<name>.
+ *
+ * These command line options are added only when groups are defined.
  *
  * \li `--version`
  *
- * Print out the version and exits.
+ * Print out the version.
  *
  * \li `--copyright`
  *
- * Print out the copyright notice and exits.
+ * Print out the copyright notice.
  *
  * \li `--license`
  *
- * Print out the license notice and exits.
+ * Print out the license notice.
  *
  * \li `--build-date`
  *
- * Print out the build time and date and exits.
+ * Print out the build time and date.
  *
  * \li `--environment-variable-name`
  *
- * Print out the build time and date and exits.
+ * Print out the build time and date.
  *
  * \li `--configuration-filenames`
  *
@@ -223,6 +236,19 @@ option const g_system_options[] =
 };
 
 
+/** \brief Optional list of options.
+ *
+ * This optional list of options is added only when the
+ * f_configuration_filename parameter has a valid filename.
+ *
+ * The following are the currently added options:
+ *
+ * \li `--config-dir`
+ *
+ * This option allows for adding more configuration directories.
+ * These work the same way as directories defined in the
+ * f_configuration_directories.
+ */
 option const g_if_configuration_filename_system_options[] =
 {
     define_option(
