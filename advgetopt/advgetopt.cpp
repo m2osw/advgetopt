@@ -191,7 +191,8 @@ option const g_system_options[] =
     define_option(
           Name("help")
         , ShortName('h')
-        , Flags(standalone_command_flags<GETOPT_FLAG_GROUP_COMMANDS>())
+        , Flags(standalone_command_flags<GETOPT_FLAG_GROUP_COMMANDS
+                                       , GETOPT_FLAG_SHOW_USAGE_ON_ERROR>())
         , Help("print out this help screen and exit.")
     ),
     define_option(
