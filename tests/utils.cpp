@@ -42,7 +42,7 @@
 
 CATCH_TEST_CASE("utils_unquote", "[utils][valid]")
 {
-    CATCH_START_SECTION("Unquote")
+    CATCH_START_SECTION("Unquote, default pairs")
         CATCH_REQUIRE(advgetopt::unquote("") == "");
         CATCH_REQUIRE(advgetopt::unquote("a") == "a");
         CATCH_REQUIRE(advgetopt::unquote("ab") == "ab");
@@ -95,6 +95,85 @@ CATCH_TEST_CASE("utils_unquote", "[utils][valid]")
         CATCH_REQUIRE(advgetopt::unquote("ab\"") == "ab\"");
         CATCH_REQUIRE(advgetopt::unquote("abc\"") == "abc\"");
         CATCH_REQUIRE(advgetopt::unquote("abcd\"") == "abcd\"");
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Unquote, brackets")
+        CATCH_REQUIRE(advgetopt::unquote("", "[]<>{}") == "");
+        CATCH_REQUIRE(advgetopt::unquote("a", "[]<>{}") == "a");
+        CATCH_REQUIRE(advgetopt::unquote("ab", "[]<>{}") == "ab");
+        CATCH_REQUIRE(advgetopt::unquote("abc", "[]<>{}") == "abc");
+
+        CATCH_REQUIRE(advgetopt::unquote("{}", "[]<>{}") == "");
+        CATCH_REQUIRE(advgetopt::unquote("{a}", "[]<>{}") == "a");
+        CATCH_REQUIRE(advgetopt::unquote("{ab}", "[]<>{}") == "ab");
+        CATCH_REQUIRE(advgetopt::unquote("{abc}", "[]<>{}") == "abc");
+        CATCH_REQUIRE(advgetopt::unquote("{abcd}", "[]<>{}") == "abcd");
+
+        CATCH_REQUIRE(advgetopt::unquote("[]", "[]<>{}") == "");
+        CATCH_REQUIRE(advgetopt::unquote("[a]", "[]<>{}") == "a");
+        CATCH_REQUIRE(advgetopt::unquote("[ab]", "[]<>{}") == "ab");
+        CATCH_REQUIRE(advgetopt::unquote("[abc]", "[]<>{}") == "abc");
+        CATCH_REQUIRE(advgetopt::unquote("[abcd]", "[]<>{}") == "abcd");
+
+        CATCH_REQUIRE(advgetopt::unquote("<>", "[]<>{}") == "");
+        CATCH_REQUIRE(advgetopt::unquote("<a>", "[]<>{}") == "a");
+        CATCH_REQUIRE(advgetopt::unquote("<ab>", "[]<>{}") == "ab");
+        CATCH_REQUIRE(advgetopt::unquote("<abc>", "[]<>{}") == "abc");
+        CATCH_REQUIRE(advgetopt::unquote("<abcd>", "[]<>{}") == "abcd");
+
+        CATCH_REQUIRE(advgetopt::unquote("[}", "[]<>{}") == "[}");
+        CATCH_REQUIRE(advgetopt::unquote("[a}", "[]<>{}") == "[a}");
+        CATCH_REQUIRE(advgetopt::unquote("[ab}", "[]<>{}") == "[ab}");
+        CATCH_REQUIRE(advgetopt::unquote("[abc}", "[]<>{}") == "[abc}");
+        CATCH_REQUIRE(advgetopt::unquote("[abcd}", "[]<>{}") == "[abcd}");
+
+        CATCH_REQUIRE(advgetopt::unquote("[>", "[]<>{}") == "[>");
+        CATCH_REQUIRE(advgetopt::unquote("[a>", "[]<>{}") == "[a>");
+        CATCH_REQUIRE(advgetopt::unquote("[ab>", "[]<>{}") == "[ab>");
+        CATCH_REQUIRE(advgetopt::unquote("[abc>", "[]<>{}") == "[abc>");
+        CATCH_REQUIRE(advgetopt::unquote("[abcd>", "[]<>{}") == "[abcd>");
+
+        CATCH_REQUIRE(advgetopt::unquote("'\"", "[]<>{}") == "'\"");
+        CATCH_REQUIRE(advgetopt::unquote("'a\"", "[]<>{}") == "'a\"");
+        CATCH_REQUIRE(advgetopt::unquote("'ab\"", "[]<>{}") == "'ab\"");
+        CATCH_REQUIRE(advgetopt::unquote("'abc\"", "[]<>{}") == "'abc\"");
+        CATCH_REQUIRE(advgetopt::unquote("'abcd\"", "[]<>{}") == "'abcd\"");
+
+        CATCH_REQUIRE(advgetopt::unquote("[", "[]<>{}") == "[");
+        CATCH_REQUIRE(advgetopt::unquote("[a", "[]<>{}") == "[a");
+        CATCH_REQUIRE(advgetopt::unquote("[ab", "[]<>{}") == "[ab");
+        CATCH_REQUIRE(advgetopt::unquote("[abc", "[]<>{}") == "[abc");
+        CATCH_REQUIRE(advgetopt::unquote("[abcd", "[]<>{}") == "[abcd");
+
+        CATCH_REQUIRE(advgetopt::unquote("{", "[]<>{}") == "{");
+        CATCH_REQUIRE(advgetopt::unquote("{a", "[]<>{}") == "{a");
+        CATCH_REQUIRE(advgetopt::unquote("{ab", "[]<>{}") == "{ab");
+        CATCH_REQUIRE(advgetopt::unquote("{abc", "[]<>{}") == "{abc");
+        CATCH_REQUIRE(advgetopt::unquote("{abcd", "[]<>{}") == "{abcd");
+
+        CATCH_REQUIRE(advgetopt::unquote("<", "[]<>{}") == "<");
+        CATCH_REQUIRE(advgetopt::unquote("<a", "[]<>{}") == "<a");
+        CATCH_REQUIRE(advgetopt::unquote("<ab", "[]<>{}") == "<ab");
+        CATCH_REQUIRE(advgetopt::unquote("<abc", "[]<>{}") == "<abc");
+        CATCH_REQUIRE(advgetopt::unquote("<abcd", "[]<>{}") == "<abcd");
+
+        CATCH_REQUIRE(advgetopt::unquote("}", "[]<>{}") == "}");
+        CATCH_REQUIRE(advgetopt::unquote("a}", "[]<>{}") == "a}");
+        CATCH_REQUIRE(advgetopt::unquote("ab}", "[]<>{}") == "ab}");
+        CATCH_REQUIRE(advgetopt::unquote("abc}", "[]<>{}") == "abc}");
+        CATCH_REQUIRE(advgetopt::unquote("abcd}", "[]<>{}") == "abcd}");
+
+        CATCH_REQUIRE(advgetopt::unquote("]", "[]<>{}") == "]");
+        CATCH_REQUIRE(advgetopt::unquote("a]", "[]<>{}") == "a]");
+        CATCH_REQUIRE(advgetopt::unquote("ab]", "[]<>{}") == "ab]");
+        CATCH_REQUIRE(advgetopt::unquote("abc]", "[]<>{}") == "abc]");
+        CATCH_REQUIRE(advgetopt::unquote("abcd]", "[]<>{}") == "abcd]");
+
+        CATCH_REQUIRE(advgetopt::unquote(">", "[]<>{}") == ">");
+        CATCH_REQUIRE(advgetopt::unquote("a>", "[]<>{}") == "a>");
+        CATCH_REQUIRE(advgetopt::unquote("ab>", "[]<>{}") == "ab>");
+        CATCH_REQUIRE(advgetopt::unquote("abc>", "[]<>{}") == "abc>");
+        CATCH_REQUIRE(advgetopt::unquote("abcd>", "[]<>{}") == "abcd>");
     CATCH_END_SECTION()
 }
 

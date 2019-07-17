@@ -1,4 +1,6 @@
 
 
 * Confirm that all the configuration functionality from snapwebsites is available
+* Look into a way to support TOML, it's like ".ini" with a few extensions
+  https://github.com/toml-lang/toml (more types, repeated sections as arrays)
 

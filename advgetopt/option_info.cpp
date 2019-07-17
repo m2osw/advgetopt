@@ -1081,7 +1081,7 @@ bool option_info::set_multiple_value(std::string const & value)
     f_value.clear();
     f_integer.clear();
 
-    split_string(value, f_value, f_multiple_separators);
+    split_string(unquote(value, "[]"), f_value, f_multiple_separators);
 
     if(!has_flag(GETOPT_FLAG_MULTIPLE)
     && f_value.size() > 1)

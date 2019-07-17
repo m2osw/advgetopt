@@ -63,18 +63,40 @@ namespace advgetopt
  *
  * If no quotes appear, then the function returns a copy of the input as is.
  *
+ * The \p pairs parameter must have an even size (or the last character
+ * gets ignored). By default, it is set to the double and single quotes:
+ *
+ * \code
+ *     "\"\"''"
+ * \endcode
+ *
+ * To remove square, angle, curly brackets:
+ *
+ * \code
+ *     "[]<>{}"
+ * \endcode
+ *
+ * \todo
+ * Add support for UTF-8 quotes. Right now only quotes of 1 byte will
+ * work.
+ *
  * \param[in] s  The string to unquote.
+ * \param[in] pairs  A list of accepted quotes.
  *
  * \return The unquoted string.
  */
-std::string unquote(std::string const & s)
+std::string unquote(std::string const & s, std::string const & pairs)
 {
     if(s.length() >= 2)
     {
-        if((s[0] == '"' && s.back() == '"')
-        || (s[0] == '\'' && s.back() == '\''))
+        std::string::size_type const max(pairs.length() - 1);
+        for(std::string::size_type pos(0); pos < max; pos += 2)
         {
-            return s.substr(1, s.length() - 2);
+            if(s.front() == pairs[pos + 0]
+            && s.back()  == pairs[pos + 1])
+            {
+                return s.substr(1, s.length() - 2);
+            }
         }
     }
 

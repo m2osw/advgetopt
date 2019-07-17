@@ -260,7 +260,7 @@ void getopt::parse_options_from_file()
         }
 
         std::string const parameter_name(section_name);
-        std::string const short_name(conf->get_parameter(parameter_name + "::shortname"));
+        std::string const short_name(unquote(conf->get_parameter(parameter_name + "::shortname")));
         if(short_name.length() > 1)
         {
             throw getopt_exception_logic(
@@ -281,11 +281,10 @@ void getopt::parse_options_from_file()
         std::string const default_name(parameter_name + "::default");
         if(conf->has_parameter(default_name))
         {
-            std::string const default_value(conf->get_parameter(default_name));
-            opt->set_default(unquote(default_value));
+            opt->set_default(unquote(conf->get_parameter(default_name)));
         }
 
-        opt->set_help(conf->get_parameter(parameter_name + "::help"));
+        opt->set_help(unquote(conf->get_parameter(parameter_name + "::help")));
 
         std::string const validator_name_and_params(conf->get_parameter(parameter_name + "::validator"));
         opt->set_validator(validator_name_and_params);
@@ -302,7 +301,7 @@ void getopt::parse_options_from_file()
                         + filename
                         + "\".");
             }
-            opt->set_help(conf->get_parameter(alias_name));
+            opt->set_help(unquote(conf->get_parameter(alias_name)));
             opt->add_flag(GETOPT_FLAG_ALIAS);
         }
 

@@ -51,7 +51,7 @@ namespace advgetopt
 typedef std::vector<std::string>                string_list_t;
 
 
-std::string         unquote(std::string const & s);
+std::string         unquote(std::string const & s, std::string const & pairs = "\"\"''");
 void                split_string(std::string const & str
                                , string_list_t & result
                                , string_list_t const & separators);
