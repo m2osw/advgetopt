@@ -442,13 +442,13 @@ bool is_arg(char const * a)
  * parse_string() function instead. It will transform your string in an
  * array of arguments and then call the parse_arguments() for you.
  *
- * \important
+ * \attention
  * Note that the program name does not get defined until you call the
  * parse_program_name() function since that information comes from the
  * first arguments of your command line which we do not get on
  * construction in this case.
  *
- * \important
+ * \attention
  * Since the arguments are not known to the getopt system yet, the
  * GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS is not used in
  * this case.
