@@ -10,7 +10,7 @@ advgetopt (2.0.0.0~xenial) xenial; urgency=high
    - Made the tests be 100% coverage on a per library source file.
    - Updated the tests to use snapcatch2.
    - Removed all the exit() calls. usage() now returns a string.
-   - Addeded many %<flag> to help with listing various parameters.
+   - Added many %<flag> to help with listing various parameters.
    - Added a logger which by defaults prints in stderr.
    - Changed the options structure and added an environment_options one.
    - Added templates to fill the structures with a better chance of testing
