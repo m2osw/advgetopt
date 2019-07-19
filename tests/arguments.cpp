@@ -4898,40 +4898,11 @@ CATCH_TEST_CASE("auto_process_system_arguments", "[arguments][valid][getopt]")
 
 CATCH_TEST_CASE("invalid_getopt_pointers", "[invalid][getopt][arguments]")
 {
-    CATCH_START_SECTION("Create getopt with an environment_opt which is a nullptr.")
-        advgetopt::options_environment const * environment_opt(nullptr);
-
-        CATCH_REQUIRE_THROWS_MATCHES(
-                  std::make_shared<advgetopt::getopt>(*environment_opt)
-                , advgetopt::getopt_exception_logic
-                , Catch::Matchers::ExceptionMessage(
-                              "opt_env reference cannot point to a nullptr"));
-    CATCH_END_SECTION()
-
-    CATCH_START_SECTION("Create getopt with argc/argv and an environment_opt which is a nullptr.")
-        advgetopt::options_environment const * environment_opt(nullptr);
-
-        char const * cargv[] =
-        {
-            "/usr/bin/arguments",
-            "--null-ptr",
-            nullptr
-        };
-        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
-        char ** argv = const_cast<char **>(cargv);
-
-        CATCH_REQUIRE_THROWS_MATCHES(
-                  std::make_shared<advgetopt::getopt>(*environment_opt, argc, argv)
-                , advgetopt::getopt_exception_logic
-                , Catch::Matchers::ExceptionMessage(
-                    "opt_env reference cannot point to a nullptr"));
-    CATCH_END_SECTION()
-
     CATCH_START_SECTION("Create getopt with argv set to nullptr.")
-        advgetopt::options_environment const * environment_opt(nullptr);
+        advgetopt::options_environment const environment_opt;
 
         CATCH_REQUIRE_THROWS_MATCHES(
-                  std::make_shared<advgetopt::getopt>(*environment_opt, 3, nullptr)
+                  std::make_shared<advgetopt::getopt>(environment_opt, 3, nullptr)
                 , advgetopt::getopt_exception_logic
                 , Catch::Matchers::ExceptionMessage(
                     "argv pointer cannot be nullptr"));

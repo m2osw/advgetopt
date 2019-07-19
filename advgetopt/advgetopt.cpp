@@ -464,11 +464,6 @@ bool is_arg(char const * a)
  */
 getopt::getopt(options_environment const & opt_env)
 {
-    if(&opt_env == nullptr)
-    {
-        throw getopt_exception_logic("opt_env reference cannot point to a nullptr");
-    }
-
     f_options_environment = opt_env;
 
     parse_options_info(f_options_environment.f_options, false);
@@ -527,10 +522,6 @@ getopt::getopt(options_environment const & opt_env
     if(argv == nullptr)
     {
         throw getopt_exception_logic("argv pointer cannot be nullptr");
-    }
-    if(&opt_env == nullptr)
-    {
-        throw getopt_exception_logic("opt_env reference cannot point to a nullptr");
     }
 
     f_options_environment = opt_env;
