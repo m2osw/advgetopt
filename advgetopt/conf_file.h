@@ -61,12 +61,12 @@ enum class callback_action_t
 
 enum class line_continuation_t
 {
-    single_line,    // no continuation support
-    rfc_822,        // like email/HTTP, whitespace at start of next line
-    msdos,          // '&' at end of line
-    unix,           // '\' at end of line
-    fortran,        // '&' at start of next line
-    semicolon       // ';' ends the _line_
+    line_continuation_single_line,    // no continuation support
+    line_continuation_rfc_822,        // like email/HTTP, whitespace at start of next line
+    line_continuation_msdos,          // '&' at end of line
+    line_continuation_unix,           // '\' at end of line
+    line_continuation_fortran,        // '&' at start of next line
+    line_continuation_semicolon       // ';' ends the _line_
 };
 
 
@@ -107,7 +107,7 @@ class conf_file_setup
 public:
                                 conf_file_setup(
                                               std::string const & filename
-                                            , line_continuation_t line_continuation = line_continuation_t::unix
+                                            , line_continuation_t line_continuation = line_continuation_t::line_continuation_unix
                                             , assignment_operator_t assignment_operator = ASSIGNMENT_OPERATOR_EQUAL
                                             , comment_t comment = COMMENT_INI | COMMENT_SHELL
                                             , section_operator_t section_operator = SECTION_OPERATOR_INI_FILE);
@@ -122,7 +122,7 @@ public:
 
 private:
     std::string                 f_filename = std::string();
-    line_continuation_t         f_line_continuation = line_continuation_t::unix;
+    line_continuation_t         f_line_continuation = line_continuation_t::line_continuation_unix;
     assignment_operator_t       f_assignment_operator = ASSIGNMENT_OPERATOR_EQUAL;
     comment_t                   f_comment = COMMENT_INI | COMMENT_SHELL;
     section_operator_t          f_section_operator = SECTION_OPERATOR_INI_FILE;

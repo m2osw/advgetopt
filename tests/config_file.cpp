@@ -98,8 +98,8 @@ CATCH_TEST_CASE("configuration_setup", "[config][getopt]")
                 ;
             }
 
-            for(int lc(static_cast<int>(advgetopt::line_continuation_t::single_line));
-                lc <= static_cast<int>(advgetopt::line_continuation_t::semicolon);
+            for(int lc(static_cast<int>(advgetopt::line_continuation_t::line_continuation_single_line));
+                lc <= static_cast<int>(advgetopt::line_continuation_t::line_continuation_semicolon);
                 ++lc)
             {
                 for(advgetopt::assignment_operator_t ao(0);
@@ -140,7 +140,7 @@ CATCH_TEST_CASE("configuration_setup", "[config][getopt]")
                             {
                                 // must have the defaults in this case
                                 //
-                                CATCH_REQUIRE(static_cast<advgetopt::line_continuation_t>(lc) == advgetopt::line_continuation_t::unix);
+                                CATCH_REQUIRE(static_cast<advgetopt::line_continuation_t>(lc) == advgetopt::line_continuation_t::line_continuation_unix);
                                 CATCH_REQUIRE(real_ao == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
                                 CATCH_REQUIRE(c  == (advgetopt::COMMENT_INI | advgetopt::COMMENT_SHELL));
                                 CATCH_REQUIRE(so == advgetopt::SECTION_OPERATOR_INI_FILE);
@@ -170,27 +170,27 @@ CATCH_TEST_CASE("configuration_setup", "[config][getopt]")
                                         def_lc = false;
                                         switch(static_cast<advgetopt::line_continuation_t>(lc))
                                         {
-                                        case advgetopt::line_continuation_t::single_line:
+                                        case advgetopt::line_continuation_t::line_continuation_single_line:
                                             CATCH_REQUIRE(var_value == "single-line");
                                             break;
 
-                                        case advgetopt::line_continuation_t::rfc_822:
+                                        case advgetopt::line_continuation_t::line_continuation_rfc_822:
                                             CATCH_REQUIRE(var_value == "rfc-822");
                                             break;
 
-                                        case advgetopt::line_continuation_t::msdos:
+                                        case advgetopt::line_continuation_t::line_continuation_msdos:
                                             CATCH_REQUIRE(var_value == "msdos");
                                             break;
 
-                                        case advgetopt::line_continuation_t::unix:
+                                        case advgetopt::line_continuation_t::line_continuation_unix:
                                             CATCH_REQUIRE(var_value == "unix");
                                             break;
 
-                                        case advgetopt::line_continuation_t::fortran:
+                                        case advgetopt::line_continuation_t::line_continuation_fortran:
                                             CATCH_REQUIRE(var_value == "fortran");
                                             break;
 
-                                        case advgetopt::line_continuation_t::semicolon:
+                                        case advgetopt::line_continuation_t::line_continuation_semicolon:
                                             CATCH_REQUIRE(var_value == "semi-colon");
                                             break;
 
@@ -301,7 +301,7 @@ CATCH_TEST_CASE("configuration_setup", "[config][getopt]")
 
                                 if(def_lc)
                                 {
-                                    CATCH_REQUIRE(static_cast<advgetopt::line_continuation_t>(lc) == advgetopt::line_continuation_t::unix);
+                                    CATCH_REQUIRE(static_cast<advgetopt::line_continuation_t>(lc) == advgetopt::line_continuation_t::line_continuation_unix);
                                 }
                                 if(def_ao)
                                 {
@@ -322,14 +322,14 @@ CATCH_TEST_CASE("configuration_setup", "[config][getopt]")
     CATCH_START_SECTION("Check <empty> URL")
         advgetopt::conf_file_setup setup(
                       "/etc/advgetopt/unknown-file.conf"
-                    , advgetopt::line_continuation_t::fortran
+                    , advgetopt::line_continuation_t::line_continuation_fortran
                     , advgetopt::ASSIGNMENT_OPERATOR_COLON
                     , advgetopt::COMMENT_INI
                     , advgetopt::SECTION_OPERATOR_CPP);
 
         CATCH_REQUIRE_FALSE(setup.is_valid());
         CATCH_REQUIRE(setup.get_filename() == std::string());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::fortran);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_fortran);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_COLON);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_INI);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_CPP);
@@ -360,13 +360,13 @@ CATCH_TEST_CASE("config_reload_tests")
         advgetopt::conf_file::pointer_t file1;
         {
             advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                                , advgetopt::line_continuation_t::single_line
+                                , advgetopt::line_continuation_t::line_continuation_single_line
                                 , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                                 , advgetopt::COMMENT_SHELL
                                 , advgetopt::SECTION_OPERATOR_NONE);
 
             CATCH_REQUIRE(setup.is_valid());
-            CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::single_line);
+            CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_single_line);
             CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
             CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
             CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_NONE);
@@ -405,13 +405,13 @@ CATCH_TEST_CASE("config_reload_tests")
         // "reloading" that very same file has the old data
         {
             advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                                , advgetopt::line_continuation_t::single_line
+                                , advgetopt::line_continuation_t::line_continuation_single_line
                                 , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                                 , advgetopt::COMMENT_SHELL
                                 , advgetopt::SECTION_OPERATOR_NONE);
 
             CATCH_REQUIRE(setup.is_valid());
-            CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::single_line);
+            CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_single_line);
             CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
             CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
             CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_NONE);
@@ -462,13 +462,13 @@ CATCH_TEST_CASE("config_duplicated_variables")
         }
 
         advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , advgetopt::line_continuation_t::single_line
+                            , advgetopt::line_continuation_t::line_continuation_single_line
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
                             , advgetopt::SECTION_OPERATOR_NONE);
 
         CATCH_REQUIRE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::single_line);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_single_line);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_NONE);
@@ -535,13 +535,13 @@ CATCH_TEST_CASE("config_callback_calls")
         }
 
         advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , advgetopt::line_continuation_t::single_line
+                            , advgetopt::line_continuation_t::line_continuation_single_line
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
                             , advgetopt::SECTION_OPERATOR_NONE);
 
         CATCH_REQUIRE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::single_line);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_single_line);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_NONE);
@@ -705,13 +705,13 @@ CATCH_TEST_CASE("config_line_continuation_tests")
         }
 
         advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , advgetopt::line_continuation_t::single_line
+                            , advgetopt::line_continuation_t::line_continuation_single_line
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
                             , advgetopt::SECTION_OPERATOR_NONE);
 
         CATCH_REQUIRE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::single_line);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_single_line);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_NONE);
@@ -789,13 +789,13 @@ CATCH_TEST_CASE("config_line_continuation_tests")
         }
 
         advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , advgetopt::line_continuation_t::rfc_822
+                            , advgetopt::line_continuation_t::line_continuation_rfc_822
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
                             , advgetopt::SECTION_OPERATOR_NONE);
 
         CATCH_REQUIRE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::rfc_822);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_rfc_822);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_NONE);
@@ -859,13 +859,13 @@ CATCH_TEST_CASE("config_line_continuation_tests")
         }
 
         advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , advgetopt::line_continuation_t::msdos
+                            , advgetopt::line_continuation_t::line_continuation_msdos
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
                             , advgetopt::SECTION_OPERATOR_NONE);
 
         CATCH_REQUIRE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::msdos);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_msdos);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_NONE);
@@ -931,13 +931,13 @@ CATCH_TEST_CASE("config_line_continuation_tests")
         }
 
         advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::line_continuation_t::line_continuation_unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
                             , advgetopt::SECTION_OPERATOR_NONE);
 
         CATCH_REQUIRE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_unix);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_NONE);
@@ -1003,13 +1003,13 @@ CATCH_TEST_CASE("config_line_continuation_tests")
         }
 
         advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , advgetopt::line_continuation_t::fortran
+                            , advgetopt::line_continuation_t::line_continuation_fortran
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
                             , advgetopt::SECTION_OPERATOR_NONE);
 
         CATCH_REQUIRE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::fortran);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_fortran);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_NONE);
@@ -1075,13 +1075,13 @@ CATCH_TEST_CASE("config_line_continuation_tests")
         }
 
         advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , advgetopt::line_continuation_t::semicolon
+                            , advgetopt::line_continuation_t::line_continuation_semicolon
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
                             , advgetopt::SECTION_OPERATOR_NONE);
 
         CATCH_REQUIRE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::semicolon);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_semicolon);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_NONE);
@@ -1156,13 +1156,13 @@ CATCH_TEST_CASE("config_assignment_operator_tests")
         }
 
         advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , advgetopt::line_continuation_t::single_line
+                            , advgetopt::line_continuation_t::line_continuation_single_line
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
                             , advgetopt::SECTION_OPERATOR_NONE);
 
         CATCH_REQUIRE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::single_line);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_single_line);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_NONE);
@@ -1201,13 +1201,13 @@ CATCH_TEST_CASE("config_assignment_operator_tests")
         }
 
         advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , advgetopt::line_continuation_t::single_line
+                            , advgetopt::line_continuation_t::line_continuation_single_line
                             , advgetopt::ASSIGNMENT_OPERATOR_COLON
                             , advgetopt::COMMENT_SHELL
                             , advgetopt::SECTION_OPERATOR_NONE);
 
         CATCH_REQUIRE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::single_line);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_single_line);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_COLON);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_NONE);
@@ -1246,13 +1246,13 @@ CATCH_TEST_CASE("config_assignment_operator_tests")
         }
 
         advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , advgetopt::line_continuation_t::single_line
+                            , advgetopt::line_continuation_t::line_continuation_single_line
                             , advgetopt::ASSIGNMENT_OPERATOR_SPACE
                             , advgetopt::COMMENT_SHELL
                             , advgetopt::SECTION_OPERATOR_NONE);
 
         CATCH_REQUIRE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::single_line);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_single_line);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_SPACE);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_NONE);
@@ -1291,7 +1291,7 @@ CATCH_TEST_CASE("config_assignment_operator_tests")
         }
 
         advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , advgetopt::line_continuation_t::single_line
+                            , advgetopt::line_continuation_t::line_continuation_single_line
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             | advgetopt::ASSIGNMENT_OPERATOR_COLON
                             | advgetopt::ASSIGNMENT_OPERATOR_SPACE
@@ -1299,7 +1299,7 @@ CATCH_TEST_CASE("config_assignment_operator_tests")
                             , advgetopt::SECTION_OPERATOR_NONE);
 
         CATCH_REQUIRE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::single_line);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_single_line);
         CATCH_REQUIRE(setup.get_assignment_operator() == (advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                                                        | advgetopt::ASSIGNMENT_OPERATOR_COLON
                                                        | advgetopt::ASSIGNMENT_OPERATOR_SPACE));
@@ -1348,13 +1348,13 @@ CATCH_TEST_CASE("config_comment_tests")
         }
 
         advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::line_continuation_t::line_continuation_unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_INI
                             , advgetopt::SECTION_OPERATOR_NONE);
 
         CATCH_REQUIRE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_unix);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_INI);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_NONE);
@@ -1392,13 +1392,13 @@ CATCH_TEST_CASE("config_comment_tests")
         }
 
         advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::line_continuation_t::line_continuation_unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
                             , advgetopt::SECTION_OPERATOR_NONE);
 
         CATCH_REQUIRE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_unix);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_NONE);
@@ -1436,13 +1436,13 @@ CATCH_TEST_CASE("config_comment_tests")
         }
 
         advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::line_continuation_t::line_continuation_unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_CPP
                             , advgetopt::SECTION_OPERATOR_NONE);
 
         CATCH_REQUIRE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_unix);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_CPP);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_NONE);
@@ -1485,13 +1485,13 @@ CATCH_TEST_CASE("config_comment_tests")
         }
 
         advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::line_continuation_t::line_continuation_unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_INI | advgetopt::COMMENT_SHELL | advgetopt::COMMENT_CPP
                             , advgetopt::SECTION_OPERATOR_NONE);
 
         CATCH_REQUIRE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_unix);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
         CATCH_REQUIRE(setup.get_comment() == (advgetopt::COMMENT_INI | advgetopt::COMMENT_SHELL | advgetopt::COMMENT_CPP));
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_NONE);
@@ -1539,13 +1539,13 @@ CATCH_TEST_CASE("config_section_tests")
         }
 
         advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::line_continuation_t::line_continuation_unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
                             , advgetopt::SECTION_OPERATOR_C);
 
         CATCH_REQUIRE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_unix);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_C);
@@ -1601,13 +1601,13 @@ CATCH_TEST_CASE("config_section_tests")
         }
 
         advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::line_continuation_t::line_continuation_unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
                             , advgetopt::SECTION_OPERATOR_CPP);
 
         CATCH_REQUIRE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_unix);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_CPP);
@@ -1671,13 +1671,13 @@ CATCH_TEST_CASE("config_section_tests")
         }
 
         advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::line_continuation_t::line_continuation_unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
                             , advgetopt::SECTION_OPERATOR_BLOCK);
 
         CATCH_REQUIRE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_unix);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_BLOCK);
@@ -1739,13 +1739,13 @@ CATCH_TEST_CASE("config_section_tests")
         }
 
         advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::line_continuation_t::line_continuation_unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
                             , advgetopt::SECTION_OPERATOR_INI_FILE);
 
         CATCH_REQUIRE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_unix);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_INI_FILE);
@@ -1806,13 +1806,13 @@ CATCH_TEST_CASE("config_section_tests")
         }
 
         advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::line_continuation_t::line_continuation_unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
                             , advgetopt::SECTION_OPERATOR_INI_FILE | advgetopt::SECTION_OPERATOR_CPP);
 
         CATCH_REQUIRE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_unix);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == (advgetopt::SECTION_OPERATOR_INI_FILE | advgetopt::SECTION_OPERATOR_CPP));
@@ -1870,13 +1870,13 @@ CATCH_TEST_CASE("save_config_file")
         }
 
         advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , advgetopt::line_continuation_t::single_line
+                            , advgetopt::line_continuation_t::line_continuation_single_line
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
                             , advgetopt::SECTION_OPERATOR_NONE);
 
         CATCH_REQUIRE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::single_line);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_single_line);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_NONE);
@@ -1917,13 +1917,13 @@ CATCH_TEST_CASE("save_config_file")
         rename(SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(), new_name.c_str());
 
         advgetopt::conf_file_setup setup2(new_name
-                            , advgetopt::line_continuation_t::single_line
+                            , advgetopt::line_continuation_t::line_continuation_single_line
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
                             , advgetopt::SECTION_OPERATOR_NONE);
 
         CATCH_REQUIRE(setup2.is_valid());
-        CATCH_REQUIRE(setup2.get_line_continuation() == advgetopt::line_continuation_t::single_line);
+        CATCH_REQUIRE(setup2.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_single_line);
         CATCH_REQUIRE(setup2.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
         CATCH_REQUIRE(setup2.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup2.get_section_operator() == advgetopt::SECTION_OPERATOR_NONE);
@@ -1971,13 +1971,13 @@ CATCH_TEST_CASE("invalid_configuration_setup", "[config][getopt][invalid]")
     CATCH_START_SECTION("Invalid Line Continuation")
         for(int count(0); count < 5; ++count)
         {
-            advgetopt::line_continuation_t lc(advgetopt::line_continuation_t::unix);
+            advgetopt::line_continuation_t lc(advgetopt::line_continuation_t::line_continuation_unix);
             do
             {
                 lc = static_cast<advgetopt::line_continuation_t>(rand());
             }
-            while(lc >= advgetopt::line_continuation_t::single_line
-               && lc <= advgetopt::line_continuation_t::semicolon);
+            while(lc >= advgetopt::line_continuation_t::line_continuation_single_line
+               && lc <= advgetopt::line_continuation_t::line_continuation_semicolon);
 
             advgetopt::conf_file_setup setup(
                           "/etc/advgetopt/system.conf"
@@ -2022,13 +2022,13 @@ CATCH_TEST_CASE("config_reload_invalid_setup")
         }
 
         advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , advgetopt::line_continuation_t::single_line
+                            , advgetopt::line_continuation_t::line_continuation_single_line
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
                             , advgetopt::SECTION_OPERATOR_NONE);
 
         CATCH_REQUIRE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::single_line);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_single_line);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_NONE);
@@ -2053,11 +2053,11 @@ CATCH_TEST_CASE("config_reload_invalid_setup")
         // "reloading" that very same file but with the "wrong" parameters
         // fails
         //
-        for(int lc(static_cast<int>(advgetopt::line_continuation_t::single_line));
-            lc <= static_cast<int>(advgetopt::line_continuation_t::semicolon);
+        for(int lc(static_cast<int>(advgetopt::line_continuation_t::line_continuation_single_line));
+            lc <= static_cast<int>(advgetopt::line_continuation_t::line_continuation_semicolon);
             ++lc)
         {
-            if(static_cast<advgetopt::line_continuation_t>(lc) == advgetopt::line_continuation_t::single_line)
+            if(static_cast<advgetopt::line_continuation_t>(lc) == advgetopt::line_continuation_t::line_continuation_single_line)
             {
                 continue;
             }
@@ -2136,7 +2136,7 @@ CATCH_TEST_CASE("missing_configuration_file", "[config][getopt][invalid]")
             //
             advgetopt::conf_file_setup setup(
                           SNAP_CATCH2_NAMESPACE::g_config_filename
-                        , advgetopt::line_continuation_t::unix
+                        , advgetopt::line_continuation_t::line_continuation_unix
                         , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                         , advgetopt::COMMENT_SHELL
                         , advgetopt::SECTION_OPERATOR_NONE);
@@ -2150,7 +2150,7 @@ CATCH_TEST_CASE("missing_configuration_file", "[config][getopt][invalid]")
             //
             CATCH_REQUIRE(setup.is_valid());
             CATCH_REQUIRE(setup.get_filename() == SNAP_CATCH2_NAMESPACE::g_config_filename);
-            CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+            CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_unix);
             CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
             CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
             CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_NONE);
@@ -2187,13 +2187,13 @@ CATCH_TEST_CASE("invalid_sections")
         }
 
         advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::line_continuation_t::line_continuation_unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
                             , advgetopt::SECTION_OPERATOR_C);
 
         CATCH_REQUIRE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_unix);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_C);
@@ -2250,13 +2250,13 @@ CATCH_TEST_CASE("invalid_sections")
         }
 
         advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::line_continuation_t::line_continuation_unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
                             , advgetopt::SECTION_OPERATOR_C | advgetopt::SECTION_OPERATOR_CPP);
 
         CATCH_REQUIRE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_unix);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == (advgetopt::SECTION_OPERATOR_C | advgetopt::SECTION_OPERATOR_CPP));
@@ -2313,13 +2313,13 @@ CATCH_TEST_CASE("invalid_sections")
         }
 
         advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::line_continuation_t::line_continuation_unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
                             , advgetopt::SECTION_OPERATOR_C | advgetopt::SECTION_OPERATOR_CPP);
 
         CATCH_REQUIRE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_unix);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == (advgetopt::SECTION_OPERATOR_C | advgetopt::SECTION_OPERATOR_CPP));
@@ -2375,13 +2375,13 @@ CATCH_TEST_CASE("invalid_sections")
         // no errors here since we do not detect the sections in this case
         //
         advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::line_continuation_t::line_continuation_unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
                             , advgetopt::SECTION_OPERATOR_NONE);
 
         CATCH_REQUIRE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_unix);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == (advgetopt::SECTION_OPERATOR_NONE));
@@ -2483,13 +2483,13 @@ CATCH_TEST_CASE("invalid_sections")
                                         ? advgetopt::ASSIGNMENT_OPERATOR_COLON
                                         : advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
                 advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                                    , advgetopt::line_continuation_t::unix
+                                    , advgetopt::line_continuation_t::line_continuation_unix
                                     , as
                                     , advgetopt::COMMENT_NONE
                                     , advgetopt::SECTION_OPERATOR_NONE);
 
                 CATCH_REQUIRE(setup.is_valid());
-                CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+                CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_unix);
                 CATCH_REQUIRE(setup.get_assignment_operator() == as);
                 CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_NONE);
                 CATCH_REQUIRE(setup.get_section_operator() == (advgetopt::SECTION_OPERATOR_NONE));
@@ -2540,13 +2540,13 @@ CATCH_TEST_CASE("invalid_sections")
         }
 
         advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::line_continuation_t::line_continuation_unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
                             , advgetopt::SECTION_OPERATOR_CPP | advgetopt::SECTION_OPERATOR_C | advgetopt::SECTION_OPERATOR_ONE_SECTION);
 
         CATCH_REQUIRE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_unix);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == (advgetopt::SECTION_OPERATOR_CPP | advgetopt::SECTION_OPERATOR_C | advgetopt::SECTION_OPERATOR_ONE_SECTION));
@@ -2592,13 +2592,13 @@ CATCH_TEST_CASE("invalid_sections")
         }
 
         advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::line_continuation_t::line_continuation_unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
                             , advgetopt::SECTION_OPERATOR_BLOCK);
 
         CATCH_REQUIRE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_unix);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_BLOCK);
@@ -2646,13 +2646,13 @@ CATCH_TEST_CASE("invalid_sections")
         }
 
         advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::line_continuation_t::line_continuation_unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
                             , advgetopt::SECTION_OPERATOR_INI_FILE);
 
         CATCH_REQUIRE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_unix);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_INI_FILE);
@@ -2709,13 +2709,13 @@ CATCH_TEST_CASE("invalid_sections")
         }
 
         advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::line_continuation_t::line_continuation_unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
                             , advgetopt::SECTION_OPERATOR_BLOCK | advgetopt::SECTION_OPERATOR_INI_FILE);
 
         CATCH_REQUIRE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_unix);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == (advgetopt::SECTION_OPERATOR_BLOCK | advgetopt::SECTION_OPERATOR_INI_FILE));
@@ -2774,13 +2774,13 @@ CATCH_TEST_CASE("invalid_variable_name")
         }
 
         advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::line_continuation_t::line_continuation_unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
                             , advgetopt::SECTION_OPERATOR_C);
 
         CATCH_REQUIRE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_unix);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_C);
@@ -2826,13 +2826,13 @@ CATCH_TEST_CASE("invalid_variable_name")
         }
 
         advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::line_continuation_t::line_continuation_unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
                             , advgetopt::SECTION_OPERATOR_C);
 
         CATCH_REQUIRE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_unix);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_C);
@@ -2875,13 +2875,13 @@ CATCH_TEST_CASE("invalid_variable_name")
         }
 
         advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::line_continuation_t::line_continuation_unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
                             , advgetopt::SECTION_OPERATOR_C);
 
         CATCH_REQUIRE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_unix);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_C);
@@ -2925,13 +2925,13 @@ CATCH_TEST_CASE("invalid_variable_name")
         }
 
         advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::line_continuation_t::line_continuation_unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
                             , advgetopt::SECTION_OPERATOR_C);
 
         CATCH_REQUIRE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_unix);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_C);
@@ -2975,13 +2975,13 @@ CATCH_TEST_CASE("invalid_variable_name")
         }
 
         advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , advgetopt::line_continuation_t::unix
+                            , advgetopt::line_continuation_t::line_continuation_unix
                             , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
                             , advgetopt::COMMENT_SHELL
                             , advgetopt::SECTION_OPERATOR_C);
 
         CATCH_REQUIRE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::unix);
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_unix);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_C);

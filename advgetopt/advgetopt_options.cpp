@@ -232,7 +232,7 @@ void getopt::parse_options_from_file()
     filename += ".ini";
 
     conf_file_setup conf_setup(filename
-                             , line_continuation_t::unix
+                             , line_continuation_t::line_continuation_unix
                              , ASSIGNMENT_OPERATOR_EQUAL
                              , COMMENT_INI | COMMENT_SHELL
                              , SECTION_OPERATOR_INI_FILE | SECTION_OPERATOR_ONE_SECTION);

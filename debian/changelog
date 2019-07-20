@@ -4,6 +4,8 @@ advgetopt (2.0.1.0~xenial) xenial; urgency=high
     report such as "incorrect".
   * Removed the corresponding tests.
   * Added a license file with GPL v2.
+  * Renamed the line continuation with an introducer (line_continuation_...)
+    because it can otherwise cause problems with compiled with GNU extensions.
 
  -- Alexis Wilke <alexis@m2osw.com>  Fri, 19 Jul 2019 12:39:24 -0800
 

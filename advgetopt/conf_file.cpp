@@ -565,35 +565,35 @@ std::string conf_file_setup::get_config_url() const
                     : f_filename);
 
         std::vector<std::string> params;
-        if(f_line_continuation != line_continuation_t::unix)
+        if(f_line_continuation != line_continuation_t::line_continuation_unix)
         {
             std::string name;
             switch(f_line_continuation)
             {
-            case line_continuation_t::single_line:
+            case line_continuation_t::line_continuation_single_line:
                 name = "single-line";
                 break;
 
-            case line_continuation_t::rfc_822:
+            case line_continuation_t::line_continuation_rfc_822:
                 name = "rfc-822";
                 break;
 
-            case line_continuation_t::msdos:
+            case line_continuation_t::line_continuation_msdos:
                 name = "msdos";
                 break;
 
             // we should not ever receive this one since we don't enter
             // this block when the value is "unix"
             //
-            //case line_continuation_t::unix:
+            //case line_continuation_t::line_continuation_unix:
             //    name = "unix";
             //    break;
 
-            case line_continuation_t::fortran:
+            case line_continuation_t::line_continuation_fortran:
                 name = "fortran";
                 break;
 
-            case line_continuation_t::semicolon:
+            case line_continuation_t::line_continuation_semicolon:
                 name = "semi-colon";
                 break;
 
@@ -1503,7 +1503,7 @@ bool conf_file::get_line(std::ifstream & in, std::string & line)
             return false;
         }
         if(c == ';'
-        && f_setup.get_line_continuation() == line_continuation_t::semicolon)
+        && f_setup.get_line_continuation() == line_continuation_t::line_continuation_semicolon)
         {
             return true;
         }
@@ -1523,11 +1523,11 @@ bool conf_file::get_line(std::ifstream & in, std::string & line)
             ++f_line;
             switch(f_setup.get_line_continuation())
             {
-            case line_continuation_t::single_line:
+            case line_continuation_t::line_continuation_single_line:
                 // continuation support
                 return true;
 
-            case line_continuation_t::rfc_822:
+            case line_continuation_t::line_continuation_rfc_822:
                 c = getc(in);
                 if(!iswspace(c))
                 {
@@ -1541,7 +1541,7 @@ bool conf_file::get_line(std::ifstream & in, std::string & line)
                 while(iswspace(c));
                 break;
 
-            case line_continuation_t::msdos:
+            case line_continuation_t::line_continuation_msdos:
                 if(line.empty()
                 || line.back() != '&')
                 {
@@ -1551,7 +1551,7 @@ bool conf_file::get_line(std::ifstream & in, std::string & line)
                 c = getc(in);
                 break;
 
-            case line_continuation_t::unix:
+            case line_continuation_t::line_continuation_unix:
                 if(line.empty()
                 || line.back() != '\\')
                 {
@@ -1561,7 +1561,7 @@ bool conf_file::get_line(std::ifstream & in, std::string & line)
                 c = getc(in);
                 break;
 
-            case line_continuation_t::fortran:
+            case line_continuation_t::line_continuation_fortran:
                 c = getc(in);
                 if(c != '&')
                 {
@@ -1571,7 +1571,7 @@ bool conf_file::get_line(std::ifstream & in, std::string & line)
                 c = getc(in);
                 break;
 
-            case line_continuation_t::semicolon:
+            case line_continuation_t::line_continuation_semicolon:
                 // if we have a comment, we want to return immediately;
                 // at this time, the comments are not multi-line so
                 // the call can return true only if we were reading the
