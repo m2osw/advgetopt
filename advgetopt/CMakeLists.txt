@@ -55,6 +55,7 @@ add_library( ${PROJECT_NAME} SHARED
     advgetopt_options.cpp
     advgetopt_usage.cpp
     conf_file.cpp
+    license_gpl2.cpp
     log.cpp
     option_info.cpp
     option_info_ref.cpp
@@ -95,6 +96,7 @@ install(
         conf_file.h
         exception.h
         flags.h
+        licenses.h
         log.h
         option_info.h
         options.h
