@@ -553,7 +553,7 @@ getopt::getopt(options_environment const & opt_env
 
     if(has_flag(GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS))
     {
-        flag_t result(process_system_options(std::cout));
+        flag_t const result(process_system_options(std::cout));
         if((result & SYSTEM_OPTION_COMMANDS_MASK) != 0)
         {
             throw getopt_exception_exit("system option processed.", 0);
