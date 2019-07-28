@@ -36,13 +36,10 @@
  * in configuration files.
  */
 
-//// advgetopt lib
-////
-//#include    "advgetopt/option_info.h"
 
 // C++ lib
 //
-#include <cstdint>
+#include    <cstdint>
 
 
 

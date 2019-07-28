@@ -38,7 +38,7 @@
 
 // advgetopt lib
 //
-#include    "advgetopt/flags.h"
+#include    "advgetopt/option_info.h"
 
 
 // snapdev lib

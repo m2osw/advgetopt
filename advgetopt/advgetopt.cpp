@@ -1053,6 +1053,22 @@ option_info::pointer_t getopt::get_alias_destination(option_info::pointer_t opt)
 }
 
 
+/** \brief Retrieve the complete list of options.
+ *
+ * Applications that let their users enter dynamically options need to
+ * have access to the resulting list of options which may not otherwise
+ * be known.
+ *
+ * \return The map of options indexed by name.
+ *
+ * \sa parse_options_from_file()
+ */
+option_info::map_by_name_t const & getopt::get_options() const
+{
+    return f_options_by_name;
+}
+
+
 /** \brief Retrieve an option by name.
  *
  * This function retrieves an option by name. The function handles the

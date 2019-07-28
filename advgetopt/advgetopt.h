@@ -57,6 +57,8 @@ namespace advgetopt
 {
 
 
+constexpr char const        CONFIGURATION_SECTIONS[] = "configuration_sections";
+
 
 constexpr flag_t            SYSTEM_OPTION_NONE                          = 0x0000;
 
@@ -111,6 +113,8 @@ public:
 
     flag_t                  process_system_options(std::basic_ostream<char> & out);
 
+    option_info::map_by_name_t const &
+                            get_options() const;
     option_info::pointer_t  get_option(std::string const & name, bool exact_option = false) const;
     option_info::pointer_t  get_option(short_name_t name, bool exact_option = false) const;
     bool                    is_defined(std::string const & name) const;

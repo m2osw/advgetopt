@@ -45,6 +45,7 @@
 
 // boost lib
 //
+#include    <boost/algorithm/string/join.hpp>
 #include    <boost/algorithm/string/replace.hpp>
 
 
@@ -266,6 +267,35 @@ void getopt::process_configuration_file(std::string const & filename)
         return;
     }
     conf_file::pointer_t conf(conf_file::get_conf_file(conf_setup));
+
+    conf_file::sections_t sections(conf->get_sections());
+    if(!sections.empty())
+    {
+        std::string const name(CONFIGURATION_SECTIONS);
+        option_info::pointer_t configuration_sections(get_option(name));
+        if(configuration_sections == nullptr)
+        {
+            configuration_sections = std::make_shared<option_info>(name);
+            configuration_sections->add_flag(
+                          GETOPT_FLAG_MULTIPLE
+                        | GETOPT_FLAG_CONFIGURATION_FILE
+                        );
+            f_options_by_name[name] = configuration_sections;
+        }
+        else if(!configuration_sections->has_flag(GETOPT_FLAG_MULTIPLE))
+        {
+            log << log_level_t::error
+                << "option \""
+                << name
+                << "\" must have GETOPT_FLAG_MULTIPLE set."
+                << end;
+            return;
+        }
+        for(auto s : sections)
+        {
+            configuration_sections->add_value(s);
+        }
+    }
 
     for(auto const & param : conf->get_parameters())
     {
