@@ -461,23 +461,13 @@ bool is_arg(char const * a)
  * \sa parse_environment_variable()
  * \sa parse_string()
  * \sa process_configuration_file()
+ *
+ * \sa initialize_parser()
+ * \sa finish_parsing()
  */
 getopt::getopt(options_environment const & opt_env)
 {
-    f_options_environment = opt_env;
-
-    parse_options_info(f_options_environment.f_options, false);
-    parse_options_from_file();
-    parse_options_from_group_names();
-    if(has_flag(GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS | GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS))
-    {
-        parse_options_info(g_system_options, true);
-        if(f_options_environment.f_configuration_filename != nullptr
-        && *f_options_environment.f_configuration_filename != '\0')
-        {
-            parse_options_info(g_if_configuration_filename_system_options, true);
-        }
-    }
+    initialize_parser(opt_env);
 }
 
 
@@ -511,22 +501,42 @@ getopt::getopt(options_environment const & opt_env)
  * All the data gets copied while parsed. If the argv array is deleted on
  * return, the getopt object remains valid.
  *
+ * \exception getopt_exception_exit
+ * This function calls finish_parsing() which may throw this exception.
+ * See that function for details.
+ *
+ * \param[in] opt_env  The list of options that your program supports.
  * \param[in] argc  The number of arguments in argv.
  * \param[in] argv  An array of strings representing arguments.
- * \param[in] opt_env  The list of options that your program supports.
+ *
+ * \sa initialize_parser()
+ * \sa finish_parsing()
  */
 getopt::getopt(options_environment const & opt_env
              , int argc
              , char * argv[])
 {
-    if(argv == nullptr)
-    {
-        throw getopt_exception_logic("argv pointer cannot be nullptr");
-    }
+    initialize_parser(opt_env);
+    finish_parsing(argc, argv);
+}
 
+
+/** \brief Initialize the parser.
+ *
+ * This function is called from the two constructors. It initializes the
+ * basic options from the user definitions, the file when there is one,
+ * the group names, and if allowed the system command line options.
+ *
+ * This is enough to then parse arguments or configuration files, although
+ * in most cases this is used to allow for additional environment options
+ * to be inserted before calling the finish_parsing() function.
+ *
+ * \param[in] opt_env  The list of options that your program supports.
+ */
+void getopt::initialize_parser(options_environment const & opt_env)
+{
     f_options_environment = opt_env;
 
-    parse_program_name(argv);
     parse_options_info(f_options_environment.f_options, false);
     parse_options_from_file();
     parse_options_from_group_names();
@@ -539,7 +549,35 @@ getopt::getopt(options_environment const & opt_env
             parse_options_info(g_if_configuration_filename_system_options, true);
         }
     }
+}
 
+
+/** \brief Actually parse everything.
+ *
+ * This function allows you to run the second half of the initialization
+ * process. We've broken this process up in two, so you can initialize
+ * a getopt object, add some other options, then finish up the
+ * initialization process by calling this function.
+ *
+ * The command line arguments, configuration files.
+ *
+ * \exception getopt_exception_exit
+ * If the GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS is set and
+ * a system command was specified on the command, such as --help or
+ * --version, then that command is run and the function throws this
+ * exception.
+ *
+ * \param[in] argc  The number of arguments in argv.
+ * \param[in] argv  An array of strings representing arguments.
+ */
+void getopt::finish_parsing(int argc, char * argv[])
+{
+    if(argv == nullptr)
+    {
+        throw getopt_exception_logic("argv pointer cannot be nullptr");
+    }
+
+    parse_program_name(argv);
     if(f_options_by_name.empty())
     {
         throw getopt_exception_logic("an empty list of options is not legal, you must defined at least one (i.e. --version, --help...)");

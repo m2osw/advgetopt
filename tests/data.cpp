@@ -1,7 +1,4 @@
 /*
- * Files:
- *    tests/data.cpp
- *
  * License:
  *    Copyright (c) 2006-2019  Made to Order Software Corp.  All Rights Reserved
  *
@@ -631,6 +628,26 @@ CATCH_TEST_CASE("system_flags_help", "[arguments][valid][getopt][system_flags]")
         advgetopt::getopt opt(environment_options, argc, argv);
 
         // check that the result is valid
+
+        // check the list of options
+        advgetopt::option_info::map_by_name_t const & list_of_options(opt.get_options());
+        CATCH_REQUIRE(list_of_options.size() == 3 + 8 + 1);
+
+        // user options
+        CATCH_REQUIRE(list_of_options.find("size") != list_of_options.end());
+        CATCH_REQUIRE(list_of_options.find("obscure") != list_of_options.end());
+        CATCH_REQUIRE(list_of_options.find("secret") != list_of_options.end());
+
+        // system options
+        CATCH_REQUIRE(list_of_options.find("help") != list_of_options.end());
+        CATCH_REQUIRE(list_of_options.find("long-help") != list_of_options.end());
+        CATCH_REQUIRE(list_of_options.find("version") != list_of_options.end());
+        CATCH_REQUIRE(list_of_options.find("copyright") != list_of_options.end());
+        CATCH_REQUIRE(list_of_options.find("license") != list_of_options.end());
+        CATCH_REQUIRE(list_of_options.find("build-date") != list_of_options.end());
+        CATCH_REQUIRE(list_of_options.find("environment-variable-name") != list_of_options.end());
+        CATCH_REQUIRE(list_of_options.find("configuration-filenames") != list_of_options.end());
+        CATCH_REQUIRE(list_of_options.find("path-to-option-definitions") != list_of_options.end());
 
         // an invalid parameter, MUST NOT EXIST
         CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);

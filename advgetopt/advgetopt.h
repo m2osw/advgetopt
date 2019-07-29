@@ -94,7 +94,11 @@ public:
                                       option const * opts
                                     , bool ignore_duplicates = false);
     void                    link_aliases();
-    void                    set_short_name(std::string const & name, short_name_t short_name);
+    void                    set_short_name(
+                                      std::string const & name
+                                    , short_name_t short_name);
+
+    void                    finish_parsing(int argc, char * argv[]);
 
     void                    parse_program_name(char * argv[]);
 
@@ -155,6 +159,7 @@ public:
     static size_t           get_line_width();
 
 private:
+    void                    initialize_parser(options_environment const & opt_env);
     void                    parse_options_from_group_names();
     void                    parse_options_from_file();
     option_info::pointer_t  get_alias_destination(option_info::pointer_t opt) const;
