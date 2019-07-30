@@ -1,7 +1,4 @@
 /*
- * File:
- *    advgetopt/advgetopt.cpp -- advanced get option implementation
- *
  * License:
  *    Copyright (c) 2006-2019  Made to Order Software Corp.  All Rights Reserved
  *
@@ -594,7 +591,7 @@ void getopt::finish_parsing(int argc, char * argv[])
         flag_t const result(process_system_options(std::cout));
         if((result & SYSTEM_OPTION_COMMANDS_MASK) != 0)
         {
-            throw getopt_exception_exit("system option processed.", 0);
+            throw getopt_exception_exit("system command processed.", 0);
         }
     }
 }

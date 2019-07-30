@@ -1,7 +1,4 @@
 #
-# File:
-#       CMakeLists.txt
-#
 # Description:
 #       Definitions to create the build environment with cmake
 #

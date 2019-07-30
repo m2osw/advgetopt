@@ -1,7 +1,4 @@
 #
-# File:
-#      cmake/CMakeLists.txt
-#
 # Description:
 #      Install necessary cmake modules
 #

@@ -1,7 +1,4 @@
 #
-# File:
-#      tools/CMakeLists.txt
-#
 # Description:
 #      Build the AdvGetopt tools.
 #

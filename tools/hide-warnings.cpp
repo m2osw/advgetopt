@@ -1,7 +1,4 @@
 /*
- * File:
- *    tools/hide-warnings.cpp -- tool used to hide Gtk message from terminal
- *
  * License:
  *    Copyright (c) 2006-2019  Made to Order Software Corp.  All Rights Reserved
  *

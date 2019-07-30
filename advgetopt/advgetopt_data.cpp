@@ -1,7 +1,4 @@
 /*
- * File:
- *    advgetopt/advgetopt_options.cpp -- advanced get option implementation
- *
  * License:
  *    Copyright (c) 2006-2019  Made to Order Software Corp.  All Rights Reserved
  *

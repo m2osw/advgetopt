@@ -1,7 +1,4 @@
 /*
- * File:
- *    advgetopt/licenses.h -- a set of licenses you can readily use in your tool
- *
  * License:
  *    Copyright (c) 2006-2019  Made to Order Software Corp.  All Rights Reserved
  *

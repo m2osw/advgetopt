@@ -1,7 +1,4 @@
 #
-# File:
-#      doc/CMakeLists.txt
-#
 # Description:
 #      Create the documentation of the advgetopt library.
 #

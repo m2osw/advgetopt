@@ -1,7 +1,4 @@
 /*
- * Files:
- *    tests/arguments.cpp
- *
  * License:
  *    Copyright (c) 2006-2019  Made to Order Software Corp.  All Rights Reserved
  *

@@ -1,7 +1,4 @@
 /*
- * File:
- *    advgetopt/license_gpl2.cpp -- the GPL v2 license
- *
  * License:
  *    Copyright (c) 2006-2019  Made to Order Software Corp.  All Rights Reserved
  *

@@ -1,7 +1,4 @@
 #
-# File:
-#      advgetopt/CMakeLists.txt
-#
 # Description:
 #      Build the AdvGetopt library
 #

@@ -1,8 +1,4 @@
 /*
- * File:
- *    tools/build-file-of-options.cpp -- convert a .conf comments into a file
- *                                       of options
- *
  * License:
  *    Copyright (c) 2019  Made to Order Software Corp.  All Rights Reserved
  *
