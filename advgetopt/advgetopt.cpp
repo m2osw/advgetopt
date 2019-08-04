@@ -597,6 +597,20 @@ void getopt::finish_parsing(int argc, char * argv[])
 }
 
 
+/** \brief Return a reference to the options environment.
+ *
+ * This function returns a reference to the options environment that
+ * was passed to the constructor. This is useful to functions that
+ * do not otherwise have access to that object.
+ *
+ * \return This getopt options environment.
+ */
+options_environment const & getopt::get_options_environment() const
+{
+    return f_options_environment;
+}
+
+
 /** \brief Check whether an environment flag is set or not.
  *
  * This function checks the environment flags for the specified \p flag.

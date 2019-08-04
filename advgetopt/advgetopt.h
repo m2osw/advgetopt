@@ -84,6 +84,8 @@ public:
                                  , int argc
                                  , char * argv[]);
 
+    options_environment const &
+                            get_options_environment() const;
     bool                    has_flag(flag_t flag) const;
     void                    reset();
 
