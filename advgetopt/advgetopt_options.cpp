@@ -107,7 +107,8 @@ void getopt::parse_options_info(option const * opts, bool ignore_duplicates)
         {
             throw getopt_exception_logic("option long name missing or empty.");
         }
-        if(opts->f_name[1] == '\0')
+        short_name_t const one_char(string_to_short_name(opts->f_name));
+        if(one_char != NO_SHORT_NAME)
         {
             throw getopt_exception_logic("a long name option must be at least 2 characters.");
         }
@@ -167,7 +168,7 @@ void getopt::parse_options_info(option const * opts, bool ignore_duplicates)
             f_default_option = o;
         }
 
-        f_options_by_name[opts->f_name] = o;
+        f_options_by_name[o->get_name()] = o;
         if(short_name != NO_SHORT_NAME)
         {
             f_options_by_short_name[short_name] = o;

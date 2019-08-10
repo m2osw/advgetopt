@@ -1148,15 +1148,17 @@ option_info::pointer_t getopt::get_option(std::string const & name, bool exact_o
     //
     option_info::pointer_t opt;
 
-    if(name.length() == 2
-    && name[0] == '-'
-    && name[1] == '-')
+    std::string const n(boost::replace_all_copy(name, "_", "-"));
+
+    if(n.length() == 2
+    && n[0] == '-'
+    && n[1] == '-')
     {
         opt = f_default_option;
     }
     else
     {
-        short_name_t short_name(string_to_short_name(name));
+        short_name_t short_name(string_to_short_name(n));
         if(short_name != NO_SHORT_NAME)
         {
             auto it(f_options_by_short_name.find(short_name));
@@ -1167,7 +1169,7 @@ option_info::pointer_t getopt::get_option(std::string const & name, bool exact_o
         }
         else
         {
-            auto it(f_options_by_name.find(name));
+            auto it(f_options_by_name.find(n));
             if(it != f_options_by_name.end())
             {
                 opt = it->second;

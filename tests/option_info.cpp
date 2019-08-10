@@ -1053,6 +1053,7 @@ CATCH_TEST_CASE("redefine_option_short_name", "[options][valid][config]")
         opt.parse_program_name(argv);
 
         CATCH_REQUIRE(opt.get_option("config-dir") != nullptr);
+        CATCH_REQUIRE(opt.get_option("config-dir") == opt.get_option("config_dir"));
         opt.set_short_name("config-dir", 0x2D60);
 
         opt.parse_arguments(argc, argv);
@@ -1061,6 +1062,7 @@ CATCH_TEST_CASE("redefine_option_short_name", "[options][valid][config]")
 
         // an invalid parameter, MUST NOT EXIST
         CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == opt.get_option("invalid_parameter"));
         CATCH_REQUIRE(opt.get_option('Z') == nullptr);
         CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
         CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());

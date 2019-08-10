@@ -822,7 +822,7 @@ CATCH_TEST_CASE("require_argument", "[arguments][valid][required][getopt]")
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
-                  advgetopt::Name("out")
+                  advgetopt::Name("out_dir")
                 , advgetopt::ShortName('o')
                 , advgetopt::Flags(advgetopt::var_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
                 , advgetopt::Help("output filename.")
@@ -834,12 +834,12 @@ CATCH_TEST_CASE("require_argument", "[arguments][valid][required][getopt]")
         environment_options.f_project_name = "unittest";
         environment_options.f_options = options;
         environment_options.f_environment_flags = 0;
-        environment_options.f_help_header = "Usage: test simple --out <filename> option";
+        environment_options.f_help_header = "Usage: test simple --out_dir <filename> option";
         environment_options.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
 
         CATCH_WHEN("using long form")
         {
-            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--out my-filename.out");
+            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--out_dir my-filename.out");
 
             char const * cargv[] =
             {
@@ -861,13 +861,15 @@ CATCH_TEST_CASE("require_argument", "[arguments][valid][required][getopt]")
             CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
 
             // the valid parameter
-            CATCH_REQUIRE(opt.get_option("out") != nullptr);
+            CATCH_REQUIRE(opt.get_option("out-dir") != nullptr);
+            CATCH_REQUIRE(opt.get_option("out_dir") != nullptr);
+            CATCH_REQUIRE(opt.get_option("out_dir") == opt.get_option("out-dir"));
             CATCH_REQUIRE(opt.get_option('o') != nullptr);
-            CATCH_REQUIRE(opt.is_defined("out"));
-            CATCH_REQUIRE(opt.get_string("out") == "my-filename.out");
-            CATCH_REQUIRE(opt.get_string("out", 0) == "my-filename.out");
-            CATCH_REQUIRE(opt.get_default("out").empty());
-            CATCH_REQUIRE(opt.size("out") == 1);
+            CATCH_REQUIRE(opt.is_defined("out-dir"));
+            CATCH_REQUIRE(opt.get_string("out-dir") == "my-filename.out");
+            CATCH_REQUIRE(opt.get_string("out-dir", 0) == "my-filename.out");
+            CATCH_REQUIRE(opt.get_default("out-dir").empty());
+            CATCH_REQUIRE(opt.size("out-dir") == 1);
 
             // other parameters
             CATCH_REQUIRE(opt.get_program_name() == "arguments");
@@ -876,7 +878,7 @@ CATCH_TEST_CASE("require_argument", "[arguments][valid][required][getopt]")
 
         CATCH_WHEN("using long form with an equal sign")
         {
-            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--out=my-filename.out");
+            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--out_dir=my-filename.out");
 
             char const * cargv[] =
             {
@@ -898,13 +900,13 @@ CATCH_TEST_CASE("require_argument", "[arguments][valid][required][getopt]")
             CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
 
             // the valid parameter
-            CATCH_REQUIRE(opt.get_option("out") != nullptr);
+            CATCH_REQUIRE(opt.get_option("out_dir") != nullptr);
             CATCH_REQUIRE(opt.get_option('o') != nullptr);
-            CATCH_REQUIRE(opt.is_defined("out"));
-            CATCH_REQUIRE(opt.get_string("out") == "my-filename.out");
-            CATCH_REQUIRE(opt.get_string("out", 0) == "my-filename.out");
-            CATCH_REQUIRE(opt.get_default("out").empty());
-            CATCH_REQUIRE(opt.size("out") == 1);
+            CATCH_REQUIRE(opt.is_defined("out_dir"));
+            CATCH_REQUIRE(opt.get_string("out_dir") == "my-filename.out");
+            CATCH_REQUIRE(opt.get_string("out_dir", 0) == "my-filename.out");
+            CATCH_REQUIRE(opt.get_default("out_dir").empty());
+            CATCH_REQUIRE(opt.size("out_dir") == 1);
 
             // other parameters
             CATCH_REQUIRE(opt.get_program_name() == "arguments");
@@ -935,13 +937,13 @@ CATCH_TEST_CASE("require_argument", "[arguments][valid][required][getopt]")
             CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
 
             // the valid parameter
-            CATCH_REQUIRE(opt.get_option("out") != nullptr);
+            CATCH_REQUIRE(opt.get_option("out_dir") != nullptr);
             CATCH_REQUIRE(opt.get_option('o') != nullptr);
-            CATCH_REQUIRE(opt.is_defined("out"));
-            CATCH_REQUIRE(opt.get_string("out") == "my-filename.out");
-            CATCH_REQUIRE(opt.get_string("out", 0) == "my-filename.out");
-            CATCH_REQUIRE(opt.get_default("out").empty());
-            CATCH_REQUIRE(opt.size("out") == 1);
+            CATCH_REQUIRE(opt.is_defined("out-dir"));
+            CATCH_REQUIRE(opt.get_string("out_dir") == "my-filename.out");
+            CATCH_REQUIRE(opt.get_string("out-dir", 0) == "my-filename.out");
+            CATCH_REQUIRE(opt.get_default("out_dir").empty());
+            CATCH_REQUIRE(opt.size("out-dir") == 1);
 
             // other parameters
             CATCH_REQUIRE(opt.get_program_name() == "arguments");
@@ -4757,7 +4759,7 @@ CATCH_TEST_CASE("auto_process_system_arguments", "[arguments][valid][getopt]")
             {
                 // this is the expected route
                 //
-                CATCH_REQUIRE(e.what() == std::string("system option processed."));
+                CATCH_REQUIRE(e.what() == std::string("system command processed."));
                 CATCH_REQUIRE(e.code() == 0);
                 CATCH_REQUIRE(out.str() == "2.0.1\n");
             }
@@ -4797,7 +4799,7 @@ CATCH_TEST_CASE("auto_process_system_arguments", "[arguments][valid][getopt]")
             {
                 // this is the expected route
                 //
-                CATCH_REQUIRE(e.what() == std::string("system option processed."));
+                CATCH_REQUIRE(e.what() == std::string("system command processed."));
                 CATCH_REQUIRE(e.code() == 0);
                 CATCH_REQUIRE(out.str() == "Copyright (c) 2019  Made to Order Software Corp. -- All Rights Reserved\n");
             }
@@ -4837,7 +4839,7 @@ CATCH_TEST_CASE("auto_process_system_arguments", "[arguments][valid][getopt]")
             {
                 // this is the expected route
                 //
-                CATCH_REQUIRE(e.what() == std::string("system option processed."));
+                CATCH_REQUIRE(e.what() == std::string("system command processed."));
                 CATCH_REQUIRE(e.code() == 0);
                 CATCH_REQUIRE(out.str() == "Built on Jun  4 2019 at 23:02:36\n");
             }
@@ -4877,7 +4879,7 @@ CATCH_TEST_CASE("auto_process_system_arguments", "[arguments][valid][getopt]")
             {
                 // this is the expected route
                 //
-                CATCH_REQUIRE(e.what() == std::string("system option processed."));
+                CATCH_REQUIRE(e.what() == std::string("system command processed."));
                 CATCH_REQUIRE(e.code() == 0);
                 CATCH_REQUIRE(out.str() == "MIT\n");
             }

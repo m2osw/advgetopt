@@ -185,7 +185,7 @@ option_info::option_info(std::string const & name, short_name_t short_name)
     : f_name(boost::replace_all_copy(name, "_", "-"))
     , f_short_name(short_name)
 {
-    if(name.empty())
+    if(f_name.empty())
     {
         if(short_name != NO_SHORT_NAME)
         {
@@ -198,7 +198,7 @@ option_info::option_info(std::string const & name, short_name_t short_name)
                       "option_info::option_info(): all options must at least have a long name.");
     }
 
-    if(name == "--")
+    if(f_name == "--")
     {
         if(short_name != NO_SHORT_NAME)
         {
@@ -212,11 +212,11 @@ option_info::option_info(std::string const & name, short_name_t short_name)
     }
     else
     {
-        if(name[0] == '-')
+        if(f_name[0] == '-')
         {
             throw getopt_exception_logic(
                           "option_info::option_info(): an option cannot start with a dash (-), \""
-                        + name
+                        + f_name
                         + "\" is not valid.");
         }
 
