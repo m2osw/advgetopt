@@ -33,6 +33,7 @@
  * in configuration files.
  */
 
+
 // advgetopt lib
 //
 #include    "advgetopt/option_info.h"
@@ -433,8 +434,8 @@ struct options_environment
     char const *                f_version = nullptr;                    // show on --version and %v
     char const *                f_license = nullptr;                    // show on --license and %l
     char const *                f_copyright = nullptr;                  // show on --copyright and %c
-    char const *                f_build_date = __DATE__;                // available to parameter %b
-    char const *                f_build_time = __TIME__;                // available to parameter %t
+    char const *                f_build_date = UTC_BUILD_DATE;          // available to parameter %b
+    char const *                f_build_time = UTC_BUILD_TIME;          // available to parameter %t
     group_description const *   f_groups = nullptr;                     // nullptr terminated array of group names
 };
 
