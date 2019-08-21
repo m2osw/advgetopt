@@ -54,7 +54,7 @@ enum class log_level_t
 std::string to_string(log_level_t level);
 
 
-typedef void (*log_callback)(log_level_t, std::string const & message);
+typedef void (*log_callback)(log_level_t level, std::string const & message);
 
 void set_log_callback(log_callback callback);
 
