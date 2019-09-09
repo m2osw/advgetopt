@@ -1,3 +1,9 @@
+advgetopt (2.0.4.0~xenial) xenial; urgency=high
+
+  * Prevent use of --option=value when --option does not accept a value.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon,  9 Sep 2019 12:05:12 -0800
+
 advgetopt (2.0.3.1~xenial) xenial; urgency=high
 
   * Try a build again to see whether I started the last one too soon.

@@ -1296,6 +1296,24 @@ void getopt::add_option_from_string(option_info::pointer_t opt, std::string cons
     //
     if(!value.empty())
     {
+        if(opt->has_flag(GETOPT_FLAG_FLAG))
+        {
+            log << log_level_t::error
+                << "option "
+                << (filename.empty()
+                        ? "--" + opt->get_name()
+                        : "\"" + boost::replace_all_copy(opt->get_name(), "-", "_") + "\"")
+                << " cannot be given a value"
+                << (filename.empty()
+                    ? std::string()
+                    : " in configuration file \""
+                        + filename
+                        + "\"")
+                << "."
+                << end;
+            return;
+        }
+
         // does the option support multiple entries?
         //
         if(opt->has_flag(GETOPT_FLAG_MULTIPLE))
