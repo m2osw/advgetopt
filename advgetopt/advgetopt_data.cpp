@@ -39,12 +39,16 @@
 //
 #include    "advgetopt/conf_file.h"
 #include    "advgetopt/exception.h"
-#include    "advgetopt/log.h"
+
+
+// cppthread lib
+//
+#include    <cppthread/log.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
@@ -150,7 +154,7 @@ bool getopt::has_default(std::string const & name) const
 {
     if(name.empty())
     {
-        throw getopt_exception_logic("argument name cannot be empty.");
+        throw getopt_logic_error("argument name cannot be empty.");
     }
 
     option_info::pointer_t opt(get_option(name));
@@ -190,7 +194,7 @@ std::string getopt::get_default(std::string const & name) const
 {
     if(name.empty())
     {
-        throw getopt_exception_logic("argument name cannot be empty.");
+        throw getopt_logic_error("argument name cannot be empty.");
     }
 
     option_info::pointer_t opt(get_option(name));
@@ -251,7 +255,7 @@ long getopt::get_long(std::string const & name, int idx, long min, long max)
     option_info::pointer_t opt(get_option(name));
     if(opt == nullptr)
     {
-        throw getopt_exception_logic(
+        throw getopt_logic_error(
                   "there is no --"
                 + name
                 + " option defined.");
@@ -263,7 +267,7 @@ long getopt::get_long(std::string const & name, int idx, long min, long max)
         std::string const d(opt->get_default());
         if(d.empty())
         {
-            throw getopt_exception_logic(
+            throw getopt_logic_error(
                       "the --"
                     + name
                     + " option was not defined on the command line and it has no or an empty default.");
@@ -276,7 +280,7 @@ long getopt::get_long(std::string const & name, int idx, long min, long max)
             // here we throw because this default value is defined in the
             // options of the tool and not by the user
             //
-            throw getopt_exception_logic(
+            throw getopt_logic_error(
                       "invalid default number \""
                     + d
                     + "\" for option --"
@@ -292,16 +296,16 @@ long getopt::get_long(std::string const & name, int idx, long min, long max)
     //
     if(result < min || result > max)
     {
-        log << log_level_t::error
-            << result
-            << " is out of bounds ("
-            << min
-            << ".."
-            << max
-            << " inclusive) in parameter --"
-            << name
-            << "."
-            << end;
+        cppthread::log << cppthread::log_level_t::error
+                       << result
+                       << " is out of bounds ("
+                       << min
+                       << ".."
+                       << max
+                       << " inclusive) in parameter --"
+                       << name
+                       << "."
+                       << cppthread::end;
         result = -1;
     }
 
@@ -334,7 +338,7 @@ std::string getopt::get_string(std::string const & name, int idx) const
     option_info::pointer_t opt(get_option(name));
     if(opt == nullptr)
     {
-        throw getopt_exception_logic(
+        throw getopt_logic_error(
                   "there is no --"
                 + name
                 + " option defined.");
@@ -346,7 +350,7 @@ std::string getopt::get_string(std::string const & name, int idx) const
         {
             return opt->get_default();
         }
-        throw getopt_exception_logic(
+        throw getopt_logic_error(
                   "the --"
                 + name
                 + " option was not defined on the command line and it has no default.");
@@ -374,7 +378,7 @@ std::string getopt::operator [] (std::string const & name) const
 {
     if(name.empty())
     {
-        throw getopt_exception_logic("argument name cannot be empty.");
+        throw getopt_logic_error("argument name cannot be empty.");
     }
 
     option_info::pointer_t opt(get_option(name));
@@ -450,7 +454,7 @@ option_info_ref getopt::operator [] (std::string const & name)
 {
     if(name.empty())
     {
-        throw getopt_exception_logic("argument name cannot be empty.");
+        throw getopt_logic_error("argument name cannot be empty.");
     }
 
     option_info::pointer_t opt(get_option(name));
@@ -458,7 +462,7 @@ option_info_ref getopt::operator [] (std::string const & name)
     {
         if(name.length() == 1)
         {
-            throw getopt_exception_logic("argument name cannot be one letter if it does not exist in operator [].");
+            throw getopt_logic_error("argument name cannot be one letter if it does not exist in operator [].");
         }
 
         // The option doesn't exist yet, create it

@@ -27,19 +27,25 @@
 
 // advgetopt lib
 //
-#include <advgetopt/advgetopt.h>
-#include <advgetopt/log.h>
+#include    <advgetopt/advgetopt.h>
+
+
+// cppthread lib
+//
+#include    <cppthread/log.h>
+
 
 // catch lib
 //
-#include <catch2/snapcatch2.hpp>
+#include    <catch2/snapcatch2.hpp>
+
 
 // C++ lib
 //
-#include <string>
-#include <cstring>
-#include <cstdlib>
-#include <iostream>
+#include    <string>
+#include    <cstring>
+#include    <cstdlib>
+#include    <iostream>
 
 
 namespace SNAP_CATCH2_NAMESPACE
@@ -53,7 +59,7 @@ extern std::string                  g_config_project_filename;
 
 
 void                                push_expected_log(std::string const & message);
-void                                log_for_test(advgetopt::log_level_t level, std::string const & message);
+void                                log_for_test(cppthread::log_level_t level, std::string const & message);
 void                                expected_logs_stack_is_empty();
 
 void                                init_tmp_dir(std::string const & project_name, std::string const & prefname, bool dir = false);

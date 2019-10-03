@@ -96,7 +96,11 @@
 // advgetopt lib
 //
 #include    "advgetopt/exception.h"
-#include    "advgetopt/log.h"
+
+
+// cppthread lib
+//
+#include    <cppthread/log.h>
 
 
 // libutf8 lib
@@ -111,7 +115,7 @@
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
@@ -571,13 +575,13 @@ void getopt::finish_parsing(int argc, char * argv[])
 {
     if(argv == nullptr)
     {
-        throw getopt_exception_logic("argv pointer cannot be nullptr");
+        throw getopt_logic_error("argv pointer cannot be nullptr");
     }
 
     parse_program_name(argv);
     if(f_options_by_name.empty())
     {
-        throw getopt_exception_logic("an empty list of options is not legal, you must defined at least one (i.e. --version, --help...)");
+        throw getopt_logic_error("an empty list of options is not legal, you must defined at least one (i.e. --version, --help...)");
     }
 
     link_aliases();
@@ -591,7 +595,7 @@ void getopt::finish_parsing(int argc, char * argv[])
         flag_t const result(process_system_options(std::cout));
         if((result & SYSTEM_OPTION_COMMANDS_MASK) != 0)
         {
-            throw getopt_exception_exit("system command processed.", 0);
+            throw getopt_exit("system command processed.", 0);
         }
     }
 }
@@ -841,9 +845,9 @@ void getopt::parse_arguments(int argc
                     //
                     if(f_default_option == nullptr)
                     {
-                        log << log_level_t::error
-                            << "no default options defined; thus -- is not accepted by this program."
-                            << end;
+                        cppthread::log << cppthread::log_level_t::error
+                                       << "no default options defined; thus -- is not accepted by this program."
+                                       << cppthread::end;
                         break;
                     }
 
@@ -851,9 +855,9 @@ void getopt::parse_arguments(int argc
                     {
                         if(!f_default_option->has_flag(GETOPT_FLAG_ENVIRONMENT_VARIABLE))
                         {
-                            log << log_level_t::error
-                                << "option -- is not supported in the environment variable."
-                                << end;
+                            cppthread::log << cppthread::log_level_t::error
+                                           << "option -- is not supported in the environment variable."
+                                           << cppthread::end;
                             break;
                         }
                     }
@@ -861,9 +865,9 @@ void getopt::parse_arguments(int argc
                     {
                         if(!f_default_option->has_flag(GETOPT_FLAG_COMMAND_LINE))
                         {
-                            log << log_level_t::error
-                                << "option -- is not supported in the environment variable."
-                                << end;
+                            cppthread::log << cppthread::log_level_t::error
+                                           << "option -- is not supported in the environment variable."
+                                           << cppthread::end;
                             break;
                         }
                     }
@@ -889,11 +893,11 @@ void getopt::parse_arguments(int argc
                     {
                         if(pos == 0)
                         {
-                            log << log_level_t::error
-                                << "name missing in \""
-                                << argv[i]
-                                << "\"."
-                                << end;
+                            cppthread::log << cppthread::log_level_t::error
+                                           << "name missing in \""
+                                           << argv[i]
+                                           << "\"."
+                                           << cppthread::end;
                             break;
                         }
 
@@ -903,22 +907,22 @@ void getopt::parse_arguments(int argc
                     option_info::pointer_t opt(get_option(option_name));
                     if(opt == nullptr)
                     {
-                        log << log_level_t::error
-                            << "option --"
-                            << option_name
-                            << " is not supported."
-                            << end;
+                        cppthread::log << cppthread::log_level_t::error
+                                       << "option --"
+                                       << option_name
+                                       << " is not supported."
+                                       << cppthread::end;
                         break;
                     }
                     if(only_environment_variable)
                     {
                         if(!opt->has_flag(GETOPT_FLAG_ENVIRONMENT_VARIABLE))
                         {
-                            log << log_level_t::error
-                                << "option --"
-                                << option_name
-                                << " is not supported in the environment variable."
-                                << end;
+                            cppthread::log << cppthread::log_level_t::error
+                                           << "option --"
+                                           << option_name
+                                           << " is not supported in the environment variable."
+                                           << cppthread::end;
                             break;
                         }
                     }
@@ -926,11 +930,11 @@ void getopt::parse_arguments(int argc
                     {
                         if(!opt->has_flag(GETOPT_FLAG_COMMAND_LINE))
                         {
-                            log << log_level_t::error
-                                << "option --"
-                                << option_name
-                                << " is not supported on the command line."
-                                << end;
+                            cppthread::log << cppthread::log_level_t::error
+                                           << "option --"
+                                           << option_name
+                                           << " is not supported on the command line."
+                                           << cppthread::end;
                             break;
                         }
                     }
@@ -954,18 +958,18 @@ void getopt::parse_arguments(int argc
                     //
                     if(f_default_option == nullptr)
                     {
-                        log << log_level_t::error
-                            << "no default options defined; thus - is not accepted by this program."
-                            << end;
+                        cppthread::log << cppthread::log_level_t::error
+                                       << "no default options defined; thus - is not accepted by this program."
+                                       << cppthread::end;
                         break;
                     }
                     if(only_environment_variable)
                     {
                         if(!f_default_option->has_flag(GETOPT_FLAG_ENVIRONMENT_VARIABLE))
                         {
-                            log << log_level_t::error
-                                << "option - is not supported in the environment variable."
-                                << end;
+                            cppthread::log << cppthread::log_level_t::error
+                                           << "option - is not supported in the environment variable."
+                                           << cppthread::end;
                             break;
                         }
                     }
@@ -973,9 +977,9 @@ void getopt::parse_arguments(int argc
                     {
                         if(!f_default_option->has_flag(GETOPT_FLAG_COMMAND_LINE))
                         {
-                            log << log_level_t::error
-                                << "option - is not supported in the environment variable."
-                                << end;
+                            cppthread::log << cppthread::log_level_t::error
+                                           << "option - is not supported in the environment variable."
+                                           << cppthread::end;
                             break;
                         }
                     }
@@ -999,22 +1003,22 @@ void getopt::parse_arguments(int argc
                         option_info::pointer_t opt(get_option(*short_args));
                         if(opt == nullptr)
                         {
-                            log << log_level_t::error
-                                << "option -"
-                                << short_name_to_string(*short_args)
-                                << " is not supported."
-                                << end;
+                            cppthread::log << cppthread::log_level_t::error
+                                           << "option -"
+                                           << short_name_to_string(*short_args)
+                                           << " is not supported."
+                                           << cppthread::end;
                             break;
                         }
                         if(only_environment_variable)
                         {
                             if(!opt->has_flag(GETOPT_FLAG_ENVIRONMENT_VARIABLE))
                             {
-                                log << log_level_t::error
-                                    << "option -"
-                                    << short_name_to_string(*short_args)
-                                    << " is not supported in the environment variable."
-                                    << end;
+                                cppthread::log << cppthread::log_level_t::error
+                                               << "option -"
+                                               << short_name_to_string(*short_args)
+                                               << " is not supported in the environment variable."
+                                               << cppthread::end;
                                 break;
                             }
                         }
@@ -1022,11 +1026,11 @@ void getopt::parse_arguments(int argc
                         {
                             if(!opt->has_flag(GETOPT_FLAG_COMMAND_LINE))
                             {
-                                log << log_level_t::error
-                                    << "option -"
-                                    << short_name_to_string(*short_args)
-                                    << " is not supported on the command line."
-                                    << end;
+                                cppthread::log << cppthread::log_level_t::error
+                                               << "option -"
+                                               << short_name_to_string(*short_args)
+                                               << " is not supported on the command line."
+                                               << cppthread::end;
                                 break;
                             }
                         }
@@ -1041,20 +1045,20 @@ void getopt::parse_arguments(int argc
             //
             if(f_default_option == nullptr)
             {
-                log << log_level_t::error
-                    << "no default options defined; we do not know what to do of \""
-                    << argv[i]
-                    << "\"; standalone parameters are not accepted by this program."
-                    << end;
+                cppthread::log << cppthread::log_level_t::error
+                               << "no default options defined; we do not know what to do of \""
+                               << argv[i]
+                               << "\"; standalone parameters are not accepted by this program."
+                               << cppthread::end;
                 break;
             }
             if(only_environment_variable)
             {
                 if(!f_default_option->has_flag(GETOPT_FLAG_ENVIRONMENT_VARIABLE))
                 {
-                    log << log_level_t::error
-                        << "default options are not supported in the environment variable."
-                        << end;
+                    cppthread::log << cppthread::log_level_t::error
+                                   << "default options are not supported in the environment variable."
+                                   << cppthread::end;
                     break;
                 }
             }
@@ -1062,9 +1066,9 @@ void getopt::parse_arguments(int argc
             {
                 if(!f_default_option->has_flag(GETOPT_FLAG_COMMAND_LINE))
                 {
-                    log << log_level_t::error
-                        << "default options are not supported on the command line."
-                        << end;
+                    cppthread::log << cppthread::log_level_t::error
+                                   << "default options are not supported on the command line."
+                                   << cppthread::end;
                     break;
                 }
             }
@@ -1094,7 +1098,7 @@ option_info::pointer_t getopt::get_alias_destination(option_info::pointer_t opt)
         opt = opt->get_alias_destination();
         if(opt == nullptr)
         {
-            throw getopt_exception_undefined("getopt::get_alias_destination(): alias is missing. Did you call link_aliases()?");
+            throw getopt_undefined("getopt::get_alias_destination(): alias is missing. Did you call link_aliases()?");
         }
     }
 
@@ -1259,11 +1263,11 @@ void getopt::add_options(option_info::pointer_t opt, int & i, int argc, char ** 
         {
             if(opt->has_flag(GETOPT_FLAG_REQUIRED))
             {
-                log << log_level_t::error
-                    << "option --"
-                    << opt->get_name()
-                    << " expects an argument."
-                    << end;
+                cppthread::log << cppthread::log_level_t::error
+                               << "option --"
+                               << opt->get_name()
+                               << " expects an argument."
+                               << cppthread::end;
             }
             else
             {
@@ -1298,19 +1302,19 @@ void getopt::add_option_from_string(option_info::pointer_t opt, std::string cons
     {
         if(opt->has_flag(GETOPT_FLAG_FLAG))
         {
-            log << log_level_t::error
-                << "option "
-                << (filename.empty()
-                        ? "--" + opt->get_name()
-                        : "\"" + boost::replace_all_copy(opt->get_name(), "-", "_") + "\"")
-                << " cannot be given a value"
-                << (filename.empty()
-                    ? std::string()
-                    : " in configuration file \""
-                        + filename
-                        + "\"")
-                << "."
-                << end;
+            cppthread::log << cppthread::log_level_t::error
+                           << "option "
+                           << (filename.empty()
+                                   ? "--" + opt->get_name()
+                                   : "\"" + boost::replace_all_copy(opt->get_name(), "-", "_") + "\"")
+                           << " cannot be given a value"
+                           << (filename.empty()
+                               ? std::string()
+                               : " in configuration file \""
+                                   + filename
+                                   + "\"")
+                           << "."
+                           << cppthread::end;
             return;
         }
 
@@ -1332,19 +1336,19 @@ void getopt::add_option_from_string(option_info::pointer_t opt, std::string cons
     //
     if(opt->has_flag(GETOPT_FLAG_REQUIRED))
     {
-        log << log_level_t::error
-            << "option "
-            << (filename.empty()
-                    ? "--" + opt->get_name()
-                    : "\"" + boost::replace_all_copy(opt->get_name(), "-", "_") + "\"")
-            << " must be given a value"
-            << (filename.empty()
-                ? std::string()
-                : " in configuration file \""
-                    + filename
-                    + "\"")
-            << "."
-            << end;
+        cppthread::log << cppthread::log_level_t::error
+                       << "option "
+                       << (filename.empty()
+                               ? "--" + opt->get_name()
+                               : "\"" + boost::replace_all_copy(opt->get_name(), "-", "_") + "\"")
+                       << " must be given a value"
+                       << (filename.empty()
+                           ? std::string()
+                           : " in configuration file \""
+                               + filename
+                               + "\"")
+                       << "."
+                       << cppthread::end;
         return;
     }
 

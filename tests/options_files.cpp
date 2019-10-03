@@ -950,9 +950,9 @@ CATCH_TEST_CASE("invalid_options_files", "[options][invalid][files]")
         char ** sub_argv = const_cast<char **>(sub_cargv);
 
         CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(options_environment, sub_argc, sub_argv)
-                    , advgetopt::getopt_exception_logic
+                    , advgetopt::getopt_logic_error
                     , Catch::Matchers::ExceptionMessage(
-                              "option \"badname\" has an invalid short name in \""
+                              "getopt_logic_error: option \"badname\" has an invalid short name in \""
                             + options_filename
                             + "\", it can't be more than one character."));
     CATCH_END_SECTION()
@@ -1013,9 +1013,9 @@ CATCH_TEST_CASE("invalid_options_files", "[options][invalid][files]")
         char ** sub_argv = const_cast<char **>(sub_cargv);
 
         CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(options_environment, sub_argc, sub_argv)
-                    , advgetopt::getopt_exception_logic
+                    , advgetopt::getopt_logic_error
                     , Catch::Matchers::ExceptionMessage(
-                              "invalid validator parameter definition: \"regex(\"missing ')'\"\", the ')' is missing."));
+                              "getopt_logic_error: invalid validator parameter definition: \"regex(\"missing ')'\"\", the ')' is missing."));
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("alias with help")
@@ -1075,9 +1075,9 @@ CATCH_TEST_CASE("invalid_options_files", "[options][invalid][files]")
         char ** sub_argv = const_cast<char **>(sub_cargv);
 
         CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(options_environment, sub_argc, sub_argv)
-                    , advgetopt::getopt_exception_logic
+                    , advgetopt::getopt_logic_error
                     , Catch::Matchers::ExceptionMessage(
-                              "option \"licence\" is an alias and as such it can't include a help=... parameter in \""
+                              "getopt_logic_error: option \"licence\" is an alias and as such it can't include a help=... parameter in \""
                             + options_filename
                             + "\"."));
     CATCH_END_SECTION()
@@ -1138,8 +1138,8 @@ CATCH_TEST_CASE("invalid_options_files", "[options][invalid][files]")
         char ** sub_argv = const_cast<char **>(sub_cargv);
 
         CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(options_environment, sub_argc, sub_argv)
-                    , advgetopt::getopt_exception_logic
-                    , Catch::Matchers::ExceptionMessage("the default value of your alias cannot be an empty string for \"foo\"."));
+                    , advgetopt::getopt_logic_error
+                    , Catch::Matchers::ExceptionMessage("getopt_logic_error: the default value of your alias cannot be an empty string for \"foo\"."));
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("no-name alias v2")
@@ -1198,8 +1198,8 @@ CATCH_TEST_CASE("invalid_options_files", "[options][invalid][files]")
         char ** sub_argv = const_cast<char **>(sub_cargv);
 
         CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(options_environment, sub_argc, sub_argv)
-                    , advgetopt::getopt_exception_logic
-                    , Catch::Matchers::ExceptionMessage("the default value of your alias cannot be an empty string for \"foo\"."));
+                    , advgetopt::getopt_logic_error
+                    , Catch::Matchers::ExceptionMessage("getopt_logic_error: the default value of your alias cannot be an empty string for \"foo\"."));
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("non-existant alias")
@@ -1258,8 +1258,8 @@ CATCH_TEST_CASE("invalid_options_files", "[options][invalid][files]")
         char ** sub_argv = const_cast<char **>(sub_cargv);
 
         CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(options_environment, sub_argc, sub_argv)
-                    , advgetopt::getopt_exception_logic
-                    , Catch::Matchers::ExceptionMessage("no option named \"bar\" to satisfy the alias of \"foo\"."));
+                    , advgetopt::getopt_logic_error
+                    , Catch::Matchers::ExceptionMessage("getopt_logic_error: no option named \"bar\" to satisfy the alias of \"foo\"."));
     CATCH_END_SECTION()
 }
 

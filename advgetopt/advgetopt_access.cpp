@@ -76,7 +76,7 @@ void getopt::parse_program_name(char * argv[])
 {
     if(argv == nullptr)
     {
-        throw getopt_exception_logic("argv pointer cannot be nullptr");
+        throw getopt_logic_error("argv pointer cannot be nullptr");
     }
     if(argv[0] != nullptr)
     {

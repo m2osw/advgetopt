@@ -220,9 +220,9 @@ CATCH_TEST_CASE("invalid_program_name", "[program_name][invalid][getopt]")
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.parse_program_name(nullptr)
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "argv pointer cannot be nullptr"));
+                              "getopt_logic_error: argv pointer cannot be nullptr"));
     CATCH_END_SECTION()
 }
 

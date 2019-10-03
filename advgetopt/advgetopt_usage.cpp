@@ -49,14 +49,13 @@
 
 // C lib
 //
-//#include    <unistd.h>
 #include    <unistd.h>
 #include    <sys/ioctl.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
@@ -147,11 +146,11 @@ group_description const * getopt::find_group(flag_t group) const
 
     if((group & ~GETOPT_FLAG_GROUP_MASK) != 0)
     {
-        throw getopt_exception_logic("group parameter must represent a valid group.");
+        throw getopt_logic_error("group parameter must represent a valid group.");
     }
     if(group == GETOPT_FLAG_GROUP_NONE)
     {
-        throw getopt_exception_logic("group NONE cannot be assigned a name so you cannot search for it.");
+        throw getopt_logic_error("group NONE cannot be assigned a name so you cannot search for it.");
     }
 
     for(group_description const * grp(f_options_environment.f_groups)
@@ -163,7 +162,7 @@ group_description const * getopt::find_group(flag_t group) const
             if((grp->f_name == nullptr || *grp->f_name == '\0')
             && (grp->f_description == nullptr || *grp->f_description == '\0'))
             {
-                throw getopt_exception_logic("at least one of a group name or description must be defined (a non-empty string).");
+                throw getopt_logic_error("at least one of a group name or description must be defined (a non-empty string).");
             }
             return grp;
         }

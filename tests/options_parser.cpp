@@ -609,9 +609,9 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         char ** argv = const_cast<char **>(cargv);
 
         CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(environment_options, argc, argv)
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                          "an empty list of options is not legal, you must"
+                          "getopt_logic_error: an empty list of options is not legal, you must"
                           " defined at least one (i.e. --version, --help...)"));
     CATCH_END_SECTION()
 
@@ -660,9 +660,9 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         char ** argv = const_cast<char **>(cargv);
 
         CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(environment_options, argc, argv)
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                          "option long name missing or empty."));
+                          "getopt_logic_error: option long name missing or empty."));
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Options without a name (empty string)")
@@ -709,9 +709,9 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         char ** argv = const_cast<char **>(cargv);
 
         CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(environment_options, argc, argv)
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                          "option long name missing or empty."));
+                          "getopt_logic_error: option long name missing or empty."));
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Options with a one letter name")
@@ -758,9 +758,9 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         char ** argv = const_cast<char **>(cargv);
 
         CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(environment_options, argc, argv)
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                          "a long name option must be at least 2 characters."));
+                          "getopt_logic_error: a long name option must be at least 2 characters."));
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Default option with a short name")
@@ -798,9 +798,9 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         char ** argv = const_cast<char **>(cargv);
 
         CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(environment_options, argc, argv)
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                          "option_info::option_info(): the default parameter \"--\" cannot include a short name ('f'.)"));
+                          "getopt_logic_error: option_info::option_info(): the default parameter \"--\" cannot include a short name ('f'.)"));
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Duplicated Options (Long Name)")
@@ -839,9 +839,9 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         char ** argv = const_cast<char **>(cargv);
 
         CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(environment_options, argc, argv)
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                          "option named \"licence\" found twice."));
+                          "getopt_logic_error: option named \"licence\" found twice."));
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Duplicated Options (short name)")
@@ -882,9 +882,9 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         char ** argv = const_cast<char **>(cargv);
 
         CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(environment_options, argc, argv)
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                          "option with short name \"l\" found twice."));
+                          "getopt_logic_error: option with short name \"l\" found twice."));
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Duplicated Default Options")
@@ -923,9 +923,9 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         char ** argv = const_cast<char **>(cargv);
 
         CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(environment_options, argc, argv)
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                          "two default options found after check of long names duplication."));
+                          "getopt_logic_error: two default options found after check of long names duplication."));
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Default Option marked as being a FLAG")
@@ -965,9 +965,9 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         char ** argv = const_cast<char **>(cargv);
 
         CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(environment_options, argc, argv)
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                          "a default option must accept parameters, it can't be a GETOPT_FLAG_FLAG."));
+                          "getopt_logic_error: a default option must accept parameters, it can't be a GETOPT_FLAG_FLAG."));
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Option with an alias and mismatched flags")
@@ -1004,9 +1004,9 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         char ** argv = const_cast<char **>(cargv);
 
         CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(environment_options, argc, argv)
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                          "the flags of alias \"licence\" (0x100041) are different"
+                          "getopt_logic_error: the flags of alias \"licence\" (0x100041) are different"
                           " than the flags of \"license\" (0x100021)."));
     CATCH_END_SECTION()
 }
@@ -1041,9 +1041,9 @@ CATCH_TEST_CASE("invalid_config_dir_short_name", "[arguments][invalid][getopt][c
         CATCH_REQUIRE(opt.get_option("config-dir") != nullptr);
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.set_short_name("config-dir", U'o')
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "found another option (\"out\") with short name 'o'."));
+                              "getopt_logic_error: found another option (\"out\") with short name 'o'."));
     }
     CATCH_END_SECTION()
 
@@ -1073,9 +1073,9 @@ CATCH_TEST_CASE("invalid_config_dir_short_name", "[arguments][invalid][getopt][c
         CATCH_REQUIRE(opt.get_option("config-dir") == nullptr);
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.set_short_name("config-dir", U'c')
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "option with name \"config-dir\" not found."));
+                              "getopt_logic_error: option with name \"config-dir\" not found."));
     }
     CATCH_END_SECTION()
 
@@ -1104,9 +1104,9 @@ CATCH_TEST_CASE("invalid_config_dir_short_name", "[arguments][invalid][getopt][c
 //        CATCH_REQUIRE(opt.get_option("config-dir") != nullptr);
 //        CATCH_REQUIRE_THROWS_MATCHES(
 //                  opt.set_short_name("config-dir", advgetopt::NO_SHORT_NAME)
-//                , advgetopt::getopt_exception_logic
+//                , advgetopt::getopt_logic_error
 //                , Catch::Matchers::ExceptionMessage(
-//                              "The short name of option \"config-dir\" cannot be set to NO_SHORT_NAME."));
+//                              "getopt_logic_error: The short name of option \"config-dir\" cannot be set to NO_SHORT_NAME."));
 //    }
 //    CATCH_END_SECTION()
 //
@@ -1135,9 +1135,9 @@ CATCH_TEST_CASE("invalid_config_dir_short_name", "[arguments][invalid][getopt][c
 //        CATCH_REQUIRE(opt.get_option("version") != nullptr);
 //        CATCH_REQUIRE_THROWS_MATCHES(
 //                  opt.set_short_name("version", U'v')   // set to lowercase...
-//                , advgetopt::getopt_exception_logic
+//                , advgetopt::getopt_logic_error
 //                , Catch::Matchers::ExceptionMessage(
-//                              "The short name of option \"version\" cannot be changed from 'V' to 'v'."));
+//                              "getopt_logic_error: The short name of option \"version\" cannot be changed from 'V' to 'v'."));
 //    }
 //    CATCH_END_SECTION()
 }

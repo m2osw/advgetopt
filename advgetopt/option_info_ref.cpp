@@ -40,7 +40,11 @@
 // advgetopt lib
 //
 #include    "advgetopt/exception.h"
-#include    "advgetopt/log.h"
+
+
+// cppthread lib
+//
+#include    <cppthread/log.h>
 
 
 // libutf8 lib
@@ -173,13 +177,13 @@ long option_info_ref::get_long() const
     std::int64_t v;
     if(!validator_integer::convert_string(f_opt->get_default(), v))
     {
-        log << log_level_t::error
-            << "invalid default value for a number ("
-            << f_opt->get_default()
-            << ") in parameter --"
-            << f_opt->get_name()
-            << " at offset 0."
-            << end;
+        cppthread::log << cppthread::log_level_t::error
+                       << "invalid default value for a number ("
+                       << f_opt->get_default()
+                       << ") in parameter --"
+                       << f_opt->get_name()
+                       << " at offset 0."
+                       << cppthread::end;
         return -1;
     }
 

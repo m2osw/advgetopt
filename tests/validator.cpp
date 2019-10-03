@@ -443,9 +443,9 @@ CATCH_TEST_CASE("invalid_validator", "[validator][invalid][validation]")
         std::unique_ptr<advgetopt::validator_factory> factory(new duplicate_factory());
         CATCH_REQUIRE_THROWS_MATCHES(
                   advgetopt::validator::register_validator(*factory.get())
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                          "you have two or more validator factories named \"integer\"."));
+                          "getopt_logic_error: you have two or more validator factories named \"integer\"."));
     CATCH_END_SECTION()
 
 
@@ -548,15 +548,15 @@ CATCH_TEST_CASE("invalid_validator", "[validator][invalid][validation]")
     CATCH_START_SECTION("Verify missing ')' in string based create")
         CATCH_REQUIRE_THROWS_MATCHES(
                   advgetopt::validator::create("integer(1...7")
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                          "invalid validator parameter definition: \"integer(1...7\", the ')' is missing."));
+                          "getopt_logic_error: invalid validator parameter definition: \"integer(1...7\", the ')' is missing."));
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   advgetopt::validator::create("regex([a-z]+")
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                          "invalid validator parameter definition: \"regex([a-z]+\", the ')' is missing."));
+                          "getopt_logic_error: invalid validator parameter definition: \"regex([a-z]+\", the ')' is missing."));
     CATCH_END_SECTION()
 }
 

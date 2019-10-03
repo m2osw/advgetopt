@@ -27,9 +27,9 @@
 //
 #include "main.h"
 
-// advgetopt lib
+// cppthread lib
 //
-#include <advgetopt/log.h>
+#include <cppthread/log.h>
 
 // libexcept lib
 //
@@ -58,13 +58,13 @@ void push_expected_log(std::string const & message)
 }
 
 
-void log_for_test(advgetopt::log_level_t level, std::string const & message)
+void log_for_test(cppthread::log_level_t level, std::string const & message)
 {
     if(SNAP_CATCH2_NAMESPACE::g_verbose()
     || g_expected_logs.empty())
     {
         std::cerr << "logger sent:\n"
-                  << advgetopt::to_string(level)
+                  << cppthread::to_string(level)
                   << ": "
                   << message
                   << std::endl;
@@ -87,7 +87,7 @@ void log_for_test(advgetopt::log_level_t level, std::string const & message)
     CATCH_REQUIRE_FALSE(g_expected_logs.empty());
 
     std::stringstream ss;
-    ss << advgetopt::to_string(level) << ": " << message;
+    ss << cppthread::to_string(level) << ": " << message;
 
     // again, the REQUIRE() is not going to be useful in terms of line number
     //

@@ -2107,14 +2107,14 @@ CATCH_TEST_CASE("system_flags_configuration_filenames", "[arguments][valid][geto
         CATCH_REQUIRE(ss.str() ==
 "Configuration filenames:\n"
 " . .config/file.mdi\n"
-" . .config/unittest.d/file.mdi\n"
+" . .config/unittest.d/50-file.mdi\n"
 " . /etc/snapwebsites/server.conf\n"
-" . /etc/snapwebsites/unittest.d/server.conf\n"
+" . /etc/snapwebsites/unittest.d/50-server.conf\n"
 " . " + home + "/.config/advgetopt/snap.conf\n"
 " . .config/snapdb.conf\n"
-" . .config/unittest.d/snapdb.conf\n"
+" . .config/unittest.d/50-snapdb.conf\n"
 " . /etc/secret/snapdb.conf\n"
-" . /etc/secret/unittest.d/snapdb.conf\n"
+" . /etc/secret/unittest.d/50-snapdb.conf\n"
 " . " + home + "/.config/snapwebsites/snapdb.conf\n"
 );
     }
@@ -2226,18 +2226,18 @@ CATCH_TEST_CASE("system_flags_configuration_filenames", "[arguments][valid][geto
         CATCH_REQUIRE(ss.str() ==
 "Configuration filenames:\n"
 " . .config/file.mdi\n"
-" . .config/unittest.d/file.mdi\n"
+" . .config/unittest.d/50-file.mdi\n"
 " . /etc/snapwebsites/server.conf\n"
-" . /etc/snapwebsites/unittest.d/server.conf\n"
+" . /etc/snapwebsites/unittest.d/50-server.conf\n"
 " . " + home + "/.config/advgetopt/snap.conf\n"
 " . /var/lib/advgetopt/snapdb.conf\n"
-" . /var/lib/advgetopt/unittest.d/snapdb.conf\n"
+" . /var/lib/advgetopt/unittest.d/50-snapdb.conf\n"
 " . /opt/config/snapdb.conf\n"
-" . /opt/config/unittest.d/snapdb.conf\n"
+" . /opt/config/unittest.d/50-snapdb.conf\n"
 " . .config/snapdb.conf\n"
-" . .config/unittest.d/snapdb.conf\n"
+" . .config/unittest.d/50-snapdb.conf\n"
 " . /etc/secret/snapdb.conf\n"
-" . /etc/secret/unittest.d/snapdb.conf\n"
+" . /etc/secret/unittest.d/50-snapdb.conf\n"
 " . " + home + "/.config/snapwebsites/snapdb.conf\n"
 );
     }
@@ -2683,21 +2683,21 @@ CATCH_TEST_CASE("invalid_option_name", "[arguments][invalid][getopt]")
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.get_string("non-existant")
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "there is no --non-existant option defined."));
+                              "getopt_logic_error: there is no --non-existant option defined."));
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.get_string("non-existant", 0)
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "there is no --non-existant option defined."));
+                              "getopt_logic_error: there is no --non-existant option defined."));
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.get_string("non-existant", 1)
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "there is no --non-existant option defined."));
+                              "getopt_logic_error: there is no --non-existant option defined."));
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Verify that asking for the long of a non-existant option fails")
@@ -2710,21 +2710,21 @@ CATCH_TEST_CASE("invalid_option_name", "[arguments][invalid][getopt]")
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.get_long("non-existant")
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "there is no --non-existant option defined."));
+                              "getopt_logic_error: there is no --non-existant option defined."));
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.get_long("non-existant", 0)
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "there is no --non-existant option defined."));
+                              "getopt_logic_error: there is no --non-existant option defined."));
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.get_long("non-existant", 1)
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "there is no --non-existant option defined."));
+                              "getopt_logic_error: there is no --non-existant option defined."));
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Verify that asking for a default with an empty string fails")
@@ -2737,27 +2737,27 @@ CATCH_TEST_CASE("invalid_option_name", "[arguments][invalid][getopt]")
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.has_default("")
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "argument name cannot be empty."));
+                              "getopt_logic_error: argument name cannot be empty."));
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.has_default(std::string())
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "argument name cannot be empty."));
+                              "getopt_logic_error: argument name cannot be empty."));
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.get_default("")
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "argument name cannot be empty."));
+                              "getopt_logic_error: argument name cannot be empty."));
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.get_default(std::string())
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "argument name cannot be empty."));
+                              "getopt_logic_error: argument name cannot be empty."));
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("[] operators want a valid name")
@@ -2770,41 +2770,41 @@ CATCH_TEST_CASE("invalid_option_name", "[arguments][invalid][getopt]")
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt[""]
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "argument name cannot be empty."));
+                              "getopt_logic_error: argument name cannot be empty."));
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt[std::string()]
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "argument name cannot be empty."));
+                              "getopt_logic_error: argument name cannot be empty."));
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt["g"]
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "argument name cannot be one letter if it does not exist in operator []."));
+                              "getopt_logic_error: argument name cannot be one letter if it does not exist in operator []."));
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt[std::string("g")]
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "argument name cannot be one letter if it does not exist in operator []."));
+                              "getopt_logic_error: argument name cannot be one letter if it does not exist in operator []."));
 
         advgetopt::getopt const & const_opt(opt);
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   const_opt[""]
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "argument name cannot be empty."));
+                              "getopt_logic_error: argument name cannot be empty."));
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   const_opt[std::string()]
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "argument name cannot be empty."));
+                              "getopt_logic_error: argument name cannot be empty."));
     CATCH_END_SECTION()
 }
 
@@ -2863,21 +2863,21 @@ CATCH_TEST_CASE("missing_default_value", "[arguments][invalid][getopt]")
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.get_string("size")
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "the --size option was not defined on the command line and it has no default."));
+                              "getopt_logic_error: the --size option was not defined on the command line and it has no default."));
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.get_string("size", 0)
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "the --size option was not defined on the command line and it has no default."));
+                              "getopt_logic_error: the --size option was not defined on the command line and it has no default."));
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.get_string("size", 1)
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "the --size option was not defined on the command line and it has no default."));
+                              "getopt_logic_error: the --size option was not defined on the command line and it has no default."));
 
         // these do not create an entry (even though it looks like it,
         // i.e. it would for an std::map)
@@ -2890,15 +2890,15 @@ CATCH_TEST_CASE("missing_default_value", "[arguments][invalid][getopt]")
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.get_string("size", 0)
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "the --size option was not defined on the command line and it has no default."));
+                              "getopt_logic_error: the --size option was not defined on the command line and it has no default."));
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.get_string("size", 1)
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "the --size option was not defined on the command line and it has no default."));
+                              "getopt_logic_error: the --size option was not defined on the command line and it has no default."));
 
         // now this one does create a value
         //
@@ -2909,9 +2909,9 @@ CATCH_TEST_CASE("missing_default_value", "[arguments][invalid][getopt]")
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.get_string("size", 1)
-                , advgetopt::getopt_exception_undefined
+                , advgetopt::getopt_undefined
                 , Catch::Matchers::ExceptionMessage(
-                              "option_info::get_value(): no value at index 1 (idx >= 1) for --size so you can't get this value."));
+                              "getopt_exception: option_info::get_value(): no value at index 1 (idx >= 1) for --size so you can't get this value."));
 
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
@@ -2969,21 +2969,21 @@ CATCH_TEST_CASE("missing_default_value", "[arguments][invalid][getopt]")
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.get_long("size")
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "the --size option was not defined on the command line and it has no or an empty default."));
+                              "getopt_logic_error: the --size option was not defined on the command line and it has no or an empty default."));
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.get_long("size", 0)
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "the --size option was not defined on the command line and it has no or an empty default."));
+                              "getopt_logic_error: the --size option was not defined on the command line and it has no or an empty default."));
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.get_long("size", 1)
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "the --size option was not defined on the command line and it has no or an empty default."));
+                              "getopt_logic_error: the --size option was not defined on the command line and it has no or an empty default."));
 
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
@@ -3042,21 +3042,21 @@ CATCH_TEST_CASE("missing_default_value", "[arguments][invalid][getopt]")
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.get_long("size")
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "the --size option was not defined on the command line and it has no or an empty default."));
+                              "getopt_logic_error: the --size option was not defined on the command line and it has no or an empty default."));
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.get_long("size", 0)
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "the --size option was not defined on the command line and it has no or an empty default."));
+                              "getopt_logic_error: the --size option was not defined on the command line and it has no or an empty default."));
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.get_long("size", 1)
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "the --size option was not defined on the command line and it has no or an empty default."));
+                              "getopt_logic_error: the --size option was not defined on the command line and it has no or an empty default."));
 
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
@@ -3121,21 +3121,21 @@ CATCH_TEST_CASE("incompatible_default_value", "[arguments][invalid][getopt]")
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.get_long("size")
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "invalid default number \"undefined\" for option --size"));
+                              "getopt_logic_error: invalid default number \"undefined\" for option --size"));
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.get_long("size", 0)
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "invalid default number \"undefined\" for option --size"));
+                              "getopt_logic_error: invalid default number \"undefined\" for option --size"));
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.get_long("size", 1)
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "invalid default number \"undefined\" for option --size"));
+                              "getopt_logic_error: invalid default number \"undefined\" for option --size"));
 
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");

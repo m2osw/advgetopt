@@ -85,7 +85,7 @@ void init_tmp_dir(std::string const & project_name, std::string const & prefname
     else
     {
         g_config_filename = tmpdir + "/" + prefname + ".config";
-        g_config_project_filename = tmpdir + "/" + project_name + ".d/" + prefname + ".config";
+        g_config_project_filename = tmpdir + "/" + project_name + ".d/50-" + prefname + ".config";
     }
 }
 
@@ -150,7 +150,7 @@ int finish_init(Catch::Session & session)
         }
     }
 
-    advgetopt::set_log_callback(SNAP_CATCH2_NAMESPACE::log_for_test);
+    cppthread::set_log_callback(SNAP_CATCH2_NAMESPACE::log_for_test);
 
     char const * options(getenv("ADVGETOPT_TEST_OPTIONS"));
     if(options != nullptr

@@ -35,8 +35,8 @@
 
 // C++ lib
 //
-#include <string>
-#include <vector>
+#include    <string>
+#include    <vector>
 
 
 
@@ -52,7 +52,7 @@ std::string         unquote(std::string const & s, std::string const & pairs = "
 void                split_string(std::string const & str
                                , string_list_t & result
                                , string_list_t const & separators);
-std::string         insert_project_name(std::string const & filename
+string_list_t       insert_project_name(std::string const & filename
                                       , char const * project_name);
 std::string         handle_user_directory(std::string const & filename);
 

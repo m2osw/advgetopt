@@ -34,41 +34,55 @@
 
 // self
 //
-#include "advgetopt/conf_file.h"
+#include    "advgetopt/conf_file.h"
 
 
 // advgetopt lib
 //
-#include "advgetopt/exception.h"
-#include "advgetopt/log.h"
-#include "advgetopt/utils.h"
+#include    "advgetopt/exception.h"
+#include    "advgetopt/utils.h"
 
 
 // snapdev lib
 //
-#include <snapdev/safe_variable.h>
-#include <snapdev/tokenize_string.h>
+#include    <snapdev/safe_variable.h>
+#include    <snapdev/tokenize_string.h>
+
+
+// cppthread lib
+//
+#include    <cppthread/guard.h>
+#include    <cppthread/log.h>
+#include    <cppthread/mutex.h>
 
 
 // boost lib
 //
-#include <boost/algorithm/string/join.hpp>
-#include <boost/algorithm/string/replace.hpp>
+#include    <boost/algorithm/string/join.hpp>
+#include    <boost/algorithm/string/replace.hpp>
 
 // C++ lib
 //
-#include <algorithm>
-#include <fstream>
+#include    <algorithm>
+#include    <fstream>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
 namespace advgetopt
 {
+
+
+// from utils.cpp
+//
+// (it's here because we do not want to make cppthread public in
+// out header files--we could have an advgetopt_private.h, though)
+//
+cppthread::mutex &  get_global_mutex();
 
 
 
@@ -115,179 +129,6 @@ typedef std::map<std::string, conf_file::pointer_t>     conf_file_map_t;
  * created by loading the corresponding file.
  */
 conf_file_map_t     g_conf_files = conf_file_map_t();
-
-
-class conf_mutex
-{
-public:
-    /** \brief A mutex to protect configuration calls.
-     *
-     * Dealing with configuration files may happen in a multi-threaded
-     * environment. In that case we have to protect many function calls
-     * which access the data because that can change over time.
-     *
-     * \note
-     * The getopt object is already managed on its own:
-     * it reads the parameters on load and then offer constant access
-     * to all of what was loaded, found in an environment variable, or
-     * was handled by parsing the command line arguments.
-     */
-    conf_mutex()
-    {
-        pthread_mutexattr_t mattr;
-        int err(pthread_mutexattr_init(&mattr));
-        if(err != 0)
-        {
-            throw getopt_exception_initialization("pthread_muteattr_init() failed"); // LCOV_EXCL_LINE
-        }
-        err = pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_RECURSIVE);
-        if(err != 0)
-        {
-            pthread_mutexattr_destroy(&mattr);                                          // LCOV_EXCL_LINE
-            throw getopt_exception_initialization("pthread_muteattr_settype() failed"); // LCOV_EXCL_LINE
-        }
-        err = pthread_mutex_init(&f_mutex, &mattr);
-        if(err != 0)
-        {
-            pthread_mutexattr_destroy(&mattr);                                    // LCOV_EXCL_LINE
-            throw getopt_exception_initialization("pthread_mutex_init() failed"); // LCOV_EXCL_LINE
-        }
-        err = pthread_mutexattr_destroy(&mattr);
-        if(err != 0)
-        {
-            throw getopt_exception_initialization("pthread_mutexattr_destroy() failed"); // LCOV_EXCL_LINE
-        }
-    }
-
-    /** \brief Clean up the pthread mutex object.
-     *
-     * This function performs the necessary clean up of the pthread mutex.
-     *
-     * The constructor will have initialized a valid \c f_mutex. That
-     * variable member must be de-initialized before we release this
-     * object.
-     */
-    ~conf_mutex()
-    {
-        pthread_mutex_destroy(&f_mutex);
-    }
-
-    /* \brief Lock this mutex.
-     *
-     * This function locks the mutex.
-     *
-     * The lock() and unlock() functions should not be called directly.
-     * Instead you should use the safe_lock object which will make sure
-     * that the two functions get called in pairs as expected (i.e. for
-     * each call to the lock() a corresponding call to unlock() will
-     * automatically happen.)
-     */
-    void lock()
-    {
-        int const err(pthread_mutex_lock(&f_mutex));
-        if(err != 0)
-        {
-            throw getopt_exception_invalid("pthread_mutex_lock() failed"); // LCOV_EXCL_LINE
-        }
-    }
-
-    /** \brief Unlock this mutex.
-     *
-     * This function unlocks the mutex.
-     *
-     * This is \em rarely used to unlock the mutex early.
-     *
-     * \warning
-     * Since a mutex can be locked multiple times (recursively), there is
-     * no protection to know whether it is still locked or not.
-     */
-    void unlock()
-    {
-        int const err(pthread_mutex_unlock(&f_mutex));
-        if(err != 0)
-        {
-            throw getopt_exception_invalid("pthread_mutex_unlock() failed"); // LCOV_EXCL_LINE
-        }
-    }
-
-private:
-    /** \brief The Linux mutex.
-     *
-     * This definition is the base Linux mutex as defined by the pthread
-     * implementation under Linux.
-     *
-     * It gets initialized on construction. If the initialization fails,
-     * the constructor function throws so it is always defined when the
-     * object was successfully created.
-     */
-    pthread_mutex_t     f_mutex = pthread_mutex_t();
-};
-
-
-/** \brief The configuration file mutex.
- *
- * This options are generally viewed as read-only global variables. They
- * get setup once early on and then used and reused as many times as
- * required.
- *
- * This mutex makes sure that access between multiple thread happens in
- * a safe manner.
- */
-conf_mutex g_mutex;
-
-
-
-/** \brief Safely lock/unlock a mutex.
- *
- * This function allows for locking and unlocking a mutex in a safe
- * manner which means that it will always get unlocked when you exit
- * a context, whether you exit with a return, break, continue or
- * an exception.
- *
- * The constructor locks the mutex.
- *
- * The destructor unlocks the mutex.
- *
- * When necessary we create a sub-block to make sure that that
- * the mutex gets released as soon as possible.
- */
-class safe_lock
-{
-public:
-    /** \brief Lock the mutex.
-     *
-     * The constructor takes a reference to a mutex as input. It saves
-     * that reference and then calls the lock() function on that object.
-     *
-     * \param[in] m  The mutex to lock and unlock.
-     */
-    safe_lock(conf_mutex & m)
-        : f_mutex(m)
-    {
-        f_mutex.lock();
-    }
-
-    /** \brief Unlock the mutex.
-     *
-     * Whenever we reach the end of the context, unlock the mutex.
-     * This function always calls the unlock and it will happen
-     * even on exceptions or some other early returning within a
-     * function.
-     */
-    ~safe_lock()
-    {
-        f_mutex.unlock();
-    }
-
-private:
-    /** \brief The mutex to loack and unlock.
-     *
-     * This variable member holds a reference to the mutex that we
-     * want to lock on construction and unlock on destruction.
-     */
-    conf_mutex &        f_mutex;
-};
-
 
 
 } // no name namespace
@@ -341,7 +182,7 @@ conf_file_setup::conf_file_setup(
 {
     if(filename.empty())
     {
-        throw getopt_exception_invalid("trying to load a configuration file using an empty filename.");
+        throw getopt_invalid("trying to load a configuration file using an empty filename.");
     }
 
     std::unique_ptr<char, decltype(&::free)> fn(realpath(filename.c_str(), nullptr), &::free);
@@ -595,7 +436,7 @@ std::string conf_file_setup::get_config_url() const
                 break;
 
             default:
-                throw getopt_exception_logic("unexpected line continuation.");
+                throw getopt_logic_error("unexpected line continuation.");
 
             }
             params.push_back("line-continuation=" + name);
@@ -723,14 +564,14 @@ std::string conf_file_setup::get_config_url() const
  */
 conf_file::pointer_t conf_file::get_conf_file(conf_file_setup const & setup)
 {
-    safe_lock lock(g_mutex);
+    cppthread::guard lock(get_global_mutex());
 
     auto it(g_conf_files.find(setup.get_filename()));
     if(it != g_conf_files.end())
     {
         if(it->second->get_setup().get_config_url() != setup.get_config_url())
         {
-            throw getopt_exception_logic("trying to load configuration file \""
+            throw getopt_logic_error("trying to load configuration file \""
                                        + setup.get_config_url()
                                        + "\" but an existing configuration file with the same name was loaded with URL: \""
                                        + it->second->get_setup().get_config_url()
@@ -926,7 +767,7 @@ void conf_file::set_callback(callback_t callback)
  */
 int conf_file::get_errno() const
 {
-    safe_lock lock(g_mutex);
+    cppthread::guard lock(get_global_mutex());
 
     return f_errno;
 }
@@ -951,7 +792,7 @@ int conf_file::get_errno() const
  */
 conf_file::sections_t conf_file::get_sections() const
 {
-    safe_lock lock(g_mutex);
+    cppthread::guard lock(get_global_mutex());
 
     return f_sections;
 }
@@ -971,7 +812,7 @@ conf_file::sections_t conf_file::get_sections() const
  */
 conf_file::parameters_t conf_file::get_parameters() const
 {
-    safe_lock lock(g_mutex);
+    cppthread::guard lock(get_global_mutex());
 
     return f_parameters;
 }
@@ -996,7 +837,7 @@ bool conf_file::has_parameter(std::string name) const
 {
     std::replace(name.begin(), name.end(), '_', '-');
 
-    safe_lock lock(g_mutex);
+    cppthread::guard lock(get_global_mutex());
 
     auto it(f_parameters.find(name));
     return it != f_parameters.end();
@@ -1024,7 +865,7 @@ std::string conf_file::get_parameter(std::string name) const
 {
     std::replace(name.begin(), name.end(), '_', '-');
 
-    safe_lock lock(g_mutex);
+    cppthread::guard lock(get_global_mutex());
 
     auto it(f_parameters.find(name));
     if(it != f_parameters.end())
@@ -1146,11 +987,11 @@ bool conf_file::set_parameter(std::string section, std::string name, std::string
         {
             if(s == n)
             {
-                log << log_level_t::error
-                    << "option name \""
-                    << name
-                    << "\" cannot start with a period (.)."
-                    << end;
+                cppthread::log << cppthread::log_level_t::error
+                               << "option name \""
+                               << name
+                               << "\" cannot start with a period (.)."
+                               << cppthread::end;
                 return false;
             }
             section_list.push_back(std::string(s, n - s));
@@ -1167,11 +1008,11 @@ bool conf_file::set_parameter(std::string section, std::string name, std::string
         {
             if(s == n)
             {
-                log << log_level_t::error
-                    << "option name \""
-                    << name
-                    << "\" cannot start with a scope operator (::)."
-                    << end;
+                cppthread::log << cppthread::log_level_t::error
+                               << "option name \""
+                               << name
+                               << "\" cannot start with a scope operator (::)."
+                               << cppthread::end;
                 return false;
             }
             section_list.push_back(std::string(s, n - s));
@@ -1189,11 +1030,11 @@ bool conf_file::set_parameter(std::string section, std::string name, std::string
     }
     if(s == n)
     {
-        log << log_level_t::error
-            << "option name \""
-            << name
-            << "\" cannot end with a section operator or be empty."
-            << end;
+        cppthread::log << cppthread::log_level_t::error
+                       << "option name \""
+                       << name
+                       << "\" cannot end with a section operator or be empty."
+                       << cppthread::end;
         return false;
     }
     std::string param_name(s, n - s);
@@ -1203,25 +1044,25 @@ bool conf_file::set_parameter(std::string section, std::string name, std::string
     if(f_setup.get_section_operator() == SECTION_OPERATOR_NONE
     && !section_list.empty())
     {
-        log << log_level_t::error
-            << "option name \""
-            << name
-            << "\" cannot be added to section \""
-            << section_name
-            << "\" because there is no section support for this configuration file."
-            << end;
+        cppthread::log << cppthread::log_level_t::error
+                       << "option name \""
+                       << name
+                       << "\" cannot be added to section \""
+                       << section_name
+                       << "\" because there is no section support for this configuration file."
+                       << cppthread::end;
         return false;
     }
     if((f_setup.get_section_operator() & SECTION_OPERATOR_ONE_SECTION) != 0
     && section_list.size() > 1)
     {
-        log << log_level_t::error
-            << "option name \""
-            << name
-            << "\" cannot be added to section \""
-            << section_name
-            << "\" because this configuration only accepts one section level."
-            << end;
+        cppthread::log << cppthread::log_level_t::error
+                       << "option name \""
+                       << name
+                       << "\" cannot be added to section \""
+                       << section_name
+                       << "\" because this configuration only accepts one section level."
+                       << cppthread::end;
         return false;
     }
 
@@ -1281,22 +1122,22 @@ bool conf_file::set_parameter(std::string section, std::string name, std::string
             case '?':       // forbid all assignment operators (for later)
             case '+':       // forbid all assignment operators (for later)
             case '\\':      // forbid backslashes
-                log << log_level_t::error
-                    << "parameter \""
-                    << full_name
-                    << "\" on line "
-                    << f_line
-                    << " in configuration file \""
-                    << f_setup.get_filename()
-                    << "\" includes a character not acceptable for a section or parameter name (controls, space, quotes, and \";#/=:?+\\\"."
-                    << end;
+                cppthread::log << cppthread::log_level_t::error
+                               << "parameter \""
+                               << full_name
+                               << "\" on line "
+                               << f_line
+                               << " in configuration file \""
+                               << f_setup.get_filename()
+                               << "\" includes a character not acceptable for a section or parameter name (controls, space, quotes, and \";#/=:?+\\\"."
+                               << cppthread::end;
                 return false;
 
             }
         }
     }
 
-    safe_lock lock(g_mutex);
+    cppthread::guard lock(get_global_mutex());
 
     // add the section to the list of sections
     //
@@ -1322,15 +1163,15 @@ bool conf_file::set_parameter(std::string section, std::string name, std::string
             // this is just a warning; it can be neat to know about such
             // problems and fix them early
             //
-            log << log_level_t::warning
-                << "parameter \""
-                << full_name
-                << "\" on line "
-                << f_line
-                << " in configuration file \""
-                << f_setup.get_filename()
-                << "\" was found twice in the same configuration file."
-                << end;
+            cppthread::log << cppthread::log_level_t::warning
+                           << "parameter \""
+                           << full_name
+                           << "\" on line "
+                           << f_line
+                           << " in configuration file \""
+                           << f_setup.get_filename()
+                           << "\" was found twice in the same configuration file."
+                           << cppthread::end;
         }
 
         it->second = value;
@@ -1464,7 +1305,7 @@ void conf_file::ungetc(int c)
 {
     if(f_unget_char != '\0')
     {
-        throw getopt_exception_logic("conf_file::ungetc() called when the f_unget_char variable member is not '\\0'."); // LCOV_EXCL_LINE
+        throw getopt_logic_error("conf_file::ungetc() called when the f_unget_char variable member is not '\\0'."); // LCOV_EXCL_LINE
     }
     f_unget_char = c;
 }
@@ -1661,15 +1502,15 @@ void conf_file::read_configuration()
             && (f_setup.get_assignment_operator() & ASSIGNMENT_OPERATOR_SPACE) == 0
             && ((f_setup.get_section_operator() & SECTION_OPERATOR_BLOCK) == 0 || (*s != '{' && *s != '}')))
             {
-                log << log_level_t::error
-                    << "option name from \""
-                    << str
-                    << "\" on line "
-                    << f_line
-                    << " in configuration file \""
-                    << f_setup.get_filename()
-                    << "\" cannot include a space, missing assignment operator?"
-                    << end;
+                cppthread::log << cppthread::log_level_t::error
+                               << "option name from \""
+                               << str
+                               << "\" on line "
+                               << f_line
+                               << " in configuration file \""
+                               << f_setup.get_filename()
+                               << "\" cannot include a space, missing assignment operator?"
+                               << cppthread::end;
                 continue;
             }
         }
@@ -1679,30 +1520,30 @@ void conf_file::read_configuration()
         }
         if(e - str_name == 0)
         {
-            log << log_level_t::error
-                << "no option name in \""
-                << str
-                << "\" on line "
-                << f_line
-                << " from configuration file \""
-                << f_setup.get_filename()
-                << "\", missing name before the assignment operator?"
-                << end;
+            cppthread::log << cppthread::log_level_t::error
+                           << "no option name in \""
+                           << str
+                           << "\" on line "
+                           << f_line
+                           << " from configuration file \""
+                           << f_setup.get_filename()
+                           << "\", missing name before the assignment operator?"
+                           << cppthread::end;
             continue;
         }
         std::string name(str_name, e - str_name);
         std::replace(name.begin(), name.end(), '_', '-');
         if(name[0] == '-')
         {
-            log << log_level_t::error
-                << "option names in configuration files cannot start with a dash or an underscore in \""
-                << str
-                << "\" on line "
-                << f_line
-                << " from configuration file \""
-                << f_setup.get_filename()
-                << "\"."
-                << end;
+            cppthread::log << cppthread::log_level_t::error
+                           << "option names in configuration files cannot start with a dash or an underscore in \""
+                           << str
+                           << "\" on line "
+                           << f_line
+                           << " from configuration file \""
+                           << f_setup.get_filename()
+                           << "\"."
+                           << cppthread::end;
             continue;
         }
         if((f_setup.get_section_operator() & SECTION_OPERATOR_INI_FILE) != 0
@@ -1713,13 +1554,13 @@ void conf_file::read_configuration()
             ++s;
             if(!sections.empty())
             {
-                log << log_level_t::error
-                    << "`[...]` sections can't be used within a `section { ... }` on line "
-                    << f_line
-                    << " from configuration file \""
-                    << f_setup.get_filename()
-                    << "\"."
-                    << end;
+                cppthread::log << cppthread::log_level_t::error
+                               << "`[...]` sections can't be used within a `section { ... }` on line "
+                               << f_line
+                               << " from configuration file \""
+                               << f_setup.get_filename()
+                               << "\"."
+                               << cppthread::end;
                 continue;
             }
             while(iswspace(*s))
@@ -1729,15 +1570,15 @@ void conf_file::read_configuration()
             if(*s != '\0'
             && !is_comment(s))
             {
-                log << log_level_t::error
-                    << "section names in configuration files cannot be followed by anything other than spaces in \""
-                    << str
-                    << "\" on line "
-                    << f_line
-                    << " from configuration file \""
-                    << f_setup.get_filename()
-                    << "\"."
-                    << end;
+                cppthread::log << cppthread::log_level_t::error
+                               << "section names in configuration files cannot be followed by anything other than spaces in \""
+                               << str
+                               << "\" on line "
+                               << f_line
+                               << " from configuration file \""
+                               << f_setup.get_filename()
+                               << "\"."
+                               << cppthread::end;
                 continue;
             }
             if(name.length() == 1)
@@ -1787,11 +1628,11 @@ void conf_file::read_configuration()
     }
     if(!sections.empty())
     {
-        log << log_level_t::error
-            << "unterminated `section { ... }`, the `}` is missing in configuration file \""
-            << f_setup.get_filename()
-            << "\"."
-            << end;
+        cppthread::log << cppthread::log_level_t::error
+                       << "unterminated `section { ... }`, the `}` is missing in configuration file \""
+                       << f_setup.get_filename()
+                       << "\"."
+                       << cppthread::end;
     }
 }
 

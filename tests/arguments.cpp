@@ -4710,9 +4710,9 @@ CATCH_TEST_CASE("manual_arguments", "[arguments][valid][getopt]")
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.parse_arguments(argc, argv)
-                , advgetopt::getopt_exception_undefined
+                , advgetopt::getopt_undefined
                 , Catch::Matchers::ExceptionMessage(
-                              "getopt::get_alias_destination(): alias is missing. Did you call link_aliases()?"));
+                              "getopt_exception: getopt::get_alias_destination(): alias is missing. Did you call link_aliases()?"));
     CATCH_END_SECTION()
 }
 
@@ -4755,11 +4755,11 @@ CATCH_TEST_CASE("auto_process_system_arguments", "[arguments][valid][getopt]")
                 //
                 CATCH_REQUIRE(opt == nullptr);
             }
-            catch(advgetopt::getopt_exception_exit const & e)
+            catch(advgetopt::getopt_exit const & e)
             {
                 // this is the expected route
                 //
-                CATCH_REQUIRE(e.what() == std::string("system command processed."));
+                CATCH_REQUIRE(e.what() == std::string("getopt_exception: system command processed."));
                 CATCH_REQUIRE(e.code() == 0);
                 CATCH_REQUIRE(out.str() == "2.0.1\n");
             }
@@ -4795,11 +4795,11 @@ CATCH_TEST_CASE("auto_process_system_arguments", "[arguments][valid][getopt]")
                 //
                 CATCH_REQUIRE(opt == nullptr);
             }
-            catch(advgetopt::getopt_exception_exit const & e)
+            catch(advgetopt::getopt_exit const & e)
             {
                 // this is the expected route
                 //
-                CATCH_REQUIRE(e.what() == std::string("system command processed."));
+                CATCH_REQUIRE(e.what() == std::string("getopt_exception: system command processed."));
                 CATCH_REQUIRE(e.code() == 0);
                 CATCH_REQUIRE(out.str() == "Copyright (c) 2019  Made to Order Software Corp. -- All Rights Reserved\n");
             }
@@ -4835,11 +4835,11 @@ CATCH_TEST_CASE("auto_process_system_arguments", "[arguments][valid][getopt]")
                 //
                 CATCH_REQUIRE(opt == nullptr);
             }
-            catch(advgetopt::getopt_exception_exit const & e)
+            catch(advgetopt::getopt_exit const & e)
             {
                 // this is the expected route
                 //
-                CATCH_REQUIRE(e.what() == std::string("system command processed."));
+                CATCH_REQUIRE(e.what() == std::string("getopt_exception: system command processed."));
                 CATCH_REQUIRE(e.code() == 0);
                 CATCH_REQUIRE(out.str() == "Built on Jun  4 2019 at 23:02:36\n");
             }
@@ -4875,11 +4875,11 @@ CATCH_TEST_CASE("auto_process_system_arguments", "[arguments][valid][getopt]")
                 //
                 CATCH_REQUIRE(opt == nullptr);
             }
-            catch(advgetopt::getopt_exception_exit const & e)
+            catch(advgetopt::getopt_exit const & e)
             {
                 // this is the expected route
                 //
-                CATCH_REQUIRE(e.what() == std::string("system command processed."));
+                CATCH_REQUIRE(e.what() == std::string("getopt_exception: system command processed."));
                 CATCH_REQUIRE(e.code() == 0);
                 CATCH_REQUIRE(out.str() == "MIT\n");
             }
@@ -4902,9 +4902,9 @@ CATCH_TEST_CASE("invalid_getopt_pointers", "[invalid][getopt][arguments]")
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   std::make_shared<advgetopt::getopt>(environment_opt, 3, nullptr)
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                    "argv pointer cannot be nullptr"));
+                    "getopt_logic_error: argv pointer cannot be nullptr"));
     CATCH_END_SECTION()
 }
 
@@ -4928,9 +4928,9 @@ CATCH_TEST_CASE("invalid_getopt_missing_options", "[invalid][getopt][arguments]"
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   std::make_shared<advgetopt::getopt>(options_empty, argc, argv)
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                    "an empty list of options is not legal, you must"
+                    "getopt_logic_error: an empty list of options is not legal, you must"
                     " defined at least one (i.e. --version, --help...)"));
     CATCH_END_SECTION()
 
@@ -4963,9 +4963,9 @@ CATCH_TEST_CASE("invalid_getopt_missing_options", "[invalid][getopt][arguments]"
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   std::make_shared<advgetopt::getopt>(options_empty, argc, argv)
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                    "an empty list of options is not legal, you must"
+                    "getopt_logic_error: an empty list of options is not legal, you must"
                     " defined at least one (i.e. --version, --help...)"));
     CATCH_END_SECTION()
 }
@@ -6321,7 +6321,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
         options_empty.f_help_header = "Usage: try this one and we get a throw (empty list)";
 
         {
-            CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(options_empty, argc, argv), advgetopt::getopt_exception_logic);
+            CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(options_empty, argc, argv), advgetopt::getopt_logic_error);
         }
 
         // option without a name and "wrong" type
@@ -6352,7 +6352,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
         options_no_name.f_help_header = "Usage: try this one and we get a throw (no name)";
 
         {
-            CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(options_no_name, argc, argv), advgetopt::getopt_exception_logic);
+            CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(options_no_name, argc, argv), advgetopt::getopt_logic_error);
         }
 
         // long options must be 2+ characters
@@ -6383,7 +6383,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
         options_2chars_minimum.f_help_header = "Usage: try this one and we get a throw (2 chars minimum)";
 
         {
-            CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(options_2chars_minimum, argc, argv), advgetopt::getopt_exception_logic);
+            CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(options_2chars_minimum, argc, argv), advgetopt::getopt_logic_error);
         }
 
         // long options must be 2+ characters
@@ -6414,7 +6414,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
         options_2chars_minimum2.f_help_header = "Usage: try this one and we get a throw (2 chars minimum 2nd)";
 
         {
-            CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(options_2chars_minimum2, argc, argv), advgetopt::getopt_exception_logic);
+            CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(options_2chars_minimum2, argc, argv), advgetopt::getopt_logic_error);
         }
 
         // same long option defined twice
@@ -6453,7 +6453,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
         options_defined_twice.f_help_header = "Usage: try this one and we get a throw (long defined twice)";
 
         {
-            CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(options_defined_twice, argc, argv), advgetopt::getopt_exception_logic);
+            CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(options_defined_twice, argc, argv), advgetopt::getopt_logic_error);
         }
 
         // same short option defined twice
@@ -6493,7 +6493,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
         options_short_defined_twice.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
 
         {
-            CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(options_short_defined_twice, argc, argv), advgetopt::getopt_exception_logic);
+            CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(options_short_defined_twice, argc, argv), advgetopt::getopt_logic_error);
         }
 
         // 2 default_multiple_argument's in the same list is invalid
@@ -6532,7 +6532,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
         options_two_default_multiple_arguments.f_help_header = "Usage: try this one and we get a throw (two defaults by flag, multiple args)";
 
         {
-            CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(options_two_default_multiple_arguments, argc, argv), advgetopt::getopt_exception_logic);
+            CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(options_two_default_multiple_arguments, argc, argv), advgetopt::getopt_logic_error);
         }
 
         // 2 default_argument's in the same list is invalid
@@ -6571,7 +6571,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
         options_two_default_arguments.f_help_header = "Usage: try this one and we get a throw (two default args by name)";
 
         {
-            CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(options_two_default_arguments, argc, argv), advgetopt::getopt_exception_logic);
+            CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(options_two_default_arguments, argc, argv), advgetopt::getopt_logic_error);
         }
 
         // mix of default arguments in the same list is invalid
@@ -6611,7 +6611,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
         options_mix_of_default.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
 
         {
-            CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(options_mix_of_default, argc, argv), advgetopt::getopt_exception_logic);
+            CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(options_mix_of_default, argc, argv), advgetopt::getopt_logic_error);
         }
 
         // try the - and -- without a default in the arguments
@@ -6950,7 +6950,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
         configuration_long_name_missing.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
 
         {
-            CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(configuration_long_name_missing, argc, argv), advgetopt::getopt_exception_logic);
+            CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(configuration_long_name_missing, argc, argv), advgetopt::getopt_logic_error);
         }
 
         // create invalid configuration files
@@ -7186,7 +7186,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
                 // the one in add_option() is not reachable because it is called only
                 // when a default option is defined and that means the mode is
                 // correct
-                CATCH_REQUIRE_THROWS_AS( { advgetopt::getopt opt(argc2, argv2, options, confs, nullptr); }, advgetopt::getopt_exception_invalid );
+                CATCH_REQUIRE_THROWS_AS( { advgetopt::getopt opt(argc2, argv2, options, confs, nullptr); }, advgetopt::getopt_invalid );
             }
             {
                 const char *cargv2[] =
@@ -7203,7 +7203,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
                 advgetopt::getopt opt(argc2, argv2, options, confs, nullptr);
                 for(int i(static_cast<int>(advgetopt::getopt::status_t::no_error)); i <= static_cast<int>(advgetopt::getopt::status_t::fatal); ++i)
                 {
-                    CATCH_REQUIRE_THROWS_AS( opt.usage(static_cast<advgetopt::getopt::status_t>(i), "test no error, warnings, errors..."), advgetopt::getopt_exception_invalid);
+                    CATCH_REQUIRE_THROWS_AS( opt.usage(static_cast<advgetopt::getopt::status_t>(i), "test no error, warnings, errors..."), advgetopt::getopt_invalid);
                 }
             }
         }
@@ -7310,16 +7310,16 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
             advgetopt::getopt opt(options, argc2, argv2);
 
             // cannot get the default without a valid name!
-            CATCH_REQUIRE_THROWS_AS( opt.get_default(""), advgetopt::getopt_exception_logic);
+            CATCH_REQUIRE_THROWS_AS( opt.get_default(""), advgetopt::getopt_logic_error);
 
             // cannot get a long named "blah"
-            CATCH_REQUIRE_THROWS_AS( opt.get_long("blah"), advgetopt::getopt_exception_logic);
+            CATCH_REQUIRE_THROWS_AS( opt.get_long("blah"), advgetopt::getopt_logic_error);
             // existing "long", but only 1 entry
-            CATCH_REQUIRE_THROWS_AS( opt.get_long("long", 100), advgetopt::getopt_exception_undefined);
+            CATCH_REQUIRE_THROWS_AS( opt.get_long("long", 100), advgetopt::getopt_undefined);
             long l(-1);
-            CATCH_REQUIRE_THROWS_AS( l = opt.get_long("not-specified-and-no-default", 0), advgetopt::getopt_exception_logic);
+            CATCH_REQUIRE_THROWS_AS( l = opt.get_long("not-specified-and-no-default", 0), advgetopt::getopt_logic_error);
             CATCH_REQUIRE(l == -1);
-            CATCH_REQUIRE_THROWS_AS( l = opt.get_long("not-specified-with-invalid-default", 0), advgetopt::getopt_exception_logic);
+            CATCH_REQUIRE_THROWS_AS( l = opt.get_long("not-specified-with-invalid-default", 0), advgetopt::getopt_logic_error);
             CATCH_REQUIRE(l == -1);
             SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid number (123abc) in parameter --long.");
             l = opt.get_long("long");
@@ -7328,9 +7328,9 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
             l = opt.get_long("out-of-bounds", 0, 1, 9);
             CATCH_REQUIRE(l == -1);
             std::string s;
-            CATCH_REQUIRE_THROWS_AS( s = opt.get_string("not-specified-string-without-default", 0), advgetopt::getopt_exception_logic);
+            CATCH_REQUIRE_THROWS_AS( s = opt.get_string("not-specified-string-without-default", 0), advgetopt::getopt_logic_error);
             CATCH_REQUIRE(s.empty());
-            CATCH_REQUIRE_THROWS_AS( s = opt.get_string("string", 100), advgetopt::getopt_exception_undefined);
+            CATCH_REQUIRE_THROWS_AS( s = opt.get_string("string", 100), advgetopt::getopt_undefined);
             CATCH_REQUIRE(s.empty());
 
             SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
@@ -7340,15 +7340,15 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
             // (the constructor is expected to call reset() the exact same way)
             //  -- this changed in version 2.x; we can't reset the option definitions
             //
-            //CATCH_REQUIRE_THROWS_AS( opt.reset(argc, argv, options_empty_list, confs, nullptr), advgetopt::getopt_exception_invalid);
-            //CATCH_REQUIRE_THROWS_AS( opt.reset(argc, argv, options_no_name_list, confs, nullptr), advgetopt::getopt_exception_invalid);
-            //CATCH_REQUIRE_THROWS_AS( opt.reset(argc, argv, options_2chars_minimum, confs, nullptr), advgetopt::getopt_exception_invalid);
-            //CATCH_REQUIRE_THROWS_AS( opt.reset(argc, argv, options_2chars_minimum2, confs, nullptr), advgetopt::getopt_exception_invalid);
-            //CATCH_REQUIRE_THROWS_AS( opt.reset(argc, argv, options_defined_twice, confs, "ADVGETOPT_TEST_OPTIONS"), advgetopt::getopt_exception_invalid);
-            //CATCH_REQUIRE_THROWS_AS( opt.reset(argc, argv, options_short_defined_twice, confs, nullptr), advgetopt::getopt_exception_invalid);
-            //CATCH_REQUIRE_THROWS_AS( opt.reset(argc, argv, options_two_default_multiple_arguments, confs, nullptr), advgetopt::getopt_exception_default);
-            //CATCH_REQUIRE_THROWS_AS( opt.reset(argc, argv, options_two_default_arguments, confs, "ADVGETOPT_TEST_OPTIONS"), advgetopt::getopt_exception_default);
-            //CATCH_REQUIRE_THROWS_AS( opt.reset(argc, argv, options_mix_of_default, confs, nullptr), advgetopt::getopt_exception_default);
+            //CATCH_REQUIRE_THROWS_AS( opt.reset(argc, argv, options_empty_list, confs, nullptr), advgetopt::getopt_invalid);
+            //CATCH_REQUIRE_THROWS_AS( opt.reset(argc, argv, options_no_name_list, confs, nullptr), advgetopt::getopt_invalid);
+            //CATCH_REQUIRE_THROWS_AS( opt.reset(argc, argv, options_2chars_minimum, confs, nullptr), advgetopt::getopt_invalid);
+            //CATCH_REQUIRE_THROWS_AS( opt.reset(argc, argv, options_2chars_minimum2, confs, nullptr), advgetopt::getopt_invalid);
+            //CATCH_REQUIRE_THROWS_AS( opt.reset(argc, argv, options_defined_twice, confs, "ADVGETOPT_TEST_OPTIONS"), advgetopt::getopt_invalid);
+            //CATCH_REQUIRE_THROWS_AS( opt.reset(argc, argv, options_short_defined_twice, confs, nullptr), advgetopt::getopt_invalid);
+            //CATCH_REQUIRE_THROWS_AS( opt.reset(argc, argv, options_two_default_multiple_arguments, confs, nullptr), advgetopt::getopt_invalid_default);
+            //CATCH_REQUIRE_THROWS_AS( opt.reset(argc, argv, options_two_default_arguments, confs, "ADVGETOPT_TEST_OPTIONS"), advgetopt::getopt_invalid_default);
+            //CATCH_REQUIRE_THROWS_AS( opt.reset(argc, argv, options_mix_of_default, confs, nullptr), advgetopt::getopt_invalid_default);
         }
 
         // valid initialization + usage calls
@@ -7663,7 +7663,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
                 // all of the following have the exiting exception
     //            for(int i(static_cast<int>(advgetopt::getopt::status_t::no_error)); i <= static_cast<int>(advgetopt::getopt::status_t::fatal); ++i)
     //            {
-    //                CATCH_REQUIRE_THROWS_AS( opt.usage(static_cast<advgetopt::getopt::status_t>(i), "test no error, warnings, errors..."), advgetopt::getopt_exception_exiting);
+    //                CATCH_REQUIRE_THROWS_AS( opt.usage(static_cast<advgetopt::getopt::status_t>(i), "test no error, warnings, errors..."), advgetopt::getopt_exit);
     //            }
                 CATCH_REQUIRE(opt.usage(advgetopt::GETOPT_FLAG_SHOW_ALL) ==
     "Usage: try this one and we get a throw (valid options + usage calls bis)\n"
@@ -7742,12 +7742,12 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
 
                 // this initialization works as expected
                 //
-                CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(options, argc2, argv2), advgetopt::getopt_exception_logic );
+                CATCH_REQUIRE_THROWS_AS(std::make_shared<advgetopt::getopt>(options, argc2, argv2), advgetopt::getopt_logic_error );
 
     //            // all of the following have the exiting exception
     //            for(int i(static_cast<int>(advgetopt::getopt::status_t::no_error)); i <= static_cast<int>(advgetopt::getopt::status_t::fatal); ++i)
     //            {
-    //                CATCH_REQUIRE_THROWS_AS( opt.usage(static_cast<advgetopt::getopt::status_t>(i), "test no error, warnings, errors..."), advgetopt::getopt_exception_invalid);
+    //                CATCH_REQUIRE_THROWS_AS( opt.usage(static_cast<advgetopt::getopt::status_t>(i), "test no error, warnings, errors..."), advgetopt::getopt_invalid);
     //            }
     //std::cout << "test usage output here? " << opt.usage(advgetopt::GETOPT_FLAG_SHOW_ALL) << "\n";
             }

@@ -34,22 +34,94 @@
 
 // self
 //
-#include "advgetopt/utils.h"
+#include    "advgetopt/utils.h"
+
+
+// snapdev lib
+//
+#include    <snapdev/glob_to_list.h>
+#include    <snapdev/not_used.h>
+
+
+// cppthread lib
+//
+#include    <cppthread/guard.h>
+#include    <cppthread/mutex.h>
 
 
 // boost lib
 //
-#include <boost/algorithm/string/trim.hpp>
+#include    <boost/algorithm/string/trim.hpp>
+
+
+// C++ lib
+//
+#include    <set>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
 namespace advgetopt
 {
+
+
+
+namespace
+{
+
+
+
+/** \brief The configuration file mutex.
+ *
+ * This options are generally viewed as read-only global variables. They
+ * get setup once early on and then used and reused as many times as
+ * required.
+ *
+ * This mutex makes sure that access between multiple thread happens in
+ * a safe manner.
+ */
+cppthread::mutex *      g_mutex;
+
+
+
+}
+// no name namespace
+
+
+
+/** \brief Get a global mutex.
+ *
+ * This function returns a global mutex we can use to lock the advgetopt
+ * whenever multithread functionality is required (i.e. a global is used.)
+ *
+ * It is safe to call this function early (i.e. before main was ever
+ * called.)
+ *
+ * Usage:
+ *
+ * \code
+ *    cppthread::guard lock(get_global_mutex());
+ * \endcode
+ *
+ * \return A reference to our global mutex.
+ */
+cppthread::mutex & get_global_mutex()
+{
+    {
+        cppthread::guard lock(*cppthread::g_system_mutex);
+
+        if(g_mutex == nullptr)
+        {
+            g_mutex = new cppthread::mutex();
+        }
+    }
+
+    return *g_mutex;
+}
 
 
 
@@ -251,27 +323,62 @@ void split_string(std::string const & str
  * \return The new filename or an empty string if no project name or filename
  *         are specified.
  */
-std::string insert_project_name(std::string const & filename
-                              , char const * project_name)
+string_list_t insert_project_name(
+          std::string const & filename
+        , char const * project_name)
 {
     if(project_name == nullptr
     || *project_name == '\0'
     || filename.empty())
     {
-        return std::string();
+        return string_list_t();
     }
+
+    std::string pattern;
 
     std::string::size_type const pos(filename.find_last_of('/'));
     if(pos != std::string::npos
     && pos > 0)
     {
-        return filename.substr(0, pos + 1)
-                          + project_name
-                          + ".d"
-                          + filename.substr(pos);
+        pattern = filename.substr(0, pos + 1)
+                + project_name
+                + ".d/[0-9][0-9]-"
+                + filename.substr(pos + 1);
+    }
+    else
+    {
+        pattern = project_name
+                + (".d/[0-9][0-9]-" + filename);
     }
 
-    return project_name + (".d/" + filename);
+    snap::glob_to_list<std::set<std::string>> glob;
+
+    // the glob() function is not thread safe
+    {
+        cppthread::guard lock(get_global_mutex());
+        snap::NOTUSED(glob.read_path<snap::glob_to_list_flag_t::GLOB_FLAG_IGNORE_ERRORS>(pattern));
+    }
+
+    // we add the default name if none other exists
+    //
+    if(glob.empty())
+    {
+        if(pos != std::string::npos
+        && pos > 0)
+        {
+            glob.insert(filename.substr(0, pos + 1)
+                    + project_name
+                    + ".d/50-"
+                    + filename.substr(pos + 1));
+        }
+        else
+        {
+            glob.insert(project_name
+                    + (".d/50-" + filename));
+        }
+    }
+
+    return string_list_t(glob.begin(), glob.end());
 }
 
 

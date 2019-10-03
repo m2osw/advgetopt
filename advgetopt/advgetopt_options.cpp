@@ -47,12 +47,11 @@
 //
 #include    "advgetopt/conf_file.h"
 #include    "advgetopt/exception.h"
-#include    "advgetopt/log.h"
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
@@ -105,12 +104,12 @@ void getopt::parse_options_info(option const * opts, bool ignore_duplicates)
         if(opts->f_name == nullptr
         || opts->f_name[0] == '\0')
         {
-            throw getopt_exception_logic("option long name missing or empty.");
+            throw getopt_logic_error("option long name missing or empty.");
         }
         short_name_t const one_char(string_to_short_name(opts->f_name));
         if(one_char != NO_SHORT_NAME)
         {
-            throw getopt_exception_logic("a long name option must be at least 2 characters.");
+            throw getopt_logic_error("a long name option must be at least 2 characters.");
         }
 
         if(get_option(opts->f_name, true) != nullptr)
@@ -119,7 +118,7 @@ void getopt::parse_options_info(option const * opts, bool ignore_duplicates)
             {
                 continue;
             }
-            throw getopt_exception_logic(
+            throw getopt_logic_error(
                       std::string("option named \"")
                     + opts->f_name
                     + "\" found twice.");
@@ -133,7 +132,7 @@ void getopt::parse_options_info(option const * opts, bool ignore_duplicates)
             }
             else
             {
-                throw getopt_exception_logic(
+                throw getopt_logic_error(
                           "option with short name \""
                         + short_name_to_string(opts->f_short_name)
                         + "\" found twice.");
@@ -158,11 +157,11 @@ void getopt::parse_options_info(option const * opts, bool ignore_duplicates)
         {
             if(f_default_option != nullptr)
             {
-                throw getopt_exception_logic("two default options found after check of long names duplication.");
+                throw getopt_logic_error("two default options found after check of long names duplication.");
             }
             if(o->has_flag(GETOPT_FLAG_FLAG))
             {
-                throw getopt_exception_logic("a default option must accept parameters, it can't be a GETOPT_FLAG_FLAG.");
+                throw getopt_logic_error("a default option must accept parameters, it can't be a GETOPT_FLAG_FLAG.");
             }
 
             f_default_option = o;
@@ -249,7 +248,7 @@ void getopt::parse_options_from_file()
             // this should never happen since we use the
             // SECTION_OPERATOR_ONE_SECTION flag
             //
-            throw getopt_exception_logic(                               // LCOV_EXCL_LINE
+            throw getopt_logic_error(                               // LCOV_EXCL_LINE
                       "section \""                                      // LCOV_EXCL_LINE
                     + section_name                                      // LCOV_EXCL_LINE
                     + "\" includes a section separator (::) in \""      // LCOV_EXCL_LINE
@@ -261,7 +260,7 @@ void getopt::parse_options_from_file()
         std::string const short_name(unquote(conf->get_parameter(parameter_name + "::shortname")));
         if(short_name.length() > 1)
         {
-            throw getopt_exception_logic(
+            throw getopt_logic_error(
                       "option \""
                     + section_name
                     + "\" has an invalid short name in \""
@@ -292,7 +291,7 @@ void getopt::parse_options_from_file()
         {
             if(!opt->get_help().empty())
             {
-                throw getopt_exception_logic(
+                throw getopt_logic_error(
                           "option \""
                         + section_name
                         + "\" is an alias and as such it can't include a help=... parameter in \""
@@ -372,7 +371,7 @@ void getopt::link_aliases()
             std::string const & alias_name(c.second->get_help());
             if(alias_name.empty())
             {
-                throw getopt_exception_logic(
+                throw getopt_logic_error(
                           "the default value of your alias cannot be an empty string for \""
                         + c.first
                         + "\".");
@@ -384,7 +383,7 @@ void getopt::link_aliases()
             option_info::pointer_t alias(get_option(alias_name, true));
             if(alias == nullptr)
             {
-                throw getopt_exception_logic(
+                throw getopt_logic_error(
                           "no option named \""
                         + alias_name
                         + "\" to satisfy the alias of \""
@@ -406,7 +405,7 @@ void getopt::link_aliases()
                    << "\" (0x"
                    << alias->get_flags()
                    << ").";
-                throw getopt_exception_logic(ss.str());
+                throw getopt_logic_error(ss.str());
             }
 
             c.second->set_alias_destination(alias);
@@ -455,7 +454,7 @@ void getopt::set_short_name(std::string const & name, short_name_t short_name)
     auto it(f_options_by_short_name.find(short_name));
     if(it != f_options_by_short_name.end())
     {
-        throw getopt_exception_logic(
+        throw getopt_logic_error(
                   "found another option (\""
                 + it->second->get_name()
                 + "\") with short name '"
@@ -466,7 +465,7 @@ void getopt::set_short_name(std::string const & name, short_name_t short_name)
     auto opt(f_options_by_name.find(name));
     if(opt == f_options_by_name.end())
     {
-        throw getopt_exception_logic(
+        throw getopt_logic_error(
                   "option with name \""
                 + name
                 + "\" not found.");

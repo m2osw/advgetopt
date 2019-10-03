@@ -315,56 +315,63 @@ CATCH_TEST_CASE("utils_insert_project_name", "[utils][valid]")
 {
     CATCH_START_SECTION("Full insert")
         {
-            std::string fullname(advgetopt::insert_project_name(
+            advgetopt::string_list_t fullname(advgetopt::insert_project_name(
                               "/this/is/a/path"
                             , "project-name"));
-            CATCH_REQUIRE(fullname == "/this/is/a/project-name.d/path");
+            CATCH_REQUIRE(fullname.size() == 1);
+            CATCH_REQUIRE(fullname[0] == "/this/is/a/project-name.d/50-path");
         }
 
         {
-            std::string fullname(advgetopt::insert_project_name(
+            advgetopt::string_list_t fullname(advgetopt::insert_project_name(
                               "/this/is/a/basename.ext"
                             , "project-name"));
-            CATCH_REQUIRE(fullname == "/this/is/a/project-name.d/basename.ext");
+            CATCH_REQUIRE(fullname.size() == 1);
+            CATCH_REQUIRE(fullname[0] == "/this/is/a/project-name.d/50-basename.ext");
         }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Empty cases")
         {
-            std::string fullname(advgetopt::insert_project_name(
+            advgetopt::string_list_t fullname(advgetopt::insert_project_name(
                               "/this/is/a/path"
                             , nullptr));
-            CATCH_REQUIRE(fullname == std::string());
+            CATCH_REQUIRE(fullname.empty());
+            //CATCH_REQUIRE(fullname == std::string());
         }
 
         {
-            std::string fullname(advgetopt::insert_project_name(
+            advgetopt::string_list_t fullname(advgetopt::insert_project_name(
                               "/this/is/a/path"
                             , ""));
-            CATCH_REQUIRE(fullname == std::string());
+            CATCH_REQUIRE(fullname.empty());
+            //CATCH_REQUIRE(fullname == std::string());
         }
 
         {
-            std::string fullname(advgetopt::insert_project_name(
+            advgetopt::string_list_t fullname(advgetopt::insert_project_name(
                               ""
                             , "project-name"));
-            CATCH_REQUIRE(fullname == std::string());
+            CATCH_REQUIRE(fullname.empty());
+            //CATCH_REQUIRE(fullname == std::string());
         }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Basename Only")
         {
-            std::string fullname(advgetopt::insert_project_name(
+            advgetopt::string_list_t fullname(advgetopt::insert_project_name(
                               "basename"
                             , "advgetopt"));
-            CATCH_REQUIRE(fullname == "advgetopt.d/basename");
+            CATCH_REQUIRE(fullname.size() == 1);
+            CATCH_REQUIRE(fullname[0] == "advgetopt.d/50-basename");
         }
 
         {
-            std::string fullname(advgetopt::insert_project_name(
+            advgetopt::string_list_t fullname(advgetopt::insert_project_name(
                               "basename.ext"
                             , "advgetopt"));
-            CATCH_REQUIRE(fullname == "advgetopt.d/basename.ext");
+            CATCH_REQUIRE(fullname.size() == 1);
+            CATCH_REQUIRE(fullname[0] == "advgetopt.d/50-basename.ext");
         }
     CATCH_END_SECTION()
 }

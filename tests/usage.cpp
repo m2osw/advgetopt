@@ -264,13 +264,13 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
 "advgetopt.yaml]\n"
 "   . All Existing Configuration Files = []\n"
 "   . All Possible Configuration Files = [advgetopt.conf, "
-"unittest.d/advgetopt.conf, advgetopt.ini, unittest.d/advgetopt.ini, "
-"advgetopt.xml, unittest.d/advgetopt.xml, advgetopt.yaml, "
-"unittest.d/advgetopt.yaml, /etc/sys/advgetopt/advgetopt.conf, "
-"/etc/sys/advgetopt/unittest.d/advgetopt.conf, /etc/advgetopt/advgetopt.conf, "
-"/etc/advgetopt/unittest.d/advgetopt.conf, "
+"unittest.d/50-advgetopt.conf, advgetopt.ini, unittest.d/50-advgetopt.ini, "
+"advgetopt.xml, unittest.d/50-advgetopt.xml, advgetopt.yaml, "
+"unittest.d/50-advgetopt.yaml, /etc/sys/advgetopt/advgetopt.conf, "
+"/etc/sys/advgetopt/unittest.d/50-advgetopt.conf, /etc/advgetopt/advgetopt.conf, "
+"/etc/advgetopt/unittest.d/50-advgetopt.conf, "
 "/etc/advgetopt/advgetopt.d/advgetopt.conf, "
-"/etc/advgetopt/advgetopt.d/unittest.d/advgetopt.conf, "
+"/etc/advgetopt/advgetopt.d/unittest.d/50-advgetopt.conf, "
 + tmpdir + "/.config/advgetopt/advgetopt.conf]\n"
 "   . Option File Directory = [/etc/advgetopt]\n"
 "   . License = [MIT]\n"
@@ -531,13 +531,13 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
 "advgetopt.yaml]\n"
 "   . All Existing Configuration Files = []\n"
 "   . All Possible Configuration Files = [advgetopt.conf, "
-"unittest.d/advgetopt.conf, advgetopt.ini, unittest.d/advgetopt.ini, "
-"advgetopt.xml, unittest.d/advgetopt.xml, advgetopt.yaml, "
-"unittest.d/advgetopt.yaml, /etc/sys/advgetopt/advgetopt.conf, "
-"/etc/sys/advgetopt/unittest.d/advgetopt.conf, /etc/advgetopt/advgetopt.conf, "
-"/etc/advgetopt/unittest.d/advgetopt.conf, "
+"unittest.d/50-advgetopt.conf, advgetopt.ini, unittest.d/50-advgetopt.ini, "
+"advgetopt.xml, unittest.d/50-advgetopt.xml, advgetopt.yaml, "
+"unittest.d/50-advgetopt.yaml, /etc/sys/advgetopt/advgetopt.conf, "
+"/etc/sys/advgetopt/unittest.d/50-advgetopt.conf, /etc/advgetopt/advgetopt.conf, "
+"/etc/advgetopt/unittest.d/50-advgetopt.conf, "
 "/etc/advgetopt/advgetopt.d/advgetopt.conf, "
-"/etc/advgetopt/advgetopt.d/unittest.d/advgetopt.conf, "
+"/etc/advgetopt/advgetopt.d/unittest.d/50-advgetopt.conf, "
 + tmpdir + "/.config/advgetopt/advgetopt.conf]\n"
 "   . Option File Directory = [/usr/share/advgetopt]\n"
 "   . License = [MIT]\n"
@@ -716,7 +716,7 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
         // all of the following have the exiting exception
 //            for(int i(static_cast<int>(advgetopt::getopt::status_t::no_error)); i <= static_cast<int>(advgetopt::getopt::status_t::fatal); ++i)
 //            {
-//                CATCH_REQUIRE_THROWS_AS(opt.usage(static_cast<advgetopt::getopt::status_t>(i), "test no error, warnings, errors..."), advgetopt::getopt_exception_exiting);
+//                CATCH_REQUIRE_THROWS_AS(opt.usage(static_cast<advgetopt::getopt::status_t>(i), "test no error, warnings, errors..."), advgetopt::getopt_exit);
 //            }
         CATCH_REQUIRE_LONG_STRING(opt.usage(advgetopt::GETOPT_FLAG_SHOW_ALL),
 "Usage: try this one and we get a throw (valid options + usage calls bis)\n"
@@ -861,7 +861,7 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
         // all of the following have the exiting exception
 //            for(int i(static_cast<int>(advgetopt::getopt::status_t::no_error)); i <= static_cast<int>(advgetopt::getopt::status_t::fatal); ++i)
 //            {
-//                CATCH_REQUIRE_THROWS_AS(opt.usage(static_cast<advgetopt::getopt::status_t>(i), "test no error, warnings, errors..."), advgetopt::getopt_exception_exiting);
+//                CATCH_REQUIRE_THROWS_AS(opt.usage(static_cast<advgetopt::getopt::status_t>(i), "test no error, warnings, errors..."), advgetopt::getopt_exit);
 //            }
         CATCH_REQUIRE_LONG_STRING(opt.usage(advgetopt::GETOPT_FLAG_SHOW_ALL),
 "Usage: unittest_advgetopt try this one and we get a throw (valid options + usage\n"
@@ -2929,18 +2929,18 @@ advgetopt::getopt::breakup_line(
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
 
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: system.conf, unittest.d/system.conf, advgetopt.conf,\n"
-"unittest.d/advgetopt.conf, advgetopt.ini, unittest.d/advgetopt.ini, user.config,\n"
-"unittest.d/user.config\n"
+"Usage: test usage: system.conf, unittest.d/50-system.conf, advgetopt.conf,\n"
+"unittest.d/50-advgetopt.conf, advgetopt.ini, unittest.d/50-advgetopt.ini,\n"
+"user.config, unittest.d/50-user.config\n"
 "   --verbose                  inform you of what we're currently working on:\n"
-"                              system.conf, unittest.d/system.conf,\n"
-"                              advgetopt.conf, unittest.d/advgetopt.conf,\n"
-"                              advgetopt.ini, unittest.d/advgetopt.ini,\n"
-"                              user.config, unittest.d/user.config.\n"
+"                              system.conf, unittest.d/50-system.conf,\n"
+"                              advgetopt.conf, unittest.d/50-advgetopt.conf,\n"
+"                              advgetopt.ini, unittest.d/50-advgetopt.ini,\n"
+"                              user.config, unittest.d/50-user.config.\n"
 "\n"
-"Percent Configuration Files: system.conf, unittest.d/system.conf,\n"
-"advgetopt.conf, unittest.d/advgetopt.conf, advgetopt.ini,\n"
-"unittest.d/advgetopt.ini, user.config, unittest.d/user.config\n"
+"Percent Configuration Files: system.conf, unittest.d/50-system.conf,\n"
+"advgetopt.conf, unittest.d/50-advgetopt.conf, advgetopt.ini,\n"
+"unittest.d/50-advgetopt.ini, user.config, unittest.d/50-user.config\n"
                 );
     }
     CATCH_END_SECTION()
@@ -3533,11 +3533,11 @@ CATCH_TEST_CASE("help_string_configuration_output_file", "[getopt][usage][config
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
 
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-              "Usage: test usage: unittest.d/user.config\n"
+              "Usage: test usage: unittest.d/50-user.config\n"
               "   --verbose                  inform you of what we're currently working on:\n"
-              "                              unittest.d/user.config.\n"
+              "                              unittest.d/50-user.config.\n"
               "\n"
-              "Percent Configuration Files: unittest.d/user.config\n"
+              "Percent Configuration Files: unittest.d/50-user.config\n"
                 );
     }
     CATCH_END_SECTION()
@@ -4451,9 +4451,9 @@ CATCH_TEST_CASE("invalid_group_for_find_group", "[getopt][usage][config][invalid
 
             CATCH_REQUIRE_THROWS_MATCHES(
                       opt.find_group(invalid_group)
-                    , advgetopt::getopt_exception_logic
+                    , advgetopt::getopt_logic_error
                     , Catch::Matchers::ExceptionMessage(
-                                  "group parameter must represent a valid group."));
+                                  "getopt_logic_error: group parameter must represent a valid group."));
         }
     }
     CATCH_END_SECTION()
@@ -4478,9 +4478,9 @@ CATCH_TEST_CASE("invalid_group_for_find_group", "[getopt][usage][config][invalid
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.find_group(advgetopt::GETOPT_FLAG_GROUP_NONE)
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "group NONE cannot be assigned a name so you cannot search for it."));
+                              "getopt_logic_error: group NONE cannot be assigned a name so you cannot search for it."));
     }
     CATCH_END_SECTION()
 
@@ -4509,15 +4509,15 @@ CATCH_TEST_CASE("invalid_group_for_find_group", "[getopt][usage][config][invalid
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.find_group(advgetopt::GETOPT_FLAG_GROUP_COMMANDS)
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "at least one of a group name or description must be defined (a non-empty string)."));
+                              "getopt_logic_error: at least one of a group name or description must be defined (a non-empty string)."));
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.find_group(advgetopt::GETOPT_FLAG_GROUP_OPTIONS)
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "at least one of a group name or description must be defined (a non-empty string)."));
+                              "getopt_logic_error: at least one of a group name or description must be defined (a non-empty string)."));
     }
     CATCH_END_SECTION()
 }

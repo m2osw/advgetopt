@@ -34,19 +34,23 @@
 
 // self
 //
-#include "advgetopt/option_info.h"
+#include    "advgetopt/option_info.h"
 
 
 // advgetopt lib
 //
-#include "advgetopt/exception.h"
-#include "advgetopt/log.h"
+#include    "advgetopt/exception.h"
+
+
+// cppthread lib
+//
+#include    <cppthread/log.h>
 
 
 // snapdev lib
 //
-#include <snapdev/not_used.h>
-#include <snapdev/tokenize_string.h>
+#include    <snapdev/not_used.h>
+#include    <snapdev/tokenize_string.h>
 
 
 // libutf8 lib
@@ -57,12 +61,12 @@
 
 // boost lib
 //
-#include <boost/algorithm/string/replace.hpp>
+#include    <boost/algorithm/string/replace.hpp>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
@@ -189,12 +193,12 @@ option_info::option_info(std::string const & name, short_name_t short_name)
     {
         if(short_name != NO_SHORT_NAME)
         {
-            throw getopt_exception_logic(
+            throw getopt_logic_error(
                           "option_info::option_info(): all options must at least have a long name (short name: '"
                         + libutf8::to_u8string(short_name)
                         + "'.)");
         }
-        throw getopt_exception_logic(
+        throw getopt_logic_error(
                       "option_info::option_info(): all options must at least have a long name.");
     }
 
@@ -202,7 +206,7 @@ option_info::option_info(std::string const & name, short_name_t short_name)
     {
         if(short_name != NO_SHORT_NAME)
         {
-            throw getopt_exception_logic(
+            throw getopt_logic_error(
                           "option_info::option_info(): the default parameter \"--\" cannot include a short name ('"
                         + libutf8::to_u8string(short_name)
                         + "'.)");
@@ -214,7 +218,7 @@ option_info::option_info(std::string const & name, short_name_t short_name)
     {
         if(f_name[0] == '-')
         {
-            throw getopt_exception_logic(
+            throw getopt_logic_error(
                           "option_info::option_info(): an option cannot start with a dash (-), \""
                         + f_name
                         + "\" is not valid.");
@@ -222,7 +226,7 @@ option_info::option_info(std::string const & name, short_name_t short_name)
 
         if(short_name == '-')
         {
-            throw getopt_exception_logic(
+            throw getopt_logic_error(
                           "option_info::option_info(): the short name of an option cannot be the dash (-).");
         }
     }
@@ -272,14 +276,14 @@ void option_info::set_short_name(short_name_t short_name)
 {
     if(short_name == NO_SHORT_NAME)
     {
-        throw getopt_exception_logic("The short name of option \""
+        throw getopt_logic_error("The short name of option \""
                                    + f_name
                                    + "\" cannot be set to NO_SHORT_NAME.");
     }
 
     if(f_short_name != NO_SHORT_NAME)
     {
-        throw getopt_exception_logic("The short name of option \""
+        throw getopt_logic_error("The short name of option \""
                                    + f_name
                                    + "\" cannot be changed from '"
                                    + short_name_to_string(f_short_name)
@@ -782,7 +786,7 @@ bool option_info::validates(int idx)
 {
     if(static_cast<size_t>(idx) >= f_value.size())
     {
-        throw getopt_exception_undefined(                               // LCOV_EXCL_LINE
+        throw getopt_undefined(                                         // LCOV_EXCL_LINE
                       "option_info::get_value(): no value at index "    // LCOV_EXCL_LINE
                     + std::to_string(idx)                               // LCOV_EXCL_LINE
                     + " (idx >= "                                       // LCOV_EXCL_LINE
@@ -804,13 +808,13 @@ bool option_info::validates(int idx)
         return true;
     }
 
-    log << log_level_t::error
-        << "input \""
-        << f_value[idx]
-        << "\" given to parameter --"
-        << f_name
-        << " is not considered valid."
-        << end;
+    cppthread::log << cppthread::log_level_t::error
+                   << "input \""
+                   << f_value[idx]
+                   << "\" given to parameter --"
+                   << f_name
+                   << " is not considered valid."
+                   << cppthread::end;
 
     // get rid of that value since it does not validate
     //
@@ -855,7 +859,7 @@ void option_info::set_alias_destination(option_info::pointer_t destination)
 {
     if(destination->has_flag(GETOPT_FLAG_ALIAS))
     {
-        throw getopt_exception_invalid(
+        throw getopt_invalid(
                 "option_info::set_alias(): you can't set an alias as"
                 " an alias of another option.");
     }
@@ -1005,7 +1009,7 @@ bool option_info::set_value(int idx, std::string const & value)
     {
         if(static_cast<size_t>(idx) > f_value.size())
         {
-            throw getopt_exception_logic(
+            throw getopt_logic_error(
                           "option_info::set_value(): no value at index "
                         + std::to_string(idx)
                         + " and it is not the last available index + 1 (idx > "
@@ -1017,7 +1021,7 @@ bool option_info::set_value(int idx, std::string const & value)
     {
         if(idx != 0)
         {
-            throw getopt_exception_logic(
+            throw getopt_logic_error(
                           "option_info::set_value(): single value option \"--"
                         + f_name
                         + "\" does not accepts index "
@@ -1084,7 +1088,7 @@ bool option_info::set_multiple_value(std::string const & value)
     && f_value.size() > 1)
     {
         f_value.clear();
-        throw getopt_exception_logic(
+        throw getopt_logic_error(
                  "option_info::set_multiple_value(): parameter --"
                + f_name
                + " expects zero or one parameter. The set_multiple_value() function should not be called with parameters that only accept one value.");
@@ -1198,7 +1202,7 @@ std::string const & option_info::get_value(int idx) const
 {
     if(static_cast<size_t>(idx) >= f_value.size())
     {
-        throw getopt_exception_undefined(
+        throw getopt_undefined(
                       "option_info::get_value(): no value at index "
                     + std::to_string(idx)
                     + " (idx >= "
@@ -1236,7 +1240,7 @@ long option_info::get_long(int idx) const
 {
     if(static_cast<size_t>(idx) >= f_value.size())
     {
-        throw getopt_exception_undefined(
+        throw getopt_undefined(
                       "option_info::get_long(): no value at index "
                     + std::to_string(idx)
                     + " (idx >= "
@@ -1258,15 +1262,15 @@ long option_info::get_long(int idx) const
             {
                 f_integer.clear();
 
-                log << log_level_t::error
-                    << "invalid number ("
-                    << f_value[i]
-                    << ") in parameter --"
-                    << f_name
-                    << " at offset "
-                    << i
-                    << "."
-                    << end;
+                cppthread::log << cppthread::log_level_t::error
+                               << "invalid number ("
+                               << f_value[i]
+                               << ") in parameter --"
+                               << f_name
+                               << " at offset "
+                               << i
+                               << "."
+                               << cppthread::end;
                 return -1;
             }
             f_integer.push_back(v);

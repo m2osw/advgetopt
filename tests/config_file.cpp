@@ -1960,9 +1960,9 @@ CATCH_TEST_CASE("invalid_configuration_setup", "[config][getopt][invalid]")
                             , rand()
                             , rand()
                             , rand())
-            , advgetopt::getopt_exception_invalid
+            , advgetopt::getopt_invalid
             , Catch::Matchers::ExceptionMessage(
-                          "trying to load a configuration file using an empty filename."));
+                          "getopt_exception: trying to load a configuration file using an empty filename."));
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Invalid Line Continuation")
@@ -1987,9 +1987,9 @@ CATCH_TEST_CASE("invalid_configuration_setup", "[config][getopt][invalid]")
 
             CATCH_REQUIRE_THROWS_MATCHES(
                   setup.get_config_url()
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "unexpected line continuation."));
+                              "getopt_logic_error: unexpected line continuation."));
         }
     CATCH_END_SECTION()
 }
@@ -2094,9 +2094,9 @@ CATCH_TEST_CASE("config_reload_invalid_setup")
 
                         CATCH_REQUIRE_THROWS_MATCHES(
                               advgetopt::conf_file::get_conf_file(different_setup)
-                            , advgetopt::getopt_exception_logic
+                            , advgetopt::getopt_logic_error
                             , Catch::Matchers::ExceptionMessage(
-                                          "trying to load configuration file \""
+                                          "getopt_logic_error: trying to load configuration file \""
                                         + different_setup.get_config_url()
                                         + "\" but an existing configuration file with the same name was loaded with URL: \""
                                         + setup.get_config_url()

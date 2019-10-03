@@ -78,9 +78,9 @@ CATCH_TEST_CASE("configuration_filenames", "[config][getopt][filenames]")
         CATCH_REQUIRE(filenames[0] == SNAP_CATCH2_NAMESPACE::g_config_filename);
         CATCH_REQUIRE(filenames[1] == SNAP_CATCH2_NAMESPACE::g_config_project_filename);
         CATCH_REQUIRE(filenames[2] == ".config/file.mdi");
-        CATCH_REQUIRE(filenames[3] == ".config/unittest-any.d/file.mdi");
+        CATCH_REQUIRE(filenames[3] == ".config/unittest-any.d/50-file.mdi");
         CATCH_REQUIRE(filenames[4] == "/etc/snapwebsites/server.conf");
-        CATCH_REQUIRE(filenames[5] == "/etc/snapwebsites/unittest-any.d/server.conf");
+        CATCH_REQUIRE(filenames[5] == "/etc/snapwebsites/unittest-any.d/50-server.conf");
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Configuration Files (writable)")
@@ -107,9 +107,9 @@ CATCH_TEST_CASE("configuration_filenames", "[config][getopt][filenames]")
         advgetopt::string_list_t const filenames(opt.get_configuration_filenames(false, true));
 
         CATCH_REQUIRE(filenames.size() == 3);
-        CATCH_REQUIRE(filenames[0] == ".config/unittest-writable.d/file.mdi");
+        CATCH_REQUIRE(filenames[0] == ".config/unittest-writable.d/50-file.mdi");
         CATCH_REQUIRE(filenames[1] == SNAP_CATCH2_NAMESPACE::g_config_project_filename);
-        CATCH_REQUIRE(filenames[2] == "/etc/snapwebsites/unittest-writable.d/server.conf");
+        CATCH_REQUIRE(filenames[2] == "/etc/snapwebsites/unittest-writable.d/50-server.conf");
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Configuration File + Directories")
@@ -138,11 +138,11 @@ CATCH_TEST_CASE("configuration_filenames", "[config][getopt][filenames]")
 
         CATCH_REQUIRE(filenames.size() == 6);
         CATCH_REQUIRE(filenames[0] == SNAP_CATCH2_NAMESPACE::g_config_filename + "/snapfirewall.conf");
-        CATCH_REQUIRE(filenames[1] == SNAP_CATCH2_NAMESPACE::g_config_project_filename + "/snapfirewall.conf");
+        CATCH_REQUIRE(filenames[1] == SNAP_CATCH2_NAMESPACE::g_config_project_filename + "/50-snapfirewall.conf");
         CATCH_REQUIRE(filenames[2] == ".config/snapfirewall.conf");
-        CATCH_REQUIRE(filenames[3] == ".config/unittest-with-directories.d/snapfirewall.conf");
+        CATCH_REQUIRE(filenames[3] == ".config/unittest-with-directories.d/50-snapfirewall.conf");
         CATCH_REQUIRE(filenames[4] == "/etc/snapwebsites/snapfirewall.conf");
-        CATCH_REQUIRE(filenames[5] == "/etc/snapwebsites/unittest-with-directories.d/snapfirewall.conf");
+        CATCH_REQUIRE(filenames[5] == "/etc/snapwebsites/unittest-with-directories.d/50-snapfirewall.conf");
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Configuration File + Directories + '--config-dir'")
@@ -183,15 +183,15 @@ CATCH_TEST_CASE("configuration_filenames", "[config][getopt][filenames]")
 
         CATCH_REQUIRE(filenames.size() == 10);
         CATCH_REQUIRE(filenames[0] == "/var/lib/advgetopt/snapmerger.conf");
-        CATCH_REQUIRE(filenames[1] == "/var/lib/advgetopt/unittest-with-directories-and-config-dir.d/snapmerger.conf");
+        CATCH_REQUIRE(filenames[1] == "/var/lib/advgetopt/unittest-with-directories-and-config-dir.d/50-snapmerger.conf");
         CATCH_REQUIRE(filenames[2] == "/opt/config/snapmerger.conf");
-        CATCH_REQUIRE(filenames[3] == "/opt/config/unittest-with-directories-and-config-dir.d/snapmerger.conf");
+        CATCH_REQUIRE(filenames[3] == "/opt/config/unittest-with-directories-and-config-dir.d/50-snapmerger.conf");
         CATCH_REQUIRE(filenames[4] == SNAP_CATCH2_NAMESPACE::g_config_filename + "/snapmerger.conf");
-        CATCH_REQUIRE(filenames[5] == SNAP_CATCH2_NAMESPACE::g_config_project_filename + "/snapmerger.conf");
+        CATCH_REQUIRE(filenames[5] == SNAP_CATCH2_NAMESPACE::g_config_project_filename + "/50-snapmerger.conf");
         CATCH_REQUIRE(filenames[6] == ".config/snapmerger.conf");
-        CATCH_REQUIRE(filenames[7] == ".config/unittest-with-directories-and-config-dir.d/snapmerger.conf");
+        CATCH_REQUIRE(filenames[7] == ".config/unittest-with-directories-and-config-dir.d/50-snapmerger.conf");
         CATCH_REQUIRE(filenames[8] == "/etc/advgetopt/snapmerger.conf");
-        CATCH_REQUIRE(filenames[9] == "/etc/advgetopt/unittest-with-directories-and-config-dir.d/snapmerger.conf");
+        CATCH_REQUIRE(filenames[9] == "/etc/advgetopt/unittest-with-directories-and-config-dir.d/50-snapmerger.conf");
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Existing Configuration Files")
@@ -426,9 +426,9 @@ CATCH_TEST_CASE("configuration_filenames", "[config][getopt][filenames]")
             CATCH_REQUIRE(filenames.size() == 5);
             CATCH_REQUIRE(filenames[0] == tmpdir + "/.config/folder-which-was-never-created/snapfirewall.conf");
             CATCH_REQUIRE(filenames[1] == "/etc/snapwebsites/not-an-existing-folder/snapfirewall.conf");
-            CATCH_REQUIRE(filenames[2] == "/etc/snapwebsites/not-an-existing-folder/unittest-user-folder.d/snapfirewall.conf");
+            CATCH_REQUIRE(filenames[2] == "/etc/snapwebsites/not-an-existing-folder/unittest-user-folder.d/50-snapfirewall.conf");
             CATCH_REQUIRE(filenames[3] == SNAP_CATCH2_NAMESPACE::g_config_filename + "/snapfirewall.conf");
-            CATCH_REQUIRE(filenames[4] == SNAP_CATCH2_NAMESPACE::g_config_filename + "/unittest-user-folder.d/snapfirewall.conf");
+            CATCH_REQUIRE(filenames[4] == SNAP_CATCH2_NAMESPACE::g_config_filename + "/unittest-user-folder.d/50-snapfirewall.conf");
         }
     CATCH_END_SECTION()
 }

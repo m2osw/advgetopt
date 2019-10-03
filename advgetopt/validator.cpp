@@ -41,22 +41,26 @@
 // advgetopt lib
 //
 #include    "advgetopt/exception.h"
-#include    "advgetopt/log.h"
+
+
+// cppthread lib
+//
+#include    <cppthread/log.h>
 
 
 // snapdev lib
 //
-#include <snapdev/not_used.h>
+#include    <snapdev/not_used.h>
 
 
 // boost lib
 //
-#include <boost/algorithm/string/trim.hpp>
+#include    <boost/algorithm/string/trim.hpp>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
@@ -181,7 +185,7 @@ void validator::register_validator(validator_factory const & factory)
     auto it(g_validator_factories.find(factory.get_name()));
     if(it != g_validator_factories.end())
     {
-        throw getopt_exception_logic(
+        throw getopt_logic_error(
                   "you have two or more validator factories named \""
                 + factory.get_name()
                 + "\".");
@@ -246,7 +250,7 @@ validator::pointer_t validator::create(std::string const & name_and_params)
         {
             if(name_and_params.back() != ')')
             {
-                throw getopt_exception_logic(
+                throw getopt_logic_error(
                       "invalid validator parameter definition: \""
                     + name_and_params
                     + "\", the ')' is missing.");
@@ -310,12 +314,12 @@ validator_integer::validator_integer(string_list_t const & range_list)
         {
             if(!convert_string(r, range.f_minimum))
             {
-                log << log_level_t::error
-                    << r
-                    << " is not a valid value for your ranges;"
-                       " it must only be digits, optionally preceeded by a sign (+ or -)"
-                       " and not overflow an int64_t value."
-                    << end;
+                cppthread::log << cppthread::log_level_t::error
+                               << r
+                               << " is not a valid value for your ranges;"
+                                  " it must only be digits, optionally preceeded by a sign (+ or -)"
+                                  " and not overflow an int64_t value."
+                               << cppthread::end;
                 continue;
             }
             range.f_maximum = range.f_minimum;
@@ -326,12 +330,12 @@ validator_integer::validator_integer(string_list_t const & range_list)
             boost::trim(min_value);
             if(!convert_string(min_value, range.f_minimum))
             {
-                log << log_level_t::error
-                    << min_value
-                    << " is not a valid value for your ranges;"
-                       " it must only be digits, optionally preceeded by a sign (+ or -)"
-                       " and not overflow an int64_t value."
-                    << end;
+                cppthread::log << cppthread::log_level_t::error
+                               << min_value
+                               << " is not a valid value for your ranges;"
+                                  " it must only be digits, optionally preceeded by a sign (+ or -)"
+                                  " and not overflow an int64_t value."
+                               << cppthread::end;
                 continue;
             }
 
@@ -339,23 +343,23 @@ validator_integer::validator_integer(string_list_t const & range_list)
             boost::trim(max_value);
             if(!convert_string(max_value, range.f_maximum))
             {
-                log << log_level_t::error
-                    << max_value
-                    << " is not a valid value for your ranges;"
-                       " it must only be digits, optionally preceeded by a sign (+ or -)"
-                       " and not overflow an int64_t value."
-                    << end;
+                cppthread::log << cppthread::log_level_t::error
+                               << max_value
+                               << " is not a valid value for your ranges;"
+                                  " it must only be digits, optionally preceeded by a sign (+ or -)"
+                                  " and not overflow an int64_t value."
+                               << cppthread::end;
                 continue;
             }
 
             if(range.f_minimum > range.f_maximum)
             {
-                log << log_level_t::error
-                    << min_value
-                    << " has to be smaller or equal to "
-                    << max_value
-                    << "; you have an invalid range."
-                    << end;
+                cppthread::log << cppthread::log_level_t::error
+                               << min_value
+                               << " has to be smaller or equal to "
+                               << max_value
+                               << "; you have an invalid range."
+                               << cppthread::end;
                 continue;
             }
         }
@@ -502,11 +506,11 @@ validator_regex::validator_regex(string_list_t const & regex_list)
 {
     if(regex_list.size() > 1)
     {
-        log << log_level_t::error
-            << "validator_regex() only supports one parameter; "
-            << regex_list.size()
-            << " were supplied; single or double quotation may be required?"
-            << end;
+        cppthread::log << cppthread::log_level_t::error
+                       << "validator_regex() only supports one parameter; "
+                       << regex_list.size()
+                       << " were supplied; single or double quotation may be required?"
+                       << cppthread::end;
         return;
     }
 
@@ -533,24 +537,24 @@ validator_regex::validator_regex(string_list_t const & regex_list)
                 break;
 
             default:
-                log << log_level_t::error
-                    << "unsupported regex flag "
-                    << *it
-                    << " in regular expression \""
-                    << regex
-                    << "\"."
-                    << end;
+                cppthread::log << cppthread::log_level_t::error
+                               << "unsupported regex flag "
+                               << *it
+                               << " in regular expression \""
+                               << regex
+                               << "\"."
+                               << cppthread::end;
                 break;
 
             }
         }
         if(it == regex.begin())
         {
-            log << log_level_t::error
-                << "invalid regex definition, ending / is missing in \""
-                << regex
-                << "\"."
-                << end;
+            cppthread::log << cppthread::log_level_t::error
+                           << "invalid regex definition, ending / is missing in \""
+                           << regex
+                           << "\"."
+                           << cppthread::end;
 
             f_regex = std::regex(std::string(regex.begin() + 1, regex.end()), flags);
         }

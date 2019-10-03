@@ -38,7 +38,11 @@
 // advgetopt lib
 //
 #include    "advgetopt/conf_file.h"
-#include    "advgetopt/log.h"
+
+
+// cppthread lib
+//
+#include    <cppthread/log.h>
 
 // boost lib
 //
@@ -48,7 +52,7 @@
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 namespace advgetopt
@@ -98,10 +102,13 @@ string_list_t getopt::get_configuration_filenames(bool exists, bool writable) co
                         result.push_back(user_filename);
                     }
 
-                    std::string const with_project_name(insert_project_name(user_filename, f_options_environment.f_project_name));
+                    string_list_t const with_project_name(insert_project_name(user_filename, f_options_environment.f_project_name));
                     if(!with_project_name.empty())
                     {
-                        result.push_back(with_project_name);
+                        result.insert(
+                                  result.end()
+                                , with_project_name.begin()
+                                , with_project_name.end());
                     }
                 }
                 else
@@ -152,10 +159,13 @@ string_list_t getopt::get_configuration_filenames(bool exists, bool writable) co
                         result.push_back(user_filename);
                     }
 
-                    std::string const with_project_name(insert_project_name(user_filename, f_options_environment.f_project_name));
+                    string_list_t const with_project_name(insert_project_name(user_filename, f_options_environment.f_project_name));
                     if(!with_project_name.empty())
                     {
-                        result.push_back(with_project_name);
+                        result.insert(
+                                  result.end()
+                                , with_project_name.begin()
+                                , with_project_name.end());
                     }
                 }
                 else
@@ -281,11 +291,11 @@ void getopt::process_configuration_file(std::string const & filename)
         }
         else if(!configuration_sections->has_flag(GETOPT_FLAG_MULTIPLE))
         {
-            log << log_level_t::error
-                << "option \""
-                << name
-                << "\" must have GETOPT_FLAG_MULTIPLE set."
-                << end;
+            cppthread::log << cppthread::log_level_t::error
+                           << "option \""
+                           << name
+                           << "\" must have GETOPT_FLAG_MULTIPLE set."
+                           << cppthread::end;
             return;
         }
         for(auto s : sections)
@@ -304,13 +314,13 @@ void getopt::process_configuration_file(std::string const & filename)
             if(!has_flag(GETOPT_ENVIRONMENT_FLAG_DYNAMIC_PARAMETERS)
             || param.first.length() == 1)
             {
-                log << log_level_t::error
-                    << "unknown option \""
-                    << param.first
-                    << "\" found in configuration file \""
-                    << filename
-                    << "\"."
-                    << end;
+                cppthread::log << cppthread::log_level_t::error
+                               << "unknown option \""
+                               << param.first
+                               << "\" found in configuration file \""
+                               << filename
+                               << "\"."
+                               << cppthread::end;
                 continue;
             }
             else
@@ -336,13 +346,13 @@ void getopt::process_configuration_file(std::string const & filename)
                 // in configuration files we are expected to use '_' so
                 // print an error with such
                 //
-                log << log_level_t::error
-                    << "option \""
-                    << boost::replace_all_copy(param.first, "-", "_")
-                    << "\" is not supported in configuration files (found in \""
-                    << filename
-                    << "\")."
-                    << end;
+                cppthread::log << cppthread::log_level_t::error
+                               << "option \""
+                               << boost::replace_all_copy(param.first, "-", "_")
+                               << "\" is not supported in configuration files (found in \""
+                               << filename
+                               << "\")."
+                               << cppthread::end;
                 continue;
             }
         }

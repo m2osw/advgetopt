@@ -1112,69 +1112,69 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
     CATCH_START_SECTION("No name")
         CATCH_REQUIRE_THROWS_MATCHES(
                   advgetopt::option_info("")
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                          "option_info::option_info(): all options must at least have a long name."));
+                          "getopt_logic_error: option_info::option_info(): all options must at least have a long name."));
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   advgetopt::option_info("", 'v')
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                          "option_info::option_info(): all options must at least have a long name (short name: 'v'.)"));
+                          "getopt_logic_error: option_info::option_info(): all options must at least have a long name (short name: 'v'.)"));
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   advgetopt::option_info(std::string())
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                          "option_info::option_info(): all options must at least have a long name."));
+                          "getopt_logic_error: option_info::option_info(): all options must at least have a long name."));
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   advgetopt::option_info(std::string(), 'p')
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                          "option_info::option_info(): all options must at least have a long name (short name: 'p'.)"));
+                          "getopt_logic_error: option_info::option_info(): all options must at least have a long name (short name: 'p'.)"));
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Default with short name")
         CATCH_REQUIRE_THROWS_MATCHES(
                   advgetopt::option_info("--", 'f')
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                          "option_info::option_info(): the default parameter \"--\" cannot include a short name ('f'.)"));
+                          "getopt_logic_error: option_info::option_info(): the default parameter \"--\" cannot include a short name ('f'.)"));
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Long name cannot start with a dash (-)")
         CATCH_REQUIRE_THROWS_MATCHES(
                   advgetopt::option_info("--dashes")
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                          "option_info::option_info(): an option cannot start with a dash (-), \"--dashes\" is not valid."));
+                          "getopt_logic_error: option_info::option_info(): an option cannot start with a dash (-), \"--dashes\" is not valid."));
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Short name cannot be a dash (-)")
         CATCH_REQUIRE_THROWS_MATCHES(
                   advgetopt::option_info("dash", '-')
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                          "option_info::option_info(): the short name of an option cannot be the dash (-)."));
+                          "getopt_logic_error: option_info::option_info(): the short name of an option cannot be the dash (-)."));
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Get value when undefined")
         advgetopt::option_info verbose("verbose", 'v');
         CATCH_REQUIRE_THROWS_MATCHES(
                   verbose.get_value()
-                , advgetopt::getopt_exception_undefined
+                , advgetopt::getopt_undefined
                 , Catch::Matchers::ExceptionMessage(
-                          "option_info::get_value(): no value at index 0 (idx >= 0) for --verbose so you can't get this value."));
+                          "getopt_exception: option_info::get_value(): no value at index 0 (idx >= 0) for --verbose so you can't get this value."));
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Get long when undefined")
         advgetopt::option_info verbose("verbose", 'v');
         CATCH_REQUIRE_THROWS_MATCHES(
                   verbose.get_long()
-                , advgetopt::getopt_exception_undefined
+                , advgetopt::getopt_undefined
                 , Catch::Matchers::ExceptionMessage(
-                          "option_info::get_long(): no value at index 0 (idx >= 0) for --verbose so you can't get this value."));
+                          "getopt_exception: option_info::get_long(): no value at index 0 (idx >= 0) for --verbose so you can't get this value."));
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Check alias of alias")
@@ -1187,9 +1187,9 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   alias.set_alias_destination(option)
-                , advgetopt::getopt_exception_invalid
+                , advgetopt::getopt_invalid
                 , Catch::Matchers::ExceptionMessage(
-                          "option_info::set_alias(): you can't set an alias as"
+                          "getopt_exception: option_info::set_alias(): you can't set an alias as"
                           " an alias of another option."));
 
         CATCH_REQUIRE(alias.get_alias_destination() == nullptr);
@@ -1208,9 +1208,9 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   multi_value.set_value(2, "value two")
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                    "option_info::set_value(): no value at index 2 and it is not the last available index + 1 (idx > 1) so you can't set this value (try add_value() maybe?)."));
+                    "getopt_logic_error: option_info::set_value(): no value at index 2 and it is not the last available index + 1 (idx > 1) so you can't set this value (try add_value() maybe?)."));
 
         CATCH_REQUIRE(multi_value.size() == 1);
         CATCH_REQUIRE(multi_value.get_value(0) == "value one");
@@ -1230,9 +1230,9 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   multi_value.set_value(2, "456")
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                    "option_info::set_value(): no value at index 2 and it is not the last available index + 1 (idx > 1) so you can't set this value (try add_value() maybe?)."));
+                    "getopt_logic_error: option_info::set_value(): no value at index 2 and it is not the last available index + 1 (idx > 1) so you can't set this value (try add_value() maybe?)."));
 
         CATCH_REQUIRE(multi_value.size() == 1);
         CATCH_REQUIRE(multi_value.get_value(0) == "123");
@@ -1250,9 +1250,9 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   one_value.set_value(1, "value two")
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                    "option_info::set_value(): single value option \"--names\" does not accepts index 1 which is not 0."));
+                    "getopt_logic_error: option_info::set_value(): single value option \"--names\" does not accepts index 1 which is not 0."));
 
         CATCH_REQUIRE(one_value.size() == 1);
         CATCH_REQUIRE(one_value.get_value(0) == "value one");
@@ -1270,9 +1270,9 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   one_value.set_value(1, "456")
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                    "option_info::set_value(): single value option \"--names\" does not accepts index 1 which is not 0."));
+                    "getopt_logic_error: option_info::set_value(): single value option \"--names\" does not accepts index 1 which is not 0."));
 
         CATCH_REQUIRE(one_value.size() == 1);
         CATCH_REQUIRE(one_value.get_value(0) == "123");
@@ -1338,9 +1338,9 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   separators.set_multiple_value("n1,n2;n3 n4 ^ n5")
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                    "option_info::set_multiple_value(): parameter --names expects zero or one parameter."
+                    "getopt_logic_error: option_info::set_multiple_value(): parameter --names expects zero or one parameter."
                     " The set_multiple_value() function should not be called with parameters that only accept one value."));
 
         CATCH_REQUIRE(separators.size() == 0);
@@ -1350,9 +1350,9 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
         advgetopt::option_info auto_validate("validator", 'C');
         CATCH_REQUIRE_THROWS_MATCHES(
                   auto_validate.set_validator("regex('^[a-z]+$/'")
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                    "invalid validator parameter definition: \"regex('^[a-z]+$/'\", the ')' is missing."));
+                    "getopt_logic_error: invalid validator parameter definition: \"regex('^[a-z]+$/'\", the ')' is missing."));
     CATCH_END_SECTION()
 }
 
@@ -1386,9 +1386,9 @@ CATCH_TEST_CASE("check_invalid_config_dir_short_names", "[arguments][invalid][ge
         CATCH_REQUIRE(opt.get_option("config-dir") != nullptr);
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.set_short_name("config-dir", advgetopt::NO_SHORT_NAME)
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "The short name of option \"config-dir\" cannot be set to NO_SHORT_NAME."));
+                              "getopt_logic_error: The short name of option \"config-dir\" cannot be set to NO_SHORT_NAME."));
     }
     CATCH_END_SECTION()
 
@@ -1417,9 +1417,9 @@ CATCH_TEST_CASE("check_invalid_config_dir_short_names", "[arguments][invalid][ge
         CATCH_REQUIRE(opt.get_option("version") != nullptr);
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.set_short_name("version", U'v')   // set to lowercase...
-                , advgetopt::getopt_exception_logic
+                , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
-                              "The short name of option \"version\" cannot be changed from 'V' to 'v'."));
+                              "getopt_logic_error: The short name of option \"version\" cannot be changed from 'V' to 'v'."));
     }
     CATCH_END_SECTION()
 }
