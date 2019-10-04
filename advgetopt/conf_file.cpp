@@ -1623,7 +1623,7 @@ void conf_file::read_configuration()
             boost::replace_all(value, "\\r", "\r");
             boost::replace_all(value, "\\n", "\n");
             boost::replace_all(value, "\\t", "\t");
-            set_parameter(current_section, name, value);
+            set_parameter(current_section, name, unquote(value));
         }
     }
     if(!sections.empty())

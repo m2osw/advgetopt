@@ -25,15 +25,35 @@
 
 // self
 //
-#include "main.h"
+#include    "main.h"
+
 
 // advgetopt lib
 //
-#include <advgetopt/utils.h>
+#include    <advgetopt/conf_file.h>
+#include    <advgetopt/utils.h>
+
 
 // snapdev lib
 //
-#include <snapdev/safe_setenv.h>
+#include    <snapdev/safe_setenv.h>
+
+
+// C++ lib
+//
+#include    <fstream>
+
+
+// last include
+//
+#include    <snapdev/poison.h>
+
+
+
+int shuffle_rand(int n)
+{
+    return rand() % n;
+}
 
 
 
@@ -372,6 +392,119 @@ CATCH_TEST_CASE("utils_insert_project_name", "[utils][valid]")
                             , "advgetopt"));
             CATCH_REQUIRE(fullname.size() == 1);
             CATCH_REQUIRE(fullname[0] == "advgetopt.d/50-basename.ext");
+        }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Actual List of Files on Disk")
+        {
+            SNAP_CATCH2_NAMESPACE::init_tmp_dir("advgetopt-multi", "sorted-user-conf", false);
+
+            // generate an array of numbers from 00 to 99
+            //
+            std::vector<int> numbers;
+            for(int i = 0; i < 100; ++i)
+            {
+                numbers.push_back(i);
+            }
+            std::random_shuffle(numbers.begin(), numbers.end(), shuffle_rand);
+            int const max(rand() % 50 + 10);
+            numbers.resize(max);
+            std::string path(SNAP_CATCH2_NAMESPACE::g_config_project_filename);
+            std::string::size_type const pos(path.rfind('/'));
+            path = path.substr(0, pos);
+            advgetopt::string_list_t filenames;
+            for(int i = 0; i < max; ++i)
+            {
+                std::stringstream ss;
+                ss << path;
+                ss << '/';
+                int const n(numbers[i]);
+                if(n < 10)
+                {
+                    ss << '0';
+                }
+                ss << n;
+                ss << "-sorted-user-conf.config";
+                filenames.push_back(ss.str());
+                std::ofstream conf;
+                conf.open(ss.str(), std::ios_base::out);
+                CATCH_REQUIRE(conf.is_open());
+                conf << "# Config with a number" << std::endl;
+                conf << "var=\"value: " << numbers[i] << "\"" << std::endl;
+            }
+            std::sort(filenames.begin(), filenames.end());
+            std::string const last_filename(*filenames.rbegin());
+            std::string::size_type const slash_pos(last_filename.rfind('/'));
+            std::string const expected_var("value: " + last_filename.substr(slash_pos + 1, 2));
+
+            advgetopt::string_list_t fullnames(advgetopt::insert_project_name(
+                              SNAP_CATCH2_NAMESPACE::g_config_filename
+                            , "advgetopt-multi"));
+            CATCH_REQUIRE(fullnames.size() == filenames.size());
+            for(size_t idx(0); idx < filenames.size(); ++idx)
+            {
+                CATCH_REQUIRE(fullnames[idx] == filenames[idx]);
+            }
+
+            {
+                std::ofstream conf;
+                conf.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out);
+                CATCH_REQUIRE(conf.is_open());
+                conf << "# Original Config with a number" << std::endl;
+                conf << "var=master value" << std::endl;
+
+                // verify the master config file
+                //
+                advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename);
+                advgetopt::conf_file::pointer_t config_file(advgetopt::conf_file::get_conf_file(setup));
+                CATCH_REQUIRE(config_file->get_parameter("var") == "master value");
+            }
+
+            {
+                // run a load to verify that we indeed get the last var=...
+                // value and not some random entry
+                //
+                std::string temp_dir = SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config";
+                char const * const dirs[] = {
+                    temp_dir.c_str(),
+                    nullptr
+                };
+                advgetopt::option opts[] = {
+                    advgetopt::define_option(
+                          advgetopt::Name("var")
+                        , advgetopt::Flags(advgetopt::all_flags<advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR>())
+                        , advgetopt::Help("verify loading configuration files in a serie.")
+                    ),
+                    advgetopt::end_options()
+                };
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+                advgetopt::options_environment env = {
+                    .f_project_name = "advgetopt-multi",
+                    .f_options = opts,
+                    .f_options_files_directory = nullptr,
+                    .f_environment_variable_name = nullptr,
+                    .f_configuration_files = nullptr,
+                    .f_configuration_filename = "sorted-user-conf.config",
+                    .f_configuration_directories = dirs,
+                    .f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS,
+                    .f_help_header = nullptr,
+                    .f_help_footer = nullptr,
+                    .f_version = nullptr,
+                    .f_license = nullptr,
+                    .f_copyright = nullptr,
+                    .f_build_date = UTC_BUILD_DATE,
+                    .f_build_time = UTC_BUILD_TIME,
+                    .f_groups = nullptr
+                };
+#pragma GCC diagnostic pop
+                char const * const argv[] = {
+                    "test",
+                    nullptr
+                };
+                advgetopt::getopt opt(env, 1, const_cast<char **>(argv));
+                CATCH_REQUIRE(opt.get_string("var") == expected_var);
+            }
         }
     CATCH_END_SECTION()
 }

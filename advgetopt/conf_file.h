@@ -137,7 +137,7 @@ public:
     typedef std::function<void(pointer_t conf_file, callback_action_t action, std::string const & variable_name, std::string const & value)>
                                                     callback_t;
 
-    static conf_file::pointer_t get_conf_file(conf_file_setup const & setup);
+    static pointer_t            get_conf_file(conf_file_setup const & setup);
 
     bool                        save_configuration(bool create_backup = true);
 
