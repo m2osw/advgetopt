@@ -502,7 +502,7 @@ getopt::getopt(options_environment const & opt_env)
  * All the data gets copied while parsed. If the argv array is deleted on
  * return, the getopt object remains valid.
  *
- * \exception getopt_exception_exit
+ * \exception getopt_exit
  * This function calls finish_parsing() which may throw this exception.
  * See that function for details.
  *
@@ -562,7 +562,7 @@ void getopt::initialize_parser(options_environment const & opt_env)
  *
  * The command line arguments, configuration files.
  *
- * \exception getopt_exception_exit
+ * \exception getopt_exit
  * If the GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS is set and
  * a system command was specified on the command, such as --help or
  * --version, then that command is run and the function throws this
