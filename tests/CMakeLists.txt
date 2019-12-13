@@ -35,8 +35,8 @@
 # in the final output
 project(unittest)
 
-find_package( Catch )
-if( CATCH_FOUND )
+find_package( Catch2 )
+if( Catch2_FOUND )
 
     add_definitions(
         -DCATCH_CONFIG_PREFIX_ALL
@@ -84,6 +84,6 @@ if( CATCH_FOUND )
     #endif()
     add_test( unittests ${PROJECT_NAME} --tmp ${TMPDIR} )
 
-endif( CATCH_FOUND )
+endif( Catch2_FOUND )
 
 # vim: ts=4 sw=4 et

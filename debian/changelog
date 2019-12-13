@@ -1,3 +1,15 @@
+advgetopt (2.0.5.0~xenial) xenial; urgency=high
+
+  * Moved the log.cpp/h to cppthread.
+  * Swapped the dependencies (cppthread <- advgetopt).
+  * Use the cppthread::mutex class.
+  * Cleaned up the exceptions using the libexcept macros.
+  * Properly remove quotes of configuration file values.
+  * Added/updated tests accordingly.
+  * Many overall clean ups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 13 Dec 2019 10:05:55 -0800
+
 advgetopt (2.0.4.0~xenial) xenial; urgency=high
 
   * Prevent use of --option=value when --option does not accept a value.
