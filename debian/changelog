@@ -1,3 +1,16 @@
+advgetopt (2.0.6.0~bionic) bionic; urgency=high
+
+  * Save the original filename of a configuration file.
+  * Always save the filename, even if the file doesn't exist.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 30 Apr 2020 20:42:05 -0800
+
+advgetopt (2.0.5.0~bionic) bionic; urgency=high
+
+  * Create a bionic version.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 30 Apr 2020 20:42:05 -0800
+
 advgetopt (2.0.5.0~xenial) xenial; urgency=high
 
   * Moved the log.cpp/h to cppthread.

@@ -161,6 +161,11 @@ conf_file_map_t     g_conf_files = conf_file_map_t();
  * separator. By default we accept the INI file syntax (the `[section]`
  * syntax.)
  *
+ * \note
+ * If the filename represent an existing file, then the name is going to
+ * get canonicalized before it gets saved in the structure. Otherwise it
+ * gets saved as is.
+ *
  * \param[in] filename  A valid filename.
  * \param[in] line_continue  One of the line_continuation_t values.
  * \param[in] assignment_operator  A set of assignment operator flags.
@@ -173,7 +178,8 @@ conf_file_setup::conf_file_setup(
         , assignment_operator_t assignment_operator
         , comment_t comment
         , section_operator_t section_operator)
-    : f_line_continuation(line_continuation)
+    : f_original_filename(filename)
+    , f_line_continuation(line_continuation)
     , f_assignment_operator(assignment_operator == 0
                 ? ASSIGNMENT_OPERATOR_EQUAL
                 : assignment_operator)
@@ -190,6 +196,10 @@ conf_file_setup::conf_file_setup(
     {
         f_filename = fn.get();
     }
+    else
+    {
+        f_filename = filename;
+    }
 }
 
 
@@ -201,11 +211,32 @@ conf_file_setup::conf_file_setup(
  *
  * All the other parameters are always viewed as being valid.
  *
+ * \warning
+ * The is_valid() always returns true at this time. We always save the
+ * filename. I'm not totally sure why I wanted to not have a way to get
+ * a valid configuration file by viewing a non-existing file as the same
+ * as an empty file. Now that's what happens.
+ *
  * \return true if the conf_file_setup is considered valid.
  */
 bool conf_file_setup::is_valid() const
 {
     return !f_filename.empty();
+}
+
+
+/** \brief Get the original filename.
+ *
+ * When creating a new conf_file_setup, you have to specify a filename.
+ * This function returns that string exactly, without canonicalization.
+ *
+ * \return The filename as specified at the time of construction.
+ *
+ * \sa get_filename()
+ */
+std::string const & conf_file_setup::get_original_filename() const
+{
+    return f_original_filename;
 }
 
 
@@ -221,6 +252,8 @@ bool conf_file_setup::is_valid() const
  *
  * \return The filename or an empty string if the realpath() could not
  *         be calculated.
+ *
+ * \sa get_original_filename()
  */
 std::string const & conf_file_setup::get_filename() const
 {
@@ -690,10 +723,7 @@ bool conf_file::save_configuration(bool create_backup)
  * a file can be read only once. Once loaded, it gets cached until your
  * application quits.
  *
- * \param[in] filename  The path and name of the configuration file to be read.
- * \param[in] line_continuation  How lines end in this file.
- * \param[in] assignment_operator  What appears between the name and value.
- * \param[in] comment  The supported comment introducer(s).
+ * \param[in] setup  The configuration file setup.
  */
 conf_file::conf_file(conf_file_setup const & setup)
     : f_setup(setup)

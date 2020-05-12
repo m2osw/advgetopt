@@ -110,6 +110,7 @@ public:
                                             , section_operator_t section_operator = SECTION_OPERATOR_INI_FILE);
 
     bool                        is_valid() const;
+    std::string const &         get_original_filename() const;
     std::string const &         get_filename() const;
     line_continuation_t         get_line_continuation() const;
     assignment_operator_t       get_assignment_operator() const;
@@ -118,6 +119,7 @@ public:
     std::string                 get_config_url() const;
 
 private:
+    std::string                 f_original_filename = std::string();
     std::string                 f_filename = std::string();
     line_continuation_t         f_line_continuation = line_continuation_t::line_continuation_unix;
     assignment_operator_t       f_assignment_operator = ASSIGNMENT_OPERATOR_EQUAL;

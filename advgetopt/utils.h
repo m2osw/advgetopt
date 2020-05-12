@@ -26,11 +26,10 @@
 #pragma once
 
 /** \file
- * \brief Declaration of the conf_file class used to read a configuration file.
+ * \brief A few utility functions that are not specific to an object.
  *
- * The library offers a way to read a configuration file parameters without
- * doing anything more than that. The getopt class uses it to read and verify
- * the parameters. It also uses it to read files of configuration options.
+ * The following are useful functions offered publicly since they may
+ * also be useful to others outside of the library.
  */
 
 // C++ lib
