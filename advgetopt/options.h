@@ -159,8 +159,8 @@ public:
     {
     }
 
-    constexpr DefaultValue(char const * help)
-        : OptionValue<char const *>(help)
+    constexpr DefaultValue(char const * default_value)
+        : OptionValue<char const *>(default_value)
     {
     }
 };
