@@ -287,7 +287,7 @@ void getopt::process_configuration_file(std::string const & filename)
                           GETOPT_FLAG_MULTIPLE
                         | GETOPT_FLAG_CONFIGURATION_FILE
                         );
-            f_options_by_name[name] = configuration_sections;
+            f_options_by_name[configuration_sections->get_name()] = configuration_sections;
         }
         else if(!configuration_sections->has_flag(GETOPT_FLAG_MULTIPLE))
         {
@@ -336,7 +336,7 @@ void getopt::process_configuration_file(std::string const & filename)
                 //
                 opt->set_default(param.second);
 
-                f_options_by_name[param.first] = opt;
+                f_options_by_name[opt->get_name()] = opt;
             }
         }
         else
