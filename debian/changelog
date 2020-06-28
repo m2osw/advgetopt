@@ -1,3 +1,9 @@
+advgetopt (2.0.8.0~bionic) bionic; urgency=high
+
+  * Verify that configuration files are not directory or it would block.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 28 Jun 2020 14:38:37 -0700
+
 advgetopt (2.0.7.1~bionic) bionic; urgency=high
 
   * When saving parameters to the `f_options_by_name` we must use the correct
