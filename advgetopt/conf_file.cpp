@@ -61,10 +61,17 @@
 #include    <boost/algorithm/string/join.hpp>
 #include    <boost/algorithm/string/replace.hpp>
 
+
 // C++ lib
 //
 #include    <algorithm>
 #include    <fstream>
+//#include    <filesystem> -- not available yet in g++ 7.5.0
+
+
+// C lib
+//
+#include    <sys/stat.h>
 
 
 // last include
@@ -612,6 +619,9 @@ conf_file::pointer_t conf_file::get_conf_file(conf_file_setup const & setup)
         }
         return it->second;
     }
+
+    // TODO: look into not blocking forever?
+    //
     conf_file::pointer_t cf(new conf_file(setup));
     g_conf_files[setup.get_filename()] = cf;
     return cf;
@@ -1479,6 +1489,32 @@ void conf_file::read_configuration()
 {
     snap::safe_variable<decltype(f_reading)> safe_reading(f_reading, true);
 
+#if 0
+    if(!std::filesystem::is_regular_file(f_setup.get_filename())) -- once we do not have to have -llibg++fs
+    {
+        // we assume it's a directory, it could be a socket, FIFO, etc.
+        // but it's much more likely a directory
+        //
+        f_errno = EISDIR;
+        return;
+    }
+#else
+    struct stat file_info;
+    if(stat(f_setup.get_filename().c_str(), &file_info) != 0)
+    {
+        f_errno = errno;
+        return;
+    }
+    if((file_info.st_mode & S_IFMT) != S_IFREG)
+    {
+        // we assume it's a directory, it could be a socket, FIFO, etc.
+        // but it's much more likely a directory
+        //
+        f_errno = EISDIR;
+        return;
+    }
+#endif
+
     std::ifstream conf(f_setup.get_filename());
     if(!conf)
     {
@@ -1492,6 +1528,20 @@ void conf_file::read_configuration()
     f_line = 0;
     while(get_line(conf, str))
     {
+        if(!conf)
+        {
+            f_errno = errno;
+            cppthread::log << cppthread::log_level_t::error
+                           << "error  \""
+                           << strerror(errno)
+                           << "\" occurred after line "
+                           << f_line
+                           << " while reading configuration file \""
+                           << f_setup.get_filename()
+                           << "\"."
+                           << cppthread::end;
+            break;
+        }
         char const * s(str.c_str());
         while(iswspace(*s))
         {
