@@ -215,7 +215,7 @@ void getopt::parse_options_from_file()
     if(f_options_environment.f_options_files_directory == nullptr
     || f_options_environment.f_options_files_directory[0] == '\0')
     {
-        filename = "/usr/share/advgetopt/options";
+        filename = "/usr/share/advgetopt/options/";
     }
     else
     {

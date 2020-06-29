@@ -625,11 +625,16 @@ flag_t getopt::process_system_options(std::basic_ostream<char> & out)
         if(f_options_environment.f_options_files_directory == nullptr
         || *f_options_environment.f_options_files_directory == '\0')
         {
-            out << "/usr/share/advgetopt/options" << std::endl;
+            out << "/usr/share/advgetopt/options/" << std::endl;
         }
         else
         {
-            out << f_options_environment.f_options_files_directory << std::endl;
+            out << f_options_environment.f_options_files_directory;
+            if(f_options_environment.f_options_files_directory[strlen(f_options_environment.f_options_files_directory) - 1] != '/')
+            {
+                out << '/';
+            }
+            out << std::endl;
         }
         result |= SYSTEM_OPTION_PATH_TO_OPTION_DEFINITIONS;
     }

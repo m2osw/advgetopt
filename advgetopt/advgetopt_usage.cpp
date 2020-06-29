@@ -639,14 +639,20 @@ std::string getopt::process_help_string(char const * help) const
                 break;
 
             case 'i':
-                if(f_options_environment.f_options_files_directory != nullptr
-                && *f_options_environment.f_options_files_directory != '\0')
+                // in the advgetopt_options.cpp, we clearly add a final "/"
+                // so we want to add it here too, to be consistent
                 {
-                    result += f_options_environment.f_options_files_directory;
-                }
-                else
-                {
-                    result += "/usr/share/advgetopt/options";
+                    std::string directory("/usr/share/advgetopt/options/");
+                    if(f_options_environment.f_options_files_directory != nullptr
+                    && *f_options_environment.f_options_files_directory != '\0')
+                    {
+                        directory = f_options_environment.f_options_files_directory;
+                        if(directory.back() != '/')
+                        {
+                            directory += '/';
+                        }
+                    }
+                    result += directory;
                 }
                 help += 2;
                 break;
