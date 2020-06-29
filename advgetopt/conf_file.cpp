@@ -66,7 +66,6 @@
 //
 #include    <algorithm>
 #include    <fstream>
-//#include    <filesystem> -- not available yet in g++ 7.5.0
 
 
 // C lib
@@ -1317,7 +1316,7 @@ int conf_file::getc(std::ifstream & in)
     char c;
     in.get(c);
 
-    if(in.eof())
+    if(in.eof() || in.bad())
     {
         return EOF;
     }
@@ -1488,32 +1487,6 @@ bool conf_file::get_line(std::ifstream & in, std::string & line)
 void conf_file::read_configuration()
 {
     snap::safe_variable<decltype(f_reading)> safe_reading(f_reading, true);
-
-#if 0
-    if(!std::filesystem::is_regular_file(f_setup.get_filename())) -- once we do not have to have -llibg++fs
-    {
-        // we assume it's a directory, it could be a socket, FIFO, etc.
-        // but it's much more likely a directory
-        //
-        f_errno = EISDIR;
-        return;
-    }
-#else
-    struct stat file_info;
-    if(stat(f_setup.get_filename().c_str(), &file_info) != 0)
-    {
-        f_errno = errno;
-        return;
-    }
-    if((file_info.st_mode & S_IFMT) != S_IFREG)
-    {
-        // we assume it's a directory, it could be a socket, FIFO, etc.
-        // but it's much more likely a directory
-        //
-        f_errno = EISDIR;
-        return;
-    }
-#endif
 
     std::ifstream conf(f_setup.get_filename());
     if(!conf)
