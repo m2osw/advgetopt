@@ -1,28 +1,21 @@
-/*
- * License:
- *    Copyright (c) 2006-2019  Made to Order Software Corp.  All Rights Reserved
- *
- *    https://snapwebsites.org/
- *    contact@m2osw.com
- *
- *    This program is free software; you can redistribute it and/or modify
- *    it under the terms of the GNU General Public License as published by
- *    the Free Software Foundation; either version 2 of the License, or
- *    (at your option) any later version.
- *
- *    This program is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *    GNU General Public License for more details.
- *
- *    You should have received a copy of the GNU General Public License along
- *    with this program; if not, write to the Free Software Foundation, Inc.,
- *    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- * Authors:
- *    Alexis Wilke   alexis@m2osw.com
- *    Doug Barbieri  doug@m2osw.com
- */
+// Copyright (c) 2006-2020  Made to Order Software Corp.  All Rights Reserved
+//
+// https://snapwebsites.org/
+// contact@m2osw.com
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
 /** \file
@@ -414,6 +407,46 @@ std::string handle_user_directory(std::string const & filename)
     }
 
     return filename;
+}
+
+
+/** \brief Check whether a value represents "true".
+ *
+ * This function checks a string to see whether it is one of:
+ *
+ * * "true"
+ * * "on"
+ * * "1"
+ *
+ * If so, then the function returns true.
+ *
+ * \param[in] s  The string to be checked.
+ *
+ * \return true if the string represents "true".
+ */
+bool is_true(std::string s)
+{
+    return s == "true" || s == "on" || s == "1";
+}
+
+
+/** \brief Check whether a value represents "false".
+ *
+ * This function checks a string to see whether it is one of:
+ *
+ * * "false"
+ * * "off"
+ * * "0"
+ *
+ * If so, then the function returns true.
+ *
+ * \param[in] s  The string to be checked.
+ *
+ * \return true if the string represents "false".
+ */
+bool is_false(std::string s)
+{
+    return s == "false" || s == "off" || s == "0";
 }
 
 

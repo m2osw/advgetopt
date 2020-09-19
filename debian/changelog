@@ -1,3 +1,9 @@
+advgetopt (2.0.11.0~bionic) bionic; urgency=high
+
+  * Added the is_true() and is_false() functions.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 19 Sep 2020 02:02:53 -0700
+
 advgetopt (2.0.10.0~bionic) bionic; urgency=high
 
   * Changed the fix to the `../options`, we can check whether it failed in

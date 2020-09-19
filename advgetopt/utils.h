@@ -54,6 +54,8 @@ void                split_string(std::string const & str
 string_list_t       insert_project_name(std::string const & filename
                                       , char const * project_name);
 std::string         handle_user_directory(std::string const & filename);
+bool                is_true(std::string s);
+bool                is_false(std::string s);
 
 
 
