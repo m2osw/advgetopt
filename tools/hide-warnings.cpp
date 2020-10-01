@@ -96,15 +96,15 @@ struct io_buf       g_buf_err;
 
 void usage()
 {
-    printf("Usage: %s [--opts] command [cmd-opts]\n", g_progname);
-    printf("Where --opts is one or more of:\n");
-    printf("   --help    | -h           print out this help screen\n");
-    printf("   --version | -V           print out the version of %s\n", g_progname);
-    printf("   --regex   | -r 'regex'   regex of messages to hide\n");
-    printf("   --case    | -c           make the regex case sensitive\n");
-    printf("   --out                    also filter stdout\n");
-    printf("   --                       end list of %s options\n", g_progname);
-    printf("And where command and [cmd-opts] is the command to execute and its options.\n");
+    std::cout << "Usage: " << g_progname << " [--opts] command [cmd-opts]" << std::endl
+              << "Where --opts is one or more of:" << std::endl
+              << "   --help    | -h           print out this help screen" << std::endl
+              << "   --version | -V           print out the version of " << g_progname << std::endl
+              << "   --regex   | -r 'regex'   regex of messages to hide" << std::endl
+              << "   --case    | -c           make the regex case sensitive" << std::endl
+              << "   --out                    also filter stdout" << std::endl
+              << "   --                       end list of " << g_progname << " options\n" << std::endl
+              << "And where command and [cmd-opts] is the command to execute and its options." << std::endl;
     exit(0);
 }
 
@@ -135,7 +135,12 @@ void output_data(FILE * out, regex_t const * regex, char * str, size_t len)
     if(sz != 1)
     {
         saved_errno = errno;
-        fprintf(stderr, "\n%s:error: write() to stdout/stderr failed: %s. (%ld)\n", g_progname, strerror(saved_errno), sz);
+        std::cerr << std::endl
+                  << g_progname << ":error: write() to stdout/stderr failed: "
+                  << strerror(saved_errno)
+                  << ". ("
+                  << sz
+                  << ")";
         exit(1);
     }
 }
@@ -154,7 +159,9 @@ void read_pipe(int pipe, FILE * out, regex_t const * regex, struct io_buf * io)
             if(sz < 0
             && errno != EAGAIN && errno != EWOULDBLOCK)
             {
-                fprintf(stderr, "%s:error: read() of stdout pipe failed.\n", g_progname);
+                std::cerr << g_progname
+                          << ":error: read() of stdout pipe failed."
+                          << std::endl;
                 exit(1);
             }
             return;
@@ -237,7 +244,7 @@ int main(int argc, char * argv[], char * envp[])
                 }
                 if(strcmp(argv[i] + 2, "version") == 0)
                 {
-                    printf("%s\n", g_version);
+                    std::cout << g_version << std::endl;
                     exit(0);
                     /*NOTREACHED*/
                 }
@@ -246,7 +253,9 @@ int main(int argc, char * argv[], char * envp[])
                     ++i;
                     if(i >= argc)
                     {
-                        fprintf(stderr, "%s:error: --regex must be followed by a regular expression.\n", g_progname);
+                        std::cerr << g_progname
+                                  << ":error: --regex must be followed by a regular expression."
+                                  << std::endl;
                         exit(1);
                     }
                     g_regex = argv[i];
@@ -293,7 +302,7 @@ int main(int argc, char * argv[], char * envp[])
                         break;
 
                     case 'V':
-                        printf("%s\n", g_version);
+                        std::cout << g_version << std::endl;
                         exit(0);
                         /*NOTREACHED*/
                         break;
@@ -310,7 +319,9 @@ int main(int argc, char * argv[], char * envp[])
     }
     if(i >= argc)
     {
-        fprintf(stderr, "%s:error: no command specified.\n", g_progname);
+        std::cerr << g_progname
+                  << ":error: no command specified."
+                  << std::endl;
         exit(1);
     }
 
@@ -324,12 +335,16 @@ int main(int argc, char * argv[], char * envp[])
      */
     if(pipe2(pipe_out, O_NONBLOCK) != 0)
     {
-        fprintf(stderr, "%s:error: could not create pipe to replace stdout.\n", g_progname);
+        std::cerr << g_progname
+                  << ":error: could not create pipe to replace stdout."
+                  << std::endl;
         exit(1);
     }
     if(pipe2(pipe_err, O_NONBLOCK) != 0)
     {
-        fprintf(stderr, "%s:error: could not create pipe to replace stderr.\n", g_progname);
+        std::cerr << g_progname
+                  << ":error: could not create pipe to replace stderr."
+                  << std::endl;
         exit(1);
     }
 
@@ -357,7 +372,9 @@ int main(int argc, char * argv[], char * envp[])
                 count = pipe_out[0] == -1 || pipe_err[0] == -1 ? 1 : 2;
                 if(poll(fds + (pipe_out[0] == -1 ? 1 : 0), count, -1) < 0)
                 {
-                    fprintf(stderr, "%s:error: select() returned with -1.\n", g_progname);
+                    std::cerr << g_progname
+                              << ":error: select() returned with -1."
+                              << std::endl;
                     exit(1);
                 }
                 if((fds[0].revents & (POLLIN | POLLPRI)) != 0)
@@ -383,7 +400,9 @@ int main(int argc, char * argv[], char * envp[])
         }
         else
         {
-            fprintf(stderr, "%s:error: fork() failed.\n", g_progname);
+            std::cerr << g_progname
+                      << ":error: fork() failed."
+                      << std::endl;
             exit(1);
         }
     }
@@ -426,7 +445,7 @@ int main(int argc, char * argv[], char * envp[])
             *e = '\0';
             len = strlen(p) + 1 + cmd_len + 1; // path + '/' + command + '\0'
             e = new char[len];
-            snprintf(e, len, "%s/%s", p, argv[i]);
+            snprintf(e, len, "%s/%s", p, argv[i]);  // we use snprintf() because 'e' is saved in argv[i] and then we call execve()
             if(access(e, F_OK) == 0)
             {
                 if(access(e, R_OK | X_OK) == 0)
