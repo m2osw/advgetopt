@@ -44,7 +44,9 @@
 
 // cppthread lib
 //
+#include    <cppthread/guard.h>
 #include    <cppthread/log.h>
+#include    <cppthread/mutex.h>
 
 
 // snapdev lib
@@ -73,6 +75,16 @@
 
 namespace advgetopt
 {
+
+
+
+// from utils.cpp
+//
+// (it's here because we do not want to make cppthread public in
+// out header files--we could have an advgetopt_private.h, though)
+//
+cppthread::mutex &  get_global_mutex();
+
 
 
 
@@ -1249,6 +1261,12 @@ long option_info::get_long(int idx) const
                     + f_name
                     + " so you can't get this value.");
     }
+
+    // since we may change the f_integer vector between threads,
+    // add protection (i.e. most everything else is created at the
+    // beginning so in the main thread)
+    //
+    cppthread::guard lock(get_global_mutex());
 
     if(f_integer.size() != f_value.size())
     {
