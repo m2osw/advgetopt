@@ -695,26 +695,65 @@ CATCH_TEST_CASE("system_flags_help", "[arguments][valid][getopt][system_flags]")
         advgetopt::flag_t const result(opt.process_system_options(ss));
         CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_HELP);
         CATCH_REQUIRE_LONG_STRING(ss.str(),
-"Usage: test system commands\n"
-"   --build-date               print out the time and date when arguments was\n"
-"                              built and exit.\n"
-"   --configuration-filenames  print out the list of configuration files checked\n"
-"                              out by this tool.\n"
-"   --copyright or -C          print out the copyright of arguments and exit.\n"
-"   --environment-variable-name\n"
-"                              print out the name of the environment variable\n"
-"                              supported by arguments (if any.)\n"
-"   --help or -h               print out this help screen and exit.\n"
-"   --license or -L            print out the license of arguments and exit.\n"
-"   --long-help                show all the help from all the available options.\n"
-"   --path-to-option-definitions\n"
-"                              print out the path to the option definitons.\n"
-"   --size or -s <arg> (default is \"33\")\n"
-"                              define the size.\n"
-"   --version or -V            print out the version of arguments and exit.\n"
-"\n"
-"Copyright matters\n"
-"\n"
+advgetopt::getopt::breakup_line(
+              "Usage: test system commands"
+            , 0
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--build-date"
+            , "print out the time and date when arguments was built and exit."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--configuration-filenames"
+            , "print out the list of configuration files checked out by this"
+              " tool."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--copyright or -C"
+            , "print out the copyright of arguments and exit."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--environment-variable-name"
+            , "print out the name of the environment variable supported by"
+              " arguments (if any.)"
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--help or -h"
+            , "print out this help screen and exit."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--license or -L"
+            , "print out the license of arguments and exit."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--long-help"
+            , "show all the help from all the available options."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--path-to-option-definitions"
+            , "print out the path to the option definitons."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--size or -s <arg> (default is \"33\")"
+            , "define the size."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--version or -V"
+            , "print out the version of arguments and exit."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ "\n"
+  "Copyright matters\n"
+  "\n"
                     );
     }
     CATCH_END_SECTION()
@@ -812,28 +851,75 @@ CATCH_TEST_CASE("system_flags_help", "[arguments][valid][getopt][system_flags]")
         advgetopt::flag_t const result(opt.process_system_options(ss));
         CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_HELP);
         CATCH_REQUIRE_LONG_STRING(ss.str(),
-"Usage: test system commands\n"
-"   --build-date               print out the time and date when arguments was\n"
-"                              built and exit.\n"
-"   --configuration-filenames  print out the list of configuration files checked\n"
-"                              out by this tool.\n"
-"   --copyright or -C          print out the copyright of arguments and exit.\n"
-"   --environment-variable-name\n"
-"                              print out the name of the environment variable\n"
-"                              supported by arguments (if any.)\n"
-"   --help or -h               print out this help screen and exit.\n"
-"   --license or -L            print out the license of arguments and exit.\n"
-"   --long-help                show all the help from all the available options.\n"
-"   --obscure or -o <arg>      obscure command, hidden by default.\n"
-"   --path-to-option-definitions\n"
-"                              print out the path to the option definitons.\n"
-"   --secret or -S <arg>       even more secret command, hidden by default.\n"
-"   --size or -s <arg> (default is \"33\")\n"
-"                              define the size.\n"
-"   --version or -V            print out the version of arguments and exit.\n"
-"\n"
-"Copyright matters\n"
-"\n"
+advgetopt::getopt::breakup_line(
+              "Usage: test system commands"
+            , 0
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--build-date"
+            , "print out the time and date when arguments was built and exit."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--configuration-filenames"
+            , "print out the list of configuration files checked out by this"
+              " tool."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--copyright or -C"
+            , "print out the copyright of arguments and exit."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--environment-variable-name"
+            , "print out the name of the environment variable supported by"
+              " arguments (if any.)"
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--help or -h"
+            , "print out this help screen and exit."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--license or -L"
+            , "print out the license of arguments and exit."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--long-help"
+            , "show all the help from all the available options."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--obscure or -o <arg>"
+            , "obscure command, hidden by default."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--path-to-option-definitions"
+            , "print out the path to the option definitons."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--secret or -S <arg>"
+            , "even more secret command, hidden by default."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--size or -s <arg> (default is \"33\")"
+            , "define the size."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--version or -V"
+            , "print out the version of arguments and exit."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ "\n"
+  "Copyright matters\n"
+  "\n"
                     );
     }
     CATCH_END_SECTION()
@@ -1027,30 +1113,77 @@ CATCH_TEST_CASE("system_flags_help", "[arguments][valid][getopt][system_flags]")
         advgetopt::flag_t const result(opt.process_system_options(ss));
         CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_HELP);
         CATCH_REQUIRE_LONG_STRING(ss.str(),
-"Usage: test system commands\n"
-"\n"
-"Commands:\n"
-"   --build-date               print out the time and date when arguments was\n"
-"                              built and exit.\n"
-"   --commands-help            show help from the \"commands\" group of options.\n"
-"   --configuration-filenames  print out the list of configuration files checked\n"
-"                              out by this tool.\n"
-"   --copyright or -C          print out the copyright of arguments and exit.\n"
-"   --environment-variable-name\n"
-"                              print out the name of the environment variable\n"
-"                              supported by arguments (if any.)\n"
-"   --help or -h               print out this help screen and exit.\n"
-"   --license or -L            print out the license of arguments and exit.\n"
-"   --obscure or -o <arg>      obscure command, hidden by default.\n"
-"   --option-help              show help from the \"option\" group of options.\n"
-"   --path-to-option-definitions\n"
-"                              print out the path to the option definitons.\n"
-"   --size or -s <arg> (default is \"33\")\n"
-"                              define the size.\n"
-"   --version or -V            print out the version of arguments and exit.\n"
-"\n"
-"Copyright matters\n"
-"\n"
+advgetopt::getopt::breakup_line(
+              "Usage: test system commands"
+            , 0
+            , advgetopt::getopt::get_line_width())
++ "\n"
+  "Commands:\n"
++ advgetopt::getopt::format_usage_string(
+              "--build-date"
+            , "print out the time and date when arguments was built and exit."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--commands-help"
+            , "show help from the \"commands\" group of options."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--configuration-filenames"
+            , "print out the list of configuration files checked out by this"
+              " tool."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--copyright or -C"
+            , "print out the copyright of arguments and exit."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--environment-variable-name"
+            , "print out the name of the environment variable supported by"
+              " arguments (if any.)"
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--help or -h"
+            , "print out this help screen and exit."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--license or -L"
+            , "print out the license of arguments and exit."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--obscure or -o <arg>"
+            , "obscure command, hidden by default."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--option-help"
+            , "show help from the \"option\" group of options."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--path-to-option-definitions"
+            , "print out the path to the option definitons."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--size or -s <arg> (default is \"33\")"
+            , "define the size."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--version or -V"
+            , "print out the version of arguments and exit."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ "\n"
+  "Copyright matters\n"
+  "\n"
                     );
     }
     CATCH_END_SECTION()
@@ -2500,7 +2633,7 @@ CATCH_TEST_CASE("system_flags_path_to_option_definitions", "[arguments][valid][g
         std::stringstream ss;
         advgetopt::flag_t const result(opt.process_system_options(ss));
         CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_PATH_TO_OPTION_DEFINITIONS);
-        CATCH_REQUIRE(ss.str() == "/usr/share/advgetopt/options\n");
+        CATCH_REQUIRE(ss.str() == "/usr/share/advgetopt/options/\n");
     }
     CATCH_END_SECTION()
 
@@ -2581,7 +2714,7 @@ CATCH_TEST_CASE("system_flags_path_to_option_definitions", "[arguments][valid][g
         std::stringstream ss;
         advgetopt::flag_t const result(opt.process_system_options(ss));
         CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_PATH_TO_OPTION_DEFINITIONS);
-        CATCH_REQUIRE(ss.str() == "/opt/advgetopt/configs\n");
+        CATCH_REQUIRE(ss.str() == "/opt/advgetopt/configs/\n");
     }
     CATCH_END_SECTION()
 

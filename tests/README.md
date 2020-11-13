@@ -151,7 +151,7 @@ We have a few functions used in the library that do not really fit anywhere
 specifically which we put in the utils.cpp file. These tests specifically
 verify those functions.
 
-    dev/coverage utils_unquote,utils_split,utils_insert_project_name,utils_handle_user_directory
+    dev/coverage utils_unquote,utils_split,utils_insert_group_name,utils_handle_user_directory
 
 
 ## Validator (`validator.cpp`)

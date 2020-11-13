@@ -422,6 +422,7 @@ constexpr flag_t    GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS   = 0x0004
 struct options_environment
 {
     char const *                f_project_name = nullptr;               // project/application name--used as filename for the .conf files (%a)
+    char const *                f_group_name = nullptr;                 // sub-folder name (i.e. "snapwebsites")--if nullptr, use f_project_name
     option const *              f_options = nullptr;                    // raw options
     char const *                f_options_files_directory = nullptr;    // directory to check for option files (default "/usr/shared/advgetopt")
     char const *                f_environment_variable_name = nullptr;  // environment variable with additional options (%e)

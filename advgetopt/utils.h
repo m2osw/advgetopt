@@ -51,8 +51,9 @@ std::string         unquote(std::string const & s, std::string const & pairs = "
 void                split_string(std::string const & str
                                , string_list_t & result
                                , string_list_t const & separators);
-string_list_t       insert_project_name(std::string const & filename
-                                      , char const * project_name);
+string_list_t       insert_group_name(std::string const & filename
+                                    , char const * group_name
+                                    , char const * project_name);
 std::string         handle_user_directory(std::string const & filename);
 bool                is_true(std::string s);
 bool                is_false(std::string s);

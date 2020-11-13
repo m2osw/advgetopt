@@ -102,7 +102,7 @@ string_list_t getopt::get_configuration_filenames(bool exists, bool writable) co
                         result.push_back(user_filename);
                     }
 
-                    string_list_t const with_project_name(insert_project_name(user_filename, f_options_environment.f_project_name));
+                    string_list_t const with_project_name(insert_group_name(user_filename, f_options_environment.f_group_name, f_options_environment.f_project_name));
                     if(!with_project_name.empty())
                     {
                         result.insert(
@@ -159,7 +159,7 @@ string_list_t getopt::get_configuration_filenames(bool exists, bool writable) co
                         result.push_back(user_filename);
                     }
 
-                    string_list_t const with_project_name(insert_project_name(user_filename, f_options_environment.f_project_name));
+                    string_list_t const with_project_name(insert_group_name(user_filename, f_options_environment.f_group_name, f_options_environment.f_project_name));
                     if(!with_project_name.empty())
                     {
                         result.insert(

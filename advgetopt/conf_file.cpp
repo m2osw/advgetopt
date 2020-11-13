@@ -1168,7 +1168,7 @@ bool conf_file::set_parameter(std::string section, std::string name, std::string
                                << f_line
                                << " in configuration file \""
                                << f_setup.get_filename()
-                               << "\" includes a character not acceptable for a section or parameter name (controls, space, quotes, and \";#/=:?+\\\"."
+                               << "\" includes a character not acceptable for a section or parameter name (controls, space, quotes, and \";#/=:?+\\\")."
                                << cppthread::end;
                 return false;
 
@@ -1316,7 +1316,7 @@ int conf_file::getc(std::ifstream & in)
     char c;
     in.get(c);
 
-    if(in.eof() || in.bad())
+    if(!in)
     {
         return EOF;
     }
@@ -1387,6 +1387,8 @@ bool conf_file::get_line(std::ifstream & in, std::string & line)
 
         while(c == '\n' || c == '\r')
         {
+            // count the "\r\n" sequence as one line
+            //
             if(c == '\r')
             {
                 c = getc(in);
@@ -1459,13 +1461,22 @@ bool conf_file::get_line(std::ifstream & in, std::string & line)
                     return true;
                 }
                 // the semicolon is checked earlier, just keep the newline
-                // in this case
+                // in this case (but not at the start)
                 //
-                line += c;
+                if(!line.empty() || c != '\n')
+                {
+                    line += c;
+                }
                 c = getc(in);
                 break;
 
             }
+        }
+
+        // we just read the last line
+        if(c == EOF)
+        {
+            return true;
         }
 
         line += c;
@@ -1501,20 +1512,6 @@ void conf_file::read_configuration()
     f_line = 0;
     while(get_line(conf, str))
     {
-        if(!conf)
-        {
-            f_errno = errno;
-            cppthread::log << cppthread::log_level_t::error
-                           << "error  \""
-                           << strerror(errno)
-                           << "\" occurred after line "
-                           << f_line
-                           << " while reading configuration file \""
-                           << f_setup.get_filename()
-                           << "\"."
-                           << cppthread::end;
-            break;
-        }
         char const * s(str.c_str());
         while(iswspace(*s))
         {
@@ -1678,6 +1675,17 @@ void conf_file::read_configuration()
             boost::replace_all(value, "\\t", "\t");
             set_parameter(current_section, name, unquote(value));
         }
+    }
+    if(!conf.eof())
+    {
+        f_errno = errno;
+        cppthread::log << cppthread::log_level_t::error
+                       << "an error occurred while reading line "
+                       << f_line
+                       << " of configuration file \""
+                       << f_setup.get_filename()
+                       << "\"."
+                       << cppthread::end;
     }
     if(!sections.empty())
     {

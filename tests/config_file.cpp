@@ -316,7 +316,7 @@ CATCH_TEST_CASE("configuration_setup", "[config][getopt]")
         }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Check <empty> URL")
+    CATCH_START_SECTION("Check non-existant filename")
         advgetopt::conf_file_setup setup(
                       "/etc/advgetopt/unknown-file.conf"
                     , advgetopt::line_continuation_t::line_continuation_fortran
@@ -324,14 +324,14 @@ CATCH_TEST_CASE("configuration_setup", "[config][getopt]")
                     , advgetopt::COMMENT_INI
                     , advgetopt::SECTION_OPERATOR_CPP);
 
-        CATCH_REQUIRE_FALSE(setup.is_valid());
-        CATCH_REQUIRE(setup.get_filename() == std::string());
+        CATCH_REQUIRE(setup.is_valid());
+        CATCH_REQUIRE(setup.get_filename() == "/etc/advgetopt/unknown-file.conf");
         CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_fortran);
         CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_COLON);
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_INI);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_CPP);
 
-        CATCH_REQUIRE(setup.get_config_url() == "file:///<empty>?line-continuation=fortran&assignment-operator=colon&comment=ini&section-operator=cpp");
+        CATCH_REQUIRE(setup.get_config_url() == "file:///etc/advgetopt/unknown-file.conf?line-continuation=fortran&assignment-operator=colon&comment=ini&section-operator=cpp");
     CATCH_END_SECTION()
 }
 
@@ -1012,6 +1012,10 @@ CATCH_TEST_CASE("config_line_continuation_tests")
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_NONE);
 
         advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+
+std::cerr << "------------------ " << file->get_setup().get_config_url()
+    << "\n------------------ " << setup.get_config_url()
+    << "\n";
 
         CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
         CATCH_REQUIRE(file->get_errno() == 0);
@@ -1983,7 +1987,7 @@ CATCH_TEST_CASE("invalid_configuration_setup", "[config][getopt][invalid]")
                         , rand() & advgetopt::COMMENT_MASK
                         , rand() & advgetopt::SECTION_OPERATOR_MASK);
 
-            CATCH_REQUIRE_FALSE(setup.is_valid());
+            CATCH_REQUIRE(setup.is_valid());
 
             CATCH_REQUIRE_THROWS_MATCHES(
                   setup.get_config_url()
@@ -2387,7 +2391,7 @@ CATCH_TEST_CASE("invalid_sections")
                   "error: parameter \"a::b\" on line 3 in configuration file \""
                 + SNAP_CATCH2_NAMESPACE::g_config_filename
                 + "\" includes a character not acceptable for a section or"
-                  " parameter name (controls, space, quotes, and \";#/=:?+\\\".");
+                  " parameter name (controls, space, quotes, and \";#/=:?+\\\").");
         advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
@@ -2497,7 +2501,7 @@ CATCH_TEST_CASE("invalid_sections")
                         + "\" on line 2 in configuration file \""
                         + SNAP_CATCH2_NAMESPACE::g_config_filename
                         + "\" includes a character not acceptable for a section or"
-                          " parameter name (controls, space, quotes, and \";#/=:?+\\\".");
+                          " parameter name (controls, space, quotes, and \";#/=:?+\\\").");
                 advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
 
                 CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());

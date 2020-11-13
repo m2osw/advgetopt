@@ -292,15 +292,15 @@ void split_string(std::string const & str
 }
 
 
-/** \brief Insert the project name in the filename.
+/** \brief Insert the group (or project) name in the filename.
  *
- * This function inserts the name of the project in the specified full path
+ * This function inserts the name of the group in the specified full path
  * filename. It gets added right before the basename. So for example you
  * have a path such as:
  *
  *     /etc/snapwebsites/advgetopt.conf
  *
- * and a project name such as:
+ * and a group name such as:
  *
  *     adventure
  *
@@ -310,37 +310,55 @@ void split_string(std::string const & str
  *
  * Notice that the function adds a ".d" as well.
  *
+ * If the group name is empty or null, then the project name is used. If
+ * both are empty, then nothing happens (the function returns an empty list).
+ *
  * \param[in] filename  The filename where the project name gets injected.
+ * \param[in] group_name  The name of the group to inject in the filename.
  * \param[in] project_name  The name of the project to inject in the filename.
  *
- * \return The new filename or an empty string if no project name or filename
- *         are specified.
+ * \return The list of filenames or an empty list if no group or project name
+ *         or filename are specified.
  */
-string_list_t insert_project_name(
+string_list_t insert_group_name(
           std::string const & filename
+        , char const * group_name
         , char const * project_name)
 {
-    if(project_name == nullptr
-    || *project_name == '\0'
-    || filename.empty())
+    if(filename.empty())
     {
         return string_list_t();
     }
 
-    std::string pattern;
+    std::string name;
+    if(group_name == nullptr
+    || *group_name == '\0')
+    {
+        if(project_name == nullptr
+        || *project_name == '\0')
+        {
+            return string_list_t();
+        }
+        name = project_name;
+    }
+    else
+    {
+        name = group_name;
+    }
 
+    std::string pattern;
     std::string::size_type const pos(filename.find_last_of('/'));
     if(pos != std::string::npos
     && pos > 0)
     {
         pattern = filename.substr(0, pos + 1)
-                + project_name
+                + name
                 + ".d/[0-9][0-9]-"
                 + filename.substr(pos + 1);
     }
     else
     {
-        pattern = project_name
+        pattern = name
                 + (".d/[0-9][0-9]-" + filename);
     }
 
@@ -360,13 +378,13 @@ string_list_t insert_project_name(
         && pos > 0)
         {
             glob.insert(filename.substr(0, pos + 1)
-                    + project_name
+                    + name
                     + ".d/50-"
                     + filename.substr(pos + 1));
         }
         else
         {
-            glob.insert(project_name
+            glob.insert(name
                     + (".d/50-" + filename));
         }
     }

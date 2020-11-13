@@ -182,6 +182,7 @@ CATCH_TEST_CASE("options_parser", "[options][valid]")
         // the valid parameter
         CATCH_REQUIRE(opt.get_option("verbose") != nullptr);
         CATCH_REQUIRE(opt.get_option('V') != nullptr);
+        CATCH_REQUIRE(opt.get_option('V') == opt.get_option("verbose"));
         CATCH_REQUIRE(opt.is_defined("verbose"));
         CATCH_REQUIRE(opt.get_default("verbose").empty());
         CATCH_REQUIRE(opt.size("verbose") == 1);

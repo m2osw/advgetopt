@@ -185,6 +185,7 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
 
         advgetopt::options_environment options;
         options.f_project_name = "unittest";
+        options.f_group_name = "grouptest";
         options.f_options = options_list;
         options.f_options_files_directory = "/etc/advgetopt";
         options.f_configuration_files = configuration_files;
@@ -209,6 +210,7 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
                                 "   . Output File [%o]\n"
                                 "   . Program Name = [%p]\n"
                                 "   . Program Fullname = [%*p]\n"
+                                "   . Group Name = [%s]\n"
                                 "   . Build Time = [%t]\n"
                                 "   . Version = [%v]\n"
                                 "   . Existing Writable Configuration Files = [%w]\n"
@@ -264,107 +266,216 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
 "advgetopt.yaml]\n"
 "   . All Existing Configuration Files = []\n"
 "   . All Possible Configuration Files = [advgetopt.conf, "
-"unittest.d/50-advgetopt.conf, advgetopt.ini, unittest.d/50-advgetopt.ini, "
-"advgetopt.xml, unittest.d/50-advgetopt.xml, advgetopt.yaml, "
-"unittest.d/50-advgetopt.yaml, /etc/sys/advgetopt/advgetopt.conf, "
-"/etc/sys/advgetopt/unittest.d/50-advgetopt.conf, /etc/advgetopt/advgetopt.conf, "
-"/etc/advgetopt/unittest.d/50-advgetopt.conf, "
+"grouptest.d/50-advgetopt.conf, advgetopt.ini, grouptest.d/50-advgetopt.ini, "
+"advgetopt.xml, grouptest.d/50-advgetopt.xml, advgetopt.yaml, "
+"grouptest.d/50-advgetopt.yaml, /etc/sys/advgetopt/advgetopt.conf, "
+"/etc/sys/advgetopt/grouptest.d/50-advgetopt.conf, /etc/advgetopt/advgetopt.conf, "
+"/etc/advgetopt/grouptest.d/50-advgetopt.conf, "
 "/etc/advgetopt/advgetopt.d/advgetopt.conf, "
-"/etc/advgetopt/advgetopt.d/unittest.d/50-advgetopt.conf, "
+"/etc/advgetopt/advgetopt.d/grouptest.d/50-advgetopt.conf, "
 + tmpdir + "/.config/advgetopt/advgetopt.conf]\n"
-"   . Option File Directory = [/etc/advgetopt]\n"
+"   . Option File Directory = [/etc/advgetopt/]\n"
 "   . License = [MIT]\n"
 "   . Output File [" + tmpdir + "/.config/advgetopt/advgetopt.conf]\n"
 "   . Program Name = [unittest_advgetopt]\n"
 "   . Program Fullname = [tests/unittests/unittest_advgetopt]\n"
+"   . Group Name = [grouptest]\n"
 "   . Build Time = [23:02:36]\n"
 "   . Version = [2.0.1]\n"
 "   . Existing Writable Configuration Files = []\n"
-"", 0,80));
+"", 0, advgetopt::getopt::get_line_width()));
 
         // test a standard "--help" type of option
         //
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: try this one and we get a throw (valid options + usage calls)\n"
-"   --long <arg>               used to validate that invalid numbers generate an\n"
-"                              error.\n"
-"   --string <arg>             string parameter.\n"
-"   --unique or -u             make sure everything is unique.\n"
-"   --validate                 this is used to validate different things.\n"
-"\n"
-"Verbosity options:\n"
-"   --long-help                show all the help from all the available options.\n"
-"   --option-help              show help from the \"option\" group of options.\n"
-"   --quiet or -q {<arg>}      make it quiet (opposite of verbose).\n"
-"   --verbosity-help           show help from the \"verbosity\" group of options.\n"
-"\n"
-"Special options:\n"
-"   --out-of-bounds or -o <arg>\n"
-"                              valid values from 1 to 9.\n"
-"   [default arguments]        other parameters are viewed as filenames.\n"
+advgetopt::getopt::breakup_line(
+              "Usage: try this one and we get a throw (valid options + usage calls)"
+            , 0
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--long <arg>"
+            , "used to validate that invalid numbers generate an error."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--string <arg>"
+            , "string parameter."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--unique or -u"
+            , "make sure everything is unique."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--validate"
+            , "this is used to validate different things."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ "\n"
+  "Verbosity options:\n"
++ advgetopt::getopt::format_usage_string(
+              "--long-help"
+            , "show all the help from all the available options."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--option-help"
+            , "show help from the \"option\" group of options."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--quiet or -q {<arg>}"
+            , "make it quiet (opposite of verbose)."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--verbosity-help"
+            , "show help from the \"verbosity\" group of options."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ "\n"
+  "Special options:\n"
++ advgetopt::getopt::format_usage_string(
+              "--out-of-bounds or -o <arg>"
+            , "valid values from 1 to 9."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "[default arguments]"
+            , "other parameters are viewed as filenames."
+            , 30
+            , advgetopt::getopt::get_line_width())
 + footer
                         );
 
         // test a "--help-all" type of option
         //
         CATCH_REQUIRE_LONG_STRING(opt.usage(advgetopt::GETOPT_FLAG_SHOW_ALL),
-"Usage: try this one and we get a throw (valid options + usage calls)\n"
-"   --long <arg>               used to validate that invalid numbers generate an\n"
-"                              error.\n"
-"   --not-specified-with-invalid-default <arg> {<arg>} (default is \"123abc\")\n"
-"                              test that an invalid default value can be returned\n"
-"                              as is.\n"
-"   --string <arg>             string parameter.\n"
-"   --unique or -u             make sure everything is unique.\n"
-"   --validate                 this is used to validate different things.\n"
-"\n"
-"Verbosity options:\n"
-"   --long-help                show all the help from all the available options.\n"
-"   --option-help              show help from the \"option\" group of options.\n"
-"   --quiet or -q {<arg>}      make it quiet (opposite of verbose).\n"
-"   --verbosity-help           show help from the \"verbosity\" group of options.\n"
-"\n"
-"Special options:\n"
-"   --not-specified-and-no-default <arg>\n"
-"                              test long without having used the option and no\n"
-"                              default.\n"
-"   --out-of-bounds or -o <arg>\n"
-"                              valid values from 1 to 9.\n"
-"   [default arguments]        other parameters are viewed as filenames.\n"
+advgetopt::getopt::breakup_line(
+              "Usage: try this one and we get a throw (valid options + usage calls)"
+            , 0
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--long <arg>"
+            , "used to validate that invalid numbers generate an error."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--not-specified-with-invalid-default <arg> {<arg>}"
+              " (default is \"123abc\")"
+            , "test that an invalid default value can be returned as is."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--string <arg>"
+            , "string parameter."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--unique or -u"
+            , "make sure everything is unique."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--validate"
+            , "this is used to validate different things."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ "\n"
+  "Verbosity options:\n"
++ advgetopt::getopt::format_usage_string(
+              "--long-help"
+            , "show all the help from all the available options."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--option-help"
+            , "show help from the \"option\" group of options."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--quiet or -q {<arg>}"
+            , "make it quiet (opposite of verbose)."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--verbosity-help"
+            , "show help from the \"verbosity\" group of options."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ "\n"
+  "Special options:\n"
++ advgetopt::getopt::format_usage_string(
+              "--not-specified-and-no-default <arg>"
+            , "test long without having used the option and no default."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--out-of-bounds or -o <arg>"
+            , "valid values from 1 to 9."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "[default arguments]"
+            , "other parameters are viewed as filenames."
+            , 30
+            , advgetopt::getopt::get_line_width())
 + footer
                         );
 
         // pretend an error occurred
         //
         CATCH_REQUIRE_LONG_STRING(opt.usage(advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR),
-"Usage: try this one and we get a throw (valid options + usage calls)\n"
-"   --validate                 this is used to validate different things.\n"
-"\n"
-"Verbosity options:\n"
-"   --quiet or -q {<arg>}      make it quiet (opposite of verbose).\n"
+advgetopt::getopt::breakup_line(
+              "Usage: try this one and we get a throw (valid options + usage calls)"
+            , 0
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--validate"
+            , "this is used to validate different things."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ "\n"
+  "Verbosity options:\n"
++ advgetopt::getopt::format_usage_string(
+              "--quiet or -q {<arg>}"
+            , "make it quiet (opposite of verbose)."
+            , 30
+            , advgetopt::getopt::get_line_width())
 + footer
                         );
 
         // show GROUP1
         //
         CATCH_REQUIRE_LONG_STRING(opt.usage(advgetopt::GETOPT_FLAG_SHOW_GROUP1),
-"Usage: try this one and we get a throw (valid options + usage calls)\n"
-"\n"
-"Special options:\n"
-"   --not-specified-and-no-default <arg>\n"
-"                              test long without having used the option and no\n"
-"                              default.\n"
+advgetopt::getopt::breakup_line(
+              "Usage: try this one and we get a throw (valid options + usage calls)"
+            , 0
+            , advgetopt::getopt::get_line_width())
++ "\n"
+  "Special options:\n"
++ advgetopt::getopt::format_usage_string(
+              "--not-specified-and-no-default <arg>"
+            , "test long without having used the option and no default."
+            , 30
+            , advgetopt::getopt::get_line_width())
 + footer
                         );
 
         // show GROUP2
         //
         CATCH_REQUIRE_LONG_STRING(opt.usage(advgetopt::GETOPT_FLAG_SHOW_GROUP2),
-"Usage: try this one and we get a throw (valid options + usage calls)\n"
-"   --not-specified-with-invalid-default <arg> {<arg>} (default is \"123abc\")\n"
-"                              test that an invalid default value can be returned\n"
-"                              as is.\n"
+advgetopt::getopt::breakup_line(
+              "Usage: try this one and we get a throw (valid options + usage calls)"
+            , 0
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--not-specified-with-invalid-default <arg> {<arg>} (default is \"123abc\")"
+            , "test that an invalid default value can be returned as is."
+            , 30
+            , advgetopt::getopt::get_line_width())
 + footer
                         );
     }
@@ -539,7 +650,7 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
 "/etc/advgetopt/advgetopt.d/advgetopt.conf, "
 "/etc/advgetopt/advgetopt.d/unittest.d/50-advgetopt.conf, "
 + tmpdir + "/.config/advgetopt/advgetopt.conf]\n"
-"   . Option File Directory = [/usr/share/advgetopt]\n"
+"   . Option File Directory = [/usr/share/advgetopt/]\n"
 "   . License = [MIT]\n"
 "   . Output File [" + tmpdir + "/.config/advgetopt/advgetopt.conf]\n"
 "   . Program Name = [unittest_advgetopt]\n"
@@ -547,46 +658,116 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
 "   . Build Time = [23:02:36]\n"
 "   . Version = [2.0.1]\n"
 "   . Existing Writable Configuration Files = []\n"
-, 0, 80));
+, 0, advgetopt::getopt::get_line_width()));
 
         // test a standard "--help" type of option
         //
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: try this one and we get a throw (valid options + usage calls)\n"
-"   --long <arg>               used to validate that invalid numbers generate an\n"
-"                              error.\n"
-"   --long-help                show all the help from all the available options.\n"
-"   --out-of-bounds or -o <arg>\n"
-"                              valid values from 1 to 9.\n"
-"   --quiet or -q {<arg>}      make it quiet (opposite of verbose).\n"
-"   --string <arg>             string parameter.\n"
-"   --unique or -u             make sure everything is unique.\n"
-"   --validate                 this is used to validate different things.\n"
-"   <default arguments>        other parameters are viewed as filenames.\n"
+advgetopt::getopt::breakup_line(
+              "Usage: try this one and we get a throw (valid options + usage calls)"
+            , 0
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--long <arg>"
+            , "used to validate that invalid numbers generate an error."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--long-help"
+            , "show all the help from all the available options."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--out-of-bounds or -o <arg>"
+            , "valid values from 1 to 9."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--quiet or -q {<arg>}"
+            , "make it quiet (opposite of verbose)."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--string <arg>"
+            , "string parameter."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--unique or -u"
+            , "make sure everything is unique."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--validate"
+            , "this is used to validate different things."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "<default arguments>"
+            , "other parameters are viewed as filenames."
+            , 30
+            , advgetopt::getopt::get_line_width())
 + footer
                         );
 
         // test a "--help-all" type of option
         //
         CATCH_REQUIRE_LONG_STRING(opt.usage(advgetopt::GETOPT_FLAG_SHOW_ALL),
-"Usage: try this one and we get a throw (valid options + usage calls)\n"
-"   --long <arg>               used to validate that invalid numbers generate an\n"
-"                              error.\n"
-"   --long-help                show all the help from all the available options.\n"
-"   --not-specified-and-no-default <arg>\n"
-"                              test long without having used the option and no\n"
-"                              default.\n"
-"   --not-specified-with-invalid-default <arg> {<arg>} (default is \"123abc\")\n"
-"                              test that an invalid default value can be returned\n"
-"                              as is.\n"
-"   --out-of-bounds or -o <arg>\n"
-"                              valid values from 1 to 9.\n"
-"   --quiet or -q {<arg>}      make it quiet (opposite of verbose).\n"
-"   --string <arg>             string parameter.\n"
-"   --unique or -u             make sure everything is unique.\n"
-"   --validate                 this is used to validate different things.\n"
-"   <default arguments>        other parameters are viewed as filenames.\n"
+advgetopt::getopt::breakup_line(
+              "Usage: try this one and we get a throw (valid options + usage calls)"
+            , 0
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--long <arg>"
+            , "used to validate that invalid numbers generate an error."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--long-help"
+            , "show all the help from all the available options."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--not-specified-and-no-default <arg>"
+            , "test long without having used the option and no default."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--not-specified-with-invalid-default <arg> {<arg>} (default is \"123abc\")"
+            , "test that an invalid default value can be returned as is."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--out-of-bounds or -o <arg>"
+            , "valid values from 1 to 9."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--quiet or -q {<arg>}"
+            , "make it quiet (opposite of verbose)."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--string <arg>"
+            , "string parameter."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--unique or -u"
+            , "make sure everything is unique."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--validate"
+            , "this is used to validate different things."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "<default arguments>"
+            , "other parameters are viewed as filenames."
+            , 30
+            , advgetopt::getopt::get_line_width())
 + footer
                         );
 
@@ -602,20 +783,30 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
         // show GROUP1
         //
         CATCH_REQUIRE_LONG_STRING(opt.usage(advgetopt::GETOPT_FLAG_SHOW_GROUP1),
-"Usage: try this one and we get a throw (valid options + usage calls)\n"
-"   --not-specified-and-no-default <arg>\n"
-"                              test long without having used the option and no\n"
-"                              default.\n"
+advgetopt::getopt::breakup_line(
+              "Usage: try this one and we get a throw (valid options + usage calls)"
+            , 0
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--not-specified-and-no-default <arg>"
+            , "test long without having used the option and no default."
+            , 30
+            , advgetopt::getopt::get_line_width())
 + footer
                         );
 
         // show GROUP2
         //
         CATCH_REQUIRE_LONG_STRING(opt.usage(advgetopt::GETOPT_FLAG_SHOW_GROUP2),
-"Usage: try this one and we get a throw (valid options + usage calls)\n"
-"   --not-specified-with-invalid-default <arg> {<arg>} (default is \"123abc\")\n"
-"                              test that an invalid default value can be returned\n"
-"                              as is.\n"
+advgetopt::getopt::breakup_line(
+              "Usage: try this one and we get a throw (valid options + usage calls)"
+            , 0
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--not-specified-with-invalid-default <arg> {<arg>} (default is \"123abc\")"
+            , "test that an invalid default value can be returned as is."
+            , 30
+            , advgetopt::getopt::get_line_width())
 + footer
                         );
     }
@@ -719,31 +910,71 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
 //                CATCH_REQUIRE_THROWS_AS(opt.usage(static_cast<advgetopt::getopt::status_t>(i), "test no error, warnings, errors..."), advgetopt::getopt_exit);
 //            }
         CATCH_REQUIRE_LONG_STRING(opt.usage(advgetopt::GETOPT_FLAG_SHOW_ALL),
-"Usage: try this one and we get a throw (valid options + usage calls bis)\n"
-"   --long <arg>               used to validate that invalid numbers generate an\n"
-"                              error.\n"
-"   --long-help                show all the help from all the available options.\n"
-"   --not-in-v2-though or -l <arg>\n"
-"                              long with just a letter.\n"
-"   --not-specified-and-no-default <arg>\n"
-"                              test long without having used the option and no\n"
-"                              default.\n"
-"   --not-specified-with-invalid-default <arg> {<arg>} (default is \"123abc\")\n"
-"                              test that an invalid default value can be returned\n"
-"                              as is.\n"
-"   --out-of-bounds or -o <arg>\n"
-"                              valid values from 1 to 9.\n"
-"   --quiet or -q {<arg>}      make it quiet (opposite of verbose).\n"
-"   --string <arg>             string parameter.\n"
-"   --unique or -u             make sure everything is unique.\n"
-"   --validate                 this is used to validate different things.\n"
-"   <default argument>         other parameters are viewed as filenames; and we\n"
-"                              need at least one option with a very long help to\n"
-"                              check that it wraps perfectly (we'd really need to\n"
-"                              get the output of the command and check that\n"
-"                              against what is expected because at this time the\n"
-"                              test is rather blind in that respect! FIXED IN\n"
-"                              v2!)\n"
+advgetopt::getopt::breakup_line(
+              "Usage: try this one and we get a throw (valid options + usage calls bis)"
+            , 0
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--long <arg>"
+            , "used to validate that invalid numbers generate an error."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--long-help"
+            , "show all the help from all the available options."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--not-in-v2-though or -l <arg>"
+            , "long with just a letter."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--not-specified-and-no-default <arg>"
+            , "test long without having used the option and no default."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--not-specified-with-invalid-default <arg> {<arg>} (default is \"123abc\")"
+            , "test that an invalid default value can be returned as is."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--out-of-bounds or -o <arg>"
+            , "valid values from 1 to 9."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--quiet or -q {<arg>}"
+            , "make it quiet (opposite of verbose)."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--string <arg>"
+            , "string parameter."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--unique or -u"
+            , "make sure everything is unique."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--validate"
+            , "this is used to validate different things."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "<default argument>"
+            , "other parameters are viewed as filenames; and we"
+              " need at least one option with a very long help to"
+              " check that it wraps perfectly (we'd really need to"
+              " get the output of the command and check that"
+              " against what is expected because at this time the"
+              " test is rather blind in that respect! FIXED IN"
+              " v2!)"
+            , 30
+            , advgetopt::getopt::get_line_width())
                     );
     }
     CATCH_END_SECTION()
@@ -864,34 +1095,75 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
 //                CATCH_REQUIRE_THROWS_AS(opt.usage(static_cast<advgetopt::getopt::status_t>(i), "test no error, warnings, errors..."), advgetopt::getopt_exit);
 //            }
         CATCH_REQUIRE_LONG_STRING(opt.usage(advgetopt::GETOPT_FLAG_SHOW_ALL),
-"Usage: unittest_advgetopt try this one and we get a throw (valid options + usage\n"
-"calls bis)\n"
-"   --long <arg>               used to validate that invalid numbers generate an\n"
-"                              error.\n"
-"   --long-help                show all the help from all the available options.\n"
-"   --not-in-v2-though or -l <arg>\n"
-"                              long with just a letter.\n"
-"   --not-specified-and-no-default <arg>\n"
-"                              test long without having used the option and no\n"
-"                              default.\n"
-"   --not-specified-with-invalid-default <arg> {<arg>} (default is \"123abc\")\n"
-"                              test that an invalid default value can be returned\n"
-"                              as is.\n"
-"   --option-argument [<arg>]  command line option which accepts an optional\n"
-"                              argument.\n"
-"   --out-of-bounds or -o <arg>\n"
-"                              valid values from 1 to 9.\n"
-"   --quiet or -q {<arg>}      make it quiet (opposite of verbose).\n"
-"   --string <arg>             string parameter.\n"
-"   --unique or -u             make sure everything is unique.\n"
-"   --validate                 this is used to validate different things.\n"
-"   [default argument]         other parameters are viewed as filenames; and we\n"
-"                              need at least one option with a very long help to\n"
-"                              check that it wraps perfectly (we'd really need to\n"
-"                              get the output of the command and check that\n"
-"                              against what is expected because at this time the\n"
-"                              test is rather blind in that respect! FIXED IN\n"
-"                              v2!)\n"
+advgetopt::getopt::breakup_line(
+              "Usage: unittest_advgetopt try this one and we get a throw"
+              " (valid options + usage calls bis)"
+            , 0
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--long <arg>"
+            , "used to validate that invalid numbers generate an error."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--long-help"
+            , "show all the help from all the available options."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--not-in-v2-though or -l <arg>"
+            , "long with just a letter."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--not-specified-and-no-default <arg>"
+            , "test long without having used the option and no default."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--not-specified-with-invalid-default <arg> {<arg>} (default is \"123abc\")"
+            , "test that an invalid default value can be returned as is."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--option-argument [<arg>]"
+            , "command line option which accepts an optional argument."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--out-of-bounds or -o <arg>"
+            , "valid values from 1 to 9."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--quiet or -q {<arg>}"
+            , "make it quiet (opposite of verbose)."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--string <arg>"
+            , "string parameter."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--unique or -u"
+            , "make sure everything is unique."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--validate"
+            , "this is used to validate different things."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "[default argument]"
+            , "other parameters are viewed as filenames; and we need at least"
+              " one option with a very long help to check that it wraps"
+              " perfectly (we'd really need to get the output of the command"
+              " and check that against what is expected because at this time"
+              " the test is rather blind in that respect! FIXED IN v2!)"
+            , 30
+            , advgetopt::getopt::get_line_width())
                     );
     }
     CATCH_END_SECTION()
@@ -948,13 +1220,24 @@ CATCH_TEST_CASE("help_string_percent", "[getopt][usage]")
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: %\n"
-"   --this-is-a-very-long-argument-so-we-can-see-that-such-a-crazy-long-option-(w\n"
-"   ho-does-that-though)-gets-broken-up-as-expected\n"
-"                              I guess the help is not necessary now...\n"
-"   --verbose                  inform you of what we're currently working on: %.\n"
-"\n"
-"Percent Percent: %\n"
+advgetopt::getopt::breakup_line(
+              "Usage: test usage: %"
+            , 0
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--this-is-a-very-long-argument-so-we-can-see-that-such-a-crazy-long-option-(who-does-that-though)-gets-broken-up-as-expected"
+            , "I guess the help is not necessary now..."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--verbose"
+            , "inform you of what we're currently working on: %."
+            , 30
+            , advgetopt::getopt::get_line_width()) + "\n"
++ advgetopt::getopt::breakup_line(
+              "Percent Percent: %"
+            , 0
+            , advgetopt::getopt::get_line_width())
                 );
 
         CATCH_REQUIRE(opt.process_help_string(nullptr) == std::string());
@@ -1007,11 +1290,19 @@ CATCH_TEST_CASE("help_string_project_name", "[getopt][usage]")
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: unittest\n"
-"   --verbose                  inform you of what we're currently working on:\n"
-"                              unittest.\n"
-"\n"
-"Percent Project Name: unittest\n"
+advgetopt::getopt::breakup_line(
+              "Usage: test usage: unittest"
+            , 0
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--verbose"
+            , "inform you of what we're currently working on: unittest."
+            , 30
+            , advgetopt::getopt::get_line_width()) + "\n"
++ advgetopt::getopt::breakup_line(
+              "Percent Project Name: unittest"
+            , 0
+            , advgetopt::getopt::get_line_width())
                 );
     }
     CATCH_END_SECTION()
@@ -1157,11 +1448,19 @@ CATCH_TEST_CASE("help_string_build_date", "[getopt][usage]")
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: Jun  4 2019 %b\n"
-"   --verbose                  inform you of what we're currently working on: Jun\n"
-"                              4 2019 %b.\n"
-"\n"
-"Percent Build Date: Jun  4 2019 %b\n"
+advgetopt::getopt::breakup_line(
+              "Usage: test usage: Jun  4 2019 %b"
+            , 0
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--verbose"
+            , "inform you of what we're currently working on: Jun  4 2019 %b."
+            , 30
+            , advgetopt::getopt::get_line_width()) + "\n"
++ advgetopt::getopt::breakup_line(
+              "Percent Build Date: Jun  4 2019 %b"
+            , 0
+            , advgetopt::getopt::get_line_width())
                 );
     }
     CATCH_END_SECTION()
@@ -1324,14 +1623,23 @@ CATCH_TEST_CASE("help_string_copyright", "[getopt][usage]")
 //}
 
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: Copyright (c) 2019  Made to Order Software Corp. -- All\n"
-"Rights Reserved %c\n"
-"   --verbose                  inform you of what we're currently working on:\n"
-"                              Copyright (c) 2019  Made to Order Software Corp.\n"
-"                              -- All Rights Reserved %c.\n"
-"\n"
-"Percent Copyright: Copyright (c) 2019  Made to Order Software Corp. -- All\n"
-"Rights Reserved %c\n"
+advgetopt::getopt::breakup_line(
+              "Usage: test usage: Copyright (c) 2019  Made to Order Software Corp. -- All"
+              " Rights Reserved %c"
+            , 0
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--verbose"
+            , "inform you of what we're currently working on:"
+              " Copyright (c) 2019  Made to Order Software Corp."
+              " -- All Rights Reserved %c."
+            , 30
+            , advgetopt::getopt::get_line_width()) + "\n"
++ advgetopt::getopt::breakup_line(
+              "Percent Copyright: Copyright (c) 2019  Made to Order Software"
+              " Corp. -- All Rights Reserved %c"
+            , 0
+            , advgetopt::getopt::get_line_width())
                 );
     }
     CATCH_END_SECTION()
@@ -1488,11 +1796,20 @@ CATCH_TEST_CASE("help_string_directories", "[getopt][usage][config]")
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
 
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: /etc/sys/advgetopt\n"
-"   --verbose                  inform you of what we're currently working on:\n"
-"                              /etc/sys/advgetopt.\n"
-"\n"
-"Percent Directories: /etc/sys/advgetopt\n"
+advgetopt::getopt::breakup_line(
+              "Usage: test usage: /etc/sys/advgetopt"
+            , 0
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--verbose"
+            , "inform you of what we're currently working on:"
+              " /etc/sys/advgetopt."
+            , 30
+            , advgetopt::getopt::get_line_width()) + "\n"
++ advgetopt::getopt::breakup_line(
+              "Percent Directories: /etc/sys/advgetopt"
+            , 0
+            , advgetopt::getopt::get_line_width())
                 );
     }
     CATCH_END_SECTION()
@@ -1547,14 +1864,23 @@ CATCH_TEST_CASE("help_string_directories", "[getopt][usage][config]")
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
 
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: /etc/sys/advgetopt, /etc/advgetopt,\n"
-"/etc/advgetopt/advgetopt.d, ~/.config/advgetopt\n"
-"   --verbose                  inform you of what we're currently working on:\n"
-"                              /etc/sys/advgetopt, /etc/advgetopt,\n"
-"                              /etc/advgetopt/advgetopt.d, ~/.config/advgetopt.\n"
-"\n"
-"Percent Directories: /etc/sys/advgetopt, /etc/advgetopt,\n"
-"/etc/advgetopt/advgetopt.d, ~/.config/advgetopt\n"
+advgetopt::getopt::breakup_line(
+              "Usage: test usage: /etc/sys/advgetopt, /etc/advgetopt,"
+              " /etc/advgetopt/advgetopt.d, ~/.config/advgetopt"
+            , 0
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--verbose"
+            , "inform you of what we're currently working on:"
+              " /etc/sys/advgetopt, /etc/advgetopt,"
+              " /etc/advgetopt/advgetopt.d, ~/.config/advgetopt."
+            , 30
+            , advgetopt::getopt::get_line_width()) + "\n"
++ advgetopt::getopt::breakup_line(
+              "Percent Directories: /etc/sys/advgetopt, /etc/advgetopt,"
+              " /etc/advgetopt/advgetopt.d, ~/.config/advgetopt"
+            , 0
+            , advgetopt::getopt::get_line_width())
                 );
     }
     CATCH_END_SECTION()
@@ -1809,11 +2135,20 @@ CATCH_TEST_CASE("help_string_environment_variable", "[getopt][usage]")
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
 
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: ADVGETOPT_TEST_OPTIONS\n"
-"   --verbose                  inform you of what we're currently working on:\n"
-"                              ADVGETOPT_TEST_OPTIONS.\n"
-"\n"
-"Percent Environment Variable: ADVGETOPT_TEST_OPTIONS\n"
+advgetopt::getopt::breakup_line(
+              "Usage: test usage: ADVGETOPT_TEST_OPTIONS"
+            , 0
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--verbose"
+            , "inform you of what we're currently working on:"
+              " ADVGETOPT_TEST_OPTIONS."
+            , 30
+            , advgetopt::getopt::get_line_width()) + "\n"
++ advgetopt::getopt::breakup_line(
+              "Percent Environment Variable: ADVGETOPT_TEST_OPTIONS"
+            , 0
+            , advgetopt::getopt::get_line_width())
                 );
     }
     CATCH_END_SECTION()
@@ -1858,11 +2193,20 @@ CATCH_TEST_CASE("help_string_environment_variable", "[getopt][usage]")
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
 
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: ADVGETOPT_TEST_OPTIONS\n"
-"   --verbose                  inform you of what we're currently working on:\n"
-"                              ADVGETOPT_TEST_OPTIONS.\n"
-"\n"
-"Percent Environment Variable: ADVGETOPT_TEST_OPTIONS\n"
+advgetopt::getopt::breakup_line(
+              "Usage: test usage: ADVGETOPT_TEST_OPTIONS"
+            , 0
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--verbose"
+            , "inform you of what we're currently working on:"
+              " ADVGETOPT_TEST_OPTIONS."
+            , 30
+            , advgetopt::getopt::get_line_width()) + "\n"
++ advgetopt::getopt::breakup_line(
+              "Percent Environment Variable: ADVGETOPT_TEST_OPTIONS"
+            , 0
+            , advgetopt::getopt::get_line_width())
                 );
     }
     CATCH_END_SECTION()
@@ -1909,11 +2253,20 @@ CATCH_TEST_CASE("help_string_environment_variable", "[getopt][usage]")
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
 
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: ADVGETOPT_TEST_OPTIONS=--verbose\n"
-"   --verbose                  inform you of what we're currently working on:\n"
-"                              ADVGETOPT_TEST_OPTIONS=--verbose.\n"
-"\n"
-"Percent Environment Variable: ADVGETOPT_TEST_OPTIONS=--verbose\n"
+advgetopt::getopt::breakup_line(
+              "Usage: test usage: ADVGETOPT_TEST_OPTIONS=--verbose"
+            , 0
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--verbose"
+            , "inform you of what we're currently working on:"
+              " ADVGETOPT_TEST_OPTIONS=--verbose."
+            , 30
+            , advgetopt::getopt::get_line_width()) + "\n"
++ advgetopt::getopt::breakup_line(
+              "Percent Environment Variable: ADVGETOPT_TEST_OPTIONS=--verbose"
+            , 0
+            , advgetopt::getopt::get_line_width())
                 );
     }
     CATCH_END_SECTION()
@@ -1958,11 +2311,20 @@ CATCH_TEST_CASE("help_string_environment_variable", "[getopt][usage]")
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
 
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: ADVGETOPT_TEST_OPTIONS (not set)\n"
-"   --verbose                  inform you of what we're currently working on:\n"
-"                              ADVGETOPT_TEST_OPTIONS (not set).\n"
-"\n"
-"Percent Environment Variable: ADVGETOPT_TEST_OPTIONS (not set)\n"
+advgetopt::getopt::breakup_line(
+              "Usage: test usage: ADVGETOPT_TEST_OPTIONS (not set)"
+            , 0
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--verbose"
+            , "inform you of what we're currently working on:"
+              " ADVGETOPT_TEST_OPTIONS (not set)."
+            , 30
+            , advgetopt::getopt::get_line_width()) + "\n"
++ advgetopt::getopt::breakup_line(
+              "Percent Environment Variable: ADVGETOPT_TEST_OPTIONS (not set)"
+            , 0
+            , advgetopt::getopt::get_line_width())
                 );
     }
     CATCH_END_SECTION()
@@ -2410,11 +2772,19 @@ CATCH_TEST_CASE("help_string_configuration_files", "[getopt][usage][config]")
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
 
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: system.conf\n"
-"   --verbose                  inform you of what we're currently working on:\n"
-"                              system.conf.\n"
-"\n"
-"Percent Configuration Files: system.conf\n"
+advgetopt::getopt::breakup_line(
+              "Usage: test usage: system.conf"
+            , 0
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--verbose"
+            , "inform you of what we're currently working on: system.conf."
+            , 30
+            , advgetopt::getopt::get_line_width()) + "\n"
++ advgetopt::getopt::breakup_line(
+              "Percent Configuration Files: system.conf"
+            , 0
+            , advgetopt::getopt::get_line_width())
                 );
     }
     CATCH_END_SECTION()
@@ -2469,13 +2839,23 @@ CATCH_TEST_CASE("help_string_configuration_files", "[getopt][usage][config]")
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
 
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: system.conf, advgetopt.conf, advgetopt.ini, user.config\n"
-"   --verbose                  inform you of what we're currently working on:\n"
-"                              system.conf, advgetopt.conf, advgetopt.ini,\n"
-"                              user.config.\n"
-"\n"
-"Percent Configuration Files: system.conf, advgetopt.conf, advgetopt.ini,\n"
-"user.config\n"
+advgetopt::getopt::breakup_line(
+              "Usage: test usage: system.conf, advgetopt.conf,"
+              " advgetopt.ini, user.config"
+            , 0
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--verbose"
+            , "inform you of what we're currently working on:"
+              " system.conf, advgetopt.conf, advgetopt.ini,"
+              " user.config."
+            , 30
+            , advgetopt::getopt::get_line_width()) + "\n"
++ advgetopt::getopt::breakup_line(
+              "Percent Configuration Files: system.conf, advgetopt.conf,"
+              " advgetopt.ini, user.config"
+            , 0
+            , advgetopt::getopt::get_line_width())
                 );
     }
     CATCH_END_SECTION()
@@ -2766,20 +3146,20 @@ advgetopt::getopt::breakup_line(
             + ", "
             + SNAP_CATCH2_NAMESPACE::g_config_project_filename
         , 0
-        , 80)
+        , advgetopt::getopt::get_line_width())
 + advgetopt::getopt::format_usage_string(
               "--verbose", "inform you of what we're currently working on: "
             + SNAP_CATCH2_NAMESPACE::g_config_filename + ", "
             + SNAP_CATCH2_NAMESPACE::g_config_project_filename + "."
         , 30
-        , 80) + "\n"
+        , advgetopt::getopt::get_line_width()) + "\n"
 + advgetopt::getopt::breakup_line(
               "Percent Configuration Files: "
             + SNAP_CATCH2_NAMESPACE::g_config_filename
             + ", "
             + SNAP_CATCH2_NAMESPACE::g_config_project_filename
         , 0
-        , 80)
+        , advgetopt::getopt::get_line_width())
                 );
     }
     CATCH_END_SECTION()
@@ -2861,20 +3241,20 @@ advgetopt::getopt::breakup_line(
             + ", "
             + SNAP_CATCH2_NAMESPACE::g_config_project_filename
         , 0
-        , 80)
+        , advgetopt::getopt::get_line_width())
 + advgetopt::getopt::format_usage_string(
               "--verbose", "inform you of what we're currently working on: "
             + SNAP_CATCH2_NAMESPACE::g_config_filename + ", "
             + SNAP_CATCH2_NAMESPACE::g_config_project_filename + "."
         , 30
-        , 80) + "\n"
+        , advgetopt::getopt::get_line_width()) + "\n"
 + advgetopt::getopt::breakup_line(
               "Percent Configuration Files: "
             + SNAP_CATCH2_NAMESPACE::g_config_filename
             + ", "
             + SNAP_CATCH2_NAMESPACE::g_config_project_filename
         , 0
-        , 80)
+        , advgetopt::getopt::get_line_width())
                 );
     }
     CATCH_END_SECTION()
@@ -2929,18 +3309,28 @@ advgetopt::getopt::breakup_line(
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
 
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: system.conf, unittest.d/50-system.conf, advgetopt.conf,\n"
-"unittest.d/50-advgetopt.conf, advgetopt.ini, unittest.d/50-advgetopt.ini,\n"
-"user.config, unittest.d/50-user.config\n"
-"   --verbose                  inform you of what we're currently working on:\n"
-"                              system.conf, unittest.d/50-system.conf,\n"
-"                              advgetopt.conf, unittest.d/50-advgetopt.conf,\n"
-"                              advgetopt.ini, unittest.d/50-advgetopt.ini,\n"
-"                              user.config, unittest.d/50-user.config.\n"
-"\n"
-"Percent Configuration Files: system.conf, unittest.d/50-system.conf,\n"
-"advgetopt.conf, unittest.d/50-advgetopt.conf, advgetopt.ini,\n"
-"unittest.d/50-advgetopt.ini, user.config, unittest.d/50-user.config\n"
+advgetopt::getopt::breakup_line(
+          "Usage: test usage: system.conf, unittest.d/50-system.conf,"
+          " advgetopt.conf, unittest.d/50-advgetopt.conf, advgetopt.ini,"
+          " unittest.d/50-advgetopt.ini, user.config,"
+          " unittest.d/50-user.config"
+        , 0
+        , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+          "--verbose"
+        , "inform you of what we're currently working on:"
+          " system.conf, unittest.d/50-system.conf,"
+          " advgetopt.conf, unittest.d/50-advgetopt.conf,"
+          " advgetopt.ini, unittest.d/50-advgetopt.ini,"
+          " user.config, unittest.d/50-user.config."
+        , 30
+        , advgetopt::getopt::get_line_width()) + "\n"
++ advgetopt::getopt::breakup_line(
+          "Percent Configuration Files: system.conf, unittest.d/50-system.conf,"
+          " advgetopt.conf, unittest.d/50-advgetopt.conf, advgetopt.ini,"
+          " unittest.d/50-advgetopt.ini, user.config, unittest.d/50-user.config"
+        , 0
+        , advgetopt::getopt::get_line_width())
                 );
     }
     CATCH_END_SECTION()
@@ -3201,16 +3591,16 @@ CATCH_TEST_CASE("help_string_option_file_directory", "[getopt][usage][config]")
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
 
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-              "Usage: test usage: /opt/advgetopt/config\n"
+              "Usage: test usage: /opt/advgetopt/config/\n"
 + advgetopt::getopt::format_usage_string(
               "--verbose", "inform you of what we're currently working on: "
-              "/opt/advgetopt/config."
+              "/opt/advgetopt/config/."
         , 30
-        , 80) + "\n"
+        , advgetopt::getopt::get_line_width()) + "\n"
 + advgetopt::getopt::breakup_line(
-              "Percent Configuration Files: /opt/advgetopt/config"
+              "Percent Configuration Files: /opt/advgetopt/config/"
         , 0
-        , 80)
+        , advgetopt::getopt::get_line_width())
                 );
     }
     CATCH_END_SECTION()
@@ -3261,11 +3651,13 @@ CATCH_TEST_CASE("help_string_option_file_directory", "[getopt][usage][config]")
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: /usr/share/advgetopt/options\n"
-"   --verbose                  inform you of what we're currently working on:\n"
-"                              /usr/share/advgetopt/options.\n"
-"\n"
-"Percent Configuration Files: /usr/share/advgetopt/options\n"
+advgetopt::getopt::breakup_line("Usage: test usage: /usr/share/advgetopt/options/", 0, advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--verbose"
+            , "inform you of what we're currently working on: /usr/share/advgetopt/options/."
+            , 30
+            , advgetopt::getopt::get_line_width()) + "\n"
++ advgetopt::getopt::breakup_line("Percent Configuration Files: /usr/share/advgetopt/options/", 0, advgetopt::getopt::get_line_width())
                 );
     }
     CATCH_END_SECTION()
@@ -3316,11 +3708,13 @@ CATCH_TEST_CASE("help_string_option_file_directory", "[getopt][usage][config]")
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: /usr/share/advgetopt/options\n"
-"   --verbose                  inform you of what we're currently working on:\n"
-"                              /usr/share/advgetopt/options.\n"
-"\n"
-"Percent Configuration Files: /usr/share/advgetopt/options\n"
+advgetopt::getopt::breakup_line("Usage: test usage: /usr/share/advgetopt/options/", 0, advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+                  "--verbose"
+                , "inform you of what we're currently working on: /usr/share/advgetopt/options/."
+                , 30
+                , advgetopt::getopt::get_line_width()) + "\n"
++ advgetopt::getopt::breakup_line("Percent Configuration Files: /usr/share/advgetopt/options/", 0, advgetopt::getopt::get_line_width())
                 );
     }
     CATCH_END_SECTION()
@@ -3372,11 +3766,13 @@ CATCH_TEST_CASE("help_string_license", "[getopt][usage]")
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
 
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: MIT-%l\n"
-"   --verbose                  inform you of what we're currently working on:\n"
-"                              MIT-%l.\n"
-"\n"
-"Percent License: MIT-%l\n"
+advgetopt::getopt::breakup_line("Usage: test usage: MIT-%l", 0, advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--verbose"
+            , "inform you of what we're currently working on: MIT-%l."
+            , 30
+            , advgetopt::getopt::get_line_width()) + "\n"
++ advgetopt::getopt::breakup_line("Percent License: MIT-%l", 0, advgetopt::getopt::get_line_width())
                 );
     }
     CATCH_END_SECTION()
@@ -3533,11 +3929,13 @@ CATCH_TEST_CASE("help_string_configuration_output_file", "[getopt][usage][config
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
 
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-              "Usage: test usage: unittest.d/50-user.config\n"
-              "   --verbose                  inform you of what we're currently working on:\n"
-              "                              unittest.d/50-user.config.\n"
-              "\n"
-              "Percent Configuration Files: unittest.d/50-user.config\n"
+advgetopt::getopt::breakup_line("Usage: test usage: unittest.d/50-user.config", 0, advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+          "--verbose"
+        , "inform you of what we're currently working on: unittest.d/50-user.config."
+        , 30
+        , advgetopt::getopt::get_line_width()) + "\n"
++ advgetopt::getopt::breakup_line("Percent Configuration Files: unittest.d/50-user.config", 0, advgetopt::getopt::get_line_width())
                 );
     }
     CATCH_END_SECTION()
@@ -3692,11 +4090,13 @@ CATCH_TEST_CASE("help_string_program_name", "[getopt][usage]")
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
 
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: usage\n"
-"   --verbose                  inform you of what we're currently working on:\n"
-"                              usage.\n"
-"\n"
-"Percent Program Name: usage\n"
+advgetopt::getopt::breakup_line("Usage: test usage: usage", 0, advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+          "--verbose"
+        , "inform you of what we're currently working on: usage."
+        , 30
+        , advgetopt::getopt::get_line_width()) + "\n"
++ advgetopt::getopt::breakup_line("Percent Program Name: usage", 0, advgetopt::getopt::get_line_width())
                 );
     }
     CATCH_END_SECTION()
@@ -3742,11 +4142,13 @@ CATCH_TEST_CASE("help_string_program_name", "[getopt][usage]")
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
 
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: tests/unittests/usage\n"
-"   --verbose                  inform you of what we're currently working on:\n"
-"                              tests/unittests/usage.\n"
-"\n"
-"Percent Program Name: tests/unittests/usage\n"
+advgetopt::getopt::breakup_line("Usage: test usage: tests/unittests/usage", 0, advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--verbose"
+            , "inform you of what we're currently working on: tests/unittests/usage."
+            , 30
+            , advgetopt::getopt::get_line_width()) + "\n"
++ advgetopt::getopt::breakup_line("Percent Program Name: tests/unittests/usage", 0, advgetopt::getopt::get_line_width())
                 );
     }
     CATCH_END_SECTION()
@@ -3838,11 +4240,13 @@ CATCH_TEST_CASE("help_string_build_time", "[getopt][usage]")
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: 23:02:36 %t\n"
-"   --verbose                  inform you of what we're currently working on:\n"
-"                              23:02:36 %t.\n"
-"\n"
-"Percent Build Time: 23:02:36 %t\n"
+advgetopt::getopt::breakup_line("Usage: test usage: 23:02:36 %t", 0, advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+          "--verbose"
+        , "inform you of what we're currently working on: 23:02:36 %t."
+        , 30
+        , advgetopt::getopt::get_line_width()) + "\n"
++ advgetopt::getopt::breakup_line("Percent Build Time: 23:02:36 %t", 0, advgetopt::getopt::get_line_width())
                 );
     }
     CATCH_END_SECTION()
@@ -3891,6 +4295,14 @@ CATCH_TEST_CASE("help_string_build_time", "[getopt][usage]")
 "   --verbose                  inform you of what we're currently working on: .\n"
 "\n"
 "Percent Build Time: \n"
+// TBD -- apparently that works as is?!
+//advgetopt::getopt::breakup_line("Usage: test usage: ", 0, advgetopt::getopt::get_line_width())
+//+ advgetopt::getopt::format_usage_string(
+//          "--verbose"
+//        , "inform you of what we're currently working on: ."
+//        , 30
+//        , advgetopt::getopt::get_line_width()) + "\n"
+//+ advgetopt::getopt::breakup_line("Percent Build Time: ", 0, advgetopt::getopt::get_line_width())
                 );
     }
     CATCH_END_SECTION()
@@ -3989,11 +4401,13 @@ CATCH_TEST_CASE("help_string_version", "[getopt][usage]")
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: 2.0.1-%v\n"
-"   --verbose                  inform you of what we're currently working on:\n"
-"                              2.0.1-%v.\n"
-"\n"
-"Percent Version: 2.0.1-%v\n"
+advgetopt::getopt::breakup_line("Usage: test usage: 2.0.1-%v", 0, advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+          "--verbose"
+        , "inform you of what we're currently working on: 2.0.1-%v."
+        , 30
+        , advgetopt::getopt::get_line_width()) + "\n"
+  "Percent Version: 2.0.1-%v\n"
                 );
     }
     CATCH_END_SECTION()
@@ -4177,17 +4591,17 @@ advgetopt::getopt::breakup_line(
               "Usage: test usage: "
             + SNAP_CATCH2_NAMESPACE::g_config_project_filename
         , 0
-        , 80)
+        , advgetopt::getopt::get_line_width())
 + advgetopt::getopt::format_usage_string(
               "--verbose", "inform you of what we're currently working on: "
             + SNAP_CATCH2_NAMESPACE::g_config_project_filename + "."
         , 30
-        , 80) + "\n"
+        , advgetopt::getopt::get_line_width()) + "\n"
 + advgetopt::getopt::breakup_line(
               "Percent Configuration Files: "
             + SNAP_CATCH2_NAMESPACE::g_config_project_filename
         , 0
-        , 80)
+        , advgetopt::getopt::get_line_width())
                 );
     }
     CATCH_END_SECTION()
@@ -4294,21 +4708,21 @@ advgetopt::getopt::breakup_line(
             + ", "
             + save_config_project_filename
         , 0
-        , 80)
+        , advgetopt::getopt::get_line_width())
 + advgetopt::getopt::format_usage_string(
               "--verbose", "inform you of what we're currently working on: "
             + SNAP_CATCH2_NAMESPACE::g_config_project_filename
             + ", "
             + save_config_project_filename + "."
         , 30
-        , 80) + "\n"
+        , advgetopt::getopt::get_line_width()) + "\n"
 + advgetopt::getopt::breakup_line(
               "Percent Configuration Files: "
             + SNAP_CATCH2_NAMESPACE::g_config_project_filename
             + ", "
             + save_config_project_filename
         , 0
-        , 80)
+        , advgetopt::getopt::get_line_width())
                 );
     }
     CATCH_END_SECTION()

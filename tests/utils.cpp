@@ -331,20 +331,96 @@ CATCH_TEST_CASE("utils_split", "[utils][valid]")
 
 
 
-CATCH_TEST_CASE("utils_insert_project_name", "[utils][valid]")
+CATCH_TEST_CASE("utils_insert_group_name", "[utils][valid]")
 {
     CATCH_START_SECTION("Full insert")
+        // CONFIG FILE HAS NO EXTENSION
         {
-            advgetopt::string_list_t fullname(advgetopt::insert_project_name(
+            advgetopt::string_list_t fullname(advgetopt::insert_group_name(
                               "/this/is/a/path"
+                            , "group-name"
+                            , "project-name"));
+            CATCH_REQUIRE(fullname.size() == 1);
+            CATCH_REQUIRE(fullname[0] == "/this/is/a/group-name.d/50-path");
+        }
+
+        {
+            advgetopt::string_list_t fullname(advgetopt::insert_group_name(
+                              "/this/is/a/path"
+                            , "group-name"
+                            , ""));
+            CATCH_REQUIRE(fullname.size() == 1);
+            CATCH_REQUIRE(fullname[0] == "/this/is/a/group-name.d/50-path");
+        }
+
+        {
+            advgetopt::string_list_t fullname(advgetopt::insert_group_name(
+                              "/this/is/a/path"
+                            , "group-name"
+                            , nullptr));
+            CATCH_REQUIRE(fullname.size() == 1);
+            CATCH_REQUIRE(fullname[0] == "/this/is/a/group-name.d/50-path");
+        }
+
+        {
+            advgetopt::string_list_t fullname(advgetopt::insert_group_name(
+                              "/this/is/a/path"
+                            , ""
                             , "project-name"));
             CATCH_REQUIRE(fullname.size() == 1);
             CATCH_REQUIRE(fullname[0] == "/this/is/a/project-name.d/50-path");
         }
 
         {
-            advgetopt::string_list_t fullname(advgetopt::insert_project_name(
+            advgetopt::string_list_t fullname(advgetopt::insert_group_name(
+                              "/this/is/a/path"
+                            , nullptr
+                            , "project-name"));
+            CATCH_REQUIRE(fullname.size() == 1);
+            CATCH_REQUIRE(fullname[0] == "/this/is/a/project-name.d/50-path");
+        }
+
+        // CONFIG FILE HAS EXTENSION
+        {
+            advgetopt::string_list_t fullname(advgetopt::insert_group_name(
                               "/this/is/a/basename.ext"
+                            , "group-name"
+                            , "project-name"));
+            CATCH_REQUIRE(fullname.size() == 1);
+            CATCH_REQUIRE(fullname[0] == "/this/is/a/group-name.d/50-basename.ext");
+        }
+
+        {
+            advgetopt::string_list_t fullname(advgetopt::insert_group_name(
+                              "/this/is/a/basename.ext"
+                            , "group-name"
+                            , ""));
+            CATCH_REQUIRE(fullname.size() == 1);
+            CATCH_REQUIRE(fullname[0] == "/this/is/a/group-name.d/50-basename.ext");
+        }
+
+        {
+            advgetopt::string_list_t fullname(advgetopt::insert_group_name(
+                              "/this/is/a/basename.ext"
+                            , "group-name"
+                            , nullptr));
+            CATCH_REQUIRE(fullname.size() == 1);
+            CATCH_REQUIRE(fullname[0] == "/this/is/a/group-name.d/50-basename.ext");
+        }
+
+        {
+            advgetopt::string_list_t fullname(advgetopt::insert_group_name(
+                              "/this/is/a/basename.ext"
+                            , ""
+                            , "project-name"));
+            CATCH_REQUIRE(fullname.size() == 1);
+            CATCH_REQUIRE(fullname[0] == "/this/is/a/project-name.d/50-basename.ext");
+        }
+
+        {
+            advgetopt::string_list_t fullname(advgetopt::insert_group_name(
+                              "/this/is/a/basename.ext"
+                            , nullptr
                             , "project-name"));
             CATCH_REQUIRE(fullname.size() == 1);
             CATCH_REQUIRE(fullname[0] == "/this/is/a/project-name.d/50-basename.ext");
@@ -353,43 +429,93 @@ CATCH_TEST_CASE("utils_insert_project_name", "[utils][valid]")
 
     CATCH_START_SECTION("Empty cases")
         {
-            advgetopt::string_list_t fullname(advgetopt::insert_project_name(
+            advgetopt::string_list_t fullname(advgetopt::insert_group_name(
                               "/this/is/a/path"
+                            , nullptr
                             , nullptr));
             CATCH_REQUIRE(fullname.empty());
-            //CATCH_REQUIRE(fullname == std::string());
         }
 
         {
-            advgetopt::string_list_t fullname(advgetopt::insert_project_name(
+            advgetopt::string_list_t fullname(advgetopt::insert_group_name(
                               "/this/is/a/path"
+                            , nullptr
                             , ""));
             CATCH_REQUIRE(fullname.empty());
-            //CATCH_REQUIRE(fullname == std::string());
         }
 
         {
-            advgetopt::string_list_t fullname(advgetopt::insert_project_name(
+            advgetopt::string_list_t fullname(advgetopt::insert_group_name(
+                              "/this/is/a/path"
+                            , ""
+                            , nullptr));
+            CATCH_REQUIRE(fullname.empty());
+        }
+
+        {
+            advgetopt::string_list_t fullname(advgetopt::insert_group_name(
+                              "/this/is/a/path"
+                            , ""
+                            , ""));
+            CATCH_REQUIRE(fullname.empty());
+        }
+
+        {
+            advgetopt::string_list_t fullname(advgetopt::insert_group_name(
                               ""
+                            , "group-name"
                             , "project-name"));
             CATCH_REQUIRE(fullname.empty());
-            //CATCH_REQUIRE(fullname == std::string());
+        }
+
+        {
+            advgetopt::string_list_t fullname(advgetopt::insert_group_name(
+                              ""
+                            , ""
+                            , "project-name"));
+            CATCH_REQUIRE(fullname.empty());
+        }
+
+        {
+            advgetopt::string_list_t fullname(advgetopt::insert_group_name(
+                              ""
+                            , nullptr
+                            , "project-name"));
+            CATCH_REQUIRE(fullname.empty());
+        }
+
+        {
+            advgetopt::string_list_t fullname(advgetopt::insert_group_name(
+                              ""
+                            , nullptr
+                            , ""));
+            CATCH_REQUIRE(fullname.empty());
+        }
+
+        {
+            advgetopt::string_list_t fullname(advgetopt::insert_group_name(
+                              ""
+                            , nullptr
+                            , nullptr));
+            CATCH_REQUIRE(fullname.empty());
         }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Basename Only")
         {
-            advgetopt::string_list_t fullname(advgetopt::insert_project_name(
+            advgetopt::string_list_t fullname(advgetopt::insert_group_name(
                               "basename"
+                            , nullptr
                             , "advgetopt"));
             CATCH_REQUIRE(fullname.size() == 1);
             CATCH_REQUIRE(fullname[0] == "advgetopt.d/50-basename");
         }
 
         {
-            advgetopt::string_list_t fullname(advgetopt::insert_project_name(
+            advgetopt::string_list_t fullname(advgetopt::insert_group_name(
                               "basename.ext"
-                            , "advgetopt"));
+                            , "advgetopt"
+                            , nullptr));
             CATCH_REQUIRE(fullname.size() == 1);
             CATCH_REQUIRE(fullname[0] == "advgetopt.d/50-basename.ext");
         }
@@ -437,9 +563,10 @@ CATCH_TEST_CASE("utils_insert_project_name", "[utils][valid]")
             std::string::size_type const slash_pos(last_filename.rfind('/'));
             std::string const expected_var("value: " + last_filename.substr(slash_pos + 1, 2));
 
-            advgetopt::string_list_t fullnames(advgetopt::insert_project_name(
+            advgetopt::string_list_t fullnames(advgetopt::insert_group_name(
                               SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , "advgetopt-multi"));
+                            , "advgetopt-multi"
+                            , "multi-channels"));
             CATCH_REQUIRE(fullnames.size() == filenames.size());
             for(size_t idx(0); idx < filenames.size(); ++idx)
             {
@@ -480,7 +607,8 @@ CATCH_TEST_CASE("utils_insert_project_name", "[utils][valid]")
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
                 advgetopt::options_environment env = {
-                    .f_project_name = "advgetopt-multi",
+                    .f_project_name = "sorted-configs",
+                    .f_group_name = "advgetopt-multi",
                     .f_options = opts,
                     .f_options_files_directory = nullptr,
                     .f_environment_variable_name = nullptr,
@@ -503,6 +631,7 @@ CATCH_TEST_CASE("utils_insert_project_name", "[utils][valid]")
                     nullptr
                 };
                 advgetopt::getopt opt(env, 1, const_cast<char **>(argv));
+                CATCH_REQUIRE(memcmp(&opt.get_options_environment(), &env, sizeof(env)) == 0);
                 CATCH_REQUIRE(opt.get_string("var") == expected_var);
             }
         }

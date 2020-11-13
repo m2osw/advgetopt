@@ -435,6 +435,7 @@ std::string getopt::usage( flag_t show ) const
  * \li "%o" -- show the configuration filename where changes get written.
  * \li "%p" -- print out the program basename.
  * \li "%*p" -- print out the full program name.
+ * \li "%s" -- print out the group name.
  * \li "%t" -- print out the build time.
  * \li "%v" -- print out the version.
  * \li "%w" -- print out the list of all the writable configuration files.
@@ -681,6 +682,14 @@ std::string getopt::process_help_string(char const * help) const
                 help += 2;
                 break;
 
+            case 's':
+                if(f_options_environment.f_group_name != nullptr)
+                {
+                    result += f_options_environment.f_group_name;
+                }
+                help += 2;
+                break;
+
             case 't':
                 if(f_options_environment.f_build_time != nullptr)
                 {
@@ -758,12 +767,12 @@ std::string getopt::format_usage_string(
 
     ss << "   ";
 
-    if( argument.size() < option_width - 3 )
+    if(argument.size() < option_width - 3)
     {
         // enough space on a single line
         //
         ss << argument
-           << std::setw( option_width - 3 - argument.size() )
+           << std::setw(option_width - 3 - argument.size())
            << " ";
     }
     else if(argument.size() >= line_width - 4)
@@ -776,7 +785,7 @@ std::string getopt::format_usage_string(
         if(!help.empty()
         && option_width > 0)
         {
-            ss << std::setw( option_width ) << " ";
+            ss << std::setw(option_width) << " ";
         }
     }
     else
@@ -785,7 +794,7 @@ std::string getopt::format_usage_string(
         //
         ss << argument
            << std::endl
-           << std::setw( option_width )
+           << std::setw(option_width)
            << " ";
     }
 
