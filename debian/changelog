@@ -1,5 +1,15 @@
 advgetopt (2.0.13.0~bionic) bionic; urgency=high
 
+  * Added a _group name_ so we can place all admin changes in one folder.
+  * Made all the tests pass with the latest version.
+  * Added %s to print the group name.
+  * Completed the coverage, it's at 100% again.
+  * Fixed a bug in reading the last line of configuration files.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 13 Nov 2020 17:55:59 -0800
+
+advgetopt (2.0.13.0~bionic) bionic; urgency=high
+
   * Added a guard when doing a get_long() because it changes a variable.
 
  -- Alexis Wilke <alexis@m2osw.com>  Sat, 10 Oct 2020 09:18:46 -0700

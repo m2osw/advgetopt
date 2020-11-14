@@ -879,7 +879,7 @@ std::string getopt::breakup_line(std::string line
                 l = line.substr(0, pos);
 
                 // remove additional spaces from the start of the next line
-                do
+                do  // LCOV_EXCL_LINE
                 {
                     ++pos;
                 }

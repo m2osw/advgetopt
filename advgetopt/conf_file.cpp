@@ -1678,14 +1678,14 @@ void conf_file::read_configuration()
     }
     if(!conf.eof())
     {
-        f_errno = errno;
-        cppthread::log << cppthread::log_level_t::error
-                       << "an error occurred while reading line "
-                       << f_line
-                       << " of configuration file \""
-                       << f_setup.get_filename()
-                       << "\"."
-                       << cppthread::end;
+        f_errno = errno;                                            // LCOV_EXCL_LINE
+        cppthread::log << cppthread::log_level_t::error             // LCOV_EXCL_LINE
+                       << "an error occurred while reading line "   // LCOV_EXCL_LINE
+                       << f_line                                    // LCOV_EXCL_LINE
+                       << " of configuration file \""               // LCOV_EXCL_LINE
+                       << f_setup.get_filename()                    // LCOV_EXCL_LINE
+                       << "\"."                                     // LCOV_EXCL_LINE
+                       << cppthread::end;                           // LCOV_EXCL_LINE
     }
     if(!sections.empty())
     {

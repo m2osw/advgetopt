@@ -438,6 +438,7 @@ CATCH_TEST_CASE("configuration_filenames", "[config][getopt][filenames]")
 CATCH_TEST_CASE("load_configuration_file", "[config][getopt][filenames]")
 {
     CATCH_START_SECTION("Load a Configuration File")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("load", "tool");
 
         {
@@ -504,9 +505,11 @@ CATCH_TEST_CASE("load_configuration_file", "[config][getopt][filenames]")
         CATCH_REQUIRE(opt.get_string("filenames", 2) == "blue");
         CATCH_REQUIRE(opt.get_string("filenames", 3) == "brown");
         CATCH_REQUIRE(opt.get_string("filenames", 4) == "white");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Load an Extended Configuration File")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("load-extended", "extended");
 
         {
@@ -581,6 +584,124 @@ CATCH_TEST_CASE("load_configuration_file", "[config][getopt][filenames]")
 
         CATCH_REQUIRE(opt.size("visibility") == 1);
         CATCH_REQUIRE(opt.get_string("visibility") == "hidden");
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Load a Configuration File with Sections")
+    {
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("load-with-sections", "sections");
+
+        {
+            std::ofstream config_file;
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "\n"
+                "[integers]\n"
+                "sizes=132\n"
+                "\n"
+                "[objects]\n"
+                "object=property.obj\n"
+                "filenames=green orange blue brown white\n"
+                "\n"
+                "[flags]\n"
+                "visibility=hidden\n"
+                "\n"
+                "[integers]\n"
+                "max=1111\n"
+                "\n"
+                "# vim: ts=4 sw=4 et\n"
+            ;
+        }
+
+        char const * confs[] =
+        {
+            "~/.config/file-which-was-never-created.mdi",
+            SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(),
+            "/etc/snapwebsites/not/an-existing-file.conf",
+            nullptr
+        };
+
+        char const * const separators[] {
+            ",",
+            " ",
+            nullptr
+        };
+
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("objects::object")
+                , advgetopt::Flags(advgetopt::all_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("object.")
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("integers::sizes")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::all_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("sizes.")
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("objects::filenames")
+                , advgetopt::Flags(advgetopt::all_flags<advgetopt::GETOPT_FLAG_REQUIRED, advgetopt::GETOPT_FLAG_MULTIPLE>())
+                , advgetopt::Help("enter a list of filenames.")
+                , advgetopt::DefaultValue("a.out")
+                , advgetopt::Separators(separators)
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("integers::max")
+                , advgetopt::Flags(advgetopt::all_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("maximum value.")
+                , advgetopt::DefaultValue("+oo")
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("flags::visibility")
+                , advgetopt::Flags(advgetopt::all_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("visibility.")
+                , advgetopt::DefaultValue("flashy")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "load-sections";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_help_header = "Testing loading sections";
+        environment_options.f_configuration_files = confs;
+
+        advgetopt::getopt opt(environment_options);
+
+        opt.process_configuration_file(SNAP_CATCH2_NAMESPACE::g_config_filename);
+
+        CATCH_REQUIRE(opt.size("integers::sizes") == 1);
+        CATCH_REQUIRE(opt.get_string("integers::sizes") == "132");
+
+        CATCH_REQUIRE(opt.size("objects::filenames") == 5);
+        CATCH_REQUIRE(opt.get_string("objects::filenames") == "green");
+        CATCH_REQUIRE(opt.get_string("objects::filenames", 0) == "green");
+        CATCH_REQUIRE(opt.get_string("objects::filenames", 1) == "orange");
+        CATCH_REQUIRE(opt.get_string("objects::filenames", 2) == "blue");
+        CATCH_REQUIRE(opt.get_string("objects::filenames", 3) == "brown");
+        CATCH_REQUIRE(opt.get_string("objects::filenames", 4) == "white");
+
+        CATCH_REQUIRE(opt.size("integers::max") == 1);
+        CATCH_REQUIRE(opt.get_string("integers::max") == "1111");
+
+        CATCH_REQUIRE(opt.size("objects::object") == 1);
+        CATCH_REQUIRE(opt.get_string("objects::object") == "property.obj");
+
+        CATCH_REQUIRE(opt.size("flags::visibility") == 1);
+        CATCH_REQUIRE(opt.get_string("flags::visibility") == "hidden");
+
+        std::string const name(advgetopt::CONFIGURATION_SECTIONS);
+        CATCH_REQUIRE(opt.size(name) == 3);
+        CATCH_REQUIRE(opt.get_string(name) == "flags");
+        CATCH_REQUIRE(opt.get_string(name, 0) == "flags");
+        CATCH_REQUIRE(opt.get_string(name, 1) == "integers");
+        CATCH_REQUIRE(opt.get_string(name, 2) == "objects");
+    }
     CATCH_END_SECTION()
 }
 
@@ -588,11 +709,10 @@ CATCH_TEST_CASE("load_configuration_file", "[config][getopt][filenames]")
 
 CATCH_TEST_CASE("load_multiple_configurations", "[config][getopt][filenames]")
 {
-    SNAP_CATCH2_NAMESPACE::init_tmp_dir("multiple", "multiplicity");
-
-//string_list_t getopt::get_configuration_filenames(bool exists, bool writable)
-
     CATCH_START_SECTION("Configuration Files")
+    {
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("multiple", "multiplicity");
+
         advgetopt::options_environment environment_options;
 
         std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir);
@@ -713,6 +833,151 @@ CATCH_TEST_CASE("load_multiple_configurations", "[config][getopt][filenames]")
 
         CATCH_REQUIRE(opt.size("ip") == 1);
         CATCH_REQUIRE(opt.get_string("ip") == "10.1.7.205");
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Configuration Files with Sections")
+    {
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("multiple-with-sections", "multiplicity-with-sections");
+
+        advgetopt::options_environment environment_options;
+
+        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir);
+        tmpdir += "/.config/home2";
+
+        std::stringstream ss;
+        ss << "mkdir -p " << tmpdir;
+        if(system(ss.str().c_str()) != 0)
+        {
+            std::cerr << "fatal error: creating sub-temporary directory \"" << tmpdir << "\" failed.\n";
+            exit(1);
+        }
+
+        snap::safe_setenv env("HOME", tmpdir);
+
+        {
+            std::ofstream config_file;
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "\n"
+                "[connection]\n"
+                "ip=10.0.2.5\n"
+                "duration=6h\n"
+                "size=604\n"
+                "\n"
+                "[data-settings]\n"
+                "gap=6\n"
+                "filename=utf9.txt\n"
+            ;
+        }
+
+        {
+            std::ofstream config_file;
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_project_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "\n"
+                "[connection]\n"
+                "duration=3min\n"
+                "\n"
+                "[data-settings]\n"
+                "gap=9\n"
+                "filename=utf7.txt\n"
+            ;
+        }
+
+        {
+            std::ofstream config_file;
+            config_file.open(tmpdir + "/advgetopt.conf", std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "\n"
+                "[connection]\n"
+                "ip=192.168.255.3\n"
+                "\n"
+                "[data-settings]\n"
+                "filename=utf8.txt\n"
+            ;
+        }
+
+        char const * confs[] =
+        {
+            SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(),
+            SNAP_CATCH2_NAMESPACE::g_config_project_filename.c_str(),
+            "~/advgetopt.conf",
+            nullptr
+        };
+    
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("connection::size")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::all_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("size.")
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("data-settings::filename")
+                , advgetopt::Flags(advgetopt::all_flags<advgetopt::GETOPT_FLAG_REQUIRED, advgetopt::GETOPT_FLAG_MULTIPLE>())
+                , advgetopt::Help("enter a filenames.")
+                , advgetopt::DefaultValue("a.out")
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("connection::duration")
+                , advgetopt::Flags(advgetopt::all_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("how long it lasts.")
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("data-settings::gap")
+                , advgetopt::Flags(advgetopt::all_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("gap size.")
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("connection::ip")
+                , advgetopt::Flags(advgetopt::all_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("enter the ip address.")
+            ),
+            advgetopt::end_options()
+        };
+
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_help_header = "Testing a load with multiple filenames and see that we get the latest";
+        environment_options.f_configuration_files = confs;
+
+        advgetopt::getopt opt(environment_options);
+
+        opt.parse_configuration_files();
+
+        CATCH_REQUIRE(opt.size("connection::size") == 1);
+        CATCH_REQUIRE(opt.get_string("connection::size") == "604");
+
+        // although it is marked as multiple, the old entries are still
+        // overwritten with newer versions; if the last entry had multiple
+        // filenames, then we'd get get multiple names here
+        //
+        CATCH_REQUIRE(opt.size("data-settings::filename") == 1);
+        CATCH_REQUIRE(opt.get_string("data-settings::filename", 0) == "utf8.txt");
+
+        CATCH_REQUIRE(opt.size("connection::duration") == 1);
+        CATCH_REQUIRE(opt.get_string("connection::duration") == "3min");
+
+        CATCH_REQUIRE(opt.size("data-settings::gap") == 1);
+        CATCH_REQUIRE(opt.get_string("data-settings::gap") == "9");
+
+        CATCH_REQUIRE(opt.size("connection::ip") == 1);
+        CATCH_REQUIRE(opt.get_string("connection::ip") == "192.168.255.3");
+
+        std::string const name(advgetopt::CONFIGURATION_SECTIONS);
+        CATCH_REQUIRE(opt.size(name) == 2);
+        CATCH_REQUIRE(opt.get_string(name) == "connection");
+        CATCH_REQUIRE(opt.get_string(name, 1) == "data-settings");
+    }
     CATCH_END_SECTION()
 }
 
@@ -721,6 +986,7 @@ CATCH_TEST_CASE("load_multiple_configurations", "[config][getopt][filenames]")
 CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][invalid]")
 {
     CATCH_START_SECTION("Load with Unexpected Parameter Name (one letter--dynamic allowed)")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("loading-invalid", "invalid-one-letter");
 
         {
@@ -787,9 +1053,11 @@ CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][
         CATCH_REQUIRE(opt.get_long("sizes") == -132);
 
         CATCH_REQUIRE(opt.size("filenames") == 0);
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Load with Unexpected Parameter Name (one letter--no dynamic allowed)")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("loading-undefined", "undefined-one-letter");
 
         {
@@ -856,9 +1124,11 @@ CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][
         CATCH_REQUIRE(opt.get_long("sizes") == -132);
 
         CATCH_REQUIRE(opt.size("filenames") == 0);
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Load with Unexpected Parameter Name (undefined & no dynamic fields are allowed)")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("loading-invalid-dynamic", "invalid-dynamic");
 
         {
@@ -925,9 +1195,11 @@ CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][
         CATCH_REQUIRE(opt.get_long("sizes") == -1001);
 
         CATCH_REQUIRE(opt.size("filenames") == 0);
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Load with Parameter not Supported in Configuration Files")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("loading-invalid-config", "invalid-param-in-config");
 
         {
@@ -994,6 +1266,126 @@ CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][
         CATCH_REQUIRE(opt.get_long("sizes") == -1001);
 
         CATCH_REQUIRE(opt.size("filenames") == 0);
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Load a Configuration File with a Flag given a Value")
+    {
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("load-flag-with-value", "unexpected-value-in-config");
+
+        {
+            std::ofstream config_file;
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "sizes=4153629\n"
+                "color-flag=true\n"
+            ;
+        }
+
+        char const * confs[] =
+        {
+            "~/.config/file-which-was-never-created.mdi",
+            SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(),
+            "/etc/snapwebsites/not/an-existing-file.conf",
+            nullptr
+        };
+
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("sizes")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::all_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("sizes.")
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("color-flag")
+                , advgetopt::Flags(advgetopt::all_flags<advgetopt::GETOPT_FLAG_FLAG>())
+                , advgetopt::Help("flag that you want color.")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "load";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_help_header = "Testing loading an invalid flag";
+        environment_options.f_configuration_files = confs;
+
+        advgetopt::getopt opt(environment_options);
+
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+                  "error: option \"color_flag\" cannot be given a value in configuration file \""
+                + SNAP_CATCH2_NAMESPACE::g_config_filename
+                + "\".");
+        opt.process_configuration_file(SNAP_CATCH2_NAMESPACE::g_config_filename);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
+
+        CATCH_REQUIRE(opt.size("sizes") == 1);
+        CATCH_REQUIRE(opt.get_string("sizes") == "4153629");
+
+        CATCH_REQUIRE(opt.size("color-flag") == 0);
+        CATCH_REQUIRE_FALSE(opt.is_defined("color-flag"));
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Load a Configuration File with an Invalid Sections Definition")
+    {
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("load-with-invalid-sections", "invalid-sections");
+
+        {
+            std::ofstream config_file;
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "[integers]\n"
+                "sizes=639\n"
+            ;
+        }
+
+        char const * confs[] =
+        {
+            "~/.config/file-which-was-never-created.mdi",
+            SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(),
+            "/etc/snapwebsites/not/an-existing-file.conf",
+            nullptr
+        };
+
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("integers::sizes")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::all_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("sizes.")
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name(advgetopt::CONFIGURATION_SECTIONS)
+                , advgetopt::Flags(advgetopt::all_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("MULTIPLE missing.")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "load-invalid-sections";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_help_header = "Testing loading invalid sections declaration";
+        environment_options.f_configuration_files = confs;
+
+        advgetopt::getopt opt(environment_options);
+
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: option \"configuration_sections\" must have GETOPT_FLAG_MULTIPLE set.");
+        opt.process_configuration_file(SNAP_CATCH2_NAMESPACE::g_config_filename);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
+
+        CATCH_REQUIRE(opt.size("integers::sizes") == 0);
+    }
     CATCH_END_SECTION()
 }
 

@@ -851,7 +851,7 @@ bool option_info::validates(int idx)
  * \todo
  * Add a template function that does the cast for the caller.
  *
- * \return A pionter to this option validator.
+ * \return A pointer to this option validator.
  */
 validator::pointer_t option_info::get_validator() const
 {
@@ -951,6 +951,29 @@ string_list_t const & option_info::get_multiple_separators() const
 }
 
 
+/** \brief Check whether one of the values matches the input.
+ *
+ * This function searches the set of existing values in this option_info
+ * and if found returns true.
+ *
+ * \note
+ * It is possible to add the same value multiple times. However, there are
+ * cases where you may not want to have the same value more than once.
+ * This function can be used to try to not do that.
+ *
+ * \param[in] value  The value to search in this option.
+ *
+ * \return true if the value is already defined in this option_info.
+ *
+ * \sa set_value()
+ */
+bool option_info::has_value(std::string const & value) const
+{
+    auto const it(std::find(f_value.begin(), f_value.end(), value));
+    return it != f_value.end();
+}
+
+
 /** \brief Add a value to this option.
  *
  * Whenever an option is found it may be followed by one or more values.
@@ -965,9 +988,9 @@ string_list_t const & option_info::get_multiple_separators() const
  * you can't use this function to add multiple values if this option does
  * not support that feature.
  *
- * \return true when the value was accepted (no error occurred).
- *
  * \param[in] value  The value to add to this option.
+ *
+ * \return true when the value was accepted (no error occurred).
  *
  * \sa set_value()
  */

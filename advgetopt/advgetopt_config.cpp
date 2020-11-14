@@ -271,7 +271,10 @@ void getopt::process_configuration_file(std::string const & filename)
     conf_file_setup conf_setup(filename);
     if(!conf_setup.is_valid())
     {
-        return;
+        // a non-existant file is considered valid now so this should never
+        // happen; later we may use the flag if we find errors in the file
+        //
+        return; // LCOV_EXCL_LINE
     }
     conf_file::pointer_t conf(conf_file::get_conf_file(conf_setup));
 
@@ -300,7 +303,10 @@ void getopt::process_configuration_file(std::string const & filename)
         }
         for(auto s : sections)
         {
-            configuration_sections->add_value(s);
+            if(!configuration_sections->has_value(s))
+            {
+                configuration_sections->add_value(s);
+            }
         }
     }
 
@@ -316,7 +322,7 @@ void getopt::process_configuration_file(std::string const & filename)
             {
                 cppthread::log << cppthread::log_level_t::error
                                << "unknown option \""
-                               << param.first
+                               << boost::replace_all_copy(param.first, "-", "_")
                                << "\" found in configuration file \""
                                << filename
                                << "\"."

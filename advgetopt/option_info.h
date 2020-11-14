@@ -111,6 +111,7 @@ public:
     void                        set_multiple_separators(char const * const * separators);
     string_list_t const &       get_multiple_separators() const;
 
+    bool                        has_value(std::string const & value) const;
     bool                        add_value(std::string const & value);
     bool                        set_value(int idx, std::string const & value);
     bool                        set_multiple_value(std::string const & value);

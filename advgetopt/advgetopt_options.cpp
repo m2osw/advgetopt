@@ -235,7 +235,7 @@ void getopt::parse_options_from_file()
                              , SECTION_OPERATOR_INI_FILE | SECTION_OPERATOR_ONE_SECTION);
     if(!conf_setup.is_valid())
     {
-        return;
+        return;  // LCOV_EXCL_LINE
     }
 
     conf_file::pointer_t conf(conf_file::get_conf_file(conf_setup));
@@ -248,7 +248,7 @@ void getopt::parse_options_from_file()
             // this should never happen since we use the
             // SECTION_OPERATOR_ONE_SECTION flag
             //
-            throw getopt_logic_error(                               // LCOV_EXCL_LINE
+            throw getopt_logic_error(                                   // LCOV_EXCL_LINE
                       "section \""                                      // LCOV_EXCL_LINE
                     + section_name                                      // LCOV_EXCL_LINE
                     + "\" includes a section separator (::) in \""      // LCOV_EXCL_LINE

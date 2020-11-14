@@ -698,6 +698,41 @@ CATCH_TEST_CASE("utils_handle_user_directory", "[utils][valid]")
 
 
 
+CATCH_TEST_CASE("utils_true_false", "[utils][boolean]")
+{
+    CATCH_START_SECTION("True Values")
+    {
+        CATCH_REQUIRE(advgetopt::is_true("true"));
+        CATCH_REQUIRE(advgetopt::is_true("on"));
+        CATCH_REQUIRE(advgetopt::is_true("1"));
+
+        CATCH_REQUIRE_FALSE(advgetopt::is_true("false"));
+        CATCH_REQUIRE_FALSE(advgetopt::is_true("off"));
+        CATCH_REQUIRE_FALSE(advgetopt::is_true("0"));
+
+        CATCH_REQUIRE_FALSE(advgetopt::is_true("random"));
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("False Values")
+    {
+        CATCH_REQUIRE(advgetopt::is_false("false"));
+        CATCH_REQUIRE(advgetopt::is_false("off"));
+        CATCH_REQUIRE(advgetopt::is_false("0"));
+
+        CATCH_REQUIRE_FALSE(advgetopt::is_false("true"));
+        CATCH_REQUIRE_FALSE(advgetopt::is_false("on"));
+        CATCH_REQUIRE_FALSE(advgetopt::is_false("1"));
+
+        CATCH_REQUIRE_FALSE(advgetopt::is_false("random"));
+    }
+    CATCH_END_SECTION()
+}
+
+
+
+
+
 
 
 // vim: ts=4 sw=4 et
