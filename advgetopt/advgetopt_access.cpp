@@ -206,5 +206,28 @@ std::string getopt::get_project_name() const
 
 
 
+/** \brief Retrieve the group name if one is defined.
+ *
+ * This function returns the name of the group as defined in the
+ * options_environment structure passed to the constructor. This is
+ * the main group name (TODO: fix the name).
+ *
+ * The group name is used for the sub-folder because at times many projects
+ * are going to use the same sub-folder.
+ *
+ * \return The name of the group, maybe empty if undefined.
+ */
+std::string getopt::get_group_name() const
+{
+    if(f_options_environment.f_group_name == nullptr)
+    {
+        return std::string();
+    }
+    return f_options_environment.f_group_name;
+}
+
+
+
+
 } // namespace advgetopt
 // vim: ts=4 sw=4 et

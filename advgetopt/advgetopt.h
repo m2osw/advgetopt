@@ -136,6 +136,7 @@ public:
     std::string             get_program_name() const;
     std::string             get_program_fullname() const;
     std::string             get_project_name() const;
+    std::string             get_group_name() const;
     std::string             get_environment_variable_name() const;
     size_t                  get_configuration_filename_size() const;
     std::string             get_configuration_filename(int idx) const;
