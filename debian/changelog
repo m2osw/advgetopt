@@ -1,3 +1,9 @@
+advgetopt (2.0.16.0~bionic) bionic; urgency=high
+
+  * Added "yes"/"no" for the is_true/false() functions.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 24 Nov 2020 20:59:54 -0800
+
 advgetopt (2.0.15.0~bionic) bionic; urgency=high
 
   * Made the new group name accessible through a function.

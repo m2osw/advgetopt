@@ -434,6 +434,7 @@ std::string handle_user_directory(std::string const & filename)
  *
  * * "true"
  * * "on"
+ * * "yes"
  * * "1"
  *
  * If so, then the function returns true.
@@ -444,7 +445,7 @@ std::string handle_user_directory(std::string const & filename)
  */
 bool is_true(std::string s)
 {
-    return s == "true" || s == "on" || s == "1";
+    return s == "true" || s == "on" || s == "yes" | s == "1";
 }
 
 
@@ -454,6 +455,7 @@ bool is_true(std::string s)
  *
  * * "false"
  * * "off"
+ * * "no"
  * * "0"
  *
  * If so, then the function returns true.
@@ -464,7 +466,7 @@ bool is_true(std::string s)
  */
 bool is_false(std::string s)
 {
-    return s == "false" || s == "off" || s == "0";
+    return s == "false" || s == "off" || s == "no" || s == "0";
 }
 
 
