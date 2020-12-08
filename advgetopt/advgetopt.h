@@ -121,7 +121,7 @@ public:
     option_info::pointer_t  get_option(std::string const & name, bool exact_option = false) const;
     option_info::pointer_t  get_option(short_name_t name, bool exact_option = false) const;
     bool                    is_defined(std::string const & name) const;
-    size_t                  size(std::string const & name) const;
+    std::size_t             size(std::string const & name) const;
     bool                    has_default(std::string const & name) const;
     std::string             get_default(std::string const & name) const;
     long                    get_long(
