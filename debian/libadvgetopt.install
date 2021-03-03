@@ -1,1 +1,2 @@
-usr/lib/lib*.so.*
+usr/bin/hide-warnings                   usr/bin
+usr/lib/lib*.so.*                       usr/lib
