@@ -1,4 +1,4 @@
-# Copyright (c) 2006-2019  Made to Order Software Corp.  All Rights Reserved.
+# Copyright (c) 2006-2021  Made to Order Software Corp.  All Rights Reserved.
 # https://snapwebsites.org/
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
