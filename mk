@@ -33,6 +33,10 @@ case $1 in
 	make -C ../../../BUILD/contrib/advgetopt install
 	;;
 
+"-r")
+	make -j${PROCESSORS} -C ../../../RELEASE/contrib/advgetopt
+	;;
+
 "")
 	make -j${PROCESSORS} -C ../../../BUILD/contrib/advgetopt
 	;;
