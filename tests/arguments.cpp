@@ -4727,7 +4727,7 @@ CATCH_TEST_CASE("auto_process_system_arguments", "[arguments][valid][getopt]")
         options.f_help_header = "Usage: testing system arguments.";
         options.f_version = "2.0.1";
         options.f_license = "MIT";
-        options.f_Copyright (c) 2019  Made to Order Software Corp.  All Rights Reserved";
+        options.f_copyright = "Copyright (c) 2019  Made to Order Software Corp. -- All Rights Reserved";
         options.f_build_date = "Jun  4 2019";
         options.f_build_time = "23:02:36";
 
