@@ -250,7 +250,7 @@ std::string getopt::get_default(std::string const & name) const
  *
  * \return The argument as a long.
  */
-long getopt::get_long(std::string const & name, int idx, long min, long max)
+long getopt::get_long(std::string const & name, int idx, long min, long max) const
 {
     option_info::pointer_t opt(get_option(name));
     if(opt == nullptr)

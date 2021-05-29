@@ -4,41 +4,42 @@
 # This will work if you built the environment using our ~/bin/build-snap script
 
 PROCESSORS=`nproc`
+PROJECT_PATH=../../BUILD/Debug/contrib/advgetopt
 
 case $1 in
 "-l")
-	make -C ../../../BUILD/contrib/advgetopt 2>&1 | less -SR
+	make -C ${PROJECT_PATH} 2>&1 | less -SR
 	;;
 
 "-v")
-	VERBOSE=1 make -C ../../../BUILD/contrib/advgetopt 2>&1 | less -SR
+	VERBOSE=1 make -C ${PROJECT_PATH} 2>&1 | less -SR
 	;;
 
 "-d")
-	rm -rf ../../../BUILD/contrib/advgetopt/doc/advgetopt-doc-2.0.tar.gz \
-	       ../../../BUILD/contrib/advgetopt/doc/advgetopt-doc-2.0
-	make -j${PROCESSORS} -C ../../../BUILD/contrib/advgetopt
+	rm -rf ${PROJECT_PATH}/doc/advgetopt-doc-2.0.tar.gz \
+	       ${PROJECT_PATH}/doc/advgetopt-doc-2.0
+	make -j${PROCESSORS} -C ${PROJECT_PATH}
 	;;
 
 "-t")
 	(
-		if make -C ../../../BUILD/contrib/advgetopt
+		if make -C ${PROJECT_PATH}
 		then
-			../../../BUILD/contrib/advgetopt/tests/unittest --warn NoTests --progress --tmp `pwd`/tmp/advgetopt "$2"
+			${PROJECT_PATH}/tests/unittest --warn NoTests --progress --tmp `pwd`/tmp/advgetopt "$2"
 		fi
 	) 2>&1 | less -SR
 	;;
 
 "-i")
-	make -C ../../../BUILD/contrib/advgetopt install
+	make -C ${PROJECT_PATH} install
 	;;
 
 "-r")
-	make -j${PROCESSORS} -C ../../../RELEASE/contrib/advgetopt
+	make -j${PROCESSORS} -C ../../BUILD/Release/contrib/advgetopt
 	;;
 
 "")
-	make -j${PROCESSORS} -C ../../../BUILD/contrib/advgetopt
+	make -j${PROCESSORS} -C ${PROJECT_PATH}
 	;;
 
 *)
