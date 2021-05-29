@@ -35,7 +35,7 @@ case $1 in
 	;;
 
 "-r")
-	make -j${PROCESSORS} -C ../../BUILD/Release/contrib/advgetopt
+	make -j${PROCESSORS} -C ../../BUILD/Release/contrib/advgetopt install
 	;;
 
 "")
