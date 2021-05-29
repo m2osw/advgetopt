@@ -1,3 +1,10 @@
+advgetopt (2.0.19.0~bionic) bionic; urgency=high
+
+  * Made the get_long() a const.
+  * Updated the mk script to work with the new BUILD folder setup.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 29 May 2021 15:17:36 -0700
+
 advgetopt (2.0.18.0~bionic) bionic; urgency=high
 
   * Recompile against newer versions of cppthread, etc.
