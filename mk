@@ -4,42 +4,43 @@
 # This will work if you built the environment using our ~/bin/build-snap script
 
 PROCESSORS=`nproc`
-PROJECT_PATH=../../BUILD/Debug/contrib/advgetopt
+DEBUG_PATH=../../BUILD/Debug/contrib/advgetopt
+RELEASE_PATH=../../BUILD/Release/contrib/advgetopt
 
 case $1 in
 "-l")
-	make -C ${PROJECT_PATH} 2>&1 | less -SR
+	make -C ${DEBUG_PATH} 2>&1 | less -SR
 	;;
 
 "-v")
-	VERBOSE=1 make -C ${PROJECT_PATH} 2>&1 | less -SR
+	VERBOSE=1 make -C ${DEBUG_PATH} 2>&1 | less -SR
 	;;
 
 "-d")
-	rm -rf ${PROJECT_PATH}/doc/advgetopt-doc-2.0.tar.gz \
-	       ${PROJECT_PATH}/doc/advgetopt-doc-2.0
-	make -j${PROCESSORS} -C ${PROJECT_PATH}
+	rm -rf ${DEBUG_PATH}/doc/advgetopt-doc-2.0.tar.gz \
+	       ${DEBUG_PATH}/doc/advgetopt-doc-2.0
+	make -j${PROCESSORS} -C ${DEBUG_PATH}
 	;;
 
 "-t")
 	(
-		if make -C ${PROJECT_PATH}
+		if make -C ${DEBUG_PATH}
 		then
-			${PROJECT_PATH}/tests/unittest --warn NoTests --progress --tmp `pwd`/tmp/advgetopt "$2"
+			${DEBUG_PATH}/tests/unittest --warn NoTests --progress --tmp `pwd`/tmp/advgetopt "$2"
 		fi
 	) 2>&1 | less -SR
 	;;
 
 "-i")
-	make -C ${PROJECT_PATH} install
+	make -C ${DEBUG_PATH} install
 	;;
 
 "-r")
-	make -j${PROCESSORS} -C ../../BUILD/Release/contrib/advgetopt install
+	make -j${PROCESSORS} -C ${RELEASE_PATH} install
 	;;
 
 "")
-	make -j${PROCESSORS} -C ${PROJECT_PATH}
+	make -j${PROCESSORS} -C ${DEBUG_PATH}
 	;;
 
 *)
