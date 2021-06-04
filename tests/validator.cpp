@@ -2,7 +2,7 @@
  * License:
  *    Copyright (c) 2006-2021  Made to Order Software Corp.  All Rights Reserved
  *
- *    https://snapwebsites.org/
+ *    https://snapwebsites.org/project/advgetopt
  *    contact@m2osw.com
  *
  *    This program is free software; you can redistribute it and/or modify
@@ -436,7 +436,7 @@ CATCH_TEST_CASE("invalid_validator", "[validator][invalid][validation]")
 
             virtual std::shared_ptr<advgetopt::validator> create(advgetopt::string_list_t const & data) const override
             {
-                snap::NOTUSED(data); // ignore `data`
+                snap::NOT_USED(data); // ignore `data`
                 return std::make_shared<duplicate_integer>();
             }
         };

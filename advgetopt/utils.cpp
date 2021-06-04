@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2021  Made to Order Software Corp.  All Rights Reserved
 //
-// https://snapwebsites.org/
+// https://snapwebsites.org/project/advgetopt
 // contact@m2osw.com
 //
 // This program is free software; you can redistribute it and/or modify
@@ -367,7 +367,7 @@ string_list_t insert_group_name(
     // the glob() function is not thread safe
     {
         cppthread::guard lock(get_global_mutex());
-        snap::NOTUSED(glob.read_path<snap::glob_to_list_flag_t::GLOB_FLAG_IGNORE_ERRORS>(pattern));
+        snap::NOT_USED(glob.read_path<snap::glob_to_list_flag_t::GLOB_FLAG_IGNORE_ERRORS>(pattern));
     }
 
     // we add the default name if none other exists

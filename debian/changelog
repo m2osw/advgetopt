@@ -1,3 +1,12 @@
+advgetopt (2.0.20.0~bionic) bionic; urgency=high
+
+  * Updated the code so it uses NOT_USED and NOT_REACHED (with the underscore).
+  * Updated the mk script to use the cmake/scripts version.
+  * Fixed the URL to theproject.
+  * Removed all the '\r' characters from the exception.h file.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 04 Jun 2021 13:38:02 -0700
+
 advgetopt (2.0.19.0~bionic) bionic; urgency=high
 
   * Made the get_long() a const.

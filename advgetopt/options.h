@@ -2,7 +2,7 @@
  * License:
  *    Copyright (c) 2006-2021  Made to Order Software Corp.  All Rights Reserved
  *
- *    https://snapwebsites.org/
+ *    https://snapwebsites.org/project/advgetopt
  *    contact@m2osw.com
  *
  *    This program is free software; you can redistribute it and/or modify
@@ -230,7 +230,7 @@ public:
 template<typename T, typename F, class ...ARGS>
 constexpr typename std::enable_if<std::is_same<T, F>::value, typename T::value_t>::type find_option(F first, ARGS ...args)
 {
-    snap::NOTUSED(args...);
+    snap::NOT_USED(args...);
     return first.get();
 }
 
@@ -238,7 +238,7 @@ constexpr typename std::enable_if<std::is_same<T, F>::value, typename T::value_t
 template<typename T, typename F, class ...ARGS>
 constexpr typename std::enable_if<!std::is_same<T, F>::value, typename T::value_t>::type find_option(F first, ARGS ...args)
 {
-    snap::NOTUSED(first);
+    snap::NOT_USED(first);
     return find_option<T>(args...);
 }
 
@@ -369,7 +369,7 @@ public:
 template<typename T, typename F, class ...ARGS>
 constexpr typename std::enable_if<std::is_same<T, F>::value, typename T::value_t>::type find_group(F first, ARGS ...args)
 {
-    snap::NOTUSED(args...);
+    snap::NOT_USED(args...);
     return first.get();
 }
 
@@ -377,7 +377,7 @@ constexpr typename std::enable_if<std::is_same<T, F>::value, typename T::value_t
 template<typename T, typename F, class ...ARGS>
 constexpr typename std::enable_if<!std::is_same<T, F>::value, typename T::value_t>::type find_group(F first, ARGS ...args)
 {
-    snap::NOTUSED(first);
+    snap::NOT_USED(first);
     return find_group<T>(args...);
 }
 

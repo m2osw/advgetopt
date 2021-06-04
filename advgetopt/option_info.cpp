@@ -2,7 +2,7 @@
  * License:
  *    Copyright (c) 2006-2021  Made to Order Software Corp.  All Rights Reserved
  *
- *    https://snapwebsites.org/
+ *    https://snapwebsites.org/project/advgetopt
  *    contact@m2osw.com
  *
  *    This program is free software; you can redistribute it and/or modify
@@ -765,7 +765,7 @@ bool option_info::set_validator(validator::pointer_t validator)
  */
 bool option_info::set_validator(std::nullptr_t null_ptr)
 {
-    snap::NOTUSED(null_ptr);
+    snap::NOT_USED(null_ptr);
 
     f_validator.reset();
 

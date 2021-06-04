@@ -2,7 +2,7 @@
  * License:
  *    Copyright (c) 2020-2021  Made to Order Software Corp.  All Rights Reserved
  *
- *    https://snapwebsites.org/
+ *    https://snapwebsites.org/project/advgetopt
  *    contact@m2osw.com
  *
  *    This program is free software; you can redistribute it and/or modify
@@ -194,7 +194,7 @@ int main(int argc, char * argv[])
         std::cerr << "error: exception caught: " << e.what() << std::endl;
         return 1;
     }
-    snap::NOTREACHED();
+    snap::NOT_REACHED();
 }
 
 

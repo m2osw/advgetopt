@@ -14,7 +14,7 @@ Build-Depends: cmake,
     snapdev (>= 1.0.0.0~bionic)
 Standards-Version: 3.9.4
 Section: libs
-Homepage: https://snapwebsites.org/
+Homepage: https://snapwebsites.org/project/advgetopt
 Vcs-Git: https://github.com/m2osw/advgetopt.git
 Vcs-Browser: https://github.com/m2osw/advgetopt
 
