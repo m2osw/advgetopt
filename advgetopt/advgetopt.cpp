@@ -144,6 +144,7 @@ namespace
  *
  * The long help is is only added if the list of options include at least
  * one group flag (GETOPT_FLAG_SHOW_GROUP1 or GETOPT_FLAG_SHOW_GROUP2).
+ * See the getopt::parse_options_from_group_names() in advgetopt_usage.cpp.
  *
  * \li '--\<name>-help'
  *
@@ -179,21 +180,24 @@ namespace
  * \li `--path-to-option-definitions`
  *
  * Print out the path to files which define options for this tool.
+ *
+ * \li `--source-option-sources`
+ *
+ * Print out all the options and their sources. This shows you where a
+ * value come from: command line, environment variable, configuration file,
+ * etc.
  */
 option const g_system_options[] =
 {
     define_option(
-          Name("help")
-        , ShortName('h')
-        , Flags(standalone_command_flags<GETOPT_FLAG_GROUP_COMMANDS
-                                       , GETOPT_FLAG_SHOW_USAGE_ON_ERROR>())
-        , Help("print out this help screen and exit.")
+          Name("build-date")
+        , Flags(standalone_command_flags<GETOPT_FLAG_GROUP_COMMANDS>())
+        , Help("print out the time and date when %p was built and exit.")
     ),
     define_option(
-          Name("version")
-        , ShortName('V')
+          Name("configuration-filenames")
         , Flags(standalone_command_flags<GETOPT_FLAG_GROUP_COMMANDS>())
-        , Help("print out the version of %p and exit.")
+        , Help("print out the list of configuration files checked out by this tool.")
     ),
     define_option(
           Name("copyright")
@@ -202,30 +206,38 @@ option const g_system_options[] =
         , Help("print out the copyright of %p and exit.")
     ),
     define_option(
+          Name("environment-variable-name")
+        , Flags(standalone_command_flags<GETOPT_FLAG_GROUP_COMMANDS>())
+        , Help("print out the name of the environment variable supported by %p (if any.)")
+    ),
+    define_option(
+          Name("help")
+        , ShortName('h')
+        , Flags(standalone_command_flags<GETOPT_FLAG_GROUP_COMMANDS
+                                       , GETOPT_FLAG_SHOW_USAGE_ON_ERROR>())
+        , Help("print out this help screen and exit.")
+    ),
+    define_option(
           Name("license")
         , ShortName('L')
         , Flags(standalone_command_flags<GETOPT_FLAG_GROUP_COMMANDS>())
         , Help("print out the license of %p and exit.")
     ),
     define_option(
-          Name("build-date")
-        , Flags(standalone_command_flags<GETOPT_FLAG_GROUP_COMMANDS>())
-        , Help("print out the time and date when %p was built and exit.")
-    ),
-    define_option(
-          Name("environment-variable-name")
-        , Flags(standalone_command_flags<GETOPT_FLAG_GROUP_COMMANDS>())
-        , Help("print out the name of the environment variable supported by %p (if any.)")
-    ),
-    define_option(
-          Name("configuration-filenames")
-        , Flags(standalone_command_flags<GETOPT_FLAG_GROUP_COMMANDS>())
-        , Help("print out the list of configuration files checked out by this tool.")
-    ),
-    define_option(
           Name("path-to-option-definitions")
         , Flags(standalone_command_flags<GETOPT_FLAG_GROUP_COMMANDS>())
         , Help("print out the path to the option definitons.")
+    ),
+    define_option(
+          Name("show-option-sources")
+        , Flags(standalone_command_flags<GETOPT_FLAG_GROUP_COMMANDS>())
+        , Help("parse all the options and then print out the source of each value and each override.")
+    ),
+    define_option(
+          Name("version")
+        , ShortName('V')
+        , Flags(standalone_command_flags<GETOPT_FLAG_GROUP_COMMANDS>())
+        , Help("print out the version of %p and exit.")
     ),
     end_options()
 };
@@ -285,6 +297,37 @@ bool is_arg(char const * a)
     return a[0] == '-' && a[1] != '\0';
 }
 
+
+
+/** \brief Check for a "--show-option-sources" flag.
+ *
+ * When this flag is defined, we turn on the trace mode in the option_info
+ * class (which is a global flag). That way we can honor the
+ * "--show-option-sources" when we are done parsing the configuration files,
+ * environment variable, and command line.
+ *
+ * \param[in] argc  The number of items in the \p argv array.
+ * \param[in] argv  The arguments.
+ */
+void check_for_show_sources(int argc, char * argv[])
+{
+    static bool found = false;
+
+    if(!found && argv != nullptr)
+    {
+        for(int idx(1); idx < argc; ++idx)
+        {
+            if(strcmp(argv[idx], "--show-option-sources") == 0)
+            {
+                found = true;
+                option_info::set_trace_sources(true);
+            }
+        }
+    }
+}
+
+
+
 } // no name namespace
 
 
@@ -342,11 +385,17 @@ bool is_arg(char const * a)
  * \brief Structure representing an option.
  *
  * When creating a getopt() object you have to pass an array of options. That
- * array is defined as a set of option structures where the last one has
- * its f_arg_mode set to end_of_options. The other parameters may still be
- * defined as the last option is used to define what the parser should do
- * with the lose options (in most cases it is named "filenames" and used
- * as an array of files, paths, windows package names, etc.)
+ * array is defined as a set of option structures.
+ *
+ * The last option must be an end_options(). It has its f_flags set to
+ * GETOPT_FLAG_END and all the other parameters are set to zero (i.e. no
+ * name, no short name, etc.)
+ *
+ * Note that with the newer version of the library, you are not expected
+ * to manually define an array of options. Instead, you want to use the
+ * C++ functions such as Name(), ShortName(), Flags(), etc. These functions
+ * are capable of verifying that at least some of the values are valid at
+ * compile time.
  */
 
 
@@ -414,7 +463,7 @@ bool is_arg(char const * a)
  * \code
  *     opt.parse_configuration_files();
  *     opt.parse_environment_variable();
- *     opt.parse_arguments(argc, argv);
+ *     opt.parse_arguments(argc, argv, option_source_t::SOURCE_COMMAND_LINE);
  * \endcode
  *
  * The order is important because the last command line option found is
@@ -510,6 +559,7 @@ getopt::getopt(options_environment const & opt_env
              , int argc
              , char * argv[])
 {
+    check_for_show_sources(argc, argv);
     initialize_parser(opt_env);
     finish_parsing(argc, argv);
 }
@@ -540,6 +590,8 @@ void getopt::initialize_parser(options_environment const & opt_env)
         if(f_options_environment.f_configuration_filename != nullptr
         && *f_options_environment.f_configuration_filename != '\0')
         {
+            // add the "--config-dir <path> ..." option
+            //
             parse_options_info(g_if_configuration_filename_system_options, true);
         }
     }
@@ -571,6 +623,8 @@ void getopt::finish_parsing(int argc, char * argv[])
         throw getopt_logic_error("argv pointer cannot be nullptr");
     }
 
+    check_for_show_sources(argc, argv);
+
     parse_program_name(argv);
     if(f_options_by_name.empty())
     {
@@ -579,9 +633,13 @@ void getopt::finish_parsing(int argc, char * argv[])
 
     link_aliases();
 
-    parse_configuration_files();
+    define_environment_variable_data();
+
+    parse_configuration_files(argc, argv);
+    f_parsed = false;
     parse_environment_variable();
-    parse_arguments(argc, argv, false);
+    f_parsed = false;
+    parse_arguments(argc, argv, option_source_t::SOURCE_COMMAND_LINE, false);
 
     if(has_flag(GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS))
     {
@@ -590,6 +648,27 @@ void getopt::finish_parsing(int argc, char * argv[])
         {
             throw getopt_exit("system command processed.", 0);
         }
+    }
+}
+
+
+/** \brief Verify that the parser is done.
+ *
+ * This function ensures that the parser is done. If the parser is not yet
+ * done, then the function raises an exception. This allows me to detect
+ * that I am trying to access a parameter before the whole parsing process
+ * is done (i.e. I had a call to is_defined("config-dir") happening in the
+ * configuration handling way before the environment variables and command
+ * line arguments were parsed, that would never work!)
+ *
+ * \exception getopt_initialization
+ * This exception is raised if the parser is not done yet.
+ */
+void getopt::is_parsed() const
+{
+    if(!f_parsed)
+    {
+        throw getopt_initialization("function called too soon, parser is not done yet (i.e. is_defined(), get_string(), get_integer() cannot be called until the parser is done)");
     }
 }
 
@@ -626,6 +705,37 @@ bool getopt::has_flag(flag_t flag) const
 }
 
 
+/** \brief Retrieve the environment variable string.
+ *
+ * This function retrieves the environment variable string and saves it
+ * in the f_environment_variable field. This is used to parse that string
+ * and add option values, and also by the configuration file loader to see
+ * whether a --config-dir was used in there.
+ */
+void getopt::define_environment_variable_data()
+{
+    f_environment_variable.clear();
+
+    if(f_options_environment.f_environment_variable_name == nullptr
+    || *f_options_environment.f_environment_variable_name == '\0')
+    {
+        // no name
+        //
+        return;
+    }
+
+    char const * s(getenv(f_options_environment.f_environment_variable_name));
+    if(s == nullptr)
+    {
+        // no environment variable with that name
+        //
+        return;
+    }
+
+    f_environment_variable = s;
+}
+
+
 /** \brief Check for an environment variable.
  *
  * If the name of an environment variable is specified in the option
@@ -647,35 +757,28 @@ bool getopt::has_flag(flag_t flag) const
  */
 void getopt::parse_environment_variable()
 {
-    if(f_options_environment.f_environment_variable_name == nullptr
-    || *f_options_environment.f_environment_variable_name == '\0')
+    define_environment_variable_data();
+    if(!f_environment_variable.empty())
     {
-        // no name
-        //
-        return;
+        parse_string(
+                  f_environment_variable
+                , option_source_t::SOURCE_ENVIRONMENT_VARIABLE
+                , true);
     }
 
-    char const * s(getenv(f_options_environment.f_environment_variable_name));
-    if(s == nullptr)
-    {
-        // no environment variable with that name
-        //
-        return;
-    }
-
-    parse_string(s, true);
+    f_parsed = true;
 }
 
 
 /** \brief Parse a string similar to a command line argument.
  *
- * This function parses a line of command line argument from a string.
+ * This function parses a line of command line arguments from a string.
  * Especially, it is used to parse the environment variable which is
  * a string of arguments.
  *
  * This can be used to parse the command line string as received under
  * MS-Windows (i.e. an unparsed one long string of arguments, where
- * you also need to do the glob() calls.)
+ * you also need to do the glob() calls yourself.)
  *
  * This function actually transforms the input string in an array of
  * strings and then calls the parse_arguments() function.
@@ -685,58 +788,16 @@ void getopt::parse_environment_variable()
  * happens.
  *
  * \param[in] str  The string that is going to be parsed.
+ * \param[in] source  Where the value comes from.
  * \param[in] only_environment_variable  Whether only options marked with
  *            the GETOPT_FLAG_ENVIRONMENT_VARIABLE flag are accepted.
  */
-void getopt::parse_string(std::string const & str, bool only_environment_variable)
+void getopt::parse_string(
+          std::string const & str
+        , option_source_t source
+        , bool only_environment_variable)
 {
-    // this is exactly like the command line only in an environment variable
-    // so parse the parameters just like the shell
-    //
-    string_list_t args;
-    std::string a;
-    char const * s(str.c_str());
-    while(*s != '\0')
-    {
-        if(isspace(*s))
-        {
-            if(!a.empty())
-            {
-                args.push_back(a);
-                a.clear();
-            }
-            do
-            {
-                ++s;
-            }
-            while(isspace(*s));
-        }
-        else if(*s == '"'
-             || *s == '\'')
-        {
-            // support quotations and remove them from the argument
-            char const quote(*s++);
-            while(*s != '\0'
-               && *s != quote)
-            {
-                a += *s++;
-            }
-            if(*s != '\0')
-            {
-                ++s;
-            }
-        }
-        else
-        {
-            a += *s++;
-        }
-    }
-
-    if(!a.empty())
-    {
-        args.push_back(a);
-    }
-
+    string_list_t args(split_environment(str));
     if(args.empty())
     {
         // nothing extra to do
@@ -745,7 +806,7 @@ void getopt::parse_string(std::string const & str, bool only_environment_variabl
     }
 
     // TODO: expand the arguments that include unquoted '*', '?', '[...]'
-    //       (note that we remove the quoates at the moment so we'd have
+    //       (note that we remove the quotes at the moment so we'd have
     //       to keep track of that specific problem...)
 
     // the argv array has to be a null terminated bare string pointers
@@ -771,7 +832,80 @@ void getopt::parse_string(std::string const & str, bool only_environment_variabl
 
     // now convert those parameters in values
     //
-    parse_arguments(static_cast<int>(args.size() + 1), &sub_argv[0], only_environment_variable);
+    parse_arguments(
+          static_cast<int>(sub_argv.size() - 1)
+        , sub_argv.data()
+        , source
+        , only_environment_variable);
+}
+
+
+/** \brief Transform a string in an array of arguments.
+ *
+ * This function is used to transform a string to an array of arguments
+ * that can then be used with the parse_arguments() function.
+ *
+ * For example, it is used to parse the environment variable string.
+ *
+ * \note
+ * The input string may include quotes. These will be removed. There is
+ * currently no support for the backslash character.
+ *
+ * \param[in] environment  The string to be split in arguments.
+ *
+ * \return An array of strings.
+ */
+string_list_t getopt::split_environment(std::string const & environment)
+{
+    // this is exactly like the command line only in an environment variable
+    // so parse the parameters just like the shell
+    //
+    string_list_t args;
+    std::string a;
+    char const * s(environment.c_str());
+    while(*s != '\0')
+    {
+        if(isspace(*s))
+        {
+            if(!a.empty())
+            {
+                args.push_back(a);
+                a.clear();
+            }
+            do
+            {
+                ++s;
+            }
+            while(isspace(*s));
+        }
+        else if(*s == '"'
+             || *s == '\'')
+        {
+            // support quotations and remove them from the argument
+            //
+            char const quote(*s++);
+            while(*s != '\0'
+               && *s != quote)
+            {
+                a += *s++;
+            }
+            if(*s != '\0')
+            {
+                ++s;
+            }
+        }
+        else
+        {
+            a += *s++;
+        }
+    }
+
+    if(!a.empty())
+    {
+        args.push_back(a);
+    }
+
+    return args;
 }
 
 
@@ -818,12 +952,15 @@ void getopt::parse_string(std::string const & str, bool only_environment_variabl
  *
  * \param[in] argc  The number of arguments in argv.
  * \param[in] argv  The argument strings terminated by a nullptr.
+ * \param[in] source  Where the value comes from.
  * \param[in] only_environment_variable  Accept command line arguments (false)
  *            or environment variable arguments (true).
  */
-void getopt::parse_arguments(int argc
-                           , char * argv[]
-                           , bool only_environment_variable)
+void getopt::parse_arguments(
+          int argc
+        , char * argv[]
+        , option_source_t source
+        , bool only_environment_variable)
 {
     for(int i(1); i < argc; ++i)
     {
@@ -839,7 +976,7 @@ void getopt::parse_arguments(int argc
                     if(f_default_option == nullptr)
                     {
                         cppthread::log << cppthread::log_level_t::error
-                                       << "no default options defined; thus -- is not accepted by this program."
+                                       << "no default options defined; thus \"--\" is not accepted by this program."
                                        << cppthread::end;
                         break;
                     }
@@ -849,7 +986,7 @@ void getopt::parse_arguments(int argc
                         if(!f_default_option->has_flag(GETOPT_FLAG_ENVIRONMENT_VARIABLE))
                         {
                             cppthread::log << cppthread::log_level_t::error
-                                           << "option -- is not supported in the environment variable."
+                                           << "option \"--\" is not supported in the environment variable."
                                            << cppthread::end;
                             break;
                         }
@@ -859,7 +996,7 @@ void getopt::parse_arguments(int argc
                         if(!f_default_option->has_flag(GETOPT_FLAG_COMMAND_LINE))
                         {
                             cppthread::log << cppthread::log_level_t::error
-                                           << "option -- is not supported in the environment variable."
+                                           << "option \"--\" is not supported on the command line."
                                            << cppthread::end;
                             break;
                         }
@@ -871,7 +1008,7 @@ void getopt::parse_arguments(int argc
                     while(i + 1 < argc)
                     {
                         ++i;
-                        f_default_option->add_value(argv[i]);
+                        f_default_option->add_value(argv[i], source);
                     }
                 }
                 else
@@ -901,9 +1038,9 @@ void getopt::parse_arguments(int argc
                     if(opt == nullptr)
                     {
                         cppthread::log << cppthread::log_level_t::error
-                                       << "option --"
+                                       << "option \"--"
                                        << option_name
-                                       << " is not supported."
+                                       << "\" is not supported."
                                        << cppthread::end;
                         break;
                     }
@@ -912,9 +1049,9 @@ void getopt::parse_arguments(int argc
                         if(!opt->has_flag(GETOPT_FLAG_ENVIRONMENT_VARIABLE))
                         {
                             cppthread::log << cppthread::log_level_t::error
-                                           << "option --"
+                                           << "option \"--"
                                            << option_name
-                                           << " is not supported in the environment variable."
+                                           << "\" is not supported in the environment variable."
                                            << cppthread::end;
                             break;
                         }
@@ -924,9 +1061,9 @@ void getopt::parse_arguments(int argc
                         if(!opt->has_flag(GETOPT_FLAG_COMMAND_LINE))
                         {
                             cppthread::log << cppthread::log_level_t::error
-                                           << "option --"
+                                           << "option \"--"
                                            << option_name
-                                           << " is not supported on the command line."
+                                           << "\" is not supported on the command line."
                                            << cppthread::end;
                             break;
                         }
@@ -935,11 +1072,11 @@ void getopt::parse_arguments(int argc
                     {
                         // the user specified a value after an equal sign
                         //
-                        add_option_from_string(opt, option_value, std::string());
+                        add_option_from_string(opt, option_value, std::string(), source);
                     }
                     else
                     {
-                        add_options(opt, i, argc, argv);
+                        add_options(opt, i, argc, argv, source);
                     }
                 }
             }
@@ -952,7 +1089,7 @@ void getopt::parse_arguments(int argc
                     if(f_default_option == nullptr)
                     {
                         cppthread::log << cppthread::log_level_t::error
-                                       << "no default options defined; thus - is not accepted by this program."
+                                       << "no default options defined; thus \"-\" is not accepted by this program."
                                        << cppthread::end;
                         break;
                     }
@@ -961,7 +1098,7 @@ void getopt::parse_arguments(int argc
                         if(!f_default_option->has_flag(GETOPT_FLAG_ENVIRONMENT_VARIABLE))
                         {
                             cppthread::log << cppthread::log_level_t::error
-                                           << "option - is not supported in the environment variable."
+                                           << "option \"-\" is not supported in the environment variable."
                                            << cppthread::end;
                             break;
                         }
@@ -971,7 +1108,7 @@ void getopt::parse_arguments(int argc
                         if(!f_default_option->has_flag(GETOPT_FLAG_COMMAND_LINE))
                         {
                             cppthread::log << cppthread::log_level_t::error
-                                           << "option - is not supported in the environment variable."
+                                           << "option \"-\" is not supported on the command line."
                                            << cppthread::end;
                             break;
                         }
@@ -979,7 +1116,7 @@ void getopt::parse_arguments(int argc
 
                     // this is similar to a default option by itself
                     //
-                    f_default_option->add_value(argv[i]);
+                    f_default_option->add_value(argv[i], source);
                 }
                 else
                 {
@@ -997,9 +1134,9 @@ void getopt::parse_arguments(int argc
                         if(opt == nullptr)
                         {
                             cppthread::log << cppthread::log_level_t::error
-                                           << "option -"
+                                           << "option \"-"
                                            << short_name_to_string(*short_args)
-                                           << " is not supported."
+                                           << "\" is not supported."
                                            << cppthread::end;
                             break;
                         }
@@ -1008,9 +1145,9 @@ void getopt::parse_arguments(int argc
                             if(!opt->has_flag(GETOPT_FLAG_ENVIRONMENT_VARIABLE))
                             {
                                 cppthread::log << cppthread::log_level_t::error
-                                               << "option -"
+                                               << "option \"-"
                                                << short_name_to_string(*short_args)
-                                               << " is not supported in the environment variable."
+                                               << "\" is not supported in the environment variable."
                                                << cppthread::end;
                                 break;
                             }
@@ -1020,14 +1157,14 @@ void getopt::parse_arguments(int argc
                             if(!opt->has_flag(GETOPT_FLAG_COMMAND_LINE))
                             {
                                 cppthread::log << cppthread::log_level_t::error
-                                               << "option -"
+                                               << "option \"-"
                                                << short_name_to_string(*short_args)
-                                               << " is not supported on the command line."
+                                               << "\" is not supported on the command line."
                                                << cppthread::end;
                                 break;
                             }
                         }
-                        add_options(opt, i, argc, argv);
+                        add_options(opt, i, argc, argv, source);
                     }
                 }
             }
@@ -1065,9 +1202,11 @@ void getopt::parse_arguments(int argc
                     break;
                 }
             }
-            f_default_option->add_value(argv[i]);
+            f_default_option->add_value(argv[i], source);
         }
     }
+
+    f_parsed = true;
 }
 
 
@@ -1227,12 +1366,18 @@ option_info::pointer_t getopt::get_option(short_name_t short_name, bool exact_op
  * \param[in] i  The current position, starting with the option position
  * \param[in] argc  The number of arguments in the argv array.
  * \param[in] argv  The list of argument strings.
+ * \param[in] source  Where the value comes from.
  */
-void getopt::add_options(option_info::pointer_t opt, int & i, int argc, char ** argv)
+void getopt::add_options(
+          option_info::pointer_t opt
+        , int & i
+        , int argc
+        , char ** argv
+        , option_source_t source)
 {
     if(opt->has_flag(GETOPT_FLAG_FLAG))
     {
-        opt->add_value(opt->get_default());
+        opt->add_value(opt->get_default(), source);
     }
     else
     {
@@ -1243,13 +1388,14 @@ void getopt::add_options(option_info::pointer_t opt, int & i, int argc, char ** 
                 do
                 {
                     ++i;
-                    opt->add_value(argv[i]);
-                } while(i + 1 < argc && !is_arg(argv[i + 1]));
+                    opt->add_value(argv[i], source);
+                }
+                while(i + 1 < argc && !is_arg(argv[i + 1]));
             }
             else
             {
                 ++i;
-                opt->add_value(argv[i]);
+                opt->add_value(argv[i], source);
             }
         }
         else
@@ -1268,7 +1414,7 @@ void getopt::add_options(option_info::pointer_t opt, int & i, int argc, char ** 
                 // set although no argument was specified (but that's
                 // legal by this argument's definition)
                 //
-                opt->add_value(std::string());
+                opt->add_value(std::string(), source);
             }
         }
     }
@@ -1286,8 +1432,13 @@ void getopt::add_options(option_info::pointer_t opt, int & i, int argc, char ** 
  * \param[in] value  The value to assign this option.
  * \param[in] filename  The name of a configuration file if the option was
  *                      read from such.
+ * \param[in] source  Where the value comes from.
  */
-void getopt::add_option_from_string(option_info::pointer_t opt, std::string const & value, std::string const & filename)
+void getopt::add_option_from_string(
+          option_info::pointer_t opt
+        , std::string const & value
+        , std::string const & filename
+        , option_source_t source)
 {
     // is the value defined?
     //
@@ -1315,11 +1466,11 @@ void getopt::add_option_from_string(option_info::pointer_t opt, std::string cons
         //
         if(opt->has_flag(GETOPT_FLAG_MULTIPLE))
         {
-            opt->set_multiple_value(value);
+            opt->set_multiple_values(value, source);
         }
         else
         {
-            opt->set_value(0, value);
+            opt->set_value(0, value, source);
         }
 
         return;
@@ -1347,7 +1498,7 @@ void getopt::add_option_from_string(option_info::pointer_t opt, std::string cons
 
     // accept an empty value otherwise
     //
-    opt->set_value(0, value);
+    opt->set_value(0, value, source);
 }
 
 

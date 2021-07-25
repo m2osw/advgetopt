@@ -1,3 +1,19 @@
+advgetopt (2.0.21.0~bionic) bionic; urgency=high
+
+  * Added callback support in the option_info class.
+  * Enhanced callback support in config_file: support any number of callbacks.
+  * Added a source tracker so we can debug where the options came from.
+  * Added quotes around many options in error messages.
+  * Updated the coverage script so it runs again.
+  * Fixed a bug with the --config-dir being accessed too soon.
+  * Added code to detect if is_defined(), get_value(), etc. are used too soon.
+  * Made the "set_multiple_values()" plural.
+  * Fixed a few system calls which would crash if the value was not defined.
+  * Added '?' as the short name for the '--long-help' option.
+  * In set_multiple_values(), save new data only if it works.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 23 Jul 2021 17:21:31 -0700
+
 advgetopt (2.0.20.1~bionic) bionic; urgency=high
 
   * Bump version to recompile against the new snapdev version.

@@ -813,7 +813,7 @@ CATCH_TEST_CASE("load_multiple_configurations", "[config][getopt][filenames]")
 
         advgetopt::getopt opt(environment_options);
 
-        opt.parse_configuration_files();
+        opt.parse_configuration_files(0, nullptr);
 
         CATCH_REQUIRE(opt.size("size") == 1);
         CATCH_REQUIRE(opt.get_string("size") == "604");
@@ -952,7 +952,7 @@ CATCH_TEST_CASE("load_multiple_configurations", "[config][getopt][filenames]")
 
         advgetopt::getopt opt(environment_options);
 
-        opt.parse_configuration_files();
+        opt.parse_configuration_files(0, nullptr);
 
         CATCH_REQUIRE(opt.size("connection::size") == 1);
         CATCH_REQUIRE(opt.get_string("connection::size") == "604");
@@ -1384,7 +1384,13 @@ CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][
         opt.process_configuration_file(SNAP_CATCH2_NAMESPACE::g_config_filename);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
-        CATCH_REQUIRE(opt.size("integers::sizes") == 0);
+        // it failed early so it's not considered to be 100% initialized
+        //
+        CATCH_REQUIRE_THROWS_MATCHES(
+                  opt.size("integers::sizes-parameter")
+                , advgetopt::getopt_initialization
+                , Catch::Matchers::ExceptionMessage(
+                              "getopt_exception: function called too soon, parser is not done yet (i.e. is_defined(), get_string(), get_integer() cannot be called until the parser is done)"));
     }
     CATCH_END_SECTION()
 }

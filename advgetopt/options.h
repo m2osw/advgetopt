@@ -410,6 +410,7 @@ constexpr flag_t    GETOPT_ENVIRONMENT_FLAG_DYNAMIC_PARAMETERS          = 0x0001
 
 constexpr flag_t    GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS           = 0x0002;   // add system parameters (i.e. --help, --version, etc.)
 constexpr flag_t    GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS   = 0x0004;   // add & process system parameters
+constexpr flag_t    GETOPT_ENVIRONMENT_FLAG_DEBUG_SOURCE                = 0x0008;   // debug source for each option
 
 
 struct options_environment

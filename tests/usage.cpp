@@ -227,6 +227,8 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
         //
         advgetopt::getopt opt(options, argc2, argv2);
 
+        CATCH_REQUIRE(opt.get_group_name() == "grouptest");
+
         {
             advgetopt::group_description const * verbosity_group(opt.find_group(advgetopt::GETOPT_FLAG_GROUP_COMMANDS));
             CATCH_REQUIRE(verbosity_group != nullptr);
@@ -316,7 +318,7 @@ advgetopt::getopt::breakup_line(
 + "\n"
   "Verbosity options:\n"
 + advgetopt::getopt::format_usage_string(
-              "--long-help"
+              "--long-help or -?"
             , "show all the help from all the available options."
             , 30
             , advgetopt::getopt::get_line_width())
@@ -386,7 +388,7 @@ advgetopt::getopt::breakup_line(
 + "\n"
   "Verbosity options:\n"
 + advgetopt::getopt::format_usage_string(
-              "--long-help"
+              "--long-help or -?"
             , "show all the help from all the available options."
             , 30
             , advgetopt::getopt::get_line_width())
@@ -674,7 +676,7 @@ advgetopt::getopt::breakup_line(
             , 30
             , advgetopt::getopt::get_line_width())
 + advgetopt::getopt::format_usage_string(
-              "--long-help"
+              "--long-help or -?"
             , "show all the help from all the available options."
             , 30
             , advgetopt::getopt::get_line_width())
@@ -724,7 +726,7 @@ advgetopt::getopt::breakup_line(
             , 30
             , advgetopt::getopt::get_line_width())
 + advgetopt::getopt::format_usage_string(
-              "--long-help"
+              "--long-help or -?"
             , "show all the help from all the available options."
             , 30
             , advgetopt::getopt::get_line_width())
@@ -920,7 +922,7 @@ advgetopt::getopt::breakup_line(
             , 30
             , advgetopt::getopt::get_line_width())
 + advgetopt::getopt::format_usage_string(
-              "--long-help"
+              "--long-help or -?"
             , "show all the help from all the available options."
             , 30
             , advgetopt::getopt::get_line_width())
@@ -1106,7 +1108,7 @@ advgetopt::getopt::breakup_line(
             , 30
             , advgetopt::getopt::get_line_width())
 + advgetopt::getopt::format_usage_string(
-              "--long-help"
+              "--long-help or -?"
             , "show all the help from all the available options."
             , 30
             , advgetopt::getopt::get_line_width())

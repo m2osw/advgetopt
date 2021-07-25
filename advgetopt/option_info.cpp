@@ -77,6 +77,44 @@ namespace advgetopt
 {
 
 
+namespace
+{
+
+
+/** \brief The library trace mode.
+ *
+ * This flag is used to determine whether the source of each option should
+ * be traced. Very often, I have a problem where I'm not so sure where a
+ * certain option was defined and how to fix the value of that option.
+ * This flag allows us to debug that information at run time.
+ *
+ * When the flag is set to true (automatically done by the getopt object
+ * when argv includes the "--show-sources" command line option), the sources
+ * start to be traced. Once all the parsing is done, getopt again will check
+ * whether it has the "--show-sources" command line option specified and if
+ * so, it prints out all the options current values and the various sources
+ * that were involved.
+ */
+bool g_trace_sources = false;
+
+
+/** \brief The filename of the configuration being processed.
+ *
+ * This variable holds the filename of the configuration currently
+ * being processed. This information is used to generate the trace
+ * of the sources. That way it is possible to see where the current
+ * value of a given variable comes from.
+ *
+ * This parameter is currently set from the
+ * getopt::process_configuration_file() function.
+ */
+std::string g_configuration_filename = std::string();
+
+
+
+} // no name namespace
+
+
 
 // from utils.cpp
 //
@@ -271,11 +309,11 @@ std::string const & option_info::get_name() const
  * This function is used to assign a short name to an option.
  *
  * \warning
- * If you want this function to function as expected (i.e. for the option
+ * If you want this function to work as expected (i.e. for the option
  * to later be found using its short name), make sure to call the
- * set_short_name() on your getopt object and not directly this function.
- * This is because the getopt object needs to add the newly named option
- * to its map of options sorted by short name.
+ * getopt::set_short_name() on your getopt object and not directly this
+ * function. This is because the getopt object needs to add the newly
+ * named option to its map of options sorted by short name.
  *
  * \exception getopt_exception_logic
  * Calling this function with an option which already has a short name
@@ -708,12 +746,7 @@ std::string const & option_info::get_help() const
  */
 bool option_info::set_validator(std::string const & name_and_params)
 {
-    f_validator = validator::create(name_and_params);
-
-    // make sure that all existing values validate against this
-    // new validator
-    //
-    return validate_all_values();
+    return set_validator(validator::create(name_and_params));
 }
 
 
@@ -749,7 +782,13 @@ bool option_info::set_validator(validator::pointer_t validator)
     // make sure that all existing values validate against this
     // new validator
     //
-    return validate_all_values();
+    std::size_t const size(f_value.size());
+    bool const r(validate_all_values());
+    if(size != f_value.size())
+    {
+        value_changed(0);
+    }
+    return r;
 }
 
 
@@ -831,6 +870,10 @@ bool option_info::validates(int idx)
     // get rid of that value since it does not validate
     //
     f_value.erase(f_value.begin() + idx);
+    if(f_value.empty())
+    {
+        f_source = option_source_t::SOURCE_UNDEFINED;
+    }
 
     return false;
 }
@@ -894,7 +937,7 @@ option_info::pointer_t option_info::get_alias_destination() const
 
 /** \brief Set the list of separators.
  *
- * Options marked with the GETOPT_FLAG_CONFIGURATION_MULTIPLE flag
+ * Options marked with the GETOPT_FLAG_MULTIPLE flag
  * get their value cut by separators when such is found in an
  * environment variable or a configuration file.
  *
@@ -919,7 +962,7 @@ void option_info::set_multiple_separators(char const * const * separators)
 
 /** \brief Set the list of separators.
  *
- * Options marked with the GETOPT_FLAG_CONFIGURATION_MULTIPLE flag
+ * Options marked with the GETOPT_FLAG_MULTIPLE flag
  * get their value cut by separators when such is found in an
  * environment variable or a configuration file.
  *
@@ -989,17 +1032,20 @@ bool option_info::has_value(std::string const & value) const
  * not support that feature.
  *
  * \param[in] value  The value to add to this option.
+ * \param[in] source  Where the value comes from.
  *
  * \return true when the value was accepted (no error occurred).
  *
  * \sa set_value()
  */
-bool option_info::add_value(std::string const & value)
+bool option_info::add_value(std::string const & value, option_source_t source)
 {
-    return set_value(has_flag(GETOPT_FLAG_MULTIPLE)
+    return set_value(
+              has_flag(GETOPT_FLAG_MULTIPLE)
                     ? f_value.size()
                     : 0
-            , value);
+            , value
+            , source);
 }
 
 
@@ -1025,6 +1071,7 @@ bool option_info::add_value(std::string const & value)
  *
  * \param[in] idx  The position of the value to update.
  * \param[in] value  The new value.
+ * \param[in] source  Where the value comes from.
  *
  * \return true if the set_value() added the value.
  *
@@ -1033,10 +1080,29 @@ bool option_info::add_value(std::string const & value)
  * \sa lock()
  * \sa unlock()
  */
-bool option_info::set_value(int idx, std::string const & value)
+bool option_info::set_value(int idx, std::string const & value, option_source_t source)
 {
+    if(source == option_source_t::SOURCE_UNDEFINED)
+    {
+        throw getopt_logic_error(
+                  "option_info::set_value(): called with SOURCE_UNDEFINED ("
+                + std::to_string(static_cast<int>(source))
+                + ").");
+    }
+
     if(has_flag(GETOPT_FLAG_LOCK))
     {
+        return false;
+    }
+
+    if(source == option_source_t::SOURCE_DIRECT
+    && !has_flag(GETOPT_FLAG_DYNAMIC_CONFIGURATION))
+    {
+        cppthread::log << cppthread::log_level_t::error
+                       << "option \"--"
+                       << f_name
+                       << "\" can't be directly updated."
+                       << cppthread::end;
         return false;
     }
 
@@ -1045,11 +1111,11 @@ bool option_info::set_value(int idx, std::string const & value)
         if(static_cast<size_t>(idx) > f_value.size())
         {
             throw getopt_logic_error(
-                          "option_info::set_value(): no value at index "
-                        + std::to_string(idx)
-                        + " and it is not the last available index + 1 (idx > "
-                        + std::to_string(f_value.size())
-                        + ") so you can't set this value (try add_value() maybe?).");
+                      "option_info::set_value(): no value at index "
+                    + std::to_string(idx)
+                    + " and it is not the last available index + 1 (idx > "
+                    + std::to_string(f_value.size())
+                    + ") so you can't set this value (try add_value() maybe?).");
         }
     }
     else
@@ -1065,17 +1131,28 @@ bool option_info::set_value(int idx, std::string const & value)
         }
     }
 
+    f_source = source;
     if(static_cast<size_t>(idx) == f_value.size())
     {
         f_value.push_back(value);
     }
     else
     {
+        if(f_value[idx] == value)
+        {
+            // no change, we can return as is
+            //
+            return true;
+        }
         f_value[idx] = value;
     }
     f_integer.clear();
 
-    return validates(idx);
+    bool const r(validates(idx));
+
+    value_changed(idx);
+
+    return r;
 }
 
 
@@ -1106,30 +1183,47 @@ bool option_info::set_value(int idx, std::string const & value)
  * Add support for quoted values
  *
  * \param[in] value  The multi-value to save in this option.
+ * \param[in] source  Where the value comes from.
  *
  * \return true if all the values in \p value were considered valid.
  *
  * \sa add_value()
  * \sa set_value()
  */
-bool option_info::set_multiple_value(std::string const & value)
+bool option_info::set_multiple_values(std::string const & value, option_source_t source)
 {
-    f_value.clear();
-    f_integer.clear();
+    if(source == option_source_t::SOURCE_UNDEFINED)
+    {
+        throw getopt_logic_error(
+                  "option_info::set_multiple_values(): called with SOURCE_UNDEFINED ("
+                + std::to_string(static_cast<int>(source))
+                + ").");
+    }
 
-    split_string(unquote(value, "[]"), f_value, f_multiple_separators);
+    string_list_t result;
+    split_string(unquote(value, "[]"), result, f_multiple_separators);
 
     if(!has_flag(GETOPT_FLAG_MULTIPLE)
-    && f_value.size() > 1)
+    && result.size() > 1)
     {
-        f_value.clear();
         throw getopt_logic_error(
                  "option_info::set_multiple_value(): parameter --"
                + f_name
                + " expects zero or one parameter. The set_multiple_value() function should not be called with parameters that only accept one value.");
     }
 
-    return validate_all_values();
+    f_source = source;
+    f_value.swap(result);
+    f_integer.clear();
+
+    bool const r(!validate_all_values());
+
+    if(f_value != result)
+    {
+        value_changed(0);
+    }
+
+    return r;
 }
 
 
@@ -1193,6 +1287,85 @@ bool option_info::validate_all_values()
 bool option_info::is_defined() const
 {
     return !f_value.empty();
+}
+
+
+/** \brief Return the source of this option info.
+ *
+ * This function returns the source of this option, i.e. whether it came
+ * from the command line, the environment variable, a configuration file,
+ * or some other source that you can define.
+ *
+ * The source is similar to a priority in the sense that a source with a
+ * higher number cannot overwrite the value of a smaller source. The source
+ * is set at the same time as you set the option. The mechanism may not be
+ * working exactly as expected when trying to add options from different
+ * sources.
+ *
+ * \note
+ * In the old version, the value would be the value set with the last
+ * set_value() command. That worked because we did not try to support
+ * fully dynamic options. Now we want to have the ability to set an
+ * option on the command line and that has to prevent the set from
+ * a dynamic source. Since the dynamic source would do the set_value()
+ * at a later time, just the order is not enough to know whether the
+ * dynamic source has permission to overwrite that value.
+ *
+ * \return The source of the option info.
+ */
+option_source_t option_info::source() const
+{
+    return f_source;
+}
+
+
+/** \brief Whether the sources should be traced.
+ *
+ * This is a global flag that you can set before calling any getopt functions
+ * so that way you can make sure that you get a full trace of all the
+ * sources for all your options. Then you can use the --show-sources
+ * command line options to see the resulting data.
+ *
+ * \note
+ * This option is costly since it saves a lot of data, which is why we have
+ * it as an option. If the getopt() function detects in the argv passed to
+ * it a "--show-sources" option, then it will automatically call this
+ * function with true, even before it starts parsing anything. The flag is
+ * false by default.
+ *
+ * \param[in] trace  Whether the sources should be traced.
+ */
+void option_info::set_trace_sources(bool trace)
+{
+    g_trace_sources = trace;
+}
+
+
+/** \brief Get the trace of this option.
+ *
+ * An option can be marked for tracing. This allows you to see exactly
+ * which value came from which source. We currently support multiple
+ * sources such as the command line, environment variable, direct,
+ * dynamic, configuration files.
+ *
+ * \return An array of strings representing the source of each value
+ * in the order they were set in this option_info.
+ */
+string_list_t const & option_info::trace_sources() const
+{
+    return f_trace_sources;
+}
+
+
+/** \brief Save the filename of the current configuration file.
+ *
+ * While parsing a configuration file, this function gets called to
+ * set the name which is used to generate the trace of the source
+ * of all the configuration data.
+ */
+void option_info::set_configuration_filename(std::string const & filename)
+{
+    g_configuration_filename = filename;
 }
 
 
@@ -1260,7 +1433,7 @@ std::string const & option_info::get_value(int idx) const
  *
  * \note
  * The function will transform all the values in case this is a
- * GETOPT_FLAG_CONFIGURATION_MULTIPLE option and cache the results.
+ * GETOPT_FLAG_MULTIPLE option and cache the results.
  * Calling the function many times with the same index is very fast
  * after the first time.
  *
@@ -1388,10 +1561,167 @@ void option_info::unlock()
  */
 void option_info::reset()
 {
-    f_value.clear();
-    f_integer.clear();
+    if(is_defined())
+    {
+        f_source = option_source_t::SOURCE_UNDEFINED;
+        f_value.clear();
+        f_integer.clear();
+
+        value_changed(0);
+    }
 }
 
+
+/** \brief Add a callback to call on a change to this value.
+ *
+ * Since we now officially support dynamically setting option values, we
+ * decided to add a callback mechanism that lets you know that an option
+ * changed. That way you can react to the change as soon as possible instead
+ * of having to poll for the value once in a while.
+ *
+ * \param[in] c  The callback. Usually an std::bind() call.
+ *
+ * \return The new callback identifier.
+ */
+option_info::callback_id_t option_info::add_callback(callback_t const & c)
+{
+    cppthread::guard lock(get_global_mutex());
+
+    ++f_next_callback_id;
+    f_callbacks.emplace_back(f_next_callback_id, c);
+    return f_next_callback_id;
+}
+
+
+/** \brief Remove a callback.
+ *
+ * This function is the opposite of the add_callback(). It removes a callback
+ * that you previously added. This is useful if you are interested in hearing
+ * about the value when set but are not interested at all about future
+ * changes.
+ *
+ * \param[in] id  The id returned by the add_callback() function.
+ */
+void option_info::remove_callback(callback_id_t id)
+{
+    cppthread::guard lock(get_global_mutex());
+
+    auto it(std::find_if(
+              f_callbacks.begin()
+            , f_callbacks.end()
+            , [id](auto e)
+            {
+                return e.f_id == id;
+            }));
+    if(it != f_callbacks.end())
+    {
+        f_callbacks.erase(it);
+    }
+}
+
+
+/** \brief Call whenever the value changed so we can handle callbacks.
+ *
+ * This function is called on a change of the internal values.
+ *
+ * The function is used to call the callbacks that were added to this
+ * option_info object. The function first copies the existing list of
+ * callbacks so you can safely update the list from within a callback.
+ *
+ * \warning
+ * Destroying your advgetopt::getopt option is not safe while a callback
+ * is running.
+ *
+ * \param[in] idx  This represents the index of the value that last changed
+ * (currently poor attempt to fix this issue).
+ */
+void option_info::value_changed(int idx)
+{
+    trace_source(idx);
+
+    callback_vector_t callbacks;
+    callbacks.reserve(f_callbacks.size());
+
+    {
+        cppthread::guard lock(get_global_mutex());
+        callbacks = f_callbacks;
+    }
+
+    for(auto e : callbacks)
+    {
+        e.f_callback(*this);
+    }
+}
+
+
+
+/** \brief Remember the source information at of this last change.
+ *
+ * The getopt class supports a flag which turns on the trace mode. This
+ * allows it to memorize where the values came fram. This includes the
+ * source and if the source is a configuration file, the path to that
+ * configuration file.
+ */
+void option_info::trace_source(int idx)
+{
+    if(!g_trace_sources)
+    {
+        return;
+    }
+
+    std::string s;
+    switch(f_source)
+    {
+    case option_source_t::SOURCE_COMMAND_LINE:
+        s = "command-line";
+        break;
+
+    case option_source_t::SOURCE_CONFIGURATION:
+        s = "configuration=\"" + g_configuration_filename + "\"";
+        break;
+
+    case option_source_t::SOURCE_DIRECT:
+        s = "direct";
+        break;
+
+    case option_source_t::SOURCE_DYNAMIC:
+        s = "dynamic";
+        break;
+
+    case option_source_t::SOURCE_ENVIRONMENT_VARIABLE:
+        s = "environment-variable";
+        break;
+
+    case option_source_t::SOURCE_UNDEFINED:
+        // this happens on a reset or all the values were invalid
+        //
+        f_trace_sources.push_back(f_name + " [*undefined-source*]");
+        return;
+
+    }
+
+    if(f_value.empty())
+    {
+        // this should never ever happen
+        // (if f_value is empty then f_source == SOURCE_UNDEFINED)
+        //
+        f_trace_sources.push_back(f_name + " [*undefined-value*]");     // LCOV_EXCL_LINE
+    }
+    else
+    {
+        // TODO: change the algorithm, if the option supports
+        //
+        if(!has_flag(GETOPT_FLAG_MULTIPLE)
+        || static_cast<std::size_t>(idx) >= f_value.size())
+        {
+            f_trace_sources.push_back(f_name + "=" + f_value[0] + " [" + s + "]");
+        }
+        else
+        {
+            f_trace_sources.push_back(f_name + "[" + std::to_string(idx) + "]=" + f_value[idx] + " [" + s + "]");
+        }
+    }
+}
 
 
 }   // namespace advgetopt

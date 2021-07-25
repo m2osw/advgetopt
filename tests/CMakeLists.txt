@@ -63,6 +63,7 @@ if( Catch2_FOUND )
         option_info_ref.cpp
         options_files.cpp
         options_parser.cpp
+        options_sources.cpp
         usage.cpp
         utils.cpp
         validator.cpp

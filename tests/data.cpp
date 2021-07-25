@@ -631,7 +631,7 @@ CATCH_TEST_CASE("system_flags_help", "[arguments][valid][getopt][system_flags]")
 
         // check the list of options
         advgetopt::option_info::map_by_name_t const & list_of_options(opt.get_options());
-        CATCH_REQUIRE(list_of_options.size() == 3 + 8 + 1);
+        CATCH_REQUIRE(list_of_options.size() == 3 + 9 + 1);
 
         // user options
         CATCH_REQUIRE(list_of_options.find("size") != list_of_options.end());
@@ -732,13 +732,19 @@ advgetopt::getopt::breakup_line(
             , 30
             , advgetopt::getopt::get_line_width())
 + advgetopt::getopt::format_usage_string(
-              "--long-help"
+              "--long-help or -?"
             , "show all the help from all the available options."
             , 30
             , advgetopt::getopt::get_line_width())
 + advgetopt::getopt::format_usage_string(
               "--path-to-option-definitions"
             , "print out the path to the option definitons."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--show-option-sources"
+            , "parse all the options and then print out the source of each"
+              " value and each override."
             , 30
             , advgetopt::getopt::get_line_width())
 + advgetopt::getopt::format_usage_string(
@@ -804,6 +810,8 @@ advgetopt::getopt::breakup_line(
 
         advgetopt::getopt opt(environment_options, argc, argv);
 
+        CATCH_REQUIRE(opt.get_group_name() == std::string());
+
         // check that the result is valid
 
         // an invalid parameter, MUST NOT EXIST
@@ -834,6 +842,7 @@ advgetopt::getopt::breakup_line(
 
         // help parameter
         CATCH_REQUIRE(opt.get_option("long-help") != nullptr);
+        CATCH_REQUIRE(opt.get_option('?') == opt.get_option("long-help"));
         CATCH_REQUIRE(opt.is_defined("long-help"));
         CATCH_REQUIRE(opt.get_string("long-help") == "");
         CATCH_REQUIRE(opt.get_string("long-help", 0) == "");
@@ -888,7 +897,7 @@ advgetopt::getopt::breakup_line(
             , 30
             , advgetopt::getopt::get_line_width())
 + advgetopt::getopt::format_usage_string(
-              "--long-help"
+              "--long-help or -?"
             , "show all the help from all the available options."
             , 30
             , advgetopt::getopt::get_line_width())
@@ -905,6 +914,12 @@ advgetopt::getopt::breakup_line(
 + advgetopt::getopt::format_usage_string(
               "--secret or -S <arg>"
             , "even more secret command, hidden by default."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--show-option-sources"
+            , "parse all the options and then print out the source of each"
+              " value and each override."
             , 30
             , advgetopt::getopt::get_line_width())
 + advgetopt::getopt::format_usage_string(
@@ -1169,6 +1184,12 @@ advgetopt::getopt::breakup_line(
 + advgetopt::getopt::format_usage_string(
               "--path-to-option-definitions"
             , "print out the path to the option definitons."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--show-option-sources"
+            , "parse all the options and then print out the source of each"
+              " value and each override."
             , 30
             , advgetopt::getopt::get_line_width())
 + advgetopt::getopt::format_usage_string(
@@ -2810,9 +2831,21 @@ CATCH_TEST_CASE("invalid_option_name", "[arguments][invalid][getopt]")
         advgetopt::options_environment environment_options;
         environment_options.f_project_name = "unittest";
         environment_options.f_options = nullptr;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
         environment_options.f_help_header = "Usage: test get_string() functions";
 
         advgetopt::getopt opt(environment_options);
+
+        char const * cargv[] =
+        {
+            "tests/options-parser",
+            "--license",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        opt.finish_parsing(argc, argv);
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.get_string("non-existant")
@@ -2837,9 +2870,21 @@ CATCH_TEST_CASE("invalid_option_name", "[arguments][invalid][getopt]")
         advgetopt::options_environment environment_options;
         environment_options.f_project_name = "unittest";
         environment_options.f_options = nullptr;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
         environment_options.f_help_header = "Usage: test get_string() functions";
 
         advgetopt::getopt opt(environment_options);
+
+        char const * cargv[] =
+        {
+            "tests/options-parser",
+            "--license",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        opt.finish_parsing(argc, argv);
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.get_long("non-existant")
@@ -2897,9 +2942,21 @@ CATCH_TEST_CASE("invalid_option_name", "[arguments][invalid][getopt]")
         advgetopt::options_environment environment_options;
         environment_options.f_project_name = "unittest";
         environment_options.f_options = nullptr;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
         environment_options.f_help_header = "Usage: test get_default() functions";
 
         advgetopt::getopt opt(environment_options);
+
+        char const * cargv[] =
+        {
+            "tests/options-parser",
+            "--license",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        opt.finish_parsing(argc, argv);
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt[""]
@@ -2946,12 +3003,15 @@ CATCH_TEST_CASE("invalid_option_name", "[arguments][invalid][getopt]")
 CATCH_TEST_CASE("missing_default_value", "[arguments][invalid][getopt]")
 {
     CATCH_START_SECTION("Verify a string value without arguments and no default")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
                   advgetopt::Name("size")
                 , advgetopt::ShortName('s')
-                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Flags(advgetopt::command_flags<
+                              advgetopt::GETOPT_FLAG_REQUIRED
+                            , advgetopt::GETOPT_FLAG_DYNAMIC_CONFIGURATION>())
                 , advgetopt::Help("define the size.")
             ),
             advgetopt::end_options()
@@ -3049,15 +3109,19 @@ CATCH_TEST_CASE("missing_default_value", "[arguments][invalid][getopt]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Verify an integer (long) value without arguments and no default")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
                   advgetopt::Name("size")
                 , advgetopt::ShortName('s')
-                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Flags(advgetopt::command_flags<
+                              advgetopt::GETOPT_FLAG_REQUIRED
+                            , advgetopt::GETOPT_FLAG_DYNAMIC_CONFIGURATION>())
                 , advgetopt::Help("define the size.")
             ),
             advgetopt::end_options()
@@ -3121,15 +3185,19 @@ CATCH_TEST_CASE("missing_default_value", "[arguments][invalid][getopt]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Verify an integer (long) value without arguments and an empty string as default")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
                   advgetopt::Name("size")
                 , advgetopt::ShortName('s')
-                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Flags(advgetopt::command_flags<
+                              advgetopt::GETOPT_FLAG_REQUIRED
+                            , advgetopt::GETOPT_FLAG_DYNAMIC_CONFIGURATION>())
                 , advgetopt::Help("define the size.")
                 , advgetopt::DefaultValue("")
             ),
@@ -3194,6 +3262,7 @@ CATCH_TEST_CASE("missing_default_value", "[arguments][invalid][getopt]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
     CATCH_END_SECTION()
 }
 

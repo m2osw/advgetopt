@@ -136,15 +136,22 @@ public:
     typedef std::shared_ptr<conf_file>              pointer_t;
     typedef std::set<std::string>                   sections_t;
     typedef std::map<std::string, std::string>      parameters_t;
-    typedef std::function<void(pointer_t conf_file, callback_action_t action, std::string const & variable_name, std::string const & value)>
-                                                    callback_t;
+    typedef std::function<void(
+                  pointer_t conf_file
+                , callback_action_t action
+                , std::string const & parameter_name
+                , std::string const & value)>       callback_t;
+    typedef int                                     callback_id_t;
 
     static pointer_t            get_conf_file(conf_file_setup const & setup);
 
     bool                        save_configuration(bool create_backup = true);
 
     conf_file_setup const &     get_setup() const;
-    void                        set_callback(callback_t callback);
+    callback_id_t               add_callback(
+                                      callback_t const & c
+                                    , std::string const & parameter_name = std::string());
+    void                        remove_callback(callback_id_t id);
 
     int                         get_errno() const;
 
@@ -160,12 +167,35 @@ public:
     bool                        is_comment(char const * s) const;
 
 private:
+    struct callback_entry_t
+    {
+        callback_entry_t(
+                    callback_id_t id
+                  , callback_t const & c
+                  , std::string const & name)
+            : f_id(id)
+            , f_callback(c)
+            , f_parameter_name(name)
+        {
+        }
+
+        callback_id_t           f_id = 0;
+        callback_t              f_callback = callback_t();
+        std::string             f_parameter_name = std::string();
+    };
+    typedef std::vector<callback_entry_t>
+                                callback_vector_t;
+
                                 conf_file(conf_file_setup const & setup);
 
     int                         getc(std::ifstream & stream);
     void                        ungetc(int c);
     bool                        get_line(std::ifstream & stream, std::string & line);
     void                        read_configuration();
+    void                        value_changed(
+                                      callback_action_t action
+                                    , std::string const & parameter_name
+                                    , std::string const & value);
 
     conf_file_setup const       f_setup;
 
@@ -177,7 +207,8 @@ private:
     bool                        f_modified = false;
     sections_t                  f_sections = sections_t();
     parameters_t                f_parameters = parameters_t();
-    callback_t                  f_callback = callback_t();
+    callback_vector_t           f_callbacks = callback_vector_t();
+    callback_id_t               f_next_callback_id = 0;
 };
 
 

@@ -540,7 +540,7 @@ CATCH_TEST_CASE("define_option_short_name", "[options][valid][config]")
         CATCH_REQUIRE(opt.get_option("config-dir") != nullptr);
         opt.set_short_name("config-dir", 0x2699);
 
-        opt.parse_arguments(argc, argv);
+        opt.parse_arguments(argc, argv, advgetopt::option_source_t::SOURCE_COMMAND_LINE);
 
         // check that the result is valid
 

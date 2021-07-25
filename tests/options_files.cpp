@@ -471,7 +471,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
         int const sub_argc2(sizeof(sub_cargv2) / sizeof(sub_cargv2[0]) - 1);
         char ** sub_argv2 = const_cast<char **>(sub_cargv2);
 
-        opt.parse_arguments(sub_argc2, sub_argv2);
+        opt.parse_arguments(sub_argc2, sub_argv2, advgetopt::option_source_t::SOURCE_COMMAND_LINE);
 
         // "--from"
         CATCH_REQUIRE(opt.is_defined("from"));
@@ -516,7 +516,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
         CATCH_REQUIRE(opt.size("from") == 0);
 
         opt.parse_environment_variable();
-        opt.parse_arguments(sub_argc2, sub_argv2);
+        opt.parse_arguments(sub_argc2, sub_argv2, advgetopt::option_source_t::SOURCE_COMMAND_LINE);
 
         // "--from"
         CATCH_REQUIRE(opt.is_defined("from"));
@@ -730,7 +730,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
         int const sub_argc2(sizeof(sub_cargv2) / sizeof(sub_cargv2[0]) - 1);
         char ** sub_argv2 = const_cast<char **>(sub_cargv2);
 
-        opt.parse_arguments(sub_argc2, sub_argv2);
+        opt.parse_arguments(sub_argc2, sub_argv2, advgetopt::option_source_t::SOURCE_COMMAND_LINE);
 
         // "--from"
         CATCH_REQUIRE(opt.is_defined("from"));
@@ -775,7 +775,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
         CATCH_REQUIRE(opt.size("from") == 0);
 
         opt.parse_environment_variable();
-        opt.parse_arguments(sub_argc2, sub_argv2);
+        opt.parse_arguments(sub_argc2, sub_argv2, advgetopt::option_source_t::SOURCE_COMMAND_LINE);
 
         // "--from"
         CATCH_REQUIRE(opt.is_defined("from"));
@@ -810,7 +810,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"1001\" given to parameter --size is not considered valid.");
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"valid.cpp\" given to parameter --files is not considered valid.");
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"black\" given to parameter --more is not considered valid.");
-        opt.parse_arguments(sub_argc3, sub_argv3);
+        opt.parse_arguments(sub_argc3, sub_argv3, advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
     CATCH_END_SECTION()
 }

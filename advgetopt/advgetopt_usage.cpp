@@ -86,6 +86,11 @@ void getopt::parse_options_from_group_names()
                         | GETOPT_FLAG_GROUP_COMMANDS);
             opt->set_help("show all the help from all the available options.");
             f_options_by_name["long-help"] = opt;
+            if(f_options_by_short_name.find(L'?') == f_options_by_short_name.end())
+            {
+                opt->set_short_name(L'?');
+                f_options_by_short_name[L'?'] = opt;
+            }
             break;
         }
     }

@@ -47,42 +47,43 @@ namespace advgetopt
 
 typedef std::uint32_t       flag_t;
 
-static constexpr flag_t     GETOPT_FLAG_NONE                 = static_cast<flag_t>(0x00000000);
+static constexpr flag_t     GETOPT_FLAG_NONE                  = static_cast<flag_t>(0x00000000);
 
-static constexpr flag_t     GETOPT_FLAG_COMMAND_LINE         = static_cast<flag_t>(0x00000001);  // acceptable on the command line
-static constexpr flag_t     GETOPT_FLAG_ENVIRONMENT_VARIABLE = static_cast<flag_t>(0x00000002);  // acceptable in environment variable
-static constexpr flag_t     GETOPT_FLAG_CONFIGURATION_FILE   = static_cast<flag_t>(0x00000004);  // acceptable in configuration files
+static constexpr flag_t     GETOPT_FLAG_COMMAND_LINE          = static_cast<flag_t>(0x00000001);  // acceptable on the command line
+static constexpr flag_t     GETOPT_FLAG_ENVIRONMENT_VARIABLE  = static_cast<flag_t>(0x00000002);  // acceptable in environment variable
+static constexpr flag_t     GETOPT_FLAG_CONFIGURATION_FILE    = static_cast<flag_t>(0x00000004);  // acceptable in configuration files
+static constexpr flag_t     GETOPT_FLAG_DYNAMIC_CONFIGURATION = static_cast<flag_t>(0x00000008);  // acceptable from the dynamic configuration system (see fluid-settings)
 
-static constexpr flag_t     GETOPT_FLAG_ALIAS                = static_cast<flag_t>(0x00000010);  // alias, result in another option defined in "help" string
-static constexpr flag_t     GETOPT_FLAG_FLAG                 = static_cast<flag_t>(0x00000020);  // no parameter allowed (--help)
-static constexpr flag_t     GETOPT_FLAG_REQUIRED             = static_cast<flag_t>(0x00000040);  // required (--host 127.0.0.1)
-static constexpr flag_t     GETOPT_FLAG_MULTIPLE             = static_cast<flag_t>(0x00000080);  // any number of parameter is allowed (--files a b c d ...)
-static constexpr flag_t     GETOPT_FLAG_DEFAULT_OPTION       = static_cast<flag_t>(0x00000100);  // where entries go by default (a.k.a. after "--")
-static constexpr flag_t     GETOPT_FLAG_HAS_DEFAULT          = static_cast<flag_t>(0x00000200);  // default value is defined
+static constexpr flag_t     GETOPT_FLAG_ALIAS                 = static_cast<flag_t>(0x00000010);  // alias, result in another option defined in "help" string
+static constexpr flag_t     GETOPT_FLAG_FLAG                  = static_cast<flag_t>(0x00000020);  // no parameter allowed (--help)
+static constexpr flag_t     GETOPT_FLAG_REQUIRED              = static_cast<flag_t>(0x00000040);  // required (--host 127.0.0.1)
+static constexpr flag_t     GETOPT_FLAG_MULTIPLE              = static_cast<flag_t>(0x00000080);  // any number of parameter is allowed (--files a b c d ...)
+static constexpr flag_t     GETOPT_FLAG_DEFAULT_OPTION        = static_cast<flag_t>(0x00000100);  // where entries go by default (a.k.a. after "--")
+static constexpr flag_t     GETOPT_FLAG_HAS_DEFAULT           = static_cast<flag_t>(0x00000200);  // default value is defined
 
-static constexpr flag_t     GETOPT_FLAG_SHOW_MOST            = static_cast<flag_t>(0x00000000);  // show in usage() when not in GROUP1 or GROUP2
-static constexpr flag_t     GETOPT_FLAG_SHOW_USAGE_ON_ERROR  = static_cast<flag_t>(0x00001000);  // show in usage() when an error occurs
-static constexpr flag_t     GETOPT_FLAG_SHOW_ALL             = static_cast<flag_t>(0x00002000);  // show in usage() when --long-help is used
-static constexpr flag_t     GETOPT_FLAG_SHOW_GROUP1          = static_cast<flag_t>(0x00004000);  // show in usage() when --<group1>-help is used (app dependent)
-static constexpr flag_t     GETOPT_FLAG_SHOW_GROUP2          = static_cast<flag_t>(0x00008000);  // show in usage() when --<group2>-help is used (app dependent)
+static constexpr flag_t     GETOPT_FLAG_SHOW_MOST             = static_cast<flag_t>(0x00000000);  // show in usage() when not in GROUP1 or GROUP2
+static constexpr flag_t     GETOPT_FLAG_SHOW_USAGE_ON_ERROR   = static_cast<flag_t>(0x00001000);  // show in usage() when an error occurs
+static constexpr flag_t     GETOPT_FLAG_SHOW_ALL              = static_cast<flag_t>(0x00002000);  // show in usage() when --long-help is used
+static constexpr flag_t     GETOPT_FLAG_SHOW_GROUP1           = static_cast<flag_t>(0x00004000);  // show in usage() when --<group1>-help is used (app dependent)
+static constexpr flag_t     GETOPT_FLAG_SHOW_GROUP2           = static_cast<flag_t>(0x00008000);  // show in usage() when --<group2>-help is used (app dependent)
 
-static constexpr flag_t     GETOPT_FLAG_GROUP_MASK           = static_cast<flag_t>(0x00700000);
-static constexpr flag_t     GETOPT_FLAG_GROUP_MINIMUM        = static_cast<flag_t>(0);
-static constexpr flag_t     GETOPT_FLAG_GROUP_MAXIMUM        = static_cast<flag_t>(7);
-static constexpr flag_t     GETOPT_FLAG_GROUP_SHIFT          = static_cast<flag_t>(20);
-static constexpr flag_t     GETOPT_FLAG_GROUP_NONE           = static_cast<flag_t>(0x00000000);  // not in a group
-static constexpr flag_t     GETOPT_FLAG_GROUP_COMMANDS       = static_cast<flag_t>(0x00100000);  // in command group (group 1)
-static constexpr flag_t     GETOPT_FLAG_GROUP_OPTIONS        = static_cast<flag_t>(0x00200000);  // in option group (group 2)
-static constexpr flag_t     GETOPT_FLAG_GROUP_THREE          = static_cast<flag_t>(0x00300000);  // in group 3
-static constexpr flag_t     GETOPT_FLAG_GROUP_FOUR           = static_cast<flag_t>(0x00400000);  // in group 4
-static constexpr flag_t     GETOPT_FLAG_GROUP_FIVE           = static_cast<flag_t>(0x00500000);  // in group 5
-static constexpr flag_t     GETOPT_FLAG_GROUP_SIX            = static_cast<flag_t>(0x00600000);  // in group 6
-static constexpr flag_t     GETOPT_FLAG_GROUP_SEVEN          = static_cast<flag_t>(0x00700000);  // in group 7
+static constexpr flag_t     GETOPT_FLAG_GROUP_MASK            = static_cast<flag_t>(0x00700000);
+static constexpr flag_t     GETOPT_FLAG_GROUP_MINIMUM         = static_cast<flag_t>(0);
+static constexpr flag_t     GETOPT_FLAG_GROUP_MAXIMUM         = static_cast<flag_t>(7);
+static constexpr flag_t     GETOPT_FLAG_GROUP_SHIFT           = static_cast<flag_t>(20);
+static constexpr flag_t     GETOPT_FLAG_GROUP_NONE            = static_cast<flag_t>(0x00000000);  // not in a group
+static constexpr flag_t     GETOPT_FLAG_GROUP_COMMANDS        = static_cast<flag_t>(0x00100000);  // in command group (group 1)
+static constexpr flag_t     GETOPT_FLAG_GROUP_OPTIONS         = static_cast<flag_t>(0x00200000);  // in option group (group 2)
+static constexpr flag_t     GETOPT_FLAG_GROUP_THREE           = static_cast<flag_t>(0x00300000);  // in group 3
+static constexpr flag_t     GETOPT_FLAG_GROUP_FOUR            = static_cast<flag_t>(0x00400000);  // in group 4
+static constexpr flag_t     GETOPT_FLAG_GROUP_FIVE            = static_cast<flag_t>(0x00500000);  // in group 5
+static constexpr flag_t     GETOPT_FLAG_GROUP_SIX             = static_cast<flag_t>(0x00600000);  // in group 6
+static constexpr flag_t     GETOPT_FLAG_GROUP_SEVEN           = static_cast<flag_t>(0x00700000);  // in group 7
 
-static constexpr flag_t     GETOPT_FLAG_DYNAMIC              = static_cast<flag_t>(0x20000000);  // this value was found in a configuration file and dynamic parameters are allowed (i.e. no definition for this option was found)
-static constexpr flag_t     GETOPT_FLAG_LOCK                 = static_cast<flag_t>(0x40000000);  // this value is currently locked (can't be modified)
+static constexpr flag_t     GETOPT_FLAG_DYNAMIC               = static_cast<flag_t>(0x20000000);  // this value was found in a configuration file and dynamic parameters are allowed (i.e. no definition for this option was found)
+static constexpr flag_t     GETOPT_FLAG_LOCK                  = static_cast<flag_t>(0x40000000);  // this value is currently locked (can't be modified)
 
-static constexpr flag_t     GETOPT_FLAG_END                  = static_cast<flag_t>(0x80000000);  // mark the end of the list
+static constexpr flag_t     GETOPT_FLAG_END                   = static_cast<flag_t>(0x80000000);  // mark the end of the list
 
 
 

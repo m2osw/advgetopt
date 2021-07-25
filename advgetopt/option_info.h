@@ -62,16 +62,31 @@ std::string                 short_name_to_string(short_name_t short_name);
 
 
 
+
+enum class option_source_t
+{
+    SOURCE_COMMAND_LINE,            // set on command line
+    SOURCE_CONFIGURATION,           // read from config file
+    SOURCE_DIRECT,                  // set by programmer directly
+    SOURCE_DYNAMIC,                 // set dynamically
+    SOURCE_ENVIRONMENT_VARIABLE,    // found in environment variable
+
+    SOURCE_UNDEFINED,               // the option object exists, but the value is still undefined
+};
+
+
 // the `option_info` can be used instead or on top of the `struct option`
 // it is especially used to read an external getopt declaration file
 //
 class option_info
 {
 public:
-    typedef std::shared_ptr<option_info>            pointer_t;
-    typedef std::vector<pointer_t>                  vector_t;
-    typedef std::map<std::string, pointer_t>        map_by_name_t;
-    typedef std::map<short_name_t, pointer_t>       map_by_short_name_t;
+    typedef std::shared_ptr<option_info>                    pointer_t;
+    typedef std::vector<pointer_t>                          vector_t;
+    typedef std::map<std::string, pointer_t>                map_by_name_t;
+    typedef std::map<short_name_t, pointer_t>               map_by_short_name_t;
+    typedef std::function<void (option_info const & opt)>   callback_t;
+    typedef int                                             callback_id_t;
 
                                 option_info(std::string const & name, short_name_t short_name = NO_SHORT_NAME);
 
@@ -112,10 +127,14 @@ public:
     string_list_t const &       get_multiple_separators() const;
 
     bool                        has_value(std::string const & value) const;
-    bool                        add_value(std::string const & value);
-    bool                        set_value(int idx, std::string const & value);
-    bool                        set_multiple_value(std::string const & value);
+    bool                        add_value(std::string const & value, option_source_t source = option_source_t::SOURCE_DIRECT);
+    bool                        set_value(int idx, std::string const & value, option_source_t source = option_source_t::SOURCE_DIRECT);
+    bool                        set_multiple_values(std::string const & value, option_source_t source = option_source_t::SOURCE_DIRECT);
     bool                        is_defined() const;
+    option_source_t             source() const;
+    static void                 set_trace_sources(bool trace);
+    string_list_t const &       trace_sources() const;
+    static void                 set_configuration_filename(std::string const & filename);
     size_t                      size() const;
     std::string const &         get_value(int idx = 0) const;
     long                        get_long(int idx = 0) const;
@@ -123,9 +142,28 @@ public:
     void                        unlock();
     void                        reset();
 
+    callback_id_t               add_callback(callback_t const & c);
+    void                        remove_callback(callback_id_t id);
+
 private:
+    struct callback_entry_t
+    {
+        callback_entry_t(callback_id_t id, callback_t const & c)
+            : f_id(id)
+            , f_callback(c)
+        {
+        }
+
+        callback_id_t           f_id = 0;
+        callback_t              f_callback = callback_t();
+    };
+    typedef std::vector<callback_entry_t>
+                                callback_vector_t;
+
     bool                        validate_all_values();
     bool                        validates(int idx = 0);
+    void                        value_changed(int idx);
+    void                        trace_source(int idx);
 
     // definitions
     //
@@ -137,9 +175,13 @@ private:
     validator::pointer_t        f_validator = validator::pointer_t();
     pointer_t                   f_alias_destination = pointer_t();
     string_list_t               f_multiple_separators = string_list_t();
+    callback_vector_t           f_callbacks = callback_vector_t();
+    id_t                        f_next_callback_id = 0;
+    string_list_t               f_trace_sources = string_list_t();
 
     // value read from command line, environment, .conf file
     //
+    option_source_t             f_source = option_source_t::SOURCE_UNDEFINED;
     string_list_t               f_value = string_list_t();
     mutable std::vector<long>   f_integer = std::vector<long>();
 };

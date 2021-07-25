@@ -96,6 +96,8 @@ namespace advgetopt
  */
 bool getopt::is_defined(std::string const & name) const
 {
+    is_parsed();
+
     option_info::pointer_t opt(get_option(name));
     if(opt != nullptr)
     {
@@ -123,6 +125,8 @@ bool getopt::is_defined(std::string const & name) const
  */
 size_t getopt::size(std::string const & name) const
 {
+    is_parsed();
+
     option_info::pointer_t opt(get_option(name));
     if(opt != nullptr)
     {
@@ -252,6 +256,8 @@ std::string getopt::get_default(std::string const & name) const
  */
 long getopt::get_long(std::string const & name, int idx, long min, long max) const
 {
+    is_parsed();
+
     option_info::pointer_t opt(get_option(name));
     if(opt == nullptr)
     {
@@ -335,6 +341,8 @@ long getopt::get_long(std::string const & name, int idx, long min, long max) con
  */
 std::string getopt::get_string(std::string const & name, int idx) const
 {
+    is_parsed();
+
     option_info::pointer_t opt(get_option(name));
     if(opt == nullptr)
     {
@@ -376,6 +384,8 @@ std::string getopt::get_string(std::string const & name, int idx) const
  */
 std::string getopt::operator [] (std::string const & name) const
 {
+    is_parsed();
+
     if(name.empty())
     {
         throw getopt_logic_error("argument name cannot be empty.");
@@ -452,6 +462,8 @@ std::string getopt::operator [] (std::string const & name) const
  */
 option_info_ref getopt::operator [] (std::string const & name)
 {
+    is_parsed();
+
     if(name.empty())
     {
         throw getopt_logic_error("argument name cannot be empty.");
@@ -468,6 +480,7 @@ option_info_ref getopt::operator [] (std::string const & name)
         // The option doesn't exist yet, create it
         //
         opt = std::make_shared<option_info>(name);
+        opt->add_flag(GETOPT_FLAG_DYNAMIC_CONFIGURATION);
         f_options_by_name[name] = opt;
     }
 
@@ -515,7 +528,14 @@ flag_t getopt::process_system_options(std::basic_ostream<char> & out)
     // --version
     if(is_defined("version"))
     {
-        out << f_options_environment.f_version << std::endl;
+        if(f_options_environment.f_version == nullptr)
+        {
+            out << "warning: no version found." << std::endl;
+        }
+        else
+        {
+            out << f_options_environment.f_version << std::endl;
+        }
         result |= SYSTEM_OPTION_VERSION;
     }
 
@@ -533,6 +553,8 @@ flag_t getopt::process_system_options(std::basic_ostream<char> & out)
         result |= SYSTEM_OPTION_HELP;
     }
 
+    // --<group-name>-help
+    //
     if(f_options_environment.f_groups != nullptr)
     {
         for(group_description const * grp = f_options_environment.f_groups
@@ -559,14 +581,28 @@ flag_t getopt::process_system_options(std::basic_ostream<char> & out)
     // --copyright
     if(is_defined("copyright"))
     {
-        out << f_options_environment.f_copyright << std::endl;
+        if(f_options_environment.f_copyright == nullptr)
+        {
+            out << "warning: no copyright notice found." << std::endl;
+        }
+        else
+        {
+            out << f_options_environment.f_copyright << std::endl;
+        }
         result |= SYSTEM_OPTION_COPYRIGHT;
     }
 
     // --license
     if(is_defined("license"))
     {
-        out << f_options_environment.f_license << std::endl;
+        if(f_options_environment.f_license == nullptr)
+        {
+            out << "warning: no license found." << std::endl;
+        }
+        else
+        {
+            out << f_options_environment.f_license << std::endl;
+        }
         result |= SYSTEM_OPTION_LICENSE;
     }
 
@@ -574,9 +610,13 @@ flag_t getopt::process_system_options(std::basic_ostream<char> & out)
     if(is_defined("build-date"))
     {
         out << "Built on "
-            << f_options_environment.f_build_date
+            << (f_options_environment.f_build_date == nullptr
+                    ? "<no-build-date>"
+                    : f_options_environment.f_build_date)
             << " at "
-            << f_options_environment.f_build_time
+            << (f_options_environment.f_build_time == nullptr
+                    ? "<no-build-time>"
+                    : f_options_environment.f_build_time)
             << std::endl;
         result |= SYSTEM_OPTION_BUILD_DATE;
     }
@@ -646,6 +686,13 @@ flag_t getopt::process_system_options(std::basic_ostream<char> & out)
         // function, there is nothing for us to do here
         //
         result |= SYSTEM_OPTION_CONFIG_DIR;
+    }
+
+    // --show-option-sources
+    if(is_defined("show-option-sources"))
+    {
+        show_option_sources(out);
+        result |= SYSTEM_OPTION_SHOW_OPTION_SOURCES;
     }
 
     return result;

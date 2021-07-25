@@ -51,7 +51,7 @@
 
 
 
-CATCH_TEST_CASE("configuration_spaces", "[config][getopt]")
+CATCH_TEST_CASE("configuration_spaces", "[config][getopt][valid]")
 {
     CATCH_START_SECTION("Verify Configuration Spaces")
         for(int c(0); c < 0x110000; ++c)
@@ -74,7 +74,7 @@ CATCH_TEST_CASE("configuration_spaces", "[config][getopt]")
 }
 
 
-CATCH_TEST_CASE("configuration_setup", "[config][getopt]")
+CATCH_TEST_CASE("configuration_setup", "[config][getopt][valid]")
 {
     CATCH_START_SECTION("Check All Setups")
         // 5 * 6 * 8 * 8 * 16 = 30720
@@ -341,9 +341,10 @@ CATCH_TEST_CASE("configuration_setup", "[config][getopt]")
 
 
 
-CATCH_TEST_CASE("config_reload_tests")
+CATCH_TEST_CASE("config_reload_tests", "[config][getopt][valid]")
 {
     CATCH_START_SECTION("Load a file, update it, verify it does not get reloaded")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("reload", "load-twice");
 
         {
@@ -440,12 +441,13 @@ CATCH_TEST_CASE("config_reload_tests")
             CATCH_REQUIRE(file->get_parameter("changing") == "without reloading is useless");
             CATCH_REQUIRE(file->get_parameter("test") == "1009");
         }
+    }
     CATCH_END_SECTION()
 }
 
 
 
-CATCH_TEST_CASE("config_duplicated_variables")
+CATCH_TEST_CASE("config_duplicated_variables", "[config][getopt][valid]")
 {
     CATCH_START_SECTION("file with the same variable defined multiple times")
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("duplicated-variable", "multiple");
@@ -520,7 +522,7 @@ CATCH_TEST_CASE("config_duplicated_variables")
 
 
 
-CATCH_TEST_CASE("config_callback_calls")
+CATCH_TEST_CASE("config_callback_calls", "[config][getopt][valid]")
 {
     CATCH_START_SECTION("setup a callback and test the set_parameter()/erase() functions")
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("callback-variable", "callback");
@@ -586,7 +588,7 @@ CATCH_TEST_CASE("config_callback_calls")
         conf_callback cf;
         cf.f_data = &cf_data;
 
-        file->set_callback(cf);
+        advgetopt::conf_file::callback_id_t callback_id(file->add_callback(cf));
 
         CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
         CATCH_REQUIRE(file->get_errno() == 0);
@@ -673,6 +675,43 @@ CATCH_TEST_CASE("config_callback_calls")
         CATCH_REQUIRE(file->has_parameter("new_param"));
         CATCH_REQUIRE(file->get_parameter("new_param") == "with this value");
 
+        file->remove_callback(callback_id);
+        cf_data.f_expected_action = advgetopt::callback_action_t::created;
+        cf_data.f_expected_variable = "ignored";
+        cf_data.f_expected_value = "ignored";
+        CATCH_REQUIRE(file->set_parameter(std::string(), "new_param", "unnoticed change"));
+        CATCH_REQUIRE(file->was_modified());
+        CATCH_REQUIRE(file->get_parameters().size() == 8);
+        CATCH_REQUIRE(file->has_parameter("new-param"));
+        CATCH_REQUIRE(file->get_parameter("new-param") == "unnoticed change");
+        CATCH_REQUIRE(file->has_parameter("new_param"));
+        CATCH_REQUIRE(file->get_parameter("new_param") == "unnoticed change");
+
+        // further calls do nothing more
+        //
+        file->remove_callback(callback_id);
+        CATCH_REQUIRE(file->set_parameter(std::string(), "new_param", "still unnoticed"));
+        CATCH_REQUIRE(file->was_modified());
+        CATCH_REQUIRE(file->get_parameters().size() == 8);
+        CATCH_REQUIRE(file->has_parameter("new-param"));
+        CATCH_REQUIRE(file->get_parameter("new-param") == "still unnoticed");
+        CATCH_REQUIRE(file->has_parameter("new_param"));
+        CATCH_REQUIRE(file->get_parameter("new_param") == "still unnoticed");
+
+        // and we can always re-add it
+        //
+        CATCH_REQUIRE(callback_id != file->add_callback(cf));
+        cf_data.f_expected_action = advgetopt::callback_action_t::updated;
+        cf_data.f_expected_variable = "new-param";
+        cf_data.f_expected_value = "we're back";
+        CATCH_REQUIRE(file->set_parameter(std::string(), "new_param", "we're back"));
+        CATCH_REQUIRE(file->was_modified());
+        CATCH_REQUIRE(file->get_parameters().size() == 8);
+        CATCH_REQUIRE(file->has_parameter("new-param"));
+        CATCH_REQUIRE(file->get_parameter("new-param") == "we're back");
+        CATCH_REQUIRE(file->has_parameter("new_param"));
+        CATCH_REQUIRE(file->get_parameter("new_param") == "we're back");
+
         // until you save it remains true even if you were to restore the
         // state to "normal" (we do not keep a copy of the original value
         // as found in the file.)
@@ -683,7 +722,7 @@ CATCH_TEST_CASE("config_callback_calls")
 
 
 
-CATCH_TEST_CASE("config_line_continuation_tests")
+CATCH_TEST_CASE("config_line_continuation_tests", "[config][getopt][valid]")
 {
     CATCH_START_SECTION("single_line")
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("line-continuation", "single-line");
@@ -1161,7 +1200,7 @@ std::cerr << "------------------ " << file->get_setup().get_config_url()
 
 
 
-CATCH_TEST_CASE("config_assignment_operator_tests")
+CATCH_TEST_CASE("config_assignment_operator_tests", "[config][getopt][valid]")
 {
     CATCH_START_SECTION("equal")
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("assignment-operator", "equal");
@@ -1360,7 +1399,7 @@ CATCH_TEST_CASE("config_assignment_operator_tests")
 
 
 
-CATCH_TEST_CASE("config_comment_tests")
+CATCH_TEST_CASE("config_comment_tests", "[config][getopt][valid]")
 {
     CATCH_START_SECTION("ini comment")
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("comment", "ini");
@@ -1558,7 +1597,7 @@ CATCH_TEST_CASE("config_comment_tests")
 
 
 
-CATCH_TEST_CASE("config_section_tests")
+CATCH_TEST_CASE("config_section_tests", "[config][getopt][valid]")
 {
     CATCH_START_SECTION("section operator c (.)")
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("section-operator", "section-c");
@@ -1903,7 +1942,7 @@ CATCH_TEST_CASE("config_section_tests")
 
 
 
-CATCH_TEST_CASE("save_config_file")
+CATCH_TEST_CASE("save_config_file", "[config][getopt][valid]")
 {
     CATCH_START_SECTION("load update save")
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("save-operation", "configuration");
@@ -2058,7 +2097,7 @@ CATCH_TEST_CASE("invalid_configuration_setup", "[config][getopt][invalid]")
 
 
 
-CATCH_TEST_CASE("config_reload_invalid_setup")
+CATCH_TEST_CASE("config_reload_invalid_setup", "[config][getopt][invalid]")
 {
     CATCH_START_SECTION("Load a file, update it, verify it does not get reloaded")
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-reload", "load-twice-wrong-parameters");
@@ -2220,7 +2259,7 @@ CATCH_TEST_CASE("missing_configuration_file", "[config][getopt][invalid]")
 }
 
 
-CATCH_TEST_CASE("invalid_sections")
+CATCH_TEST_CASE("invalid_sections", "[config][getopt][invalid]")
 {
     CATCH_START_SECTION("variable name cannot start with a period when C operator is active")
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-section-operator", "period-name");
@@ -2811,7 +2850,7 @@ CATCH_TEST_CASE("invalid_sections")
 
 
 
-CATCH_TEST_CASE("invalid_variable_name")
+CATCH_TEST_CASE("invalid_variable_name", "[config][getopt][invalid]")
 {
     CATCH_START_SECTION("empty variable name")
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-variable-name", "name-missing");

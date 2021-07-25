@@ -74,12 +74,25 @@ namespace advgetopt
  * The \p writable file means that we only want files under the
  * \<project-name>.d folder and the user configuration folder.
  *
+ * \note
+ * The argc/argv and environment variable parameters are used whenever the
+ * function is called early and we can't call is_defined(). These are
+ * ignored otherwise.
+ *
  * \param[in] exists  Remove files that do not exist from the list.
  * \param[in] writable  Only return files we consider writable.
+ * \param[in] argc  The number of arguments in argv.
+ * \param[in] argv  The arguments passed to the finish_parsing() function or
+ * nullptr.
+ * \param[in] environment_variable  The environment variable or an empty string.
  *
  * \return The list of configuration filenames.
  */
-string_list_t getopt::get_configuration_filenames(bool exists, bool writable) const
+string_list_t getopt::get_configuration_filenames(
+          bool exists
+        , bool writable
+        , int argc
+        , char * argv[]) const
 {
     string_list_t result;
 
@@ -102,7 +115,10 @@ string_list_t getopt::get_configuration_filenames(bool exists, bool writable) co
                         result.push_back(user_filename);
                     }
 
-                    string_list_t const with_project_name(insert_group_name(user_filename, f_options_environment.f_group_name, f_options_environment.f_project_name));
+                    string_list_t const with_project_name(insert_group_name(
+                                  user_filename
+                                , f_options_environment.f_group_name
+                                , f_options_environment.f_project_name));
                     if(!with_project_name.empty())
                     {
                         result.insert(
@@ -124,12 +140,39 @@ string_list_t getopt::get_configuration_filenames(bool exists, bool writable) co
         string_list_t directories;
         if(has_flag(GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS))
         {
-            if(is_defined("config-dir"))
+            // WARNING: at this point the command line and environment
+            //          variable may not be parsed yet
+            //
+            if(f_parsed)
             {
-                size_t const max(size("config-dir"));
-                for(size_t idx(0); idx < max; ++idx)
+                if(is_defined("config-dir"))
                 {
-                    directories.push_back(get_string("config-dir", idx));
+                    size_t const max(size("config-dir"));
+                    for(size_t idx(0); idx < max; ++idx)
+                    {
+                        directories.push_back(get_string("config-dir", idx));
+                    }
+                }
+            }
+            else
+            {
+                // we've got to do some manual parsing (argh!)
+                //
+                directories = find_config_dir(argc, argv);
+                if(directories.empty())
+                {
+                    string_list_t args(split_environment(f_environment_variable));
+
+                    std::vector<char *> sub_argv;
+                    sub_argv.resize(args.size() + 2);
+                    sub_argv[0] = const_cast<char *>(f_program_fullname.c_str());
+                    for(size_t idx(0); idx < args.size(); ++idx)
+                    {
+                        sub_argv[idx + 1] = const_cast<char *>(args[idx].c_str());
+                    }
+                    sub_argv[args.size() + 1] = nullptr;
+                    
+                    directories = find_config_dir(sub_argv.size() - 1, sub_argv.data());
                 }
             }
         }
@@ -194,6 +237,53 @@ string_list_t getopt::get_configuration_filenames(bool exists, bool writable) co
 }
 
 
+/** \brief Search for the "--config-dir" option in a set of arguments.
+ *
+ * This function searches the given list of \p argv arguments for the
+ * "--config-dir".
+ *
+ * This is done that way because we prematurely need that information
+ * in order to properly search for the configuration file. This is because
+ * the "--config-dir" is not yet defined when we attempt to read the
+ * user specific configuration file.
+ *
+ * \param[in] argc  The number of arguments.
+ * \param[in] argv  The list of arguments to be searched.
+ */
+string_list_t getopt::find_config_dir(
+          int argc
+        , char * argv[])
+{
+    if(argv == nullptr)
+    {
+        return string_list_t();
+    }
+
+    string_list_t result;
+    for(int idx(1); idx < argc; ++idx)
+    {
+        if(strcmp(argv[idx], "--config-dir") == 0)
+        {
+            for(++idx; idx < argc; ++idx)
+            {
+                if(argv[idx][0] == '-')
+                {
+                    --idx;
+                    break;
+                }
+                result.push_back(argv[idx]);
+            }
+        }
+        else if(strncmp(argv[idx], "--config-dir=", 13) == 0)
+        {
+            result.push_back(argv[idx] + 13);
+        }
+    }
+
+    return result;
+}
+
+
 /** \brief This function checks for arguments in configuration files.
  *
  * Each configuration file is checked one after another. Each file that is
@@ -231,16 +321,24 @@ string_list_t getopt::get_configuration_filenames(bool exists, bool writable) co
  * option (the one receiving parameters that are not used by another command
  * or match a command.) This exception is raised when such is detected.
  *
+ * \param[in] argc  The number of arguments in argv.
+ * \param[in] argv  The arguments passed to the finish_parsing() function.
+ *
  * \sa process_configuration_file()
+ * \sa get_configuration_filenames()
+ * \sa finish_parsing()
  */
-void getopt::parse_configuration_files()
+void getopt::parse_configuration_files(int argc, char * argv[])
 {
-    string_list_t const filenames(get_configuration_filenames(false, false));
+    string_list_t const filenames(get_configuration_filenames(false, false, argc, argv));
 
     for(auto f : filenames)
     {
         process_configuration_file(f);
+        f_parsed = false;
     }
+
+    f_parsed = true;
 }
 
 
@@ -268,6 +366,8 @@ void getopt::parse_configuration_files()
  */
 void getopt::process_configuration_file(std::string const & filename)
 {
+    option_info::set_configuration_filename(filename);
+
     conf_file_setup conf_setup(filename);
     if(!conf_setup.is_valid())
     {
@@ -305,7 +405,7 @@ void getopt::process_configuration_file(std::string const & filename)
         {
             if(!configuration_sections->has_value(s))
             {
-                configuration_sections->add_value(s);
+                configuration_sections->add_value(s, option_source_t::SOURCE_CONFIGURATION);
             }
         }
     }
@@ -365,9 +465,15 @@ void getopt::process_configuration_file(std::string const & filename)
 
         if(opt != nullptr)
         {
-            add_option_from_string(opt, param.second, filename);
+            add_option_from_string(
+                      opt
+                    , param.second
+                    , filename
+                    , option_source_t::SOURCE_CONFIGURATION);
         }
     }
+
+    f_parsed = true;
 }
 
 

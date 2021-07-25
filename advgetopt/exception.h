@@ -64,7 +64,8 @@ DECLARE_EXCEPTION(getopt_exception, getopt_initialization);
 
 
 // the process is viewed as done, exit now
-class getopt_exit : public getopt_exception
+class getopt_exit
+    : public getopt_exception
 {
 public:
     getopt_exit(std::string const & msg, int code)

@@ -50,13 +50,13 @@ cd tmp/coverage
 mkdir BUILD
 cd BUILD
 # request coverage in this build
-dist=`cd ../../../../../../; pwd`/BUILD/dist
-modules=$dist/share/cmake-3.5/Modules
-cmake -DCMAKE_INSTALL_PREFIX:PATH=$dist \
-    -DCMAKE_MODULE_PATH:PATH=$modules \
+dist=`cd ../../../../../BUILD/Debug/dist; pwd`
+modules="$dist/share/cmake-3.5/Modules;$dist/share/cmake"
+cmake -DCMAKE_INSTALL_PREFIX:PATH="$dist" \
+    -DCMAKE_MODULE_PATH:PATH="$modules" \
     -DCMAKE_BUILD_TYPE=Debug \
     -Dadvgetopt_library_COVERAGE:BOOL=ON \
-    ../../..
+        ../../..
 cd ..
 echo
 echo "***"
@@ -67,7 +67,7 @@ echo
 echo "***"
 echo "*** run (`date`)"
 echo "***"
-if test `BUILD/tests/unittest --version` != "$VERSION"
+if test `BUILD/tests/unittest --progress --version` != "$VERSION"
 then
     echo "the version of unittest (`BUILD/tests/unittest --version`) is not equal to the project version ($VERSION)"
     exit 1;

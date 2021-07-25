@@ -60,10 +60,12 @@ constexpr flag_t            SYSTEM_OPTION_BUILD_DATE                    = 0x0010
 constexpr flag_t            SYSTEM_OPTION_ENVIRONMENT_VARIABLE_NAME     = 0x0020;
 constexpr flag_t            SYSTEM_OPTION_CONFIGURATION_FILENAMES       = 0x0040;
 constexpr flag_t            SYSTEM_OPTION_PATH_TO_OPTION_DEFINITIONS    = 0x0080;
-constexpr flag_t            SYSTEM_OPTION_CONFIG_DIR                    = 0x0100;   // option
+constexpr flag_t            SYSTEM_OPTION_SHOW_OPTION_SOURCES           = 0x0100;
 
-constexpr flag_t            SYSTEM_OPTION_COMMANDS_MASK                 = 0x00FF;
-constexpr flag_t            SYSTEM_OPTION_OPTIONS_MASK                  = 0x0100;
+constexpr flag_t            SYSTEM_OPTION_CONFIG_DIR                    = 0x1000;   // option
+
+constexpr flag_t            SYSTEM_OPTION_COMMANDS_MASK                 = 0x0FFF;
+constexpr flag_t            SYSTEM_OPTION_OPTIONS_MASK                  = 0xF000;
 
 
 
@@ -94,17 +96,21 @@ public:
 
     void                    parse_program_name(char * argv[]);
 
-    void                    parse_configuration_files();
+    void                    parse_configuration_files(int argc, char * argv[]);
     void                    process_configuration_file(std::string const & filename);
 
+    std::string             get_environment_variable() const;
+    static string_list_t    split_environment(std::string const & environment);
     void                    parse_environment_variable();
 
     void                    parse_string(
                                       std::string const & str
-                                    , bool only_environment_variable);
+                                    , option_source_t source = option_source_t::SOURCE_DIRECT
+                                    , bool only_environment_variable = false);
     void                    parse_arguments(
                                       int argc
                                     , char * argv[]
+                                    , option_source_t source = option_source_t::SOURCE_DIRECT
                                     , bool only_environment_variable = false);
 
     flag_t                  process_system_options(std::basic_ostream<char> & out);
@@ -133,8 +139,11 @@ public:
     std::string             get_environment_variable_name() const;
     size_t                  get_configuration_filename_size() const;
     std::string             get_configuration_filename(int idx) const;
-    string_list_t           get_configuration_filenames(bool exists
-                                                      , bool writable) const;
+    string_list_t           get_configuration_filenames(
+                                      bool exists
+                                    , bool writable
+                                    , int argc = 0
+                                    , char * argv[] = nullptr) const;
 
     group_description const *
                             find_group(flag_t group) const;
@@ -155,15 +164,23 @@ private:
     void                    initialize_parser(options_environment const & opt_env);
     void                    parse_options_from_group_names();
     void                    parse_options_from_file();
+    void                    show_option_sources(std::basic_ostream<char> & out);
     option_info::pointer_t  get_alias_destination(option_info::pointer_t opt) const;
+    void                    define_environment_variable_data();
+    void                    is_parsed() const;
+    static string_list_t    find_config_dir(int argc, char * argv[]);
 
-    void                    add_options(option_info::pointer_t opt
-                                      , int & i
-                                      , int argc
-                                      , char ** argv);
-    void                    add_option_from_string(option_info::pointer_t opt
-                                                 , std::string const & value
-                                                 , std::string const & filename);
+    void                    add_options(
+                                      option_info::pointer_t opt
+                                    , int & i
+                                    , int argc
+                                    , char ** argv
+                                    , option_source_t source = option_source_t::SOURCE_DIRECT);
+    void                    add_option_from_string(
+                                      option_info::pointer_t opt
+                                    , std::string const & value
+                                    , std::string const & filename
+                                    , option_source_t source = option_source_t::SOURCE_DIRECT);
 
     std::string                         f_program_fullname = std::string();
     std::string                         f_program_name = std::string();
@@ -172,6 +189,8 @@ private:
     option_info::map_by_name_t          f_options_by_name = option_info::map_by_name_t();
     option_info::map_by_short_name_t    f_options_by_short_name = option_info::map_by_short_name_t();
     option_info::pointer_t              f_default_option = option_info::pointer_t();
+    std::string                         f_environment_variable = std::string();
+    bool                                f_parsed = false;
 };
 
 

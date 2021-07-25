@@ -477,6 +477,33 @@ void getopt::set_short_name(std::string const & name, short_name_t short_name)
 }
 
 
+void getopt::show_option_sources(std::basic_ostream<char> & out)
+{
+    int idx(1);
+    out << "Option Sources:\n";
+    for(auto const & opt : f_options_by_name)
+    {
+        out << "  " << idx << ". option \"" << opt.second->get_name() << "\"";
+        string_list_t sources(opt.second->trace_sources());
+        if(sources.empty())
+        {
+            out << " (undefined)\n";
+        }
+        else
+        {
+            out << "\n";
+            for(auto const & src : sources)
+            {
+                out << "     " << src << "\n";
+            }
+        }
+        out << "\n";
+
+        ++idx;
+    }
+    out << std::flush;
+}
+
 
 
 } // namespace advgetopt

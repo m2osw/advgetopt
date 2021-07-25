@@ -760,31 +760,106 @@ conf_file_setup const & conf_file::get_setup() const
 }
 
 
-/** \brief Set a callback to detect when changes happen.
+/** \brief Add a callback to detect when changes happen.
  *
- * This function is used to attach a callback to this file. This is
- * useful if you'd like to know when a change happen to a parameter
+ * This function is used to attach a callback to this configuration file.
+ * This is useful if you'd like to know when a change happen to a parameter
  * in this configuration file.
  *
- * The callback gets called when:
+ * The callbacks get called when:
  *
  * \li The set_parameter() is called and the parameter gets created.
  * \li The set_parameter() is called and the parameter gets updated.
  * \li The erase_parameter() is called and the parameter gets erased.
  *
- * You can cancel your callback by calling this function again without
- * a target (i.e. `cf->set_callback(callback_t());`).
+ * You can cancel your callback by calling the remove_callback() function
+ * with the identifier returned by this function.
  *
  * To attach another object to your callback, you can either create
  * a callback which is attached to your object and a function
  * member or use std::bind() to attach the object to the function
  * call.
  *
- * \param[in] callback  The new callback std::function.
+ * If you specifcy a \p parameter_name, the callback is called only if the
+ * parameter has that specific name.
+ *
+ * \param[in] c  The new callback std::function.
+ * \param[in] parameter_name  The parameter name or an empty string.
+ *
+ * \return The callback identifier (useful if you want to be able to remove it).
  */
-void conf_file::set_callback(callback_t callback)
+conf_file::callback_id_t conf_file::add_callback(
+          callback_t const & c
+        , std::string const & parameter_name)
 {
-    f_callback = callback;
+    cppthread::guard lock(get_global_mutex());
+
+    ++f_next_callback_id;
+    f_callbacks.emplace_back(f_next_callback_id, c, parameter_name);
+    return f_next_callback_id;
+}
+
+
+/** \brief Remove a callback.
+ *
+ * This function is the opposite of the add_callback(). It removes a callback
+ * that you previously added. This is useful if you are interested in hearing
+ * about the changing values when set a first time but are not interested at
+ * all about future changes.
+ *
+ * \param[in] id  The id returned by the add_callback() function.
+ */
+void conf_file::remove_callback(callback_id_t id)
+{
+    cppthread::guard lock(get_global_mutex());
+
+    auto it(std::find_if(
+              f_callbacks.begin()
+            , f_callbacks.end()
+            , [id](auto e)
+            {
+                return e.f_id == id;
+            }));
+    if(it != f_callbacks.end())
+    {
+        f_callbacks.erase(it);
+    }
+}
+
+
+/** \brief Call whenever the value changed so we can handle callbacks.
+ *
+ * This function is called on a change of the internal values.
+ *
+ * The function is used to call the callbacks that were added to this
+ * option_info object. The function first copies the existing list of
+ * callbacks so you can safely update the list from within a callback.
+ *
+ * \warning
+ * Destroying your advgetopt::getopt option is not safe while a callback
+ * is running.
+ */
+void conf_file::value_changed(
+          callback_action_t action
+        , std::string const & parameter_name
+        , std::string const & value)
+{
+    callback_vector_t callbacks;
+    callbacks.reserve(f_callbacks.size());
+
+    {
+        cppthread::guard lock(get_global_mutex());
+        callbacks = f_callbacks;
+    }
+
+    for(auto & e : callbacks)
+    {
+        if(e.f_parameter_name.empty()
+        || e.f_parameter_name == parameter_name)
+        {
+            e.f_callback(shared_from_this(), action, parameter_name, value);
+        }
+    }
 }
 
 
@@ -1222,10 +1297,7 @@ bool conf_file::set_parameter(std::string section, std::string name, std::string
     {
         f_modified = true;
 
-        if(f_callback)
-        {
-            f_callback(shared_from_this(), action, full_name, value);
-        }
+        value_changed(action, full_name, value);
     }
 
     return true;
@@ -1259,10 +1331,7 @@ bool conf_file::erase_parameter(std::string name)
     {
         f_modified = true;
 
-        if(f_callback)
-        {
-            f_callback(shared_from_this(), callback_action_t::erased, name, std::string());
-        }
+        value_changed(callback_action_t::erased, name, std::string());
     }
 
     return true;

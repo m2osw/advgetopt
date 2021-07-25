@@ -52,7 +52,9 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
             advgetopt::define_option(
                   advgetopt::Name("reference")
                 , advgetopt::ShortName('r')
-                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Flags(advgetopt::command_flags<
+                              advgetopt::GETOPT_FLAG_REQUIRED
+                            | advgetopt::GETOPT_FLAG_DYNAMIC_CONFIGURATION>())
                 , advgetopt::Help("test reference.")
             ),
             advgetopt::define_option(
@@ -94,7 +96,7 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
         CATCH_REQUIRE(opt.size("verbose") == 1);
         CATCH_REQUIRE(opt.get_string("verbose") == "loud");
 
-        // check the read-only version which does not create a reference
+        // check the read-only verbose which does not create a reference
         CATCH_REQUIRE(const_cast<advgetopt::getopt const &>(opt)["reference"] == "1001");
         CATCH_REQUIRE(const_cast<advgetopt::getopt const &>(opt)["verbose"] == "loud");
 
@@ -284,13 +286,17 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
             advgetopt::define_option(
                   advgetopt::Name("reference")
                 , advgetopt::ShortName('r')
-                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Flags(advgetopt::command_flags<
+                              advgetopt::GETOPT_FLAG_REQUIRED
+                            | advgetopt::GETOPT_FLAG_DYNAMIC_CONFIGURATION>())
                 , advgetopt::Help("test reference.")
             ),
             advgetopt::define_option(
                   advgetopt::Name("verbose")
                 , advgetopt::ShortName('v')
-                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Flags(advgetopt::command_flags<
+                              advgetopt::GETOPT_FLAG_REQUIRED
+                            | advgetopt::GETOPT_FLAG_DYNAMIC_CONFIGURATION>())
                 , advgetopt::Help("make it all verbose.")
             ),
             advgetopt::end_options()
@@ -328,7 +334,7 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
 
         CATCH_REQUIRE_FALSE(opt.is_defined("unknown"));
 
-        // check the read-only version which does not create a reference
+        // check the read-only verbose which does not create a reference
         CATCH_REQUIRE(const_cast<advgetopt::getopt const &>(opt)["reference"] == "1001");
         CATCH_REQUIRE(const_cast<advgetopt::getopt const &>(opt)["verbose"] == "loud");
 
@@ -569,14 +575,18 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
             advgetopt::define_option(
                   advgetopt::Name("reference")
                 , advgetopt::ShortName('r')
-                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Flags(advgetopt::command_flags<
+                              advgetopt::GETOPT_FLAG_REQUIRED
+                            | advgetopt::GETOPT_FLAG_DYNAMIC_CONFIGURATION>())
                 , advgetopt::Help("test reference.")
                 , advgetopt::DefaultValue("978")
             ),
             advgetopt::define_option(
                   advgetopt::Name("verbose")
                 , advgetopt::ShortName('v')
-                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Flags(advgetopt::command_flags<
+                              advgetopt::GETOPT_FLAG_REQUIRED
+                            | advgetopt::GETOPT_FLAG_DYNAMIC_CONFIGURATION>())
                 , advgetopt::Help("make it all verbose.")
             ),
             advgetopt::end_options()
@@ -615,7 +625,7 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
 
         CATCH_REQUIRE_FALSE(opt.is_defined("unknown"));
 
-        // check the read-only version which does not create a reference
+        // check the read-only verbose which does not create a reference
         CATCH_REQUIRE(const_cast<advgetopt::getopt const &>(opt)["reference"] == "3100");
         CATCH_REQUIRE(const_cast<advgetopt::getopt const &>(opt)["verbose"] == "silence");
 
@@ -1324,7 +1334,7 @@ CATCH_TEST_CASE("option_info_ref_with_valid_default", "[option_info][valid][refe
         CATCH_REQUIRE(opt.size("verbose") == 1);
         CATCH_REQUIRE(opt.get_string("verbose") == "loud");
 
-        // check the read-only version which does not create a reference
+        // check the read-only verbose which does not create a reference
         CATCH_REQUIRE(const_cast<advgetopt::getopt const &>(opt)["reference"] == "459");
         CATCH_REQUIRE(const_cast<advgetopt::getopt const &>(opt)["verbose"] == "loud");
 
@@ -1416,7 +1426,7 @@ CATCH_TEST_CASE("option_info_ref_with_invalid_default", "[option_info][invalid][
         CATCH_REQUIRE(opt.size("verbose") == 1);
         CATCH_REQUIRE(opt.get_string("verbose") == "loud");
 
-        // check the read-only version which does not create a reference
+        // check the read-only verbose which does not create a reference
         CATCH_REQUIRE(const_cast<advgetopt::getopt const &>(opt)["reference"] == "undefined");
         CATCH_REQUIRE(const_cast<advgetopt::getopt const &>(opt)["verbose"] == "loud");
 

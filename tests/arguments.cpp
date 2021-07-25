@@ -2294,7 +2294,7 @@ CATCH_TEST_CASE("config_dir_argument", "[arguments][valid][getopt][config]")
         CATCH_REQUIRE(config_dir != nullptr);
         opt.set_short_name("config-dir", U'c');
 
-        opt.parse_arguments(argc, argv);
+        opt.parse_arguments(argc, argv, advgetopt::option_source_t::SOURCE_COMMAND_LINE);
 
         // check that the result is valid
 
@@ -2378,7 +2378,7 @@ CATCH_TEST_CASE("config_dir_argument", "[arguments][valid][getopt][config]")
 
         CATCH_REQUIRE(opt.get_option("config-dir") == nullptr);
 
-        opt.parse_arguments(argc, argv);
+        opt.parse_arguments(argc, argv, advgetopt::option_source_t::SOURCE_COMMAND_LINE);
 
         // check that the result is valid
 
@@ -2461,7 +2461,7 @@ CATCH_TEST_CASE("config_dir_argument", "[arguments][valid][getopt][config]")
 
         CATCH_REQUIRE(opt.get_option("config-dir") == nullptr);
 
-        opt.parse_arguments(argc, argv);
+        opt.parse_arguments(argc, argv, advgetopt::option_source_t::SOURCE_COMMAND_LINE);
 
         // check that the result is valid
 
@@ -3864,32 +3864,44 @@ CATCH_TEST_CASE("manual_arguments", "[arguments][valid][getopt]")
             //
             CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
             CATCH_REQUIRE(opt.get_option('Z') == nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+            CATCH_REQUIRE_THROWS_MATCHES(
+                      opt.is_defined("invalid-parameter")
+                    , advgetopt::getopt_initialization
+                    , Catch::Matchers::ExceptionMessage(
+                                  "getopt_exception: function called too soon, parser is not done yet (i.e. is_defined(), get_string(), get_integer() cannot be called until the parser is done)"));
             CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
-            CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+            CATCH_REQUIRE_THROWS_MATCHES(
+                      opt.size("invalid-parameter")
+                    , advgetopt::getopt_initialization
+                    , Catch::Matchers::ExceptionMessage(
+                                  "getopt_exception: function called too soon, parser is not done yet (i.e. is_defined(), get_string(), get_integer() cannot be called until the parser is done)"));
 
             // verbose
             //
             CATCH_REQUIRE(opt.get_option("verbose") == nullptr);
             CATCH_REQUIRE(opt.get_option('v') == nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("verbose"));
+            CATCH_REQUIRE_THROWS_MATCHES(
+                      opt.is_defined("verbose")
+                    , advgetopt::getopt_initialization
+                    , Catch::Matchers::ExceptionMessage(
+                                  "getopt_exception: function called too soon, parser is not done yet (i.e. is_defined(), get_string(), get_integer() cannot be called until the parser is done)"));
             CATCH_REQUIRE(opt.get_default("verbose").empty());
-            CATCH_REQUIRE(opt.size("verbose") == 0);
+            CATCH_REQUIRE_THROWS_MATCHES(
+                      opt.size("verbose")
+                    , advgetopt::getopt_initialization
+                    , Catch::Matchers::ExceptionMessage(
+                                  "getopt_exception: function called too soon, parser is not done yet (i.e. is_defined(), get_string(), get_integer() cannot be called until the parser is done)"));
 
             // help
             //
             CATCH_REQUIRE(opt.get_option("help") == nullptr);
             CATCH_REQUIRE(opt.get_option('h') == nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("help"));
             CATCH_REQUIRE(opt.get_default("help").empty());
-            CATCH_REQUIRE(opt.size("help") == 0);
 
             // default
             //
             CATCH_REQUIRE(opt.get_option("--") == nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("--"));
             CATCH_REQUIRE(opt.get_default("--").empty());
-            CATCH_REQUIRE(opt.size("--") == 0);
 
             // other parameters
             //
@@ -3914,32 +3926,24 @@ CATCH_TEST_CASE("manual_arguments", "[arguments][valid][getopt]")
             //
             CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
             CATCH_REQUIRE(opt.get_option('Z') == nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
             CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
-            CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
 
             // verbose
             //
             CATCH_REQUIRE(opt.get_option("verbose") == nullptr);
             CATCH_REQUIRE(opt.get_option('v') == nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("verbose"));
             CATCH_REQUIRE(opt.get_default("verbose").empty());
-            CATCH_REQUIRE(opt.size("verbose") == 0);
 
             // help
             //
             CATCH_REQUIRE(opt.get_option("help") == nullptr);
             CATCH_REQUIRE(opt.get_option('h') == nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("help"));
             CATCH_REQUIRE(opt.get_default("help").empty());
-            CATCH_REQUIRE(opt.size("help") == 0);
 
             // default
             //
             CATCH_REQUIRE(opt.get_option("--") == nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("--"));
             CATCH_REQUIRE(opt.get_default("--").empty());
-            CATCH_REQUIRE(opt.size("--") == 0);
 
             // other parameters
             //
@@ -3954,32 +3958,24 @@ CATCH_TEST_CASE("manual_arguments", "[arguments][valid][getopt]")
             //
             CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
             CATCH_REQUIRE(opt.get_option('Z') == nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
             CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
-            CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
 
             // verbose
             //
             CATCH_REQUIRE(opt.get_option("verbose") == nullptr);
             CATCH_REQUIRE(opt.get_option('v') == nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("verbose"));
             CATCH_REQUIRE(opt.get_default("verbose").empty());
-            CATCH_REQUIRE(opt.size("verbose") == 0);
 
             // help
             //
             CATCH_REQUIRE(opt.get_option("help") == nullptr);
             CATCH_REQUIRE(opt.get_option('h') == nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("help"));
             CATCH_REQUIRE(opt.get_default("help").empty());
-            CATCH_REQUIRE(opt.size("help") == 0);
 
             // default
             //
             CATCH_REQUIRE(opt.get_option("--") == nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("--"));
             CATCH_REQUIRE(opt.get_default("--").empty());
-            CATCH_REQUIRE(opt.size("--") == 0);
 
             // other parameters
             //
@@ -4004,32 +4000,24 @@ CATCH_TEST_CASE("manual_arguments", "[arguments][valid][getopt]")
             //
             CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
             CATCH_REQUIRE(opt.get_option('Z') == nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
             CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
-            CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
 
             // verbose
             //
             CATCH_REQUIRE(opt.get_option("verbose") != nullptr);
             CATCH_REQUIRE(opt.get_option('v') != nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("verbose"));
             CATCH_REQUIRE(opt.get_default("verbose").empty());
-            CATCH_REQUIRE(opt.size("verbose") == 0);
 
             // help
             //
             CATCH_REQUIRE(opt.get_option("help") == nullptr);
             CATCH_REQUIRE(opt.get_option('h') == nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("help"));
             CATCH_REQUIRE(opt.get_default("help").empty());
-            CATCH_REQUIRE(opt.size("help") == 0);
 
             // default
             //
             CATCH_REQUIRE(opt.get_option("--") == nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("--"));
             CATCH_REQUIRE(opt.get_default("--").empty());
-            CATCH_REQUIRE(opt.size("--") == 0);
 
             // other parameters
             //
@@ -4054,32 +4042,24 @@ CATCH_TEST_CASE("manual_arguments", "[arguments][valid][getopt]")
             //
             CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
             CATCH_REQUIRE(opt.get_option('Z') == nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
             CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
-            CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
 
             // verbose
             //
             CATCH_REQUIRE(opt.get_option("verbose") != nullptr);
             CATCH_REQUIRE(opt.get_option('v') != nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("verbose"));
             CATCH_REQUIRE(opt.get_default("verbose").empty());
-            CATCH_REQUIRE(opt.size("verbose") == 0);
 
             // help
             //
             CATCH_REQUIRE(opt.get_option("help") != nullptr);
             CATCH_REQUIRE(opt.get_option('h') != nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("help"));
             CATCH_REQUIRE(opt.get_default("help").empty());
-            CATCH_REQUIRE(opt.size("help") == 0);
 
             // default
             //
             CATCH_REQUIRE(opt.get_option("--") == nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("--"));
             CATCH_REQUIRE(opt.get_default("--").empty());
-            CATCH_REQUIRE(opt.size("--") == 0);
 
             // other parameters
             //
@@ -4103,32 +4083,24 @@ CATCH_TEST_CASE("manual_arguments", "[arguments][valid][getopt]")
             //
             CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
             CATCH_REQUIRE(opt.get_option('Z') == nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
             CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
-            CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
 
             // verbose
             //
             CATCH_REQUIRE(opt.get_option("verbose") != nullptr);
             CATCH_REQUIRE(opt.get_option('v') != nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("verbose"));
             CATCH_REQUIRE(opt.get_default("verbose").empty());
-            CATCH_REQUIRE(opt.size("verbose") == 0);
 
             // help
             //
             CATCH_REQUIRE(opt.get_option("help") != nullptr);
             CATCH_REQUIRE(opt.get_option('h') != nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("help"));
             CATCH_REQUIRE(opt.get_default("help").empty());
-            CATCH_REQUIRE(opt.size("help") == 0);
 
             // default
             //
             CATCH_REQUIRE(opt.get_option("--") != nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("--"));
             CATCH_REQUIRE(opt.get_default("--").empty());
-            CATCH_REQUIRE(opt.size("--") == 0);
 
             // other parameters
             //
@@ -4184,7 +4156,7 @@ CATCH_TEST_CASE("manual_arguments", "[arguments][valid][getopt]")
 
         // now parse our command line arguments
         //
-        opt.parse_arguments(argc, argv);
+        opt.parse_arguments(argc, argv, advgetopt::option_source_t::SOURCE_COMMAND_LINE);
 
             // an invalid parameter, MUST NEVER EXIST
             //
@@ -4269,48 +4241,36 @@ CATCH_TEST_CASE("manual_arguments", "[arguments][valid][getopt]")
             //
             CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
             CATCH_REQUIRE(opt.get_option('Z') == nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
             CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
-            CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
 
             // verbose
             //
             CATCH_REQUIRE(opt.get_option("verbose") != nullptr);
             CATCH_REQUIRE(opt.get_option('v') != nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("verbose"));
             CATCH_REQUIRE(opt.get_default("verbose").empty());
-            CATCH_REQUIRE(opt.size("verbose") == 0);
 
             // help
             //
             CATCH_REQUIRE(opt.get_option("help") != nullptr);
             CATCH_REQUIRE(opt.get_option('h') != nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("help"));
             CATCH_REQUIRE(opt.get_default("help").empty());
-            CATCH_REQUIRE(opt.size("help") == 0);
 
             // default
             //
             CATCH_REQUIRE(opt.get_option("--") != nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("--"));
             CATCH_REQUIRE(opt.get_default("--").empty());
-            CATCH_REQUIRE(opt.size("--") == 0);
 
             // size
             //
             CATCH_REQUIRE(opt.get_option("size") != nullptr);
             CATCH_REQUIRE(opt.get_option('s') != nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("size"));
             CATCH_REQUIRE(opt.get_default("size") == "123");
-            CATCH_REQUIRE(opt.size("size") == 0);
 
             // pos
             //
             CATCH_REQUIRE(opt.get_option("pos") == nullptr);
             CATCH_REQUIRE(opt.get_option('p') == nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("pos"));
             CATCH_REQUIRE(opt.get_default("pos").empty());
-            CATCH_REQUIRE(opt.size("pos") == 0);
 
             // other parameters
             //
@@ -4337,48 +4297,36 @@ CATCH_TEST_CASE("manual_arguments", "[arguments][valid][getopt]")
             //
             CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
             CATCH_REQUIRE(opt.get_option('Z') == nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
             CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
-            CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
 
             // verbose
             //
             CATCH_REQUIRE(opt.get_option("verbose") != nullptr);
             CATCH_REQUIRE(opt.get_option('v') != nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("verbose"));
             CATCH_REQUIRE(opt.get_default("verbose").empty());
-            CATCH_REQUIRE(opt.size("verbose") == 0);
 
             // help
             //
             CATCH_REQUIRE(opt.get_option("help") != nullptr);
             CATCH_REQUIRE(opt.get_option('h') != nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("help"));
             CATCH_REQUIRE(opt.get_default("help").empty());
-            CATCH_REQUIRE(opt.size("help") == 0);
 
             // size
             //
             CATCH_REQUIRE(opt.get_option("size") != nullptr);
             CATCH_REQUIRE(opt.get_option('s') != nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("size"));
             CATCH_REQUIRE(opt.get_default("size") == "123");
-            CATCH_REQUIRE(opt.size("size") == 0);
 
             // pos
             //
             CATCH_REQUIRE(opt.get_option("pos") == nullptr);
             CATCH_REQUIRE(opt.get_option('p') == nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("pos"));
             CATCH_REQUIRE(opt.get_default("pos").empty());
-            CATCH_REQUIRE(opt.size("pos") == 0);
 
             // default
             //
             CATCH_REQUIRE(opt.get_option("--") != nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("--"));
             CATCH_REQUIRE(opt.get_default("--").empty());
-            CATCH_REQUIRE(opt.size("--") == 0);
 
             // other parameters
             //
@@ -4404,48 +4352,36 @@ CATCH_TEST_CASE("manual_arguments", "[arguments][valid][getopt]")
             //
             CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
             CATCH_REQUIRE(opt.get_option('Z') == nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
             CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
-            CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
 
             // verbose
             //
             CATCH_REQUIRE(opt.get_option("verbose") != nullptr);
             CATCH_REQUIRE(opt.get_option('v') != nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("verbose"));
             CATCH_REQUIRE(opt.get_default("verbose").empty());
-            CATCH_REQUIRE(opt.size("verbose") == 0);
 
             // help
             //
             CATCH_REQUIRE(opt.get_option("help") != nullptr);
             CATCH_REQUIRE(opt.get_option('h') != nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("help"));
             CATCH_REQUIRE(opt.get_default("help").empty());
-            CATCH_REQUIRE(opt.size("help") == 0);
 
             // size
             //
             CATCH_REQUIRE(opt.get_option("size") != nullptr);
             CATCH_REQUIRE(opt.get_option('s') != nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("size"));
             CATCH_REQUIRE(opt.get_default("size") == "123");
-            CATCH_REQUIRE(opt.size("size") == 0);
 
             // pos
             //
             CATCH_REQUIRE(opt.get_option("pos") != nullptr);
             CATCH_REQUIRE(opt.get_option('p') != nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("pos"));
             CATCH_REQUIRE(opt.get_default("pos") == "0,0");
-            CATCH_REQUIRE(opt.size("pos") == 0);
 
             // default
             //
             CATCH_REQUIRE(opt.get_option("--") != nullptr);
-            CATCH_REQUIRE_FALSE(opt.is_defined("--"));
             CATCH_REQUIRE(opt.get_default("--").empty());
-            CATCH_REQUIRE(opt.size("--") == 0);
 
             // other parameters
             //
@@ -4517,7 +4453,7 @@ CATCH_TEST_CASE("manual_arguments", "[arguments][valid][getopt]")
 
         // now parse our command line arguments
         //
-        opt.parse_arguments(argc, argv);
+        opt.parse_arguments(argc, argv, advgetopt::option_source_t::SOURCE_COMMAND_LINE);
 
             // an invalid parameter, MUST NEVER EXIST
             //
@@ -4595,7 +4531,7 @@ CATCH_TEST_CASE("manual_arguments", "[arguments][valid][getopt]")
         int const argc2(sizeof(cargv2) / sizeof(cargv2[0]) - 1);
         char ** argv2 = const_cast<char **>(cargv2);
 
-        opt.parse_arguments(argc2, argv2);
+        opt.parse_arguments(argc2, argv2, advgetopt::option_source_t::SOURCE_COMMAND_LINE);
 
             // an invalid parameter, MUST NEVER EXIST
             //
@@ -4709,7 +4645,7 @@ CATCH_TEST_CASE("manual_arguments", "[arguments][valid][getopt]")
         char ** argv = const_cast<char **>(cargv);
 
         CATCH_REQUIRE_THROWS_MATCHES(
-                  opt.parse_arguments(argc, argv)
+                  opt.parse_arguments(argc, argv, advgetopt::option_source_t::SOURCE_COMMAND_LINE)
                 , advgetopt::getopt_undefined
                 , Catch::Matchers::ExceptionMessage(
                               "getopt_exception: getopt::get_alias_destination(): alias is missing. Did you call link_aliases()?"));
@@ -5479,7 +5415,7 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
         int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
         char ** argv = const_cast<char **>(cargv);
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: no default options defined; thus -- is not accepted by this program.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: no default options defined; thus \"--\" is not accepted by this program.");
         advgetopt::getopt opt(environment_options, argc, argv);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
@@ -5546,7 +5482,7 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
         int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
         char ** argv = const_cast<char **>(cargv);
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: option -- is not supported in the environment variable.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: option \"--\" is not supported on the command line.");
         advgetopt::getopt opt(environment_options, argc, argv);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
@@ -5615,7 +5551,7 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
         int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
         char ** argv = const_cast<char **>(cargv);
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: option -- is not supported in the environment variable.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: option \"--\" is not supported in the environment variable.");
         advgetopt::getopt opt(environment_options, argc, argv);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
@@ -5676,7 +5612,7 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
         int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
         char ** argv = const_cast<char **>(cargv);
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: no default options defined; thus - is not accepted by this program.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: no default options defined; thus \"-\" is not accepted by this program.");
         advgetopt::getopt opt(environment_options, argc, argv);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
@@ -5743,7 +5679,7 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
         int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
         char ** argv = const_cast<char **>(cargv);
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: option - is not supported in the environment variable.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: option \"-\" is not supported on the command line.");
         advgetopt::getopt opt(environment_options, argc, argv);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
@@ -5812,7 +5748,7 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
         int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
         char ** argv = const_cast<char **>(cargv);
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: option - is not supported in the environment variable.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: option \"-\" is not supported in the environment variable.");
         advgetopt::getopt opt(environment_options, argc, argv);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
@@ -5926,7 +5862,7 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
         int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
         char ** argv = const_cast<char **>(cargv);
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: option --unknown is not supported.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: option \"--unknown\" is not supported.");
         advgetopt::getopt opt(environment_options, argc, argv);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
@@ -5980,7 +5916,7 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
         int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
         char ** argv = const_cast<char **>(cargv);
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: option --size is not supported in the environment variable.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: option \"--size\" is not supported in the environment variable.");
         advgetopt::getopt opt(environment_options, argc, argv);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
@@ -6039,7 +5975,7 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
         int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
         char ** argv = const_cast<char **>(cargv);
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: option --size is not supported on the command line.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: option \"--size\" is not supported on the command line.");
         advgetopt::getopt opt(environment_options, argc, argv);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
@@ -6100,7 +6036,7 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
         int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
         char ** argv = const_cast<char **>(cargv);
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: option -q is not supported.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: option \"-q\" is not supported.");
         advgetopt::getopt opt(environment_options, argc, argv);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
@@ -6169,7 +6105,7 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
         int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
         char ** argv = const_cast<char **>(cargv);
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: option -s is not supported in the environment variable.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: option \"-s\" is not supported in the environment variable.");
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: no default options defined; we do not know what to do of \"4551\"; standalone parameters are not accepted by this program.");
         advgetopt::getopt opt(environment_options, argc, argv);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
@@ -6243,7 +6179,7 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
         int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
         char ** argv = const_cast<char **>(cargv);
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: option -s is not supported on the command line.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: option \"-s\" is not supported on the command line.");
         //SNAP_CATCH2_NAMESPACE::push_expected_log("error: no default options defined; we do not know what to do of \"4551\"; standalone parameters are not accepted by this program.");
         advgetopt::getopt opt(environment_options, argc, argv);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
