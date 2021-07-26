@@ -666,9 +666,13 @@ void getopt::finish_parsing(int argc, char * argv[])
  */
 void getopt::is_parsed() const
 {
-    if(!f_parsed)
+    if(!f_parsed
+    && (f_options_environment.f_environment_flags & GETOPT_ENVIRONMENT_FLAG_AUTO_DONE) == 0)
     {
-        throw getopt_initialization("function called too soon, parser is not done yet (i.e. is_defined(), get_string(), get_integer() cannot be called until the parser is done)");
+        throw getopt_initialization(
+                "function called too soon, parser is not done yet"
+                " (i.e. is_defined(), get_string(), get_integer()"
+                " cannot be called until the parser is done)");
     }
 }
 

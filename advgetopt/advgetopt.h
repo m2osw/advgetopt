@@ -96,7 +96,9 @@ public:
 
     void                    parse_program_name(char * argv[]);
 
-    void                    parse_configuration_files(int argc, char * argv[]);
+    void                    parse_configuration_files(
+                                      int argc = 0
+                                    , char * argv[] = nullptr);
     void                    process_configuration_file(std::string const & filename);
 
     std::string             get_environment_variable() const;
