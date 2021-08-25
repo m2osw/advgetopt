@@ -1,28 +1,21 @@
-/*
- * License:
- *    Copyright (c) 2006-2021  Made to Order Software Corp.  All Rights Reserved
- *
- *    https://snapwebsites.org/project/advgetopt
- *    contact@m2osw.com
- *
- *    This program is free software; you can redistribute it and/or modify
- *    it under the terms of the GNU General Public License as published by
- *    the Free Software Foundation; either version 2 of the License, or
- *    (at your option) any later version.
- *
- *    This program is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *    GNU General Public License for more details.
- *
- *    You should have received a copy of the GNU General Public License along
- *    with this program; if not, write to the Free Software Foundation, Inc.,
- *    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- * Authors:
- *    Alexis Wilke   alexis@m2osw.com
- *    Doug Barbieri  doug@m2osw.com
- */
+// Copyright (c) 2006-2021  Made to Order Software Corp.  All Rights Reserved
+//
+// https://snapwebsites.org/project/advgetopt
+// contact@m2osw.com
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #pragma once
 
 /** \file
@@ -218,7 +211,7 @@ constexpr flag_t var_flags()
 template<flag_t ...args>
 constexpr flag_t config_flags()
 {
-    constexpr flag_t result(combine_option_flags<GETOPT_FLAG_CONFIGURATION_FILE, GETOPT_FLAG_FLAG, args...>());
+    constexpr flag_t result(combine_option_flags<GETOPT_FLAG_CONFIGURATION_FILE, GETOPT_FLAG_REQUIRED, args...>());
 
     static_assert((result & (GETOPT_FLAG_COMMAND_LINE | GETOPT_FLAG_ENVIRONMENT_VARIABLE)) == 0
                 , "a config_flag() cannot include GETOPT_FLAG_COMMAND_LINE | GETOPT_FLAG_ENVIRONMENT_VARIABLE");
