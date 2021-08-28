@@ -42,6 +42,21 @@
 #include    "advgetopt/exception.h"
 
 
+// cppthread lib
+//
+#include    <cppthread/log.h>
+
+
+// snapdev lib
+//
+#include    <snapdev/tokenize_string.h>
+
+
+// C++ lib
+//
+#include    <list>
+
+
 // last include
 //
 #include    <snapdev/poison.h>
@@ -121,7 +136,7 @@ void getopt::parse_options_info(option const * opts, bool ignore_duplicates)
         {
             if(ignore_duplicates)
             {
-                short_name = U'\0';
+                short_name = NO_SHORT_NAME;
             }
             else
             {
@@ -171,29 +186,16 @@ void getopt::parse_options_info(option const * opts, bool ignore_duplicates)
 
 /** \brief Check for a file with option definitions.
  *
- * This function tries to read a file of options for this application.
- * These are similar to the option structure, only it is defined in a
- * file.
+ * This function tries to read the default option file for this process.
+ * This filename is generated using the the option environment files
+ * directory and the project name.
  *
- * The format of the file is like so:
+ * If the directory is not defined, the function uses this default path:
+ * `"/usr/share/advgetopt/options/"`. See the other
+ * parse_options_from_file(std::string const & filename) function
+ * for additional details.
  *
- * \li Option names are defined on a line by themselves between square brackets.
- * \li Parameters of that option are defined below as a `name=<value>`.
- *
- * Example:
- *
- * \code
- *     [<command-name>]
- *     short_name=<character>
- *     default=<default value>
- *     help=<help sentence>
- *     validator=<validator name>[(<param>)]|/<regex>/<flags>
- *     alias=<name of aliased option>
- *     allowed=command-line,environment-variable,configuration-file
- *     show-usage-on-error
- *     no-arguments|multiple
- *     required
- * \endcode
+ * \sa parse_options_from_file(std::string const & filename)
  */
 void getopt::parse_options_from_file()
 {
@@ -221,11 +223,61 @@ void getopt::parse_options_from_file()
     filename += f_options_environment.f_project_name;
     filename += ".ini";
 
+    parse_options_from_file(filename, 1, 1);
+}
+
+
+/** \brief Check for a file with option definitions.
+ *
+ * This function tries to read the specified file for command line options
+ * for this application. These are similar to the option structure, only it
+ * is defined in a file.
+ *
+ * The format of the file is like so:
+ *
+ * \li Option names are defined on a line by themselves between square brackets.
+ * \li Parameters of that option are defined below as a `name=<value>`.
+ *
+ * Example:
+ *
+ * \code
+ *     [<command-name>]
+ *     short_name=<character>
+ *     default=<default value>
+ *     help=<help sentence>
+ *     validator=<validator name>[(<param>)]|/<regex>/<flags>
+ *     alias=<name of aliased option>
+ *     allowed=command-line,environment-variable,configuration-file
+ *     show-usage-on-error
+ *     no-arguments|multiple
+ *     required
+ * \endcode
+ *
+ * \note
+ * By default, this function is called with one specific filename based
+ * on the f_project_name field and the f_options_files_directory as
+ * defined in the options environment.
+ *
+ * \param[in] filename  The filename to load.
+ *
+ * \sa parse_options_from_file()
+ */
+void getopt::parse_options_from_file(
+          std::string const & filename
+        , int min_sections
+        , int max_sections)
+{
+    section_operator_t operators(SECTION_OPERATOR_INI_FILE);
+    if(min_sections == 1
+    && max_sections == 1)
+    {
+        operators |= SECTION_OPERATOR_ONE_SECTION;
+    }
     conf_file_setup conf_setup(filename
                              , line_continuation_t::line_continuation_unix
                              , ASSIGNMENT_OPERATOR_EQUAL
                              , COMMENT_INI | COMMENT_SHELL
-                             , SECTION_OPERATOR_INI_FILE | SECTION_OPERATOR_ONE_SECTION);
+                             , operators);
     if(!conf_setup.is_valid())
     {
         return;  // LCOV_EXCL_LINE
@@ -233,37 +285,70 @@ void getopt::parse_options_from_file()
 
     conf_file::pointer_t conf(conf_file::get_conf_file(conf_setup));
     conf_file::sections_t const & sections(conf->get_sections());
-    for(auto & section_name : sections)
+    for(auto & section_names : sections)
     {
-        std::string::size_type pos(section_name.find("::"));
-        if(pos != std::string::npos)
+        std::list<std::string> names;
+        snap::tokenize_string(
+              names
+            , section_names
+            , "::");
+        if(names.size() < static_cast<std::size_t>(min_sections)
+        || names.size() > static_cast<std::size_t>(max_sections))
         {
-            // this should never happen since we use the
-            // SECTION_OPERATOR_ONE_SECTION flag
-            //
-            throw getopt_logic_error(                                   // LCOV_EXCL_LINE
-                      "section \""                                      // LCOV_EXCL_LINE
-                    + section_name                                      // LCOV_EXCL_LINE
-                    + "\" includes a section separator (::) in \""      // LCOV_EXCL_LINE
-                    + filename                                          // LCOV_EXCL_LINE
-                    + "\". We only support one level.");                // LCOV_EXCL_LINE
+            if(min_sections == 1
+            && max_sections == 1)
+            {
+                cppthread::log << cppthread::log_level_t::error
+                    << "the name of a settings definition must include one namespace; \""
+                    << section_names
+                    << "\" is not considered valid."
+                    << cppthread::end;
+            }
+            else
+            {
+                cppthread::log << cppthread::log_level_t::error
+                    << "the name of a settings definition must include between "
+                    << min_sections
+                    << " and "
+                    << max_sections
+                    << " namespaces; \""
+                    << section_names
+                    << "\" is not considered valid."
+                    << cppthread::end;
+            }
+            continue;
         }
 
-        std::string const parameter_name(section_name);
+        std::string const parameter_name(section_names);
         std::string const short_name(unquote(conf->get_parameter(parameter_name + "::shortname")));
         if(short_name.length() > 1)
         {
             throw getopt_logic_error(
                       "option \""
-                    + section_name
+                    + section_names
                     + "\" has an invalid short name in \""
                     + filename
                     + "\", it can't be more than one character.");
         }
-        short_name_t sn('\0');
+        short_name_t sn(NO_SHORT_NAME);
         if(short_name.length() == 1)
         {
             sn = short_name[0];
+        }
+
+        if(get_option(parameter_name, true) != nullptr)
+        {
+            throw getopt_defined_twice(
+                      std::string("option named \"")
+                    + parameter_name
+                    + "\" found twice.");
+        }
+        if(get_option(sn, true) != nullptr)
+        {
+            throw getopt_defined_twice(
+                      "option with short name \""
+                    + short_name_to_string(sn)
+                    + "\" found twice.");
         }
 
         option_info::pointer_t opt(std::make_shared<option_info>(parameter_name, sn));
@@ -286,7 +371,7 @@ void getopt::parse_options_from_file()
             {
                 throw getopt_logic_error(
                           "option \""
-                        + section_name
+                        + section_names
                         + "\" is an alias and as such it can't include a help=... parameter in \""
                         + filename
                         + "\".");

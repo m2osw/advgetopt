@@ -1,28 +1,21 @@
-/*
- * License:
- *    Copyright (c) 2006-2021  Made to Order Software Corp.  All Rights Reserved
- *
- *    https://snapwebsites.org/project/advgetopt
- *    contact@m2osw.com
- *
- *    This program is free software; you can redistribute it and/or modify
- *    it under the terms of the GNU General Public License as published by
- *    the Free Software Foundation; either version 2 of the License, or
- *    (at your option) any later version.
- *
- *    This program is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *    GNU General Public License for more details.
- *
- *    You should have received a copy of the GNU General Public License along
- *    with this program; if not, write to the Free Software Foundation, Inc.,
- *    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- * Authors:
- *    Alexis Wilke   alexis@m2osw.com
- *    Doug Barbieri  doug@m2osw.com
- */
+// Copyright (c) 2006-2021  Made to Order Software Corp.  All Rights Reserved
+//
+// https://snapwebsites.org/project/advgetopt
+// contact@m2osw.com
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
 /** \file
@@ -560,6 +553,7 @@ bool option_info::has_flag(flag_t flag) const
  *
  * \sa set_default()
  * \sa remove_default()
+ * \sa get_default()
  */
 bool option_info::has_default() const
 {
@@ -585,6 +579,8 @@ bool option_info::has_default() const
  * \param[in] default_value  The new default value for this option.
  *
  * \sa remove_default()
+ * \sa has_default()
+ * \sa get_default()
  */
 void option_info::set_default(std::string const & default_value)
 {
@@ -601,6 +597,8 @@ void option_info::set_default(std::string const & default_value)
  * \param[in] default_value  The new default value for this option.
  *
  * \sa remove_default()
+ * \sa has_default()
+ * \sa get_default()
  */
 void option_info::set_default(char const * default_value)
 {
@@ -617,6 +615,8 @@ void option_info::set_default(char const * default_value)
  * cleared and the GETOPT_FLAG_NO_DEFAULT flag gets set.
  *
  * \sa set_default()
+ * \sa has_default()
+ * \sa get_default()
  */
 void option_info::remove_default()
 {

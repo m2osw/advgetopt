@@ -87,6 +87,10 @@ public:
     void                    parse_options_info(
                                       option const * opts
                                     , bool ignore_duplicates = false);
+    void                    parse_options_from_file(
+                                      std::string const & filename
+                                    , int min_section
+                                    , int max_section);
     void                    link_aliases();
     void                    set_short_name(
                                       std::string const & name
