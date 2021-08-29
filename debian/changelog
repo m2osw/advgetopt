@@ -1,17 +1,12 @@
-advgetopt (2.0.24.0~bionic) bionic; urgency=high
+advgetopt (2.0.23.0~bionic) bionic; urgency=high
 
+  * Added support so users can manually load options from any file.
+  * The function loading from file now can't create duplicated options.
   * Updated the main test to match the new libexcept no-tracing spec.
   * Added a --has-sanitizer system command line option.
   * Added a --compiler-version system command line option.
   * The build-file-of-options.cpp properly catches exit exceptions.
   * Various clean ups (copyright notices, code).
-
- -- Alexis Wilke <alexis@m2osw.com>  Sat, 28 Aug 2021 18:33:17 -0700
-
-advgetopt (2.0.23.0~bionic) bionic; urgency=high
-
-  * Added support so users can manually load options from any file.
-  * The function loading from file now can't create duplicated options.
 
  -- Alexis Wilke <alexis@m2osw.com>  Fri, 27 Aug 2021 23:39:02 -0700
 
