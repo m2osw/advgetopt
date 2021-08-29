@@ -195,6 +195,11 @@ option const g_system_options[] =
         , Help("print out the time and date when %p was built and exit.")
     ),
     define_option(
+          Name("compiler-version")
+        , Flags(standalone_command_flags<GETOPT_FLAG_GROUP_COMMANDS>())
+        , Help("print the version of the compiler used to compile the advgetopt library.")
+    ),
+    define_option(
           Name("configuration-filenames")
         , Flags(standalone_command_flags<GETOPT_FLAG_GROUP_COMMANDS>())
         , Help("print out the list of configuration files checked out by this tool.")
@@ -209,6 +214,11 @@ option const g_system_options[] =
           Name("environment-variable-name")
         , Flags(standalone_command_flags<GETOPT_FLAG_GROUP_COMMANDS>())
         , Help("print out the name of the environment variable supported by %p (if any.)")
+    ),
+    define_option(
+          Name("has-sanitizer")
+        , Flags(standalone_command_flags<GETOPT_FLAG_GROUP_COMMANDS>())
+        , Help("print whether the advgetopt was compiled with the sanitizer extension.")
     ),
     define_option(
           Name("help")

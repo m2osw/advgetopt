@@ -165,6 +165,7 @@ public:
                                     , size_t const option_width
                                     , size_t const line_width);
     static size_t           get_line_width();
+    static std::string      sanitizer_details();
 
 private:
     void                    initialize_parser(options_environment const & opt_env);

@@ -39,6 +39,7 @@
 //
 #include    "advgetopt/conf_file.h"
 #include    "advgetopt/exception.h"
+#include    "advgetopt/version.h"
 
 
 // cppthread lib
@@ -488,6 +489,34 @@ option_info_ref getopt::operator [] (std::string const & name)
 }
 
 
+/** \brief Generate a string describing whether we're using the sanitizer.
+ *
+ * This function determines whether this library was compiled with the
+ * sanitizer extension. If so, then it will return detail about which
+ * feature was compiled in.
+ *
+ * If no sanitizer options were compiled in, then it returns a
+ * message saying so.
+ *
+ * \return A string with details about the sanitizer.
+ */
+std::string getopt::sanitizer_details()
+{
+    std::string result;
+#if defined(__SANITIZE_ADDRESS__) || defined(__SANITIZE_THREAD__)
+#if defined(__SANITIZE_ADDRESS__)
+    result += "The address sanitizer is compiled in.\n";
+#endif
+#if defined(__SANITIZE_ADDRESS__) || defined(__SANITIZE_THREAD__)
+    result += "The thread sanitizer is compiled in.\n";
+#endif
+#else
+    result += "The address and thread sanitizers are not compiled in.\n";
+#endif
+    return result;
+}
+
+
 /** \brief Process the system options.
  *
  * If you have the GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS flag turned on,
@@ -537,6 +566,20 @@ flag_t getopt::process_system_options(std::basic_ostream<char> & out)
             out << f_options_environment.f_version << std::endl;
         }
         result |= SYSTEM_OPTION_VERSION;
+    }
+
+    // --has-sanitizer
+    if(is_defined("has-sanitizer"))
+    {
+        out << sanitizer_details() << std::endl;
+        result |= SYSTEM_OPTION_HELP;
+    }
+
+    // --compiler-version
+    if(is_defined("compiler-version"))
+    {
+        out << LIBADVGETOPT_COMPILER_VERSION << std::endl;
+        result |= SYSTEM_OPTION_HELP;
     }
 
     // --help

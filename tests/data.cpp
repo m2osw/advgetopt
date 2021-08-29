@@ -1,27 +1,21 @@
-/*
- * License:
- *    Copyright (c) 2006-2021  Made to Order Software Corp.  All Rights Reserved
- *
- *    https://snapwebsites.org/
- *    contact@m2osw.com
- *
- *    This program is free software; you can redistribute it and/or modify
- *    it under the terms of the GNU General Public License as published by
- *    the Free Software Foundation; either version 2 of the License, or
- *    (at your option) any later version.
- *
- *    This program is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *    GNU General Public License for more details.
- *
- *    You should have received a copy of the GNU General Public License along
- *    with this program; if not, write to the Free Software Foundation, Inc.,
- *    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- * Authors:
- *    Alexis Wilke   alexis@m2osw.com
- */
+// Copyright (c) 2006-2021  Made to Order Software Corp.  All Rights Reserved
+//
+// https://snapwebsites.org/project/advgetopt
+// contact@m2osw.com
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 // self
 //
@@ -47,6 +41,10 @@
 //
 #include    <fstream>
 
+
+// last include
+//
+#include    <snapdev/poison.h>
 
 
 
@@ -631,7 +629,7 @@ CATCH_TEST_CASE("system_flags_help", "[arguments][valid][getopt][system_flags]")
 
         // check the list of options
         advgetopt::option_info::map_by_name_t const & list_of_options(opt.get_options());
-        CATCH_REQUIRE(list_of_options.size() == 3 + 9 + 1);
+        CATCH_REQUIRE(list_of_options.size() == 3 + 11 + 1);
 
         // user options
         CATCH_REQUIRE(list_of_options.find("size") != list_of_options.end());
@@ -705,6 +703,11 @@ advgetopt::getopt::breakup_line(
             , 30
             , advgetopt::getopt::get_line_width())
 + advgetopt::getopt::format_usage_string(
+              "--compiler-version"
+            , "print the version of the compiler used to compile the advgetopt library."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
               "--configuration-filenames"
             , "print out the list of configuration files checked out by this"
               " tool."
@@ -719,6 +722,11 @@ advgetopt::getopt::breakup_line(
               "--environment-variable-name"
             , "print out the name of the environment variable supported by"
               " arguments (if any.)"
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--has-sanitizer"
+            , "print whether the advgetopt was compiled with the sanitizer extension."
             , 30
             , advgetopt::getopt::get_line_width())
 + advgetopt::getopt::format_usage_string(
@@ -870,6 +878,11 @@ advgetopt::getopt::breakup_line(
             , 30
             , advgetopt::getopt::get_line_width())
 + advgetopt::getopt::format_usage_string(
+              "--compiler-version"
+            , "print the version of the compiler used to compile the advgetopt library."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
               "--configuration-filenames"
             , "print out the list of configuration files checked out by this"
               " tool."
@@ -884,6 +897,11 @@ advgetopt::getopt::breakup_line(
               "--environment-variable-name"
             , "print out the name of the environment variable supported by"
               " arguments (if any.)"
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--has-sanitizer"
+            , "print whether the advgetopt was compiled with the sanitizer extension."
             , 30
             , advgetopt::getopt::get_line_width())
 + advgetopt::getopt::format_usage_string(
@@ -1145,6 +1163,11 @@ advgetopt::getopt::breakup_line(
             , 30
             , advgetopt::getopt::get_line_width())
 + advgetopt::getopt::format_usage_string(
+              "--compiler-version"
+            , "print the version of the compiler used to compile the advgetopt library."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
               "--configuration-filenames"
             , "print out the list of configuration files checked out by this"
               " tool."
@@ -1159,6 +1182,11 @@ advgetopt::getopt::breakup_line(
               "--environment-variable-name"
             , "print out the name of the environment variable supported by"
               " arguments (if any.)"
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--has-sanitizer"
+            , "print whether the advgetopt was compiled with the sanitizer extension."
             , 30
             , advgetopt::getopt::get_line_width())
 + advgetopt::getopt::format_usage_string(

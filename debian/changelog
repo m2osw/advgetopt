@@ -1,6 +1,10 @@
 advgetopt (2.0.24.0~bionic) bionic; urgency=high
 
   * Updated the main test to match the new libexcept no-tracing spec.
+  * Added a --has-sanitizer system command line option.
+  * Added a --compiler-version system command line option.
+  * The build-file-of-options.cpp properly catches exit exceptions.
+  * Various clean ups (copyright notices, code).
 
  -- Alexis Wilke <alexis@m2osw.com>  Sat, 28 Aug 2021 18:33:17 -0700
 
