@@ -19,12 +19,13 @@
 
 // self
 //
-#include    "main.h"
+#include    "catch_main.h"
 
 
 // advgetopt lib
 //
 #include    <advgetopt/exception.h>
+#include    <advgetopt/version.h>
 
 
 // snapdev lib
@@ -387,6 +388,7 @@ CATCH_TEST_CASE("long_access", "[arguments][valid][getopt]")
 CATCH_TEST_CASE("system_flags_version", "[arguments][valid][getopt][system_flags]")
 {
     CATCH_START_SECTION("Check with the --version system flag")
+    {
         long const major_version(rand());
         long const minor_version(rand());
         long const patch_version(rand());
@@ -479,9 +481,11 @@ CATCH_TEST_CASE("system_flags_version", "[arguments][valid][getopt][system_flags
         advgetopt::flag_t const result(opt.process_system_options(ss));
         CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_VERSION);
         CATCH_REQUIRE(ss.str() == version + '\n');
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Check with the --version system flag, without a --version on the command line")
+    {
         long const major_version(rand());
         long const minor_version(rand());
         long const patch_version(rand());
@@ -572,6 +576,365 @@ CATCH_TEST_CASE("system_flags_version", "[arguments][valid][getopt][system_flags
         advgetopt::flag_t const result(opt.process_system_options(ss));
         CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_NONE);
         CATCH_REQUIRE(ss.str().empty());
+    }
+    CATCH_END_SECTION()
+}
+
+
+
+CATCH_TEST_CASE("system_flags_has_sanitizer", "[arguments][valid][getopt][system_flags]")
+{
+    CATCH_START_SECTION("Check with the --has-sanitizer system flag")
+    {
+        long const default_value(rand());
+        std::string const default_val(std::to_string(default_value));
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("define the size.")
+                , advgetopt::DefaultValue(default_val.c_str())
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_help_header = "Usage: test system commands";
+        environment_options.f_version = "2.0.24.0";
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--has-sanitizer",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // valid parameter
+        CATCH_REQUIRE(opt.get_option("size") != nullptr);
+        CATCH_REQUIRE(opt.get_option('s') == opt.get_option("size"));
+        CATCH_REQUIRE_FALSE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_string("size") == default_val);
+        CATCH_REQUIRE(opt.get_string("size", 0) == default_val);
+        CATCH_REQUIRE(opt["size"] == default_val);
+        CATCH_REQUIRE(opt.get_long("size") == default_value);
+        CATCH_REQUIRE(opt.get_long("size", 0) == default_value);
+        CATCH_REQUIRE(opt.has_default("size"));
+        CATCH_REQUIRE(opt.get_default("size") == default_val);
+        CATCH_REQUIRE(opt.size("size") == 0);
+
+        // has-sanitizer parameter
+        CATCH_REQUIRE(opt.get_option("has-sanitizer") != nullptr);
+        CATCH_REQUIRE(opt.is_defined("has-sanitizer"));
+        CATCH_REQUIRE(opt.get_string("has-sanitizer") == "");
+        CATCH_REQUIRE(opt.get_string("has-sanitizer", 0) == "");
+        CATCH_REQUIRE(opt["has-sanitizer"] == "");
+        CATCH_REQUIRE_FALSE(opt.has_default("has-sanitizer"));
+        CATCH_REQUIRE(opt.get_default("has-sanitizer").empty());
+        CATCH_REQUIRE(opt.size("has-sanitizer") == 1);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+
+        // process system options now
+        std::stringstream ss;
+        advgetopt::flag_t const result(opt.process_system_options(ss));
+        CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_HELP);
+#if defined(__SANITIZE_ADDRESS__) || defined(__SANITIZE_THREAD__)
+        // when running coverage or in the Sanitize version
+        //
+        std::string const expected(
+#ifdef __SANITIZE_ADDRESS__
+                "The address sanitizer is compiled in.\n"
+#endif
+#ifdef __SANITIZE_THREAD__
+                "The thread sanitizer is compiled in.\n"
+#endif
+            );
+        CATCH_REQUIRE(ss.str() == expected);
+#else
+        // when running in Debug or Release
+        //
+        CATCH_REQUIRE(ss.str() == "The address and thread sanitizers are not compiled in.\n");
+#endif
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Check with the --has-sanitizer system flag, without a --has-sanitizer on the command line")
+    {
+        long const default_value(rand());
+        std::string const default_val(std::to_string(default_value));
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("define the size.")
+                , advgetopt::DefaultValue(default_val.c_str())
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_help_header = "Usage: test system commands";
+        environment_options.f_version = "2.0.24.1";
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--size",
+            "1221",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // valid parameter
+        CATCH_REQUIRE(opt.get_option("size") != nullptr);
+        CATCH_REQUIRE(opt.get_option('s') == opt.get_option("size"));
+        CATCH_REQUIRE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_string("size") == "1221");
+        CATCH_REQUIRE(opt.get_string("size", 0) == "1221");
+        CATCH_REQUIRE(opt["size"] == "1221");
+        CATCH_REQUIRE(opt.get_long("size") == 1221);
+        CATCH_REQUIRE(opt.get_long("size", 0) == 1221);
+        CATCH_REQUIRE(opt.has_default("size"));
+        CATCH_REQUIRE(opt.get_default("size") == default_val);
+        CATCH_REQUIRE(opt.size("size") == 1);
+
+        // has-sanitizer parameter
+        CATCH_REQUIRE(opt.get_option("has-sanitizer") != nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("has-sanitizer"));
+        CATCH_REQUIRE_FALSE(opt.has_default("has-sanitizer"));
+        CATCH_REQUIRE(opt.get_default("has-sanitizer").empty());
+        CATCH_REQUIRE(opt.size("has-sanitizer") == 0);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+
+        // process system options now
+        std::stringstream ss;
+        advgetopt::flag_t const result(opt.process_system_options(ss));
+        CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_NONE);
+        CATCH_REQUIRE(ss.str().empty());
+    }
+    CATCH_END_SECTION()
+}
+
+
+
+CATCH_TEST_CASE("system_flags_compiler_version", "[arguments][valid][getopt][system_flags]")
+{
+    CATCH_START_SECTION("Check with the --compiler-version system flag")
+    {
+        long const default_value(rand());
+        std::string const default_val(std::to_string(default_value));
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("define the size.")
+                , advgetopt::DefaultValue(default_val.c_str())
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_help_header = "Usage: test system commands";
+        environment_options.f_version = "2.0.24.0";
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--compiler-version",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // valid parameter
+        CATCH_REQUIRE(opt.get_option("size") != nullptr);
+        CATCH_REQUIRE(opt.get_option('s') == opt.get_option("size"));
+        CATCH_REQUIRE_FALSE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_string("size") == default_val);
+        CATCH_REQUIRE(opt.get_string("size", 0) == default_val);
+        CATCH_REQUIRE(opt["size"] == default_val);
+        CATCH_REQUIRE(opt.get_long("size") == default_value);
+        CATCH_REQUIRE(opt.get_long("size", 0) == default_value);
+        CATCH_REQUIRE(opt.has_default("size"));
+        CATCH_REQUIRE(opt.get_default("size") == default_val);
+        CATCH_REQUIRE(opt.size("size") == 0);
+
+        // compiler-version parameter
+        CATCH_REQUIRE(opt.get_option("compiler-version") != nullptr);
+        CATCH_REQUIRE(opt.is_defined("compiler-version"));
+        CATCH_REQUIRE(opt.get_string("compiler-version") == "");
+        CATCH_REQUIRE(opt.get_string("compiler-version", 0) == "");
+        CATCH_REQUIRE(opt["compiler-version"] == "");
+        CATCH_REQUIRE_FALSE(opt.has_default("compiler-version"));
+        CATCH_REQUIRE(opt.get_default("compiler-version").empty());
+        CATCH_REQUIRE(opt.size("compiler-version") == 1);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+
+        // process system options now
+        std::stringstream ss;
+        advgetopt::flag_t const result(opt.process_system_options(ss));
+        CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_HELP);
+        CATCH_REQUIRE(ss.str() == LIBADVGETOPT_COMPILER_VERSION "\n");
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Check with the --compiler-version system flag, without a --compiler-version on the command line")
+    {
+        long const default_value(rand());
+        std::string const default_val(std::to_string(default_value));
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("define the size.")
+                , advgetopt::DefaultValue(default_val.c_str())
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_help_header = "Usage: test system commands";
+        environment_options.f_version = "2.0.24.1";
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--size",
+            "1221",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // valid parameter
+        CATCH_REQUIRE(opt.get_option("size") != nullptr);
+        CATCH_REQUIRE(opt.get_option('s') == opt.get_option("size"));
+        CATCH_REQUIRE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_string("size") == "1221");
+        CATCH_REQUIRE(opt.get_string("size", 0) == "1221");
+        CATCH_REQUIRE(opt["size"] == "1221");
+        CATCH_REQUIRE(opt.get_long("size") == 1221);
+        CATCH_REQUIRE(opt.get_long("size", 0) == 1221);
+        CATCH_REQUIRE(opt.has_default("size"));
+        CATCH_REQUIRE(opt.get_default("size") == default_val);
+        CATCH_REQUIRE(opt.size("size") == 1);
+
+        // compiler-version parameter
+        CATCH_REQUIRE(opt.get_option("compiler-version") != nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("compiler-version"));
+        CATCH_REQUIRE_FALSE(opt.has_default("compiler-version"));
+        CATCH_REQUIRE(opt.get_default("compiler-version").empty());
+        CATCH_REQUIRE(opt.size("compiler-version") == 0);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+
+        // process system options now
+        std::stringstream ss;
+        advgetopt::flag_t const result(opt.process_system_options(ss));
+        CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_NONE);
+        CATCH_REQUIRE(ss.str().empty());
+    }
     CATCH_END_SECTION()
 }
 
@@ -3500,6 +3863,37 @@ CATCH_TEST_CASE("out_of_range_value", "[arguments][invalid][getopt]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    CATCH_END_SECTION()
+}
+
+
+CATCH_TEST_CASE("check_sanitizer", "[arguments][valid][getopt]")
+{
+    CATCH_START_SECTION("Check that the sanitizer is detected")
+    {
+        // when compiling the tests with coverage we turn on the sanitizer
+        // so here we should get output that show the sanitizer as being
+        // turned on; unfortunately, we can't test all cases in our current
+        // situation
+        //
+#if defined(__SANITIZE_ADDRESS__) || defined(__SANITIZE_THREAD__)
+        // when running coverage or in the Sanitize version
+        //
+        std::string const expected(
+#ifdef __SANITIZE_ADDRESS__
+                    "The address sanitizer is compiled in.\n"
+#endif
+#ifdef __SANITIZE_THREAD__
+                    "The thread sanitizer is compiled in.\n"
+#endif
+            );
+        CATCH_REQUIRE(advgetopt::getopt::sanitizer_details() == expected);
+#else
+        // when running in Debug or Release
+        //
+        CATCH_REQUIRE(advgetopt::getopt::sanitizer_details() == "The address and thread sanitizers are not compiled in.\n");
+#endif
+    }
     CATCH_END_SECTION()
 }
 

@@ -1,39 +1,40 @@
-/*
- * License:
- *    Copyright (c) 2006-2021  Made to Order Software Corp.  All Rights Reserved
- *
- *    https://snapwebsites.org/
- *    contact@m2osw.com
- *
- *    This program is free software; you can redistribute it and/or modify
- *    it under the terms of the GNU General Public License as published by
- *    the Free Software Foundation; either version 2 of the License, or
- *    (at your option) any later version.
- *
- *    This program is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *    GNU General Public License for more details.
- *
- *    You should have received a copy of the GNU General Public License along
- *    with this program; if not, write to the Free Software Foundation, Inc.,
- *    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- * Authors:
- *    Alexis Wilke   alexis@m2osw.com
- */
+// Copyright (c) 2006-2021  Made to Order Software Corp.  All Rights Reserved
+//
+// https://snapwebsites.org/project/advgetopt
+// contact@m2osw.com
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 // self
 //
-#include "main.h"
+#include    "catch_main.h"
+
 
 // advgetopt lib
 //
-#include <advgetopt/exception.h>
+#include    <advgetopt/exception.h>
+
 
 // C++ lib
 //
-#include <fstream>
+#include    <fstream>
+
+
+// last include
+//
+#include    <snapdev/poison.h>
 
 
 
@@ -1460,12 +1461,12 @@ CATCH_TEST_CASE("check_invalid_config_dir_short_names", "[arguments][invalid][ge
 
         advgetopt::getopt opt(environment_options);
 
-        CATCH_REQUIRE(opt.get_option("config-dir") != nullptr);
-        CATCH_REQUIRE_THROWS_MATCHES(
-                  opt.set_short_name("config-dir", advgetopt::NO_SHORT_NAME)
-                , advgetopt::getopt_logic_error
-                , Catch::Matchers::ExceptionMessage(
-                              "getopt_logic_error: The short name of option \"config-dir\" cannot be set to NO_SHORT_NAME."));
+        advgetopt::option_info::pointer_t o(opt.get_option("config-dir"));
+        CATCH_REQUIRE(o != nullptr);
+        CATCH_REQUIRE(o->get_short_name() == advgetopt::NO_SHORT_NAME);
+
+        opt.set_short_name("config-dir", advgetopt::NO_SHORT_NAME);
+        CATCH_REQUIRE(o->get_short_name() == advgetopt::NO_SHORT_NAME);
     }
     CATCH_END_SECTION()
 
@@ -1491,12 +1492,26 @@ CATCH_TEST_CASE("check_invalid_config_dir_short_names", "[arguments][invalid][ge
 
         advgetopt::getopt opt(environment_options);
 
-        CATCH_REQUIRE(opt.get_option("version") != nullptr);
-        CATCH_REQUIRE_THROWS_MATCHES(
-                  opt.set_short_name("version", U'v')   // set to lowercase...
-                , advgetopt::getopt_logic_error
-                , Catch::Matchers::ExceptionMessage(
-                              "getopt_logic_error: The short name of option \"version\" cannot be changed from 'V' to 'v'."));
+        advgetopt::option_info::pointer_t o(opt.get_option("version"));
+        CATCH_REQUIRE(o != nullptr);
+        CATCH_REQUIRE(o->get_short_name() == U'V');
+        CATCH_REQUIRE(o == opt.get_option(U'V'));
+        CATCH_REQUIRE(opt.get_option(U'v') == nullptr);
+
+        opt.set_short_name("version", U'V');   // keep uppercase...
+        CATCH_REQUIRE(o->get_short_name() == U'V');
+        CATCH_REQUIRE(o == opt.get_option(U'V'));
+        CATCH_REQUIRE(opt.get_option(U'v') == nullptr);
+
+        opt.set_short_name("version", U'v');   // set to lowercase...
+        CATCH_REQUIRE(o->get_short_name() == U'v');
+        CATCH_REQUIRE(o == opt.get_option(U'v'));
+        CATCH_REQUIRE(opt.get_option(U'V') == nullptr);
+
+        opt.set_short_name("version", advgetopt::NO_SHORT_NAME);   // remove completely...
+        CATCH_REQUIRE(o->get_short_name() ==advgetopt::NO_SHORT_NAME);
+        CATCH_REQUIRE(opt.get_option(U'V') == nullptr);
+        CATCH_REQUIRE(opt.get_option(U'v') == nullptr);
     }
     CATCH_END_SECTION()
 }

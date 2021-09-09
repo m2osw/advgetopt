@@ -120,32 +120,7 @@ void getopt::parse_options_info(option const * opts, bool ignore_duplicates)
             throw getopt_logic_error("a long name option must be at least 2 characters.");
         }
 
-        if(get_option(opts->f_name, true) != nullptr)
-        {
-            if(ignore_duplicates)
-            {
-                continue;
-            }
-            throw getopt_logic_error(
-                      std::string("option named \"")
-                    + opts->f_name
-                    + "\" found twice.");
-        }
         short_name_t short_name(opts->f_short_name);
-        if(get_option(short_name, true) != nullptr)
-        {
-            if(ignore_duplicates)
-            {
-                short_name = NO_SHORT_NAME;
-            }
-            else
-            {
-                throw getopt_logic_error(
-                          "option with short name \""
-                        + short_name_to_string(opts->f_short_name)
-                        + "\" found twice.");
-            }
-        }
 
         option_info::pointer_t o(std::make_shared<option_info>(
                                               opts->f_name
@@ -161,25 +136,77 @@ void getopt::parse_options_info(option const * opts, bool ignore_duplicates)
             o->set_validator(opts->f_validator);
         }
 
-        if(o->is_default_option())
-        {
-            if(f_default_option != nullptr)
-            {
-                throw getopt_logic_error("two default options found after check of long names duplication.");
-            }
-            if(o->has_flag(GETOPT_FLAG_FLAG))
-            {
-                throw getopt_logic_error("a default option must accept parameters, it can't be a GETOPT_FLAG_FLAG.");
-            }
+        add_option(o, ignore_duplicates);
+    }
+}
 
-            f_default_option = o;
+
+/** \brief Add one option to the advgetopt object.
+ *
+ * This function is used to dynamically add one option to the advgetopt
+ * object.
+ *
+ * This is often used in a library which wants to dynamically add support
+ * for library specific parameters to the command line.
+ *
+ * \note
+ * The \p ignore_duplicates option still gets the option added if only
+ * the short-name is a duplicate. In that case, we set the option's
+ * short-name to NO_SHORT_NAME before adding the option to the tables.
+ *
+ * \param[in] opt  The option to be added.
+ * \param[in] ignore_duplicate  If option is a duplicate, do not add it.
+ */
+void getopt::add_option(option_info::pointer_t opt, bool ignore_duplicates)
+{
+    if(get_option(opt->get_name(), true) != nullptr)
+    {
+        if(ignore_duplicates)
+        {
+            return;
+        }
+        throw getopt_logic_error(
+                  std::string("option named \"")
+                + opt->get_name()
+                + "\" found twice.");
+    }
+
+    short_name_t short_name(opt->get_short_name());
+    if(get_option(short_name, true) != nullptr)
+    {
+        if(ignore_duplicates)
+        {
+            short_name = NO_SHORT_NAME;
+            opt->set_short_name(NO_SHORT_NAME);
+        }
+        else
+        {
+            throw getopt_logic_error(
+                      "option with short name \""
+                    + short_name_to_string(short_name)
+                    + "\" found twice.");
+        }
+    }
+
+    if(opt->is_default_option())
+    {
+        if(f_default_option != nullptr)
+        {
+            throw getopt_logic_error("two default options found.");
+        }
+        if(opt->has_flag(GETOPT_FLAG_FLAG))
+        {
+            throw getopt_logic_error("a default option must accept parameters, it can't be a GETOPT_FLAG_FLAG.");
         }
 
-        f_options_by_name[o->get_name()] = o;
-        if(short_name != NO_SHORT_NAME)
-        {
-            f_options_by_short_name[short_name] = o;
-        }
+        f_default_option = opt;
+    }
+
+    f_options_by_name[opt->get_name()] = opt;
+
+    if(short_name != NO_SHORT_NAME)
+    {
+        f_options_by_short_name[short_name] = opt;
     }
 }
 
@@ -192,10 +219,10 @@ void getopt::parse_options_info(option const * opts, bool ignore_duplicates)
  *
  * If the directory is not defined, the function uses this default path:
  * `"/usr/share/advgetopt/options/"`. See the other
- * parse_options_from_file(std::string const & filename) function
- * for additional details.
+ * parse_options_from_file(std::string const & filename, int min_sections, int max_sections)
+ * function for additional details.
  *
- * \sa parse_options_from_file(std::string const & filename)
+ * \sa parse_options_from_file(std::string const & filename, int min_sections, int max_sections)
  */
 void getopt::parse_options_from_file()
 {
@@ -330,26 +357,9 @@ void getopt::parse_options_from_file(
                     + filename
                     + "\", it can't be more than one character.");
         }
-        short_name_t sn(NO_SHORT_NAME);
-        if(short_name.length() == 1)
-        {
-            sn = short_name[0];
-        }
-
-        if(get_option(parameter_name, true) != nullptr)
-        {
-            throw getopt_defined_twice(
-                      std::string("option named \"")
-                    + parameter_name
-                    + "\" found twice.");
-        }
-        if(get_option(sn, true) != nullptr)
-        {
-            throw getopt_defined_twice(
-                      "option with short name \""
-                    + short_name_to_string(sn)
-                    + "\" found twice.");
-        }
+        short_name_t const sn(short_name.length() == 1
+                                    ? short_name[0]
+                                    : NO_SHORT_NAME);
 
         option_info::pointer_t opt(std::make_shared<option_info>(parameter_name, sn));
 
@@ -423,11 +433,7 @@ void getopt::parse_options_from_file(
             opt->add_flag(GETOPT_FLAG_REQUIRED);
         }
 
-        f_options_by_name[parameter_name] = opt;
-        if(sn != NO_SHORT_NAME)
-        {
-            f_options_by_short_name[sn] = opt;
-        }
+        add_option(opt);
     }
 }
 
@@ -501,45 +507,30 @@ void getopt::link_aliases()
  * On our end we like to add `-c` as the short name of the `--config-dir`
  * command line or environment variable option. However, some of our tools
  * use `-c` for other reason (i.e. our `cxpath` tool uses `-c` for its
- * `--compile` option.) So we do not want to have it has a default in
- * that option. Instead we assign it afterward.
+ * `--compile` option.) So we do not want to have it as a default in
+ * `--config-dir`. Instead we assign it afterward if possible.
  *
- * **IMPORTANT:** To make this call useful, make sure to make it before
- * you call the parse functions. Setting the short name after the parsing
- * was done is going to be useless.
+ * **IMPORTANT:** It is possible to change the short-name at any time.
+ * However, note that you can't have duplicates. It is also possible
+ * to remove a short-name by setting it to the advgetopt::NO_SHORT_NAME
+ * special value.
  *
  * \note
  * This function requires you to make use of the constructor without the
  * `argc` and `argv` parameters, add the short name, then run all the
  * parsing.
  *
- * \note
- * The function calls the option_info::set_short_name() function which
- * may raise an exception if the option already has a short name (or if
- * you inadvertendly passed NO_SHORT_NAME.)
- *
  * \exception getopt_exception_logic
  * The same short name cannot be used more than once. This exception is
  * raised if it is discovered that another option already makes use of
- * this short name. This exception is also raised if the \p name
- * parameter does not reference an existing option.
+ * this short name. This exception is also raised if \p name does not
+ * reference an existing option.
  *
  * \param[in] name  The name of the option which is to receive a short name.
  * \param[in] short_name  The short name to assigned to the \p name option.
  */
 void getopt::set_short_name(std::string const & name, short_name_t short_name)
 {
-    auto it(f_options_by_short_name.find(short_name));
-    if(it != f_options_by_short_name.end())
-    {
-        throw getopt_logic_error(
-                  "found another option (\""
-                + it->second->get_name()
-                + "\") with short name '"
-                + short_name_to_string(short_name)
-                + "'.");
-    }
-
     auto opt(f_options_by_name.find(name));
     if(opt == f_options_by_name.end())
     {
@@ -549,12 +540,57 @@ void getopt::set_short_name(std::string const & name, short_name_t short_name)
                 + "\" not found.");
     }
 
+    if(short_name != NO_SHORT_NAME)
+    {
+        auto it(f_options_by_short_name.find(short_name));
+        if(it != f_options_by_short_name.end())
+        {
+            if(it->second == opt->second)
+            {
+                // same option, already named 'short_name'
+                //
+                return;
+            }
+
+            throw getopt_logic_error(
+                      "found another option (\""
+                    + it->second->get_name()
+                    + "\") with short name '"
+                    + short_name_to_string(short_name)
+                    + "'.");
+        }
+    }
+
+    short_name_t const old_short_name(opt->second->get_short_name());
+    if(old_short_name != NO_SHORT_NAME)
+    {
+        auto it(f_options_by_short_name.find(old_short_name));
+        if(it != f_options_by_short_name.end())
+        {
+            f_options_by_short_name.erase(it);
+        }
+    }
+
     opt->second->set_short_name(short_name);
 
-    f_options_by_short_name[short_name] = opt->second;
+    if(short_name != NO_SHORT_NAME)
+    {
+        f_options_by_short_name[short_name] = opt->second;
+    }
 }
 
 
+/** \brief Output the source of each option.
+ *
+ * This function goes through the list of options by name ("alphabetically")
+ * and prints out the sources or "(undefined)" if not defined anywhere.
+ *
+ * This function gets called when using the `--show-option-sources`
+ * system command line option at the time the process_system_options()
+ * function gets called.
+ *
+ * \param[in] out  The output streaming where the info is written.
+ */
 void getopt::show_option_sources(std::basic_ostream<char> & out)
 {
     int idx(1);

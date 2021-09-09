@@ -301,6 +301,9 @@ std::string const & option_info::get_name() const
  *
  * This function is used to assign a short name to an option.
  *
+ * It can be changed to anything, including the NO_SHORT_NAME special
+ * value.
+ *
  * \warning
  * If you want this function to work as expected (i.e. for the option
  * to later be found using its short name), make sure to call the
@@ -308,33 +311,13 @@ std::string const & option_info::get_name() const
  * function. This is because the getopt object needs to add the newly
  * named option to its map of options sorted by short name.
  *
- * \exception getopt_exception_logic
- * Calling this function with an option which already has a short name
- * results in a logic exception. Also, \p short_name cannot be
- * NO_SHORT_NAME.
- *
  * \param[in] short_name  The short name to assign to this option.
+ *
+ * \sa get_short_name()
+ * \sa getopt::set_short_name()
  */
 void option_info::set_short_name(short_name_t short_name)
 {
-    if(short_name == NO_SHORT_NAME)
-    {
-        throw getopt_logic_error("The short name of option \""
-                                   + f_name
-                                   + "\" cannot be set to NO_SHORT_NAME.");
-    }
-
-    if(f_short_name != NO_SHORT_NAME)
-    {
-        throw getopt_logic_error("The short name of option \""
-                                   + f_name
-                                   + "\" cannot be changed from '"
-                                   + short_name_to_string(f_short_name)
-                                   + "' to '"
-                                   + short_name_to_string(short_name)
-                                   + "'.");
-    }
-
     f_short_name = short_name;
 }
 

@@ -22,24 +22,36 @@
 
 // self
 //
-#include "main.h"
+#include    "catch_main.h"
+
 
 // advgetopt lib
 //
-#include <advgetopt/advgetopt.h>
-#include <advgetopt/version.h>
+#include    <advgetopt/advgetopt.h>
+#include    <advgetopt/version.h>
+
 
 // libexcept lib
 //
-#include <libexcept/exception.h>
+#include    <libexcept/exception.h>
+
 
 // snapdev lib
 //
-#include <snapdev/not_used.h>
+#include    <snapdev/not_used.h>
+
 
 // C++ lib
 //
-#include <sstream>
+#include    <sstream>
+
+
+// last include
+//
+#include    <snapdev/poison.h>
+
+
+
 
 
 namespace SNAP_CATCH2_NAMESPACE

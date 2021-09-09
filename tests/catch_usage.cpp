@@ -19,20 +19,28 @@
 
 // self
 //
-#include "main.h"
+#include    "catch_main.h"
+
 
 // advgetopt lib
 //
-#include <advgetopt/flags.h>
-#include <advgetopt/exception.h>
+#include    <advgetopt/flags.h>
+#include    <advgetopt/exception.h>
+
 
 // snapdev lib
 //
-#include <snapdev/safe_setenv.h>
+#include    <snapdev/safe_setenv.h>
+
 
 // C++ lib
 //
-#include <fstream>
+#include    <fstream>
+
+
+// last include
+//
+#include    <snapdev/poison.h>
 
 
 
