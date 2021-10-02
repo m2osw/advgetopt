@@ -288,7 +288,7 @@ CATCH_TEST_CASE("options_sources_environment_variable_and_config_file", "[option
         environment_options.f_help_header = "Usage: test source from command line, environment variable, and configuration file";
         environment_options.f_version = "1.2.3";
 
-        std::string const config_dir("--config-dir=" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config");
+        std::string const config_dir("--config-dir=" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config");
         char const * cargv[] =
         {
             "tests/options-parser",
@@ -327,7 +327,7 @@ CATCH_TEST_CASE("options_sources_environment_variable_and_config_file", "[option
         CATCH_REQUIRE(opt.is_defined("more"));
         advgetopt::string_list_t more_sources(more->trace_sources());
         CATCH_REQUIRE(more_sources.size() == 3);
-        std::string expected_config("more=data [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config/src.config\"]");
+        std::string expected_config("more=data [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config/src.config\"]");
         CATCH_REQUIRE(more_sources[0] == expected_config);
         CATCH_REQUIRE(more_sources[1] == "more=instructions [environment-variable]");
         CATCH_REQUIRE(more_sources[2] == "more=magical [command-line]");
@@ -337,7 +337,7 @@ CATCH_TEST_CASE("options_sources_environment_variable_and_config_file", "[option
         CATCH_REQUIRE(opt.is_defined("organized"));
         advgetopt::string_list_t organized_sources(organized->trace_sources());
         CATCH_REQUIRE(organized_sources.size() == 2);
-        expected_config = "organized=set [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config/src.config\"]";
+        expected_config = "organized=set [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config/src.config\"]";
         CATCH_REQUIRE(organized_sources[0] == expected_config);
         CATCH_REQUIRE(organized_sources[1] == "organized=logically [command-line]");
 
@@ -353,7 +353,7 @@ CATCH_TEST_CASE("options_sources_environment_variable_and_config_file", "[option
         CATCH_REQUIRE(opt.is_defined("config_dir"));
         advgetopt::string_list_t config_dir_sources(config_dir_opt->trace_sources());
         CATCH_REQUIRE(config_dir_sources.size() == 1);
-        expected_config = "config-dir[0]=" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config [command-line]";
+        expected_config = "config-dir[0]=" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config [command-line]";
         CATCH_REQUIRE(config_dir_sources[0] == expected_config);
 
         // verify environment variable options which are not also on the command line
@@ -379,7 +379,7 @@ CATCH_TEST_CASE("options_sources_environment_variable_and_config_file", "[option
         CATCH_REQUIRE(opt.is_defined("sources"));
         advgetopt::string_list_t sources_sources(sources->trace_sources());
         CATCH_REQUIRE(sources_sources.size() == 2);
-        expected_config = "sources=just fine [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config/src.config\"]";
+        expected_config = "sources=just fine [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config/src.config\"]";
         CATCH_REQUIRE(sources_sources[0] == expected_config);
         CATCH_REQUIRE(sources_sources[1] == "sources=all [environment-variable]");
 
@@ -390,7 +390,7 @@ CATCH_TEST_CASE("options_sources_environment_variable_and_config_file", "[option
         CATCH_REQUIRE(opt.is_defined("unique"));
         advgetopt::string_list_t unique_sources(unique->trace_sources());
         CATCH_REQUIRE(unique_sources.size() == 1);
-        expected_config = "unique=perfect [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config/src.config\"]";
+        expected_config = "unique=perfect [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config/src.config\"]";
         CATCH_REQUIRE(unique_sources[0] == expected_config);
 
         advgetopt::option_info::pointer_t definition(opt.get_option("definition"));
@@ -398,7 +398,7 @@ CATCH_TEST_CASE("options_sources_environment_variable_and_config_file", "[option
         CATCH_REQUIRE(opt.is_defined("definition"));
         advgetopt::string_list_t definition_sources(definition->trace_sources());
         CATCH_REQUIRE(definition_sources.size() == 1);
-        expected_config = "definition=long value here [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config/src.config\"]";
+        expected_config = "definition=long value here [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config/src.config\"]";
         CATCH_REQUIRE(definition_sources[0] == expected_config);
 
         advgetopt::option_info::pointer_t multiple(opt.get_option("multiple"));
@@ -406,7 +406,7 @@ CATCH_TEST_CASE("options_sources_environment_variable_and_config_file", "[option
         CATCH_REQUIRE(opt.is_defined("multiple"));
         advgetopt::string_list_t multiple_sources(multiple->trace_sources());
         CATCH_REQUIRE(multiple_sources.size() == 1);
-        expected_config = "multiple[0]=value [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config/src.config\"]";
+        expected_config = "multiple[0]=value [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config/src.config\"]";
         CATCH_REQUIRE(multiple_sources[0] == expected_config);
 
         advgetopt::option_info::pointer_t good(opt.get_option("good"));
@@ -414,7 +414,7 @@ CATCH_TEST_CASE("options_sources_environment_variable_and_config_file", "[option
         CATCH_REQUIRE(opt.is_defined("good"));
         advgetopt::string_list_t good_sources(good->trace_sources());
         CATCH_REQUIRE(good_sources.size() == 1);
-        expected_config = "good=variable [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config/src.config\"]";
+        expected_config = "good=variable [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config/src.config\"]";
         CATCH_REQUIRE(good_sources[0] == expected_config);
 
         // process system options now
@@ -436,19 +436,19 @@ CATCH_TEST_CASE("options_sources_environment_variable_and_config_file", "[option
 "  3. option \"compiler-version\" (undefined)\n"
 "\n"
 "  4. option \"config-dir\"\n"
-"     config-dir[0]=" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config [command-line]\n"
+"     config-dir[0]=" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config [command-line]\n"
 "\n"
 "  5. option \"configuration-filenames\" (undefined)\n"
 "\n"
 "  6. option \"copyright\" (undefined)\n"
 "\n"
 "  7. option \"definition\"\n"
-"     definition=long value here [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config/src.config\"]\n"
+"     definition=long value here [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config/src.config\"]\n"
 "\n"
 "  8. option \"environment-variable-name\" (undefined)\n"
 "\n"
 "  9. option \"good\"\n"
-"     good=variable [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config/src.config\"]\n"
+"     good=variable [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config/src.config\"]\n"
 "\n"
 "  10. option \"has-sanitizer\" (undefined)\n"
 "\n"
@@ -459,15 +459,15 @@ CATCH_TEST_CASE("options_sources_environment_variable_and_config_file", "[option
 "  13. option \"long-help\" (undefined)\n"
 "\n"
 "  14. option \"more\"\n"
-"     more=data [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config/src.config\"]\n"
+"     more=data [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config/src.config\"]\n"
 "     more=instructions [environment-variable]\n"
 "     more=magical [command-line]\n"
 "\n"
 "  15. option \"multiple\"\n"
-"     multiple[0]=value [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config/src.config\"]\n"
+"     multiple[0]=value [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config/src.config\"]\n"
 "\n"
 "  16. option \"organized\"\n"
-"     organized=set [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config/src.config\"]\n"
+"     organized=set [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config/src.config\"]\n"
 "     organized=logically [command-line]\n"
 "\n"
 "  17. option \"path-to-option-definitions\" (undefined)\n"
@@ -476,11 +476,11 @@ CATCH_TEST_CASE("options_sources_environment_variable_and_config_file", "[option
 "     show-option-sources= [command-line]\n"
 "\n"
 "  19. option \"sources\"\n"
-"     sources=just fine [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config/src.config\"]\n"
+"     sources=just fine [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config/src.config\"]\n"
 "     sources=all [environment-variable]\n"
 "\n"
 "  20. option \"unique\"\n"
-"     unique=perfect [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config/src.config\"]\n"
+"     unique=perfect [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config/src.config\"]\n"
 "\n"
 "  21. option \"verbose\"\n"
 "     verbose= [environment-variable]\n"
@@ -607,7 +607,7 @@ CATCH_TEST_CASE("options_sources_environment_variable_and_config_file", "[option
             advgetopt::end_options()
         };
 
-        std::string const config_dir("--config-dir=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config\"");
+        std::string const config_dir("--config-dir=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config\"");
         snap::safe_setenv env(
                   "ADVGETOPT_TEST_OPTIONS"
                 , "--verbose --more=instructions "
@@ -664,7 +664,7 @@ CATCH_TEST_CASE("options_sources_environment_variable_and_config_file", "[option
         CATCH_REQUIRE(opt.is_defined("more"));
         advgetopt::string_list_t more_sources(more->trace_sources());
         CATCH_REQUIRE(more_sources.size() == 3);
-        std::string expected_config("more=data [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config/hidden.config\"]");
+        std::string expected_config("more=data [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config/hidden.config\"]");
         CATCH_REQUIRE(more_sources[0] == expected_config);
         CATCH_REQUIRE(more_sources[1] == "more=instructions [environment-variable]");
         CATCH_REQUIRE(more_sources[2] == "more=magical [command-line]");
@@ -674,7 +674,7 @@ CATCH_TEST_CASE("options_sources_environment_variable_and_config_file", "[option
         CATCH_REQUIRE(opt.is_defined("organized"));
         advgetopt::string_list_t organized_sources(organized->trace_sources());
         CATCH_REQUIRE(organized_sources.size() == 2);
-        expected_config = "organized=set [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config/hidden.config\"]";
+        expected_config = "organized=set [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config/hidden.config\"]";
         CATCH_REQUIRE(organized_sources[0] == expected_config);
         CATCH_REQUIRE(organized_sources[1] == "organized=logically [command-line]");
 
@@ -683,9 +683,9 @@ CATCH_TEST_CASE("options_sources_environment_variable_and_config_file", "[option
         CATCH_REQUIRE(opt.is_defined("multiple"));
         advgetopt::string_list_t multiple_sources(multiple->trace_sources());
         CATCH_REQUIRE(multiple_sources.size() == 6);
-        expected_config = "multiple[0]=the origin of life [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config/hidden.config\"]";
+        expected_config = "multiple[0]=the origin of life [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config/hidden.config\"]";
         CATCH_REQUIRE(multiple_sources[0] == expected_config);
-        expected_config = "multiple[0]=should we not see this one instead? [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config/sources.d/65-hidden.config\"]";       // TODO: this should not be [0]?
+        expected_config = "multiple[0]=should we not see this one instead? [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config/sources.d/65-hidden.config\"]";       // TODO: this should not be [0]?
         CATCH_REQUIRE(multiple_sources[1] == expected_config);
         expected_config = "multiple[1]=here [environment-variable]";       // TODO: this should not be [1]?
         CATCH_REQUIRE(multiple_sources[2] == expected_config);
@@ -726,7 +726,7 @@ CATCH_TEST_CASE("options_sources_environment_variable_and_config_file", "[option
         CATCH_REQUIRE(opt.is_defined("sources"));
         advgetopt::string_list_t sources_sources(sources->trace_sources());
         CATCH_REQUIRE(sources_sources.size() == 2);
-        expected_config = "sources=just fine [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config/hidden.config\"]";
+        expected_config = "sources=just fine [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config/hidden.config\"]";
         CATCH_REQUIRE(sources_sources[0] == expected_config);
         CATCH_REQUIRE(sources_sources[1] == "sources=all [environment-variable]");
 
@@ -735,7 +735,7 @@ CATCH_TEST_CASE("options_sources_environment_variable_and_config_file", "[option
         CATCH_REQUIRE(opt.is_defined("config_dir"));
         advgetopt::string_list_t config_dir_sources(config_dir_opt->trace_sources());
         CATCH_REQUIRE(config_dir_sources.size() == 1);
-        expected_config = "config-dir[0]=" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config [environment-variable]";
+        expected_config = "config-dir[0]=" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config [environment-variable]";
         CATCH_REQUIRE(config_dir_sources[0] == expected_config);
 
         // verify configuration file parameters that appear no where else
@@ -745,7 +745,7 @@ CATCH_TEST_CASE("options_sources_environment_variable_and_config_file", "[option
         CATCH_REQUIRE(opt.is_defined("unique"));
         advgetopt::string_list_t unique_sources(unique->trace_sources());
         CATCH_REQUIRE(unique_sources.size() == 1);
-        expected_config = "unique=perfect [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config/hidden.config\"]";
+        expected_config = "unique=perfect [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config/hidden.config\"]";
         CATCH_REQUIRE(unique_sources[0] == expected_config);
 
         advgetopt::option_info::pointer_t definition(opt.get_option("definition"));
@@ -753,9 +753,9 @@ CATCH_TEST_CASE("options_sources_environment_variable_and_config_file", "[option
         CATCH_REQUIRE(opt.is_defined("definition"));
         advgetopt::string_list_t definition_sources(definition->trace_sources());
         CATCH_REQUIRE(definition_sources.size() == 2);
-        expected_config = "definition=long value here [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config/hidden.config\"]";
+        expected_config = "definition=long value here [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config/hidden.config\"]";
         CATCH_REQUIRE(definition_sources[0] == expected_config);
-        expected_config = "definition=this is a better definition [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config/sources.d/65-hidden.config\"]";
+        expected_config = "definition=this is a better definition [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config/sources.d/65-hidden.config\"]";
         CATCH_REQUIRE(definition_sources[1] == expected_config);
 
         advgetopt::option_info::pointer_t good(opt.get_option("good"));
@@ -763,9 +763,9 @@ CATCH_TEST_CASE("options_sources_environment_variable_and_config_file", "[option
         CATCH_REQUIRE(opt.is_defined("good"));
         advgetopt::string_list_t good_sources(good->trace_sources());
         CATCH_REQUIRE(good_sources.size() == 2);
-        expected_config = "good=variable [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config/hidden.config\"]";
+        expected_config = "good=variable [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config/hidden.config\"]";
         CATCH_REQUIRE(good_sources[0] == expected_config);
-        expected_config = "good=enhanced [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config/sources.d/65-hidden.config\"]";
+        expected_config = "good=enhanced [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config/sources.d/65-hidden.config\"]";
         CATCH_REQUIRE(good_sources[1] == expected_config);
 
         // process system options now
@@ -789,7 +789,7 @@ CATCH_TEST_CASE("options_sources_environment_variable_and_config_file", "[option
 "  3. option \"compiler-version\" (undefined)\n"
 "\n"
 "  4. option \"config-dir\"\n"
-"     config-dir[0]=" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config [environment-variable]\n"
+"     config-dir[0]=" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config [environment-variable]\n"
 "\n"
 "  5. option \"configuration-filenames\" (undefined)\n"
 "\n"
@@ -797,14 +797,14 @@ CATCH_TEST_CASE("options_sources_environment_variable_and_config_file", "[option
 "     copyright= [command-line]\n"
 "\n"
 "  7. option \"definition\"\n"
-"     definition=long value here [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config/hidden.config\"]\n"
-"     definition=this is a better definition [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config/sources.d/65-hidden.config\"]\n"
+"     definition=long value here [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config/hidden.config\"]\n"
+"     definition=this is a better definition [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config/sources.d/65-hidden.config\"]\n"
 "\n"
 "  8. option \"environment-variable-name\" (undefined)\n"
 "\n"
 "  9. option \"good\"\n"
-"     good=variable [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config/hidden.config\"]\n"
-"     good=enhanced [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config/sources.d/65-hidden.config\"]\n"
+"     good=variable [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config/hidden.config\"]\n"
+"     good=enhanced [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config/sources.d/65-hidden.config\"]\n"
 "\n"
 "  10. option \"has-sanitizer\" (undefined)\n"
 "\n"
@@ -816,20 +816,20 @@ CATCH_TEST_CASE("options_sources_environment_variable_and_config_file", "[option
 "  13. option \"long-help\" (undefined)\n"
 "\n"
 "  14. option \"more\"\n"
-"     more=data [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config/hidden.config\"]\n"
+"     more=data [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config/hidden.config\"]\n"
 "     more=instructions [environment-variable]\n"
 "     more=magical [command-line]\n"
 "\n"
 "  15. option \"multiple\"\n"
-"     multiple[0]=the origin of life [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config/hidden.config\"]\n"
-"     multiple[0]=should we not see this one instead? [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config/sources.d/65-hidden.config\"]\n"
+"     multiple[0]=the origin of life [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config/hidden.config\"]\n"
+"     multiple[0]=should we not see this one instead? [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config/sources.d/65-hidden.config\"]\n"
 "     multiple[1]=here [environment-variable]\n"
 "     multiple[2]=too [environment-variable]\n"
 "     multiple[0]=first [command-line]\n"
 "     multiple[0]=last [command-line]\n"
 "\n"
 "  16. option \"organized\"\n"
-"     organized=set [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config/hidden.config\"]\n"
+"     organized=set [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config/hidden.config\"]\n"
 "     organized=logically [command-line]\n"
 "\n"
 "  17. option \"path-to-option-definitions\" (undefined)\n"
@@ -838,11 +838,11 @@ CATCH_TEST_CASE("options_sources_environment_variable_and_config_file", "[option
 "     show-option-sources= [command-line]\n"
 "\n"
 "  19. option \"sources\"\n"
-"     sources=just fine [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config/hidden.config\"]\n"
+"     sources=just fine [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config/hidden.config\"]\n"
 "     sources=all [environment-variable]\n"
 "\n"
 "  20. option \"unique\"\n"
-"     unique=perfect [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config/hidden.config\"]\n"
+"     unique=perfect [configuration=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config/hidden.config\"]\n"
 "\n"
 "  21. option \"verbose\"\n"
 "     verbose= [environment-variable]\n"

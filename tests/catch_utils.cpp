@@ -585,7 +585,7 @@ CATCH_TEST_CASE("utils_insert_group_name", "[utils][valid]")
                 // run a load to verify that we indeed get the last var=...
                 // value and not some random entry
                 //
-                std::string temp_dir = SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/.config";
+                std::string temp_dir = SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config";
                 char const * const dirs[] = {
                     temp_dir.c_str(),
                     nullptr

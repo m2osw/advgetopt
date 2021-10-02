@@ -50,7 +50,7 @@
 
 CATCH_TEST_CASE("usage_function", "[getopt][usage]")
 {
-    std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir);
+    std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
     tmpdir += "/.config/home";
     snap::safe_setenv env("HOME", tmpdir);
 

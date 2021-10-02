@@ -141,7 +141,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
         // create a file and make sure it's not read if the project name
         // is empty
         //
-        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir);
+        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
         tmpdir += "/shared/advgetopt";
         std::stringstream ss;
         ss << "mkdir -p " << tmpdir;
@@ -220,7 +220,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
         // create a file and make sure it's not read if the project name
         // is empty
         //
-        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir);
+        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
         tmpdir += "/shared/advgetopt";
         std::stringstream ss;
         ss << "mkdir -p " << tmpdir;
@@ -296,7 +296,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Check the parsing of a valid options.ini file")
-        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir);
+        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
         tmpdir += "/shared/advgetopt";
         std::stringstream ss;
         ss << "mkdir -p " << tmpdir;
@@ -553,7 +553,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Check with validators in the definition")
-        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir);
+        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
         tmpdir += "/shared/advgetopt-validators-in-table";
         std::stringstream ss;
         ss << "mkdir -p " << tmpdir;
@@ -821,7 +821,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
 CATCH_TEST_CASE("invalid_options_files", "[options][invalid][files]")
 {
     CATCH_START_SECTION("2+ section names")
-        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir);
+        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
         tmpdir += "/shared/advgetopt";
         std::stringstream ss;
         ss << "mkdir -p " << tmpdir;
@@ -898,7 +898,7 @@ CATCH_TEST_CASE("invalid_options_files", "[options][invalid][files]")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("short name too long")
-        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir);
+        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
         tmpdir += "/shared/advgetopt";
         std::stringstream ss;
         ss << "mkdir -p " << tmpdir;
@@ -960,7 +960,7 @@ CATCH_TEST_CASE("invalid_options_files", "[options][invalid][files]")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("missing ')' in validator specification")
-        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir);
+        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
         tmpdir += "/shared/advgetopt";
         std::stringstream ss;
         ss << "mkdir -p " << tmpdir;
@@ -1021,7 +1021,7 @@ CATCH_TEST_CASE("invalid_options_files", "[options][invalid][files]")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("alias with help")
-        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir);
+        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
         tmpdir += "/shared/advgetopt";
         std::stringstream ss;
         ss << "mkdir -p " << tmpdir;
@@ -1085,7 +1085,7 @@ CATCH_TEST_CASE("invalid_options_files", "[options][invalid][files]")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("no-name alias")
-        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir);
+        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
         tmpdir += "/shared/advgetopt";
         std::stringstream ss;
         ss << "mkdir -p " << tmpdir;
@@ -1145,7 +1145,7 @@ CATCH_TEST_CASE("invalid_options_files", "[options][invalid][files]")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("no-name alias v2")
-        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir);
+        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
         tmpdir += "/shared/advgetopt";
         std::stringstream ss;
         ss << "mkdir -p " << tmpdir;
@@ -1205,7 +1205,7 @@ CATCH_TEST_CASE("invalid_options_files", "[options][invalid][files]")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("non-existant alias")
-        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir);
+        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
         tmpdir += "/shared/advgetopt";
         std::stringstream ss;
         ss << "mkdir -p " << tmpdir;

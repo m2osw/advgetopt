@@ -46,8 +46,6 @@ namespace SNAP_CATCH2_NAMESPACE
 {
 
 
-extern std::string                  g_tmp_dir;
-
 extern std::string                  g_config_filename;
 extern std::string                  g_config_project_filename;
 

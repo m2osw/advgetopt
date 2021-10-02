@@ -5,7 +5,7 @@
 
 # Additional arguments to run the tests
 #
-export PROJECT_TEST_ARGS="--tmp `pwd`/tmp/advgetopt"
+#export PROJECT_TEST_ARGS="--tmp `pwd`/tmp/advgetopt"
 
 if test -x ../../cmake/scripts/mk
 then

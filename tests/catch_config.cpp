@@ -391,7 +391,7 @@ CATCH_TEST_CASE("configuration_filenames", "[config][getopt][filenames]")
         {
             SNAP_CATCH2_NAMESPACE::init_tmp_dir("unittest-user-folder", "tilde");
 
-            std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir);
+            std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
             tmpdir += "/.config/home-that-never-gets-created";
             snap::safe_setenv env("HOME", tmpdir);
 
@@ -718,7 +718,7 @@ CATCH_TEST_CASE("load_multiple_configurations", "[config][getopt][filenames]")
 
         advgetopt::options_environment environment_options;
 
-        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir);
+        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
         tmpdir += "/.config/home";
 
         std::stringstream ss;
@@ -845,7 +845,7 @@ CATCH_TEST_CASE("load_multiple_configurations", "[config][getopt][filenames]")
 
         advgetopt::options_environment environment_options;
 
-        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir);
+        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
         tmpdir += "/.config/home2";
 
         std::stringstream ss;
