@@ -405,6 +405,12 @@ string_list_t insert_group_name(
  * If somehow the \$HOME environment variable is empty, the function does
  * nothing.
  *
+ * \todo
+ * Add support for "~<user name>/..." so that way a service could use its
+ * own home folder even when run from a different user (a.k.a. root). This
+ * requires that we load the user database and get the home folder from that
+ * data.
+ *
  * \param[in] filename  The filename to check for a tilde (~).
  *
  * \return The input as is unless the \$HOME path can be prepended to replace
