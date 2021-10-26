@@ -1071,7 +1071,6 @@ CATCH_TEST_CASE("invalid_config_dir_short_name", "[arguments][invalid][getopt][c
 
         advgetopt::getopt opt(environment_options);
 
-        advgetopt::option_info::pointer_t config_dir();
         CATCH_REQUIRE(opt.get_option("config-dir") == nullptr);
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.set_short_name("config-dir", U'c')
