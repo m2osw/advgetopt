@@ -236,7 +236,7 @@ option const g_system_options[] =
     define_option(
           Name("path-to-option-definitions")
         , Flags(standalone_command_flags<GETOPT_FLAG_GROUP_COMMANDS>())
-        , Help("print out the path to the option definitons.")
+        , Help("print out the path to the option definitions.")
     ),
     define_option(
           Name("show-option-sources")
