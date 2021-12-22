@@ -160,6 +160,18 @@ Note that although it is not checked, you probably should not include
 slashes in your project name.
 
 
+# Logger Extension
+
+The [snaplogger project](https://github.com/m2osw/snaplogger) has an
+extension allowing you to add command line options that allow for
+the modification of the log mechanism (such as sending the logs to
+your console or syslog instead of a file.)
+
+Further, the [eventdispatcher project](https://github.com/m2osw/eventdispatcher)
+includes a **snaplogger** extension allowing logs to be sent over a network
+connection.
+
+
 # Hide Warnings
 
 Many tools I use in my console generate warnings (mainly Gnome complaining
@@ -190,6 +202,26 @@ As we can see the `gvim` and `meld` work as is. For inkscape, there
 were so many warnings that I just turn them all off. The worst is
 certainly the Gimp and I still get warnings when loading certain
 images. Hopefully you can reuse those aliases too.
+
+
+# Dependencies
+
+See debian/control for the latest. Here are the dependencies as of
+December 2021:
+
+    cmake
+    cppthread-dev
+    debhelper
+    doxygen
+    graphviz
+    libboost-dev
+    libexcept-dev
+    libutf8-dev
+    snapcatch2
+    snapcmakemodules
+    snapdev
+
+Non-system dependencies can all be found in our m2osw Organization.
 
 
 # License
