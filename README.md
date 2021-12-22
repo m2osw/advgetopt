@@ -221,7 +221,8 @@ December 2021:
     snapcmakemodules
     snapdev
 
-Non-system dependencies can all be found in our m2osw Organization.
+Non-system dependencies can all be found in our
+[m2osw Organization](https://github.com/m2osw).
 
 
 # License
