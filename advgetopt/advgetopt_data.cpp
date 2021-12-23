@@ -525,7 +525,8 @@ std::string getopt::sanitizer_details()
  * one of the options was a command. This is done like so:
  *
  * \code
- * if(process_system_options & SYSTEM_OPTION_COMMANDS_MASK) != 0)
+ * advgetopt::flag_t const r(process_system_options(stdout));
+ * if((r & SYSTEM_OPTION_COMMANDS_MASK) != 0)
  * {
  *     exit(1);
  * }
