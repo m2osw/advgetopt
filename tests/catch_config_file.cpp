@@ -125,7 +125,8 @@ CATCH_TEST_CASE("configuration_setup", "[config][getopt][valid]")
                             CATCH_REQUIRE(setup.get_original_filename() == SNAP_CATCH2_NAMESPACE::g_config_filename);
 
                             CATCH_REQUIRE(setup.is_valid());
-                            CATCH_REQUIRE(setup.get_filename() == SNAP_CATCH2_NAMESPACE::g_config_filename);
+                            std::unique_ptr<char, decltype(&::free)> fn(realpath(SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(), nullptr), &::free);
+                            CATCH_REQUIRE(setup.get_filename() == fn.get());
                             CATCH_REQUIRE(setup.get_line_continuation() == static_cast<advgetopt::line_continuation_t>(lc));
                             CATCH_REQUIRE(setup.get_assignment_operator() == real_ao);
                             CATCH_REQUIRE(setup.get_comment() == c);
@@ -135,7 +136,7 @@ CATCH_TEST_CASE("configuration_setup", "[config][getopt][valid]")
 //std::cerr << "+++ " << lc << " / " << ao << " / " << c << " / " << so << " URL [" << url << "]\n";
                             CATCH_REQUIRE(url.substr(0, 8) == "file:///");
 
-                            CATCH_REQUIRE(url.substr(7, SNAP_CATCH2_NAMESPACE::g_config_filename.length()) == SNAP_CATCH2_NAMESPACE::g_config_filename);
+                            CATCH_REQUIRE(url.substr(7, strlen(fn.get())) == fn.get());
 
                             std::string::size_type const qm_pos(url.find('?'));
                             if(qm_pos == std::string::npos)
@@ -485,15 +486,16 @@ CATCH_TEST_CASE("config_duplicated_variables", "[config][getopt][valid]")
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_NONE);
 
+        std::unique_ptr<char, decltype(&::free)> fn(realpath(SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(), nullptr), &::free);
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                       "warning: parameter \"multiple\" on line 5 in"
                       " configuration file \""
-                    + SNAP_CATCH2_NAMESPACE::g_config_filename
+                    + std::string(fn.get())
                     + "\" was found twice in the same configuration file.");
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                       "warning: parameter \"multiple\" on line 7 in"
                       " configuration file \""
-                    + SNAP_CATCH2_NAMESPACE::g_config_filename
+                    + std::string(fn.get())
                     + "\" was found twice in the same configuration file.");
         advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
@@ -2238,6 +2240,9 @@ CATCH_TEST_CASE("missing_configuration_file", "[config][getopt][invalid]")
                         , advgetopt::COMMENT_SHELL
                         , advgetopt::SECTION_OPERATOR_NONE);
 
+            // get the full name before the unlink()
+            std::unique_ptr<char, decltype(&::free)> fn(realpath(SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(), nullptr), &::free);
+
             // now unlink() that file
             //
             unlink(SNAP_CATCH2_NAMESPACE::g_config_filename.c_str());
@@ -2246,7 +2251,7 @@ CATCH_TEST_CASE("missing_configuration_file", "[config][getopt][invalid]")
             // constructor ran
             //
             CATCH_REQUIRE(setup.is_valid());
-            CATCH_REQUIRE(setup.get_filename() == SNAP_CATCH2_NAMESPACE::g_config_filename);
+            CATCH_REQUIRE(setup.get_filename() == fn.get());
             CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_unix);
             CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
             CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
@@ -2483,9 +2488,10 @@ CATCH_TEST_CASE("invalid_sections", "[config][getopt][invalid]")
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == (advgetopt::SECTION_OPERATOR_NONE));
 
+        std::unique_ptr<char, decltype(&::free)> fn(realpath(SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(), nullptr), &::free);
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                   "error: parameter \"a::b\" on line 3 in configuration file \""
-                + SNAP_CATCH2_NAMESPACE::g_config_filename
+                + std::string(fn.get())
                 + "\" includes a character not acceptable for a section or"
                   " parameter name (controls, space, quotes, and \";#/=:?+\\\").");
         advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
@@ -2591,11 +2597,12 @@ CATCH_TEST_CASE("invalid_sections", "[config][getopt][invalid]")
                 CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_NONE);
                 CATCH_REQUIRE(setup.get_section_operator() == (advgetopt::SECTION_OPERATOR_NONE));
 
+                std::unique_ptr<char, decltype(&::free)> fn(realpath(SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(), nullptr), &::free);
                 SNAP_CATCH2_NAMESPACE::push_expected_log(
                           "error: parameter \""
                         + bad_char
                         + "\" on line 2 in configuration file \""
-                        + SNAP_CATCH2_NAMESPACE::g_config_filename
+                        + fn.get()
                         + "\" includes a character not acceptable for a section or"
                           " parameter name (controls, space, quotes, and \";#/=:?+\\\").");
                 advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
@@ -2700,10 +2707,13 @@ CATCH_TEST_CASE("invalid_sections", "[config][getopt][invalid]")
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_BLOCK);
 
+        std::unique_ptr<char, decltype(&::free)> fn(realpath(SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(), nullptr), &::free);
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                     "error: unterminated `section { ... }`, the `}` is missing"
                     " in configuration file "
-                    "\"" + SNAP_CATCH2_NAMESPACE::g_config_filename + "\".");
+                    "\""
+                  + std::string(fn.get())
+                  + "\".");
         advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
@@ -2754,10 +2764,11 @@ CATCH_TEST_CASE("invalid_sections", "[config][getopt][invalid]")
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_INI_FILE);
 
+        std::unique_ptr<char, decltype(&::free)> fn(realpath(SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(), nullptr), &::free);
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                       "error: section names in configuration files cannot be followed by anything other than spaces in"
                       " \"[sizes] comment\" on line 6 from configuration file \""
-                    + SNAP_CATCH2_NAMESPACE::g_config_filename
+                    + std::string(fn.get())
                     + "\".");
         advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
@@ -2817,10 +2828,11 @@ CATCH_TEST_CASE("invalid_sections", "[config][getopt][invalid]")
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == (advgetopt::SECTION_OPERATOR_BLOCK | advgetopt::SECTION_OPERATOR_INI_FILE));
 
+        std::unique_ptr<char, decltype(&::free)> fn(realpath(SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(), nullptr), &::free);
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                       "error: `[...]` sections can't be used within a `section"
                       " { ... }` on line 9 from configuration file \""
-                    + SNAP_CATCH2_NAMESPACE::g_config_filename
+                    + std::string(fn.get())
                     + "\".");
         advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
@@ -2882,10 +2894,11 @@ CATCH_TEST_CASE("invalid_variable_name", "[config][getopt][invalid]")
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_C);
 
+        std::unique_ptr<char, decltype(&::free)> fn(realpath(SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(), nullptr), &::free);
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                       "error: no option name in \"=color\""
                       " on line 2 from configuration file \""
-                    + SNAP_CATCH2_NAMESPACE::g_config_filename
+                    + std::string(fn.get())
                     + "\", missing name before the assignment operator?");
         advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
@@ -2983,11 +2996,12 @@ CATCH_TEST_CASE("invalid_variable_name", "[config][getopt][invalid]")
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_C);
 
+        std::unique_ptr<char, decltype(&::free)> fn(realpath(SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(), nullptr), &::free);
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                       "error: option names in configuration files cannot"
                       " start with a dash or an underscore in"
                       " \"-bad-dash=reddish\" on line 3 from configuration file \""
-                    + SNAP_CATCH2_NAMESPACE::g_config_filename
+                    + std::string(fn.get())
                     + "\".");
         advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
@@ -3033,11 +3047,12 @@ CATCH_TEST_CASE("invalid_variable_name", "[config][getopt][invalid]")
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_C);
 
+        std::unique_ptr<char, decltype(&::free)> fn(realpath(SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(), nullptr), &::free);
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                       "error: option names in configuration files cannot"
                       " start with a dash or an underscore in"
                       " \"_bad_underscore=reddish\" on line 3 from configuration file \""
-                    + SNAP_CATCH2_NAMESPACE::g_config_filename
+                    + std::string(fn.get())
                     + "\".");
         advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
@@ -3083,20 +3098,21 @@ CATCH_TEST_CASE("invalid_variable_name", "[config][getopt][invalid]")
         CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_C);
 
+        std::unique_ptr<char, decltype(&::free)> fn(realpath(SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(), nullptr), &::free);
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                       "error: option name from \"a variable=color\" on line"
                       " 2 in configuration file \""
-                    + SNAP_CATCH2_NAMESPACE::g_config_filename
+                    + std::string(fn.get())
                     + "\" cannot include a space, missing assignment operator?");
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                       "error: option name from \"bad space=reddish\" on line"
                       " 3 in configuration file \""
-                    + SNAP_CATCH2_NAMESPACE::g_config_filename
+                    + std::string(fn.get())
                     + "\" cannot include a space, missing assignment operator?");
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                       "error: option name from \"pos and size=412x33+32-18\" on line"
                       " 4 in configuration file \""
-                    + SNAP_CATCH2_NAMESPACE::g_config_filename
+                    + std::string(fn.get())
                     + "\" cannot include a space, missing assignment operator?");
         advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2021  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2006-2022  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/project/advgetopt
 // contact@m2osw.com
@@ -647,7 +647,7 @@ CATCH_TEST_CASE("option_info_multiple_separators", "[option_info][valid][separat
             ",",
             ";",
             " ",
-            "^"
+            "^",
         };
         separators.set_multiple_separators(list);
         CATCH_REQUIRE(separators.get_multiple_separators().size() == 4);

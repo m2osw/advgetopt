@@ -63,6 +63,11 @@ add_library( ${PROJECT_NAME} SHARED
     option_info_ref.cpp
     utils.cpp
     validator.cpp
+    validator_double.cpp
+    validator_duration.cpp
+    validator_integer.cpp
+    validator_regex.cpp
+    validator_size.cpp
     version.cpp
 )
 
@@ -104,6 +109,11 @@ install(
         options.h
         utils.h
         validator.h
+        validator_double.h
+        validator_duration.h
+        validator_integer.h
+        validator_regex.h
+        validator_size.h
         ${CMAKE_CURRENT_BINARY_DIR}/version.h
     DESTINATION
         include/advgetopt

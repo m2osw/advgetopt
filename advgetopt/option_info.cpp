@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2021  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2006-2022  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/project/advgetopt
 // contact@m2osw.com
@@ -28,6 +28,9 @@
 // self
 //
 #include    "advgetopt/option_info.h"
+
+#include    "advgetopt/validator_double.h"
+#include    "advgetopt/validator_integer.h"
 
 
 // advgetopt lib
@@ -1475,6 +1478,77 @@ long option_info::get_long(int idx) const
     }
 
     return f_integer[idx];
+}
+
+
+/** \brief Get the value as a double.
+ *
+ * This function returns the value converted to a `double`.
+ *
+ * If the value does not represent a valid double value, an error is
+ * emitted through the logger.
+ *
+ * \note
+ * The function will transform all the values in case this is a
+ * GETOPT_FLAG_MULTIPLE option and cache the results.
+ * Calling the function many times with the same index is very fast
+ * after the first time.
+ *
+ * \exception getopt_exception_undefined
+ * If the value was not defined, the function raises this exception.
+ *
+ * \param[in] idx  The index of the value to retrieve as a double.
+ *
+ * \return The value at \p idx converted to a double or -1.0 on error.
+ */
+double option_info::get_double(int idx) const
+{
+    if(static_cast<size_t>(idx) >= f_value.size())
+    {
+        throw getopt_undefined(
+                      "option_info::get_double(): no value at index "
+                    + std::to_string(idx)
+                    + " (idx >= "
+                    + std::to_string(f_value.size())
+                    + ") for --"
+                    + f_name
+                    + " so you can't get this value.");
+    }
+
+    // since we may change the f_integer vector between threads,
+    // add protection (i.e. most everything else is created at the
+    // beginning so in the main thread)
+    //
+    cppthread::guard lock(get_global_mutex());
+
+    if(f_double.size() != f_value.size())
+    {
+        // we did not yet convert to doubles do that now
+        //
+        size_t const max(f_value.size());
+        for(size_t i(f_double.size()); i < max; ++i)
+        {
+            double v;
+            if(!validator_double::convert_string(f_value[i], v))
+            {
+                f_double.clear();
+
+                cppthread::log << cppthread::log_level_t::error
+                               << "invalid number ("
+                               << f_value[i]
+                               << ") in parameter --"
+                               << f_name
+                               << " at offset "
+                               << i
+                               << "."
+                               << cppthread::end;
+                return -1;
+            }
+            f_double.push_back(v);
+        }
+    }
+
+    return f_double[idx];
 }
 
 

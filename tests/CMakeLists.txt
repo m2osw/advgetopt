@@ -17,24 +17,13 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-# Note that if user does not have Catch then this does not get included
-# in the final output
-#
+##
+## Advanced getopt Unit Tests
+##
 project(unittest)
 
-find_package(Catch2)
-if(Catch2_FOUND)
-
-    add_definitions(
-        -DCATCH_CONFIG_PREFIX_ALL
-    )
-
-    include_directories(
-        ${CMAKE_BINARY_DIR}
-        ${PROJECT_SOURCE_DIR}
-        ${CATCH_INCLUDE_DIR}
-        ${LIBEXCEPT_INCLUDE_DIRS}
-    )
+find_package(SnapCatch2)
+if(SnapCatch2_FOUND)
 
     add_executable( ${PROJECT_NAME}
         catch_main.cpp
@@ -57,21 +46,34 @@ if(Catch2_FOUND)
         catch_version.cpp
     )
 
-    target_link_libraries( ${PROJECT_NAME}
-        advgetopt
+    target_include_directories(${PROJECT_NAME}
+        PUBLIC
+            ${CMAKE_BINARY_DIR}
+            ${PROJECT_SOURCE_DIR}
+            ${SNAPCATCH2_INCLUDE_DIRS}
+            ${LIBEXCEPT_INCLUDE_DIRS}
     )
 
-    set( TMPDIR "${CMAKE_BINARY_DIR}/tmp" )
-    if( NOT EXISTS ${TMPDIR} )
-        file( MAKE_DIRECTORY ${TMPDIR} )
+    target_link_libraries( ${PROJECT_NAME}
+        advgetopt
+        ${SNAPCATCH2_LIBRARIES}
+    )
+
+    set(TMPDIR "${CMAKE_BINARY_DIR}/tmp")
+    if(NOT EXISTS ${TMPDIR})
+        file(MAKE_DIRECTORY ${TMPDIR})
     endif()
 
     #unset( DEBUG_WORD )
     #if( "${CMAKE_BUILD_TYPE}" STREQUAL "Debug" )
     #    set( DEBUG_WORD "_d" )
     #endif()
-    add_test( unittests ${PROJECT_NAME} --tmp ${TMPDIR} )
+    add_test(unittests ${PROJECT_NAME} --tmp ${TMPDIR})
 
-endif( Catch2_FOUND )
+else(SnapCatch2_FOUND)
+
+    message("snapcatch2 not found... no test will be built.")
+
+endif(SnapCatch2_FOUND)
 
 # vim: ts=4 sw=4 et

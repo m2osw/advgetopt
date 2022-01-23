@@ -3,4 +3,7 @@
 * Confirm that all the configuration functionality from snapwebsites is available
 * Look into a way to support TOML, it's like ".ini" with a few extensions
   https://github.com/toml-lang/toml (more types, repeated sections as arrays)
+* The output of --help can be saved in a stringstream so we know how large it
+  is and if larger than one screen, we can pass the result to `less` (we also
+  want to make sure isatty() is true and that less is indeed accessible)
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2021  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2006-2022  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/project/advgetopt
 // contact@m2osw.com
@@ -31,12 +31,8 @@
 
 // advgetopt lib
 //
-#include    "advgetopt/utils.h"
+#include    "advgetopt/validator.h"
 
-
-// C++ lib
-//
-#include    <memory>
 
 
 namespace advgetopt
@@ -44,34 +40,28 @@ namespace advgetopt
 
 
 
-class validator;
-
-class validator_factory
+class validator_duration
+    : public validator
 {
 public:
-    virtual                     ~validator_factory();
+    typedef std::uint32_t       flag_t;
 
-    virtual std::string         get_name() const = 0;
-    virtual std::shared_ptr<validator>
-                                create(string_list_t const & data) const = 0;
-};
+    static constexpr flag_t     VALIDATOR_DURATION_DEFAULT_FLAGS = 0x00;
+    static constexpr flag_t     VALIDATOR_DURATION_LONG          = 0x01;
 
+                                validator_duration(string_list_t const & data);
 
-class validator
-{
-public:
-    typedef std::shared_ptr<validator>      pointer_t;
-
-    virtual                     ~validator();
-
-    // virtuals
+    // validator implementation
     //
-    virtual std::string const   name() const = 0;
-    virtual bool                validate(std::string const & value) const = 0;
+    virtual std::string const   name() const;
+    virtual bool                validate(std::string const & value) const;
 
-    static void                 register_validator(validator_factory const & factory);
-    static pointer_t            create(std::string const & name, string_list_t const & data);
-    static pointer_t            create(std::string const & name_and_params);
+    static bool                 convert_string(std::string const & duration
+                                             , flag_t flags
+                                             , double & result);
+
+private:
+    flag_t                      f_flags = VALIDATOR_DURATION_DEFAULT_FLAGS;
 };
 
 

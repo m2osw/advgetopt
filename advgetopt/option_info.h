@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2021  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2006-2022  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/project/advgetopt
 // contact@m2osw.com
@@ -36,8 +36,8 @@
 
 // C++ lib
 //
+#include    <functional>
 #include    <map>
-#include    <memory>
 
 
 
@@ -131,6 +131,7 @@ public:
     size_t                      size() const;
     std::string const &         get_value(int idx = 0) const;
     long                        get_long(int idx = 0) const;
+    double                      get_double(int idx = 0) const;
     void                        lock(bool always = true);
     void                        unlock();
     void                        reset();
@@ -177,6 +178,7 @@ private:
     option_source_t             f_source = option_source_t::SOURCE_UNDEFINED;
     string_list_t               f_value = string_list_t();
     mutable std::vector<long>   f_integer = std::vector<long>();
+    mutable std::vector<double> f_double = std::vector<double>();
 };
 
 
@@ -189,6 +191,7 @@ public:
     size_t                      length() const;
     size_t                      size() const;
     long                        get_long() const;
+    double                      get_double() const;
 
                                 operator std::string () const;
 

@@ -1109,7 +1109,7 @@ advgetopt::getopt::breakup_line(
             , advgetopt::getopt::get_line_width())
 + advgetopt::getopt::format_usage_string(
               "--path-to-option-definitions"
-            , "print out the path to the option definitons."
+            , "print out the path to the option definitions."
             , 30
             , advgetopt::getopt::get_line_width())
 + advgetopt::getopt::format_usage_string(
@@ -1289,7 +1289,7 @@ advgetopt::getopt::breakup_line(
             , advgetopt::getopt::get_line_width())
 + advgetopt::getopt::format_usage_string(
               "--path-to-option-definitions"
-            , "print out the path to the option definitons."
+            , "print out the path to the option definitions."
             , 30
             , advgetopt::getopt::get_line_width())
 + advgetopt::getopt::format_usage_string(
@@ -1574,7 +1574,7 @@ advgetopt::getopt::breakup_line(
             , advgetopt::getopt::get_line_width())
 + advgetopt::getopt::format_usage_string(
               "--path-to-option-definitions"
-            , "print out the path to the option definitons."
+            , "print out the path to the option definitions."
             , 30
             , advgetopt::getopt::get_line_width())
 + advgetopt::getopt::format_usage_string(

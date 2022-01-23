@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2021  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2006-2022  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/project/advgetopt
 // contact@m2osw.com
@@ -570,7 +570,7 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Set non-existant reference + many WHEN()")
+    CATCH_START_SECTION("Set non-existant reference + many CATCH_WHEN()")
     {
         advgetopt::option const options[] =
         {
@@ -647,7 +647,7 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
         CATCH_REQUIRE(opt.is_defined("verbose"));
         CATCH_REQUIRE(reference_ref.get_long() == 3100);
 
-        WHEN("with = & zero char")
+        CATCH_WHEN("with = & zero char")
         {
             CATCH_REQUIRE_FALSE(opt.is_defined("unknown"));
 
@@ -676,7 +676,7 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
             CATCH_REQUIRE(unknown_ref == s);
         }
 
-        WHEN("with = & valid char")
+        CATCH_WHEN("with = & valid char")
         {
             CATCH_REQUIRE_FALSE(opt.is_defined("unknown"));
 
@@ -708,7 +708,7 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
             CATCH_REQUIRE(unknown_ref == s);
         }
 
-        WHEN("with = & zero char32_t")
+        CATCH_WHEN("with = & zero char32_t")
         {
             CATCH_REQUIRE_FALSE(opt.is_defined("unknown"));
 
@@ -737,7 +737,7 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
             CATCH_REQUIRE(unknown_ref == s);
         }
 
-        WHEN("with = & valid char32_t")
+        CATCH_WHEN("with = & valid char32_t")
         {
             CATCH_REQUIRE_FALSE(opt.is_defined("unknown"));
 
@@ -777,7 +777,7 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
             CATCH_REQUIRE(unknown_ref == s);
         }
 
-        WHEN("with = & nullptr of 'char const *'")
+        CATCH_WHEN("with = & nullptr of 'char const *'")
         {
             CATCH_REQUIRE_FALSE(opt.is_defined("unknown"));
 
@@ -806,7 +806,7 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
             CATCH_REQUIRE(unknown_ref == s);
         }
 
-        WHEN("with = & empty 'char const *' string")
+        CATCH_WHEN("with = & empty 'char const *' string")
         {
             CATCH_REQUIRE_FALSE(opt.is_defined("unknown"));
 
@@ -835,7 +835,7 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
             CATCH_REQUIRE(unknown_ref == s);
         }
 
-        WHEN("with = & valid `char const *`")
+        CATCH_WHEN("with = & valid `char const *`")
         {
             CATCH_REQUIRE_FALSE(opt.is_defined("unknown"));
 
@@ -885,7 +885,7 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
             CATCH_REQUIRE(unknown_ref == str);
         }
 
-        WHEN("with = & empty std::string")
+        CATCH_WHEN("with = & empty std::string")
         {
             CATCH_REQUIRE_FALSE(opt.is_defined("unknown"));
 
@@ -914,7 +914,7 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
             CATCH_REQUIRE(unknown_ref == s);
         }
 
-        WHEN("with = & valid std::string")
+        CATCH_WHEN("with = & valid std::string")
         {
             CATCH_REQUIRE_FALSE(opt.is_defined("unknown"));
 
@@ -964,7 +964,7 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
             CATCH_REQUIRE(unknown_ref == str);
         }
 
-        WHEN("with = & unknown reference")
+        CATCH_WHEN("with = & unknown reference")
         {
             CATCH_REQUIRE_FALSE(opt.is_defined("unknown"));
 
@@ -980,7 +980,7 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
             CATCH_REQUIRE(unknown_ref == std::string());
         }
 
-        WHEN("with = & self reference")
+        CATCH_WHEN("with = & self reference")
         {
             CATCH_REQUIRE_FALSE(opt.is_defined("unknown"));
 
@@ -998,7 +998,7 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
             CATCH_REQUIRE(unknown_ref == unknown_ref);
         }
 
-        WHEN("with = & known reference")
+        CATCH_WHEN("with = & known reference")
         {
             CATCH_REQUIRE_FALSE(opt.is_defined("unknown"));
 
@@ -1025,7 +1025,7 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
             CATCH_REQUIRE(unknown_ref == verbose_value + reference_value);
         }
 
-        WHEN("with += & zero char")
+        CATCH_WHEN("with += & zero char")
         {
             CATCH_REQUIRE_FALSE(opt.is_defined("unknown"));
 
@@ -1043,7 +1043,7 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
             CATCH_REQUIRE(unknown_ref == s);
         }
 
-        WHEN("with += & valid char")
+        CATCH_WHEN("with += & valid char")
         {
             CATCH_REQUIRE_FALSE(opt.is_defined("unknown"));
 
@@ -1062,7 +1062,7 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
             CATCH_REQUIRE(unknown_ref == s);
         }
 
-        WHEN("with += & zero char32_t")
+        CATCH_WHEN("with += & zero char32_t")
         {
             CATCH_REQUIRE_FALSE(opt.is_defined("unknown"));
 
@@ -1080,7 +1080,7 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
             CATCH_REQUIRE(unknown_ref == s);
         }
 
-        WHEN("with += & valid char32_t")
+        CATCH_WHEN("with += & valid char32_t")
         {
             CATCH_REQUIRE_FALSE(opt.is_defined("unknown"));
 
@@ -1104,7 +1104,7 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
             CATCH_REQUIRE(unknown_ref == s);
         }
 
-        WHEN("with += & nullptr of 'char const *'")
+        CATCH_WHEN("with += & nullptr of 'char const *'")
         {
             CATCH_REQUIRE_FALSE(opt.is_defined("unknown"));
 
@@ -1123,7 +1123,7 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
             CATCH_REQUIRE(unknown_ref == s);
         }
 
-        WHEN("with += & empty 'char const *' string")
+        CATCH_WHEN("with += & empty 'char const *' string")
         {
             CATCH_REQUIRE_FALSE(opt.is_defined("unknown"));
 
@@ -1142,7 +1142,7 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
             CATCH_REQUIRE(unknown_ref == s);
         }
 
-        WHEN("with += & valid `char const *`")
+        CATCH_WHEN("with += & valid `char const *`")
         {
             CATCH_REQUIRE_FALSE(opt.is_defined("unknown"));
 
@@ -1170,7 +1170,7 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
             CATCH_REQUIRE(unknown_ref == str);
         }
 
-        WHEN("with += & empty std::string")
+        CATCH_WHEN("with += & empty std::string")
         {
             CATCH_REQUIRE_FALSE(opt.is_defined("unknown"));
 
@@ -1188,7 +1188,7 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
             CATCH_REQUIRE(unknown_ref == s);
         }
 
-        WHEN("with += & valid std::string")
+        CATCH_WHEN("with += & valid std::string")
         {
             CATCH_REQUIRE_FALSE(opt.is_defined("unknown"));
 
@@ -1215,7 +1215,7 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
             CATCH_REQUIRE(unknown_ref == str);
         }
 
-        WHEN("with += & unknown reference")
+        CATCH_WHEN("with += & unknown reference")
         {
             CATCH_REQUIRE_FALSE(opt.is_defined("unknown"));
 
@@ -1231,7 +1231,7 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
             CATCH_REQUIRE(unknown_ref == std::string());
         }
 
-        WHEN("with += & self reference")
+        CATCH_WHEN("with += & self reference")
         {
             CATCH_REQUIRE_FALSE(opt.is_defined("unknown"));
 
@@ -1249,7 +1249,7 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
             CATCH_REQUIRE(unknown_ref == unknown_ref);
         }
 
-        WHEN("with += & known reference")
+        CATCH_WHEN("with += & known reference")
         {
             CATCH_REQUIRE_FALSE(opt.is_defined("unknown"));
 
@@ -1265,7 +1265,7 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
             CATCH_REQUIRE(unknown_ref == reference_value);
         }
 
-        WHEN("with += & self reference")
+        CATCH_WHEN("with += & self reference")
         {
             CATCH_REQUIRE_FALSE(opt.is_defined("unknown"));
 

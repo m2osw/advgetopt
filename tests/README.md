@@ -93,7 +93,7 @@ This is a small remain from the days when advgetopt worked on MS-Windows.
 
     dev/coverage program_name,project_name,invalid_program_name
 
-## Data Retieval (`advgetopt_data.cpp`)
+## Data Retrieval (`advgetopt_data.cpp`)
 
 Once the command line arguments, environment variable, and configuration
 files were parsed, you want to retrieve the data. These test verify that
@@ -158,12 +158,15 @@ verify those functions.
 
 The validator classes are used to make sure that the data supplied by the
 user is considered valid. For example, it may have to be an integer or
-a an email address.
+an email address.
 
 The following checks all the advgetopt supplied validators. You can create
 some of your own, which, of course, cannot be validated here.
 
-    dev/coverage unknown_validator,integer_validator,regex_validator,invalid_validator
+    dev/coverage unknown_validator,double_validator,duration_validator,integer_validator,regex_validator,size_validator,invalid_validator
+
+Note: the `duration_validator` and `size_validator` make use of the
+      `double_validator`. Testing them separatelly can be useful too.
 
 ## Version (`version.cpp`)
 

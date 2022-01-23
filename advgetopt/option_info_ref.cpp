@@ -1,28 +1,21 @@
-/*
- * License:
- *    Copyright (c) 2006-2021  Made to Order Software Corp.  All Rights Reserved
- *
- *    https://snapwebsites.org/project/advgetopt
- *    contact@m2osw.com
- *
- *    This program is free software; you can redistribute it and/or modify
- *    it under the terms of the GNU General Public License as published by
- *    the Free Software Foundation; either version 2 of the License, or
- *    (at your option) any later version.
- *
- *    This program is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *    GNU General Public License for more details.
- *
- *    You should have received a copy of the GNU General Public License along
- *    with this program; if not, write to the Free Software Foundation, Inc.,
- *    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- * Authors:
- *    Alexis Wilke   alexis@m2osw.com
- *    Doug Barbieri  doug@m2osw.com
- */
+// Copyright (c) 2006-2022  Made to Order Software Corp.  All Rights Reserved
+//
+// https://snapwebsites.org/project/advgetopt
+// contact@m2osw.com
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
 /** \file
@@ -35,6 +28,8 @@
 // self
 //
 #include    "advgetopt/option_info.h"
+#include    "advgetopt/validator_double.h"
+#include    "advgetopt/validator_integer.h"
 
 
 // advgetopt lib
@@ -160,7 +155,7 @@ size_t option_info_ref::size() const
  * When the value is not defined and there is no default, the function
  * returns 0 (as if an empty string represented 0.)
  *
- * \return The value as a long or -1.
+ * \return The value as a long or -1 or 0.
  */
 long option_info_ref::get_long() const
 {
@@ -185,6 +180,49 @@ long option_info_ref::get_long() const
                        << " at offset 0."
                        << cppthread::end;
         return -1;
+    }
+
+    return v;
+}
+
+
+/** \brief Retrieve the referenced option as a double.
+ *
+ * This function attempts to retrieve the option value as a double floating
+ * point.
+ *
+ * If the value is not yet defined, the function attempts to return the
+ * default value converted to a double. If that fails, the function
+ * returns -1 after it emitted an error in the log.
+ *
+ * When the value is not defined and there is no default, the function
+ * returns 0 (as if an empty string represented 0.)
+ *
+ * \return The value as a double or -1.0 or 0.0.
+ */
+double option_info_ref::get_double() const
+{
+    if(f_opt->is_defined())
+    {
+        return f_opt->get_double();
+    }
+
+    if(!f_opt->has_default())
+    {
+        return 0.0;
+    }
+
+    double v;
+    if(!validator_double::convert_string(f_opt->get_default(), v))
+    {
+        cppthread::log << cppthread::log_level_t::error
+                       << "invalid default value as a double number ("
+                       << f_opt->get_default()
+                       << ") in parameter --"
+                       << f_opt->get_name()
+                       << " at offset 0."
+                       << cppthread::end;
+        return -1.0;
     }
 
     return v;

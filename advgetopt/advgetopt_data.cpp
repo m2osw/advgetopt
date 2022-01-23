@@ -30,12 +30,19 @@
 
 #include    "advgetopt/conf_file.h"
 #include    "advgetopt/exception.h"
+#include    "advgetopt/validator_double.h"
+#include    "advgetopt/validator_integer.h"
 #include    "advgetopt/version.h"
 
 
 // cppthread lib
 //
 #include    <cppthread/log.h>
+
+
+// C lib
+//
+#include    <string.h>
 
 
 // last include
@@ -259,7 +266,7 @@ long getopt::get_long(std::string const & name, int idx, long min, long max) con
                 + " option defined.");
     }
 
-    long result(0);
+    long result(0.0);
     if(!opt->is_defined())
     {
         std::string const d(opt->get_default());
@@ -270,10 +277,7 @@ long getopt::get_long(std::string const & name, int idx, long min, long max) con
                     + name
                     + " option was not defined on the command line and it has no or an empty default.");
         }
-        char * end;
-        char const * str(d.c_str());
-        result = strtol(str, &end, 10);
-        if(end != str + d.length())
+        if(!validator_integer::convert_string(d, result))
         {
             // here we throw because this default value is defined in the
             // options of the tool and not by the user
@@ -305,6 +309,114 @@ long getopt::get_long(std::string const & name, int idx, long min, long max) con
                        << "."
                        << cppthread::end;
         result = -1;
+    }
+
+    return result;
+}
+
+
+/** \brief This function retrieves an argument as a double value.
+ *
+ * This function reads the specified argument from the named option and
+ * transforms it to a double value. It then checks the result against the
+ * specified minimum and maximum range.
+ *
+ * The function name represents an argument that needs to be defined. You
+ * can test whether it was defined on the command line with the is_defined()
+ * function. The index must be between 0 and 'size() - 1' inclusive. If
+ * the item was not defined, then size() returns zero and you cannot call
+ * this function.
+ *
+ * The function does not check the validity of the minimum and maximum
+ * parameters. If \p min \> \p max is true then the function will always
+ * fail with a call to usage() as no value can be defined between \p min
+ * and \p max in that case. The minimum and maximum values are inclusive,
+ * so a range of 1 to 9 is defined with exactly 1 and 9 in min and max.
+ * For example, the z library compression could be retrieved with:
+ *
+ * \code
+ * int level(6); // default to 6
+ * if(opt.is_defined("zlevel"))
+ * {
+ *   zlevel = opt.get_double("zlevel", 0, 1, 9);
+ * }
+ * \endcode
+ *
+ * Note that the function can be used to read unsigned numbers, however
+ * at this point getopt does not really support negative numbers (i.e. because
+ * -\<number> is viewed as an option.)
+ *
+ * \todo
+ * Fix example with a parameter which makes sense (i.e. accepts doubles).
+ *
+ * \exception getopt_exception_undefined
+ * The getopt_exception_undefined exception is raised if \p name was not
+ * found on the command line and it has no default, or if \p idx is
+ * out of bounds.
+ *
+ * \param[in] name  The name of the option to retrieve.
+ * \param[in] idx  The index of the argument to retrieve.
+ * \param[in] min  The minimum value that will be returned (inclusive).
+ * \param[in] max  The maximum value that will be returned (inclusive).
+ *
+ * \return The argument as a long.
+ */
+double getopt::get_double(std::string const & name, int idx, double min, double max) const
+{
+    is_parsed();
+
+    option_info::pointer_t opt(get_option(name));
+    if(opt == nullptr)
+    {
+        throw getopt_logic_error(
+                  "there is no --"
+                + name
+                + " option defined.");
+    }
+
+    double result(0);
+    if(!opt->is_defined())
+    {
+        std::string const d(opt->get_default());
+        if(d.empty())
+        {
+            throw getopt_logic_error(
+                      "the --"
+                    + name
+                    + " option was not defined on the command line and it has no or an empty default.");
+        }
+        if(!validator_double::convert_string(d, result))
+        {
+            // here we throw because this default value is defined in the
+            // options of the tool and not by the user
+            //
+            throw getopt_logic_error(
+                      "invalid default number \""
+                    + d
+                    + "\" for option --"
+                    + name);
+        }
+    }
+    else
+    {
+        result = opt->get_double(idx);
+    }
+
+    // TODO: replace with validators
+    //
+    if(result < min || result > max)
+    {
+        cppthread::log << cppthread::log_level_t::error
+                       << result
+                       << " is out of bounds ("
+                       << min
+                       << ".."
+                       << max
+                       << " inclusive) in parameter --"
+                       << name
+                       << "."
+                       << cppthread::end;
+        result = -1.0;
     }
 
     return result;

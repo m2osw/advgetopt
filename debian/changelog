@@ -8,6 +8,9 @@ advgetopt (2.0.24.0~bionic) bionic; urgency=high
   * Fixed the --has-sanitizer function output.
   * Added some missing documentation.
   * Updated the tests to verify the new code.
+  * Added support for a double validator.
+  * Added support for a duration validator.
+  * Added support for a size validator.
 
  -- Alexis Wilke <alexis@m2osw.com>  Wed, 08 Sep 2021 14:00:25 -0700
 

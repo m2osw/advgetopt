@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2021  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2006-2022  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/project/advgetopt
 // contact@m2osw.com
@@ -31,12 +31,13 @@
 
 // advgetopt lib
 //
-#include    "advgetopt/utils.h"
+#include    "advgetopt/validator.h"
 
 
 // C++ lib
 //
-#include    <memory>
+#include    <regex>
+
 
 
 namespace advgetopt
@@ -44,34 +45,19 @@ namespace advgetopt
 
 
 
-class validator;
-
-class validator_factory
+class validator_regex
+    : public validator
 {
 public:
-    virtual                     ~validator_factory();
+                                validator_regex(string_list_t const & data);
 
-    virtual std::string         get_name() const = 0;
-    virtual std::shared_ptr<validator>
-                                create(string_list_t const & data) const = 0;
-};
-
-
-class validator
-{
-public:
-    typedef std::shared_ptr<validator>      pointer_t;
-
-    virtual                     ~validator();
-
-    // virtuals
+    // validator implementation
     //
-    virtual std::string const   name() const = 0;
-    virtual bool                validate(std::string const & value) const = 0;
+    virtual std::string const   name() const;
+    virtual bool                validate(std::string const & value) const;
 
-    static void                 register_validator(validator_factory const & factory);
-    static pointer_t            create(std::string const & name, string_list_t const & data);
-    static pointer_t            create(std::string const & name_and_params);
+private:
+    std::regex                  f_regex = std::regex();
 };
 
 

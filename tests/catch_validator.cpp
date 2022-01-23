@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2021  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2006-2022  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/project/advgetopt
 // contact@m2osw.com
@@ -25,16 +25,20 @@
 // advgetopt lib
 //
 #include    <advgetopt/exception.h>
+#include    <advgetopt/validator_duration.h>
+#include    <advgetopt/validator_size.h>
 
 
 // snapdev lib
 //
-#include    <snapdev/safe_setenv.h>
+#include    <snapdev/ostream_int128.h>
 
 
 // C++ lib
 //
+#include <cmath>
 #include <fstream>
+#include <iomanip>
 
 
 // last include
@@ -48,12 +52,94 @@
 namespace
 {
 
-std::int64_t large_rnd()
+struct duration_t
 {
-    return (static_cast<std::int64_t>(rand()) <<  0)
-         ^ (static_cast<std::int64_t>(rand()) << 16)
-         ^ (static_cast<std::int64_t>(rand()) << 32)
-         ^ (static_cast<std::int64_t>(rand()) << 48);
+    char const * const      f_suffix = nullptr;
+    double                  f_factor = 1.0;
+};
+
+constexpr duration_t const g_duration_suffixes[] =
+{
+    { "",                      1.0 },
+    { "s",                     1.0 },
+    { "second",                1.0 },
+    { "seconds",               1.0 },
+
+    { "m",                    -1.0 },   // may represent minutes or months
+    { "minute",               60.0 },
+    { "minutes",              60.0 },
+
+    { "h",                  3600.0 },
+    { "hour",               3600.0 },
+    { "hours",              3600.0 },
+
+    { "d",                 86400.0 },
+    { "day",               86400.0 },
+    { "days",              86400.0 },
+
+    { "w",           86400.0 * 7.0 },
+    { "week",        86400.0 * 7.0 },
+    { "weeks",       86400.0 * 7.0 },
+
+    { "month",      86400.0 * 30.0 },
+    { "months",     86400.0 * 30.0 },
+
+    { "y",         86400.0 * 365.0 },
+    { "year",      86400.0 * 365.0 },
+    { "years",     86400.0 * 365.0 },
+};
+
+struct size_suffix_t
+{
+    char const * const      f_suffix = nullptr;
+    int                     f_base = 1000.0;
+    int                     f_power = 0.0;
+};
+
+constexpr size_suffix_t const g_size_suffixes[] =
+{
+    { "",     1000, 0 },
+    { "B",    1000, 0 },
+
+    { "kB",   1000, 1 },
+    { "KiB",  1024, 1 },
+
+    { "MB",   1000, 2 },
+    { "MiB",  1024, 2 },
+
+    { "GB",   1000, 3 },
+    { "GiB",  1024, 3 },
+
+    { "TB",   1000, 4 },
+    { "TiB",  1024, 4 },
+
+    { "PB",   1000, 5 },
+    { "PiB",  1024, 5 },
+
+    { "EB",   1000, 6 },
+    { "EiB",  1024, 6 },
+
+    { "ZB",   1000, 7 },
+    { "ZiB",  1024, 7 },
+
+    { "YB",   1000, 8 },
+    { "YiB",  1024, 8 },
+};
+
+std::int64_t large_rnd(bool zero_allowed = true)
+{
+    for(;;)
+    {
+        std::int64_t const result((static_cast<std::int64_t>(rand()) <<  0)
+                                ^ (static_cast<std::int64_t>(rand()) << 16)
+                                ^ (static_cast<std::int64_t>(rand()) << 32)
+                                ^ (static_cast<std::int64_t>(rand()) << 48));
+        if(result != 0
+        || zero_allowed)
+        {
+            return result;
+        }
+    }
 }
 
 }
@@ -338,6 +424,452 @@ CATCH_TEST_CASE("integer_validator", "[validator][valid][validation]")
             }
         }
     CATCH_END_SECTION()
+}
+
+
+
+
+CATCH_TEST_CASE("double_validator", "[validator][valid][validation]")
+{
+    CATCH_START_SECTION("Verify the double validator")
+        advgetopt::validator::pointer_t double_validator(advgetopt::validator::create("double", advgetopt::string_list_t()));
+
+        CATCH_REQUIRE(double_validator != nullptr);
+        CATCH_REQUIRE(double_validator->name() == "double");
+
+        CATCH_REQUIRE_FALSE(double_validator->validate(""));
+        CATCH_REQUIRE_FALSE(double_validator->validate("+"));
+        CATCH_REQUIRE_FALSE(double_validator->validate("-"));
+        CATCH_REQUIRE_FALSE(double_validator->validate("alpha"));
+
+        for(int idx(0); idx < 1000; ++idx)
+        {
+            double value(static_cast<double>(large_rnd()) / static_cast<double>(large_rnd(false)));
+            std::string const v(std::to_string(value));
+
+            CATCH_REQUIRE(double_validator->validate(v));
+
+            if(value >= 0)
+            {
+                CATCH_REQUIRE(double_validator->validate('+' + v));
+            }
+
+            std::string const space_before(' ' + v);
+            CATCH_REQUIRE_FALSE(double_validator->validate(space_before));
+
+            std::string const space_after(v + ' ');
+            CATCH_REQUIRE_FALSE(double_validator->validate(space_after));
+
+            std::string const before(static_cast<char>(rand() % 26 + 'a') + v);
+            CATCH_REQUIRE_FALSE(double_validator->validate(before));
+
+            std::string const after(v + static_cast<char>(rand() % 26 + 'a'));
+            CATCH_REQUIRE_FALSE(double_validator->validate(after));
+        }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Verify the double ranges")
+        bool had_standalone(false);
+        for(int count(0); count < 20 || !had_standalone; ++count)
+        {
+            double min(static_cast<double>(large_rnd()) / static_cast<double>(large_rnd(false)));
+            double max(static_cast<double>(large_rnd()) / static_cast<double>(large_rnd(false)));
+            if(min > max)
+            {
+                std::swap(min, max);
+            }
+
+            std::string const & smin(std::to_string(min));
+            std::string const & smax(std::to_string(max));
+
+            std::string range("...");
+            for(int three(0); three < 3; ++three)
+            {
+                if(rand() % 5 == 0)
+                {
+                    range = ' ' + range;
+                }
+                if(rand() % 5 == 0)
+                {
+                    range = range + ' ';
+                }
+            }
+            range = smin + range + smax;
+            for(int three(0); three < 3; ++three)
+            {
+                if(rand() % 5 == 0)
+                {
+                    range = ' ' + range;
+                }
+                if(rand() % 5 == 0)
+                {
+                    range = range + ' ';
+                }
+            }
+
+            double standalone(0);
+            bool standalone_included(rand() % 4 == 0);
+            if(standalone_included)
+            {
+                if(min <= std::numeric_limits<double>::min()
+                && max >= std::numeric_limits<double>::max())
+                {
+                    standalone_included = false;
+                }
+                else
+                {
+                    had_standalone = true;
+                    do
+                    {
+                        standalone = static_cast<double>(large_rnd()) / static_cast<double>(large_rnd(false));
+                    }
+                    while(standalone >= min && standalone <= max);
+
+                    std::string sep(",");
+                    if(rand() % 3 == 0)
+                    {
+                        sep = ' ' + sep;
+                    }
+                    if(rand() % 3 == 0)
+                    {
+                        sep = sep + ' ';
+                    }
+                    if(rand() % 2 == 0)
+                    {
+                        range = std::to_string(standalone) + "," + range;
+                    }
+                    else
+                    {
+                        range = range + "," + std::to_string(standalone);
+                    }
+                }
+            }
+            advgetopt::string_list_t range_list;
+            advgetopt::split_string(range
+                       , range_list
+                       , {","});
+            advgetopt::validator::pointer_t double_validator(advgetopt::validator::create("double", range_list));
+
+            CATCH_REQUIRE(double_validator != nullptr);
+            CATCH_REQUIRE(double_validator->name() == "double");
+
+            for(int idx(0); idx < 1000; ++idx)
+            {
+                double value(static_cast<double>(large_rnd()) / static_cast<double>(large_rnd(false)));
+
+                // force valid values otherwise we're likely to only have
+                // invalid ones
+                //
+                if(idx % 10 == 0)
+                {
+                    value = fmod(value, max - min + 1.0) + min;
+                }
+                else if(idx % 50 == 1 && standalone_included)
+                {
+                    value = standalone;
+                }
+
+                std::string const v(std::to_string(value));
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+                if((standalone_included && value == standalone)
+                || (value >= min && value <= max))
+                {
+                    CATCH_REQUIRE(double_validator->validate(v));
+                }
+                else
+                {
+                    CATCH_REQUIRE_FALSE(double_validator->validate(v));
+                }
+
+                if(value >= 0.0)
+                {
+                    if((standalone_included && value == standalone)
+                    || (value >= min && value <= max))
+                    {
+                        CATCH_REQUIRE(double_validator->validate('+' + v));
+                    }
+                    else
+                    {
+                        CATCH_REQUIRE_FALSE(double_validator->validate('+' + v));
+                    }
+                }
+#pragma GCC diagnostic pop
+
+                std::string const space_before(' ' + v);
+                CATCH_REQUIRE_FALSE(double_validator->validate(space_before));
+
+                std::string const space_after(v + ' ');
+                CATCH_REQUIRE_FALSE(double_validator->validate(space_after));
+
+                std::string const before(static_cast<char>(rand() % 26 + 'a') + v);
+                CATCH_REQUIRE_FALSE(double_validator->validate(before));
+
+                std::string const after(v + static_cast<char>(rand() % 26 + 'a'));
+                CATCH_REQUIRE_FALSE(double_validator->validate(after));
+            }
+        }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Verify the double standalone list")
+        for(int count(0); count < 20; ++count)
+        {
+            int valid(rand() % 10 + 5);
+            std::vector<double> numbers;
+            numbers.reserve(valid);
+            std::string standalone_values;
+            for(int idx(0); idx < valid; ++idx)
+            {
+                double const value(static_cast<double>(large_rnd()) / static_cast<double>(large_rnd(false)));
+                numbers.push_back(value);
+                std::string const & svalue(std::to_string(value));
+                if(rand() % 5 == 0)
+                {
+                    standalone_values += ' ';
+                }
+                if(idx != 0)
+                {
+                    standalone_values += ',';
+                }
+                if(rand() % 5 == 0)
+                {
+                    standalone_values += ' ';
+                }
+                standalone_values += svalue;
+            }
+            if(rand() % 5 == 0)
+            {
+                standalone_values += ' ';
+            }
+            advgetopt::string_list_t range_list;
+            advgetopt::split_string(standalone_values
+                       , range_list
+                       , {","});
+
+            advgetopt::validator::pointer_t double_validator(advgetopt::validator::create("double", range_list));
+
+            CATCH_REQUIRE(double_validator != nullptr);
+            CATCH_REQUIRE(double_validator->name() == "double");
+
+            for(size_t idx(0); idx < numbers.size(); ++idx)
+            {
+                std::string const svalue(std::to_string(numbers[idx]));
+
+                CATCH_REQUIRE(double_validator->validate(svalue));
+            }
+
+            for(int idx(0); idx < 1000; ++idx)
+            {
+                std::int64_t value;
+
+                for(;;)
+                {
+                    value = static_cast<double>(large_rnd()) / static_cast<double>(large_rnd(false));
+                    if(std::find(numbers.begin(), numbers.end(), value) == numbers.end())
+                    {
+                        break;
+                    }
+                }
+
+                CATCH_REQUIRE_FALSE(double_validator->validate(std::to_string(value)));
+            }
+        }
+    CATCH_END_SECTION()
+}
+
+
+
+
+CATCH_TEST_CASE("duration_validator", "[validator][valid][validation]")
+{
+    CATCH_START_SECTION("Verify the duration validator")
+    {
+        // this test does not verify that double conversion works since we
+        // have a separate test for that specific validator
+        //
+        for(int size(0); size < 3; ++size)
+        {
+            advgetopt::validator_duration::flag_t flg(advgetopt::validator_duration::VALIDATOR_DURATION_DEFAULT_FLAGS);
+            advgetopt::string_list_t flags;
+            if(size == 1)
+            {
+                flags.push_back("small");
+            }
+            else if(size == 2)
+            {
+                flags.push_back("large");
+                flg = advgetopt::validator_duration::VALIDATOR_DURATION_LONG;
+            }
+            advgetopt::validator::pointer_t duration_validator(advgetopt::validator::create("duration", flags));
+
+            CATCH_REQUIRE(duration_validator != nullptr);
+            CATCH_REQUIRE(duration_validator->name() == "duration");
+
+            CATCH_REQUIRE_FALSE(duration_validator->validate(""));
+            CATCH_REQUIRE_FALSE(duration_validator->validate("+"));
+            CATCH_REQUIRE_FALSE(duration_validator->validate("-"));
+            CATCH_REQUIRE_FALSE(duration_validator->validate("alpha"));
+            CATCH_REQUIRE_FALSE(duration_validator->validate("3.5 beta"));
+            CATCH_REQUIRE_FALSE(duration_validator->validate("7.5delta"));
+            CATCH_REQUIRE_FALSE(duration_validator->validate("+8.1 gamma"));
+            CATCH_REQUIRE_FALSE(duration_validator->validate("-2.3eta"));
+
+            for(int idx(0); idx < 1000; ++idx)
+            {
+                // use smaller values between 0 and 1
+                double value(static_cast<double>(rand()) / static_cast<double>(RAND_MAX));
+                if(rand() % 2 == 0)
+                {
+                    value *= -1.0;
+                }
+                std::stringstream ss;
+                ss.precision(std::numeric_limits<double>::max_digits10);
+                ss << value;
+                std::string const v(ss.str());
+
+                for(std::size_t i(0); i < std::size(g_duration_suffixes); ++i)
+                {
+                    for(int j(0); j <= 5; ++j)
+                    {
+                        std::string duration(v);
+                        for(int k(0); k < j; ++k)
+                        {
+                            // any number of spaces in between are allowed
+                            //
+                            duration += ' ';
+                        }
+                        duration += g_duration_suffixes[i].f_suffix;
+
+                        CATCH_REQUIRE(duration_validator->validate(duration));
+                        if(value >= 0)
+                        {
+                            CATCH_REQUIRE(duration_validator->validate('+' + duration));
+                        }
+
+                        double result(0.0);
+                        CATCH_REQUIRE(advgetopt::validator_duration::convert_string(duration, flg, result));
+                        if(g_duration_suffixes[i].f_factor < 0.0)
+                        {
+                            // the 'm' special case
+                            //
+                            if(size == 2)
+                            {
+                                // 'large' -- 1 month
+                                //
+                                CATCH_REQUIRE(SNAP_CATCH2_NAMESPACE::nearly_equal(result, value * (86400.0 * 30.0)));
+                            }
+                            else
+                            {
+                                // 'small' -- 1 minute
+                                //
+                                CATCH_REQUIRE(SNAP_CATCH2_NAMESPACE::nearly_equal(result, value * 60.0));
+                            }
+                        }
+                        else
+                        {
+                            CATCH_REQUIRE(SNAP_CATCH2_NAMESPACE::nearly_equal(result, value * g_duration_suffixes[i].f_factor));
+                        }
+                    }
+                }
+            }
+        }
+    }
+    CATCH_END_SECTION()
+}
+
+
+
+
+CATCH_TEST_CASE("size_validator", "[validator][valid][validation]")
+{
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+    CATCH_START_SECTION("Verify the size validator")
+    {
+        // this test does not verify that double conversion works since we
+        // have a separate test for that specific validator
+        //
+        for(int mode(0); mode < 3; ++mode)
+        {
+            advgetopt::validator_size::flag_t flg(advgetopt::validator_size::VALIDATOR_SIZE_DEFAULT_FLAGS);
+            advgetopt::string_list_t flags;
+            if(mode == 1)
+            {
+                flags.push_back("si");
+            }
+            else if(mode == 2)
+            {
+                flags.push_back("legacy");
+                flg = advgetopt::validator_size::VALIDATOR_SIZE_POWER_OF_TWO;
+            }
+            advgetopt::validator::pointer_t size_validator(advgetopt::validator::create("size", flags));
+
+            CATCH_REQUIRE(size_validator != nullptr);
+            CATCH_REQUIRE(size_validator->name() == "size");
+
+            CATCH_REQUIRE_FALSE(size_validator->validate(""));
+            CATCH_REQUIRE_FALSE(size_validator->validate("+"));
+            CATCH_REQUIRE_FALSE(size_validator->validate("-"));
+            CATCH_REQUIRE_FALSE(size_validator->validate("alpha"));
+            CATCH_REQUIRE_FALSE(size_validator->validate("3.5 beta"));
+            CATCH_REQUIRE_FALSE(size_validator->validate("7.5delta"));
+            CATCH_REQUIRE_FALSE(size_validator->validate("+8.1 gamma"));
+            CATCH_REQUIRE_FALSE(size_validator->validate("-2.3eta"));
+
+            for(int idx(0); idx < 1000; ++idx)
+            {
+                // use smaller values between 0 and about 5
+                //
+                double value(static_cast<double>(rand()) / static_cast<double>(RAND_MAX / 5));
+                if(rand() % 2 == 0)
+                {
+                    value *= -1.0;
+                }
+                std::stringstream ss;
+                ss.precision(std::numeric_limits<double>::max_digits10);
+                ss << value;
+                std::string const v(ss.str());
+
+                for(std::size_t i(0); i < std::size(g_size_suffixes); ++i)
+                {
+                    for(int j(0); j <= 5; ++j)
+                    {
+                        std::string size(v);
+                        for(int k(0); k < j; ++k)
+                        {
+                            // any number of spaces in between are allowed
+                            //
+                            size += ' ';
+                        }
+                        size += g_size_suffixes[i].f_suffix;
+
+                        CATCH_REQUIRE(size_validator->validate(size));
+                        if(value >= 0)
+                        {
+                            CATCH_REQUIRE(size_validator->validate('+' + size));
+                        }
+
+                        __int128 result(0.0);
+                        CATCH_REQUIRE(advgetopt::validator_size::convert_string(size, flg, result));
+
+                        long double const base(mode == 2 ? 1024.0L : g_size_suffixes[i].f_base);
+                        long double expected(1);
+                        for(int p(0); p < g_size_suffixes[i].f_power; ++p)
+                        {
+                            expected *= base;
+                        }
+                        __int128 int_expected(expected * static_cast<long double>(value));
+
+//std::cerr << "converted [" << size << "] to [" << result << "] wanted [" << int_expected << "]\n";
+                        CATCH_REQUIRE(result == int_expected);
+                    }
+                }
+            }
+        }
+    }
+    CATCH_END_SECTION()
+#pragma GCC diagnostic pop
 }
 
 
