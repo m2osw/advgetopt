@@ -52,6 +52,7 @@ DECLARE_EXCEPTION(getopt_exception, getopt_defined_twice);
 DECLARE_EXCEPTION(getopt_exception, getopt_initialization);
 DECLARE_EXCEPTION(getopt_exception, getopt_invalid);
 DECLARE_EXCEPTION(getopt_exception, getopt_invalid_default);
+DECLARE_EXCEPTION(getopt_exception, getopt_invalid_parameter);
 DECLARE_EXCEPTION(getopt_exception, getopt_undefined);
 
 

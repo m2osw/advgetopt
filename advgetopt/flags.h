@@ -53,6 +53,7 @@ static constexpr flag_t     GETOPT_FLAG_REQUIRED              = static_cast<flag
 static constexpr flag_t     GETOPT_FLAG_MULTIPLE              = static_cast<flag_t>(0x00000080);  // any number of parameter is allowed (--files a b c d ...)
 static constexpr flag_t     GETOPT_FLAG_DEFAULT_OPTION        = static_cast<flag_t>(0x00000100);  // where entries go by default (a.k.a. after "--")
 static constexpr flag_t     GETOPT_FLAG_HAS_DEFAULT           = static_cast<flag_t>(0x00000200);  // default value is defined
+static constexpr flag_t     GETOPT_FLAG_PROCESS_VARIABLES     = static_cast<flag_t>(0x00000400);  // variables within this parameter will automatically be processed
 
 static constexpr flag_t     GETOPT_FLAG_SHOW_MOST             = static_cast<flag_t>(0x00000000);  // show in usage() when not in GROUP1 or GROUP2
 static constexpr flag_t     GETOPT_FLAG_SHOW_USAGE_ON_ERROR   = static_cast<flag_t>(0x00001000);  // show in usage() when an error occurs

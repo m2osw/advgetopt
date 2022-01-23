@@ -980,6 +980,36 @@ string_list_t const & option_info::get_multiple_separators() const
 }
 
 
+/** \brief Assign variables to this option info.
+ *
+ * The getopt object holds a set of variables which is can pass down to
+ * the option info. If defined, then the get_value() function returns
+ * a processed value (a.k.a. the `${...}` references in that value are
+ * replaced by their corresponding value).
+ *
+ * \param[in] vars  A pointer to a list of variables.
+ */
+void option_info::set_variables(variables::pointer_t vars)
+{
+    f_variables = vars;
+}
+
+
+/** \brief Retrieve the list of variables held by this option info.
+ *
+ * This option info object may replace variables in values (see get_value()
+ * for details) using this list of variables. Option info objects created
+ * by the getopt class always have this pointer set, although the list of
+ * variables may be empty.
+ *
+ * \return A pointer to the list of variables found in the option info object.
+ */
+variables::pointer_t option_info::get_variables() const
+{
+    return f_variables;
+}
+
+
 /** \brief Check whether one of the values matches the input.
  *
  * This function searches the set of existing values in this option_info
@@ -1386,13 +1416,21 @@ size_t option_info::size() const
  * The is_defined() function returns true if at least one value is defined.
  * It is a good idea to check first otherwise you will get an exception.
  *
+ * If the parameter is marked as one that can be processed through the
+ * variables::process_value() function and the variables were defined
+ * with set_variables(), then the value will be processed for variables
+ * unless you set the \p raw parameter to true.
+ *
  * \exception getopt_exception_undefined
  * If the \p idx parameter is too large or no value was found for this
  * option, then this function raises an invalid error.
  *
- * \return The value.
+ * \param[in] idx  The index of the parameter to retrieve.
+ * \param[in] raw  Whether to allow the variable processing or not.
+ *
+ * \return The value at \p idx.
  */
-std::string const & option_info::get_value(int idx) const
+std::string option_info::get_value(int idx, bool raw) const
 {
     if(static_cast<size_t>(idx) >= f_value.size())
     {
@@ -1406,7 +1444,16 @@ std::string const & option_info::get_value(int idx) const
                     + " so you can't get this value.");
     }
 
-    return f_value[idx];
+    if(!raw
+    && f_variables != nullptr
+    && has_flag(GETOPT_FLAG_PROCESS_VARIABLES))
+    {
+        return f_variables->process_value(f_value[idx]);
+    }
+    else
+    {
+        return f_value[idx];
+    }
 }
 
 
@@ -1416,6 +1463,10 @@ std::string const & option_info::get_value(int idx) const
  *
  * If the value does not represent a valid long value, an error is
  * emitted through the logger.
+ *
+ * The value will be parsed through the variables if defined and this
+ * parameter allows it. This means the value may be a variable reference
+ * instead of an actually value (i.e. `${one}`)
  *
  * \note
  * The function will transform all the values in case this is a
@@ -1458,7 +1509,7 @@ long option_info::get_long(int idx) const
         for(size_t i(f_integer.size()); i < max; ++i)
         {
             std::int64_t v;
-            if(!validator_integer::convert_string(f_value[i], v))
+            if(!validator_integer::convert_string(get_value(i), v))
             {
                 f_integer.clear();
 
@@ -1487,6 +1538,10 @@ long option_info::get_long(int idx) const
  *
  * If the value does not represent a valid double value, an error is
  * emitted through the logger.
+ *
+ * The value will be parsed through the variables if defined and this
+ * parameter allows it. This means the value may be a variable reference
+ * instead of an actually value (i.e. `${pi}`)
  *
  * \note
  * The function will transform all the values in case this is a
@@ -1529,7 +1584,7 @@ double option_info::get_double(int idx) const
         for(size_t i(f_double.size()); i < max; ++i)
         {
             double v;
-            if(!validator_double::convert_string(f_value[i], v))
+            if(!validator_double::convert_string(get_value(i), v))
             {
                 f_double.clear();
 

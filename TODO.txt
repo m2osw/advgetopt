@@ -1,4 +1,8 @@
 
+* Re-run all the tests with the variables addition it won't pass as I made
+  subtle changes to some exceptions and such.
+* Further test that he variables support works (in the getopt_info and such.)
+
 
 * Confirm that all the configuration functionality from snapwebsites is available
 * Look into a way to support TOML, it's like ".ini" with a few extensions

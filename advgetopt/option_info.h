@@ -32,6 +32,7 @@
 //
 #include    "advgetopt/flags.h"
 #include    "advgetopt/validator.h"
+#include    "advgetopt/variables.h"
 
 
 // C++ lib
@@ -119,6 +120,8 @@ public:
     void                        set_multiple_separators(char const * const * separators);
     string_list_t const &       get_multiple_separators() const;
 
+    void                        set_variables(variables::pointer_t vars);
+    variables::pointer_t        get_variables() const;
     bool                        has_value(std::string const & value) const;
     bool                        add_value(std::string const & value, option_source_t source = option_source_t::SOURCE_DIRECT);
     bool                        set_value(int idx, std::string const & value, option_source_t source = option_source_t::SOURCE_DIRECT);
@@ -129,7 +132,7 @@ public:
     string_list_t const &       trace_sources() const;
     static void                 set_configuration_filename(std::string const & filename);
     size_t                      size() const;
-    std::string const &         get_value(int idx = 0) const;
+    std::string                 get_value(int idx = 0, bool raw = false) const;
     long                        get_long(int idx = 0) const;
     double                      get_double(int idx = 0) const;
     void                        lock(bool always = true);
@@ -172,6 +175,7 @@ private:
     callback_vector_t           f_callbacks = callback_vector_t();
     id_t                        f_next_callback_id = 0;
     string_list_t               f_trace_sources = string_list_t();
+    variables::pointer_t        f_variables = variables::pointer_t();
 
     // value read from command line, environment, .conf file
     //

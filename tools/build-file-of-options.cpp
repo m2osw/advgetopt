@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2020-2022  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/project/advgetopt
 // contact@m2osw.com
@@ -116,6 +116,7 @@ advgetopt::options_environment const g_options_environment =
     .f_options = g_options,
     .f_options_files_directory = nullptr,
     .f_environment_variable_name = "BUILD_FILE_OF_OPTIONS_OPTIONS",
+    .f_section_variables_name = nullptr,
     .f_configuration_files = g_configuration_files,
     .f_configuration_filename = nullptr,
     .f_configuration_directories = nullptr,

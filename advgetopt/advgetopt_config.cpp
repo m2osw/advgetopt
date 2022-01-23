@@ -140,11 +140,12 @@ string_list_t getopt::get_configuration_filenames(
         string_list_t directories;
         if(has_flag(GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS))
         {
-            // WARNING: at this point the command line and environment
-            //          variable may not be parsed yet
-            //
             if(f_parsed)
             {
+                // WARNING: at this point the command line and environment
+                //          variable may not be parsed in full if at all
+                //
+                //if(has_flag(SYSTEM_OPTION_CONFIGURATION_FILENAMES))
                 if(is_defined("config-dir"))
                 {
                     size_t const max(size("config-dir"));
@@ -379,6 +380,16 @@ void getopt::process_configuration_file(std::string const & filename)
     conf_file::pointer_t conf(conf_file::get_conf_file(conf_setup));
 
     conf_file::sections_t sections(conf->get_sections());
+
+    // is there a variable section?
+    //
+    if(f_options_environment.f_section_variables_name != nullptr)
+    {
+        conf->section_to_variables(
+                      f_options_environment.f_section_variables_name
+                    , f_variables);
+    }
+
     if(!sections.empty())
     {
         std::string const name(CONFIGURATION_SECTIONS);
@@ -434,6 +445,7 @@ void getopt::process_configuration_file(std::string const & filename)
                 // add a new parameter dynamically
                 //
                 opt = std::make_shared<option_info>(param.first);
+                opt->set_variables(f_variables);
 
                 opt->set_flags(GETOPT_FLAG_CONFIGURATION_FILE | GETOPT_FLAG_DYNAMIC);
 

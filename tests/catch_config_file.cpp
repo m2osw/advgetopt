@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2021  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2006-2022  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/project/advgetopt
 // contact@m2osw.com
@@ -57,6 +57,7 @@
 CATCH_TEST_CASE("configuration_spaces", "[config][getopt][valid]")
 {
     CATCH_START_SECTION("Verify Configuration Spaces")
+    {
         for(int c(0); c < 0x110000; ++c)
         {
             if(c == '\r'
@@ -73,6 +74,7 @@ CATCH_TEST_CASE("configuration_spaces", "[config][getopt][valid]")
                 CATCH_REQUIRE_FALSE(advgetopt::iswspace(c));
             }
         }
+    }
     CATCH_END_SECTION()
 }
 
@@ -80,6 +82,7 @@ CATCH_TEST_CASE("configuration_spaces", "[config][getopt][valid]")
 CATCH_TEST_CASE("configuration_setup", "[config][getopt][valid]")
 {
     CATCH_START_SECTION("Check All Setups")
+    {
         // 5 * 6 * 8 * 8 * 16 = 30720
         for(int count(0); count < 5; ++count)
         {
@@ -320,9 +323,11 @@ CATCH_TEST_CASE("configuration_setup", "[config][getopt][valid]")
                 }
             }
         }
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Check non-existant filename")
+    {
         advgetopt::conf_file_setup setup(
                       "/etc/advgetopt/unknown-file.conf"
                     , advgetopt::line_continuation_t::line_continuation_fortran
@@ -340,6 +345,7 @@ CATCH_TEST_CASE("configuration_setup", "[config][getopt][valid]")
         CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_CPP);
 
         CATCH_REQUIRE(setup.get_config_url() == "file:///etc/advgetopt/unknown-file.conf?line-continuation=fortran&assignment-operator=colon&comment=ini&section-operator=cpp");
+    }
     CATCH_END_SECTION()
 }
 
@@ -454,6 +460,7 @@ CATCH_TEST_CASE("config_reload_tests", "[config][getopt][valid]")
 CATCH_TEST_CASE("config_duplicated_variables", "[config][getopt][valid]")
 {
     CATCH_START_SECTION("file with the same variable defined multiple times")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("duplicated-variable", "multiple");
 
         {
@@ -522,6 +529,7 @@ CATCH_TEST_CASE("config_duplicated_variables", "[config][getopt][valid]")
         //
         CATCH_REQUIRE(file->set_parameter(std::string(), "multiple", "new value"));
         CATCH_REQUIRE(file->get_parameter("multiple") == "new value");
+    }
     CATCH_END_SECTION()
 }
 
@@ -530,6 +538,7 @@ CATCH_TEST_CASE("config_duplicated_variables", "[config][getopt][valid]")
 CATCH_TEST_CASE("config_callback_calls", "[config][getopt][valid]")
 {
     CATCH_START_SECTION("setup a callback and test the set_parameter()/erase() functions")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("callback-variable", "callback");
 
         {
@@ -722,6 +731,7 @@ CATCH_TEST_CASE("config_callback_calls", "[config][getopt][valid]")
         // as found in the file.)
         //
         CATCH_REQUIRE(file->was_modified());
+    }
     CATCH_END_SECTION()
 }
 
@@ -730,6 +740,7 @@ CATCH_TEST_CASE("config_callback_calls", "[config][getopt][valid]")
 CATCH_TEST_CASE("config_line_continuation_tests", "[config][getopt][valid]")
 {
     CATCH_START_SECTION("single_line")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("line-continuation", "single-line");
 
         {
@@ -813,9 +824,11 @@ CATCH_TEST_CASE("config_line_continuation_tests", "[config][getopt][valid]")
                 CATCH_REQUIRE_FALSE(file->is_assignment_operator(c));
             }
         }
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("rfc822")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("line-continuation", "rfc822");
 
         {
@@ -885,9 +898,11 @@ CATCH_TEST_CASE("config_line_continuation_tests", "[config][getopt][valid]")
         CATCH_REQUIRE(file->get_parameter("&since") == "it starts with an & on the following line");
         CATCH_REQUIRE(file->get_parameter("semicolon") == "this ends with");
         CATCH_REQUIRE(file->get_parameter("a") == "semi-colon only;");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("msdos")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("line-continuation", "msdos");
 
         {
@@ -959,9 +974,11 @@ CATCH_TEST_CASE("config_line_continuation_tests", "[config][getopt][valid]")
         CATCH_REQUIRE(file->get_parameter("&since") == "it starts with an & on the following line");
         CATCH_REQUIRE(file->get_parameter("semicolon") == "this ends with");
         CATCH_REQUIRE(file->get_parameter("a") == "semi-colon only;");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("unix")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("line-continuation", "unix");
 
         {
@@ -1033,9 +1050,11 @@ CATCH_TEST_CASE("config_line_continuation_tests", "[config][getopt][valid]")
         CATCH_REQUIRE(file->get_parameter("&since") == "it starts with an & on the following line");
         CATCH_REQUIRE(file->get_parameter("semicolon") == "this ends with");
         CATCH_REQUIRE(file->get_parameter("a") == "semi-colon only;");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("fortran")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("line-continuation", "fortran");
 
         {
@@ -1111,9 +1130,11 @@ std::cerr << "------------------ " << file->get_setup().get_config_url()
         CATCH_REQUIRE(file->get_parameter("&since") == std::string());
         CATCH_REQUIRE(file->get_parameter("semicolon") == "this ends with");
         CATCH_REQUIRE(file->get_parameter("a") == "semi-colon only;");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("semicolon")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("line-continuation", "semicolon");
 
         {
@@ -1200,6 +1221,7 @@ std::cerr << "------------------ " << file->get_setup().get_config_url()
         CATCH_REQUIRE(file->get_parameter("&since") == std::string());
         CATCH_REQUIRE(file->get_parameter("semicolon") == std::string());
         CATCH_REQUIRE(file->get_parameter("a") == std::string());
+    }
     CATCH_END_SECTION()
 }
 
@@ -1208,6 +1230,7 @@ std::cerr << "------------------ " << file->get_setup().get_config_url()
 CATCH_TEST_CASE("config_assignment_operator_tests", "[config][getopt][valid]")
 {
     CATCH_START_SECTION("equal")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("assignment-operator", "equal");
 
         {
@@ -1252,9 +1275,11 @@ CATCH_TEST_CASE("config_assignment_operator_tests", "[config][getopt][valid]")
         CATCH_REQUIRE(file->get_parameter("equal") == "value");
         CATCH_REQUIRE(file->get_parameter("name-value") == "127");
         CATCH_REQUIRE(file->get_parameter("and") == "no operator");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("colon")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("assignment-operator", "colon");
 
         {
@@ -1299,9 +1324,11 @@ CATCH_TEST_CASE("config_assignment_operator_tests", "[config][getopt][valid]")
         CATCH_REQUIRE(file->get_parameter("equal-value") == std::string());
         CATCH_REQUIRE(file->get_parameter("name") == "value=127");
         CATCH_REQUIRE(file->get_parameter("and-no-operator") == std::string());
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("space")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("assignment-operator", "space");
 
         {
@@ -1346,9 +1373,11 @@ CATCH_TEST_CASE("config_assignment_operator_tests", "[config][getopt][valid]")
         CATCH_REQUIRE(file->get_parameter("equal-value") == std::string());
         CATCH_REQUIRE(file->get_parameter("name") == "127");
         CATCH_REQUIRE(file->get_parameter("and-no") == "operator");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("equal_colon_and_space")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("assignment-operator", "all");
 
         {
@@ -1397,6 +1426,7 @@ CATCH_TEST_CASE("config_assignment_operator_tests", "[config][getopt][valid]")
         CATCH_REQUIRE(file->get_parameter("equal") == "value");
         CATCH_REQUIRE(file->get_parameter("name") == "127");
         CATCH_REQUIRE(file->get_parameter("and") == "no operator");
+    }
     CATCH_END_SECTION()
 }
 
@@ -1407,6 +1437,7 @@ CATCH_TEST_CASE("config_assignment_operator_tests", "[config][getopt][valid]")
 CATCH_TEST_CASE("config_comment_tests", "[config][getopt][valid]")
 {
     CATCH_START_SECTION("ini comment")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("comment", "ini");
 
         {
@@ -1450,9 +1481,11 @@ CATCH_TEST_CASE("config_comment_tests", "[config][getopt][valid]")
 
         CATCH_REQUIRE(file->get_parameter("ini") == "comment");
         CATCH_REQUIRE(file->get_parameter("is") == "the semi-colon");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("shell comment")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("comment", "shell");
 
         {
@@ -1496,9 +1529,11 @@ CATCH_TEST_CASE("config_comment_tests", "[config][getopt][valid]")
 
         CATCH_REQUIRE(file->get_parameter("shell") == "comment");
         CATCH_REQUIRE(file->get_parameter("is") == "the hash (`#`) character");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("C++ comment")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("comment", "cpp");
 
         {
@@ -1542,9 +1577,11 @@ CATCH_TEST_CASE("config_comment_tests", "[config][getopt][valid]")
 
         CATCH_REQUIRE(file->get_parameter("cpp") == "comment");
         CATCH_REQUIRE(file->get_parameter("is") == "the double slash (`//`)");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("All three comments")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("comment", "all-comments");
 
         {
@@ -1595,6 +1632,7 @@ CATCH_TEST_CASE("config_comment_tests", "[config][getopt][valid]")
         CATCH_REQUIRE(file->get_parameter("all") == "comments");
         CATCH_REQUIRE(file->get_parameter("together") == "for powerful config support");
         CATCH_REQUIRE(file->get_parameter("but") == "maybe");
+    }
     CATCH_END_SECTION()
 }
 
@@ -1605,6 +1643,7 @@ CATCH_TEST_CASE("config_comment_tests", "[config][getopt][valid]")
 CATCH_TEST_CASE("config_section_tests", "[config][getopt][valid]")
 {
     CATCH_START_SECTION("section operator c (.)")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("section-operator", "section-c");
 
         {
@@ -1666,9 +1705,11 @@ CATCH_TEST_CASE("config_section_tests", "[config][getopt][valid]")
         CATCH_REQUIRE(file->get_parameter("z") == "edge");
         CATCH_REQUIRE(file->get_parameter("z::b") == "line");
         CATCH_REQUIRE(file->get_parameter("z::b::c") == "12.72");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("section operator c++ (::)")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("section-operator", "section-cpp");
 
         {
@@ -1730,9 +1771,11 @@ CATCH_TEST_CASE("config_section_tests", "[config][getopt][valid]")
         CATCH_REQUIRE(file->get_parameter("z") == "edge");
         CATCH_REQUIRE(file->get_parameter("z::b") == "line");
         CATCH_REQUIRE(file->get_parameter("z::b::c") == "12.72");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("section operator block ({ ... })")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("section-operator", "section-block");
 
         {
@@ -1802,9 +1845,11 @@ CATCH_TEST_CASE("config_section_tests", "[config][getopt][valid]")
         CATCH_REQUIRE(file->get_parameter("z") == "edge");
         CATCH_REQUIRE(file->get_parameter("z::b") == "line");
         CATCH_REQUIRE(file->get_parameter("z::b::c") == "12.72");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("section operator ini file ([...])")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("section-operator", "section-ini-file");
 
         {
@@ -1875,9 +1920,11 @@ CATCH_TEST_CASE("config_section_tests", "[config][getopt][valid]")
         CATCH_REQUIRE(file->get_parameter("z::b-c") == "12.72");
         CATCH_REQUIRE(file->get_parameter("p::b") == "comment");
         CATCH_REQUIRE(file->get_parameter("p::b-c") == "allowed");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("section operator ini-file & c++")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("section-operator", "section-double");
 
         {
@@ -1941,7 +1988,126 @@ CATCH_TEST_CASE("config_section_tests", "[config][getopt][valid]")
         CATCH_REQUIRE(file->get_parameter("z::z") == "edge");
         CATCH_REQUIRE(file->get_parameter("b") == "line");
         CATCH_REQUIRE(file->get_parameter("z::z::b::c") == "17.92");
+    }
     CATCH_END_SECTION()
+
+    CATCH_START_SECTION("section of variables ([variables])")
+    {
+        // in a config file variables are not auto-managed
+        //
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("section-variables", "section-with-variables");
+
+        {
+            std::ofstream config_file;
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "edge=${blue}\n"
+                "background=${white}\n"
+                "foreground=${black}\n"
+                "[error]\n"
+                "edge=${red}\n"
+                "background=${gray}\n"
+                "[variables]\n"
+                "red=\"#ff0000\"\n"
+                "green=\"#00ff00\"\n"
+                "blue=\"#0000ff\"\n"
+                "no_color=\"#000000\"\n"
+                "black=${no_color}\n"
+                "white=\"#ffffff\"\n"
+                "gray=\"#aaaaaa\"\n"
+            ;
+        }
+
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
+                            , advgetopt::line_continuation_t::line_continuation_unix
+                            , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
+                            , advgetopt::COMMENT_SHELL
+                            , advgetopt::SECTION_OPERATOR_INI_FILE);
+
+        CATCH_REQUIRE(setup.get_original_filename() == SNAP_CATCH2_NAMESPACE::g_config_filename);
+
+        CATCH_REQUIRE(setup.is_valid());
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_unix);
+        CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_EQUAL);
+        CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
+        CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_INI_FILE);
+
+        advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+
+        CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
+        CATCH_REQUIRE(file->get_errno() == 0);
+
+        advgetopt::conf_file::sections_t sections(file->get_sections());
+        CATCH_REQUIRE(sections.size() == 2);
+        CATCH_REQUIRE(sections.find("error") != sections.end());
+        CATCH_REQUIRE(sections.find("variables") != sections.end());
+
+        CATCH_REQUIRE(file->get_parameters().size() == 12);
+
+        CATCH_REQUIRE(file->has_parameter("edge"));
+        CATCH_REQUIRE(file->has_parameter("background"));
+        CATCH_REQUIRE(file->has_parameter("foreground"));
+        CATCH_REQUIRE(file->has_parameter("error::edge"));
+        CATCH_REQUIRE(file->has_parameter("error::background"));
+        CATCH_REQUIRE(file->has_parameter("variables::red"));
+        CATCH_REQUIRE(file->has_parameter("variables::green"));
+        CATCH_REQUIRE(file->has_parameter("variables::blue"));
+        CATCH_REQUIRE(file->has_parameter("variables::no_color"));
+        CATCH_REQUIRE(file->has_parameter("variables::black"));
+        CATCH_REQUIRE(file->has_parameter("variables::white"));
+        CATCH_REQUIRE(file->has_parameter("variables::gray"));
+
+        // without a variables attached, we get the raw (original) data back
+        //
+        CATCH_REQUIRE(file->get_parameter("edge") == "${blue}");
+        CATCH_REQUIRE(file->get_parameter("background") == "${white}");
+        CATCH_REQUIRE(file->get_parameter("foreground") == "${black}");
+        CATCH_REQUIRE(file->get_parameter("error::edge") == "${red}");
+        CATCH_REQUIRE(file->get_parameter("error::background") == "${gray}");
+        CATCH_REQUIRE(file->get_parameter("variables::red") == "#ff0000");
+        CATCH_REQUIRE(file->get_parameter("variables::green") == "#00ff00");
+        CATCH_REQUIRE(file->get_parameter("variables::blue") == "#0000ff");
+        CATCH_REQUIRE(file->get_parameter("variables::no_color") == "#000000");
+        CATCH_REQUIRE(file->get_parameter("variables::black") == "${no_color}");
+        CATCH_REQUIRE(file->get_parameter("variables::white") == "#ffffff");
+        CATCH_REQUIRE(file->get_parameter("variables::gray") == "#aaaaaa");
+
+        // transform the "[variables]" section to variables
+        //
+        advgetopt::variables::pointer_t vars(std::make_shared<advgetopt::variables>());
+        CATCH_REQUIRE(file->section_to_variables("variables", vars) == 7);
+        file->set_variables(vars);
+
+        sections = file->get_sections();
+        CATCH_REQUIRE(sections.size() == 1);
+        CATCH_REQUIRE(sections.find("error") != sections.end());
+        CATCH_REQUIRE(sections.find("variables") == sections.end());
+
+        CATCH_REQUIRE(file->get_parameters().size() == 5);
+
+        CATCH_REQUIRE(file->has_parameter("edge"));
+        CATCH_REQUIRE(file->has_parameter("background"));
+        CATCH_REQUIRE(file->has_parameter("foreground"));
+        CATCH_REQUIRE(file->has_parameter("error::edge"));
+        CATCH_REQUIRE(file->has_parameter("error::background"));
+        CATCH_REQUIRE_FALSE(file->has_parameter("variables::red"));
+        CATCH_REQUIRE_FALSE(file->has_parameter("variables::green"));
+        CATCH_REQUIRE_FALSE(file->has_parameter("variables::blue"));
+        CATCH_REQUIRE_FALSE(file->has_parameter("variables::no_color"));
+        CATCH_REQUIRE_FALSE(file->has_parameter("variables::black"));
+        CATCH_REQUIRE_FALSE(file->has_parameter("variables::white"));
+        CATCH_REQUIRE_FALSE(file->has_parameter("variables::gray"));
+
+        CATCH_REQUIRE(file->get_parameter("edge") == "#0000ff");
+        CATCH_REQUIRE(file->get_parameter("background") == "#ffffff");
+        CATCH_REQUIRE(file->get_parameter("foreground") == "#000000");
+        CATCH_REQUIRE(file->get_parameter("error::edge") == "#ff0000");
+        CATCH_REQUIRE(file->get_parameter("error::background") == "#aaaaaa");
+    }
+    CATCH_END_SECTION()
+
 }
 
 
@@ -1950,6 +2116,7 @@ CATCH_TEST_CASE("config_section_tests", "[config][getopt][valid]")
 CATCH_TEST_CASE("save_config_file", "[config][getopt][valid]")
 {
     CATCH_START_SECTION("load update save")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("save-operation", "configuration");
 
         {
@@ -2043,6 +2210,7 @@ CATCH_TEST_CASE("save_config_file", "[config][getopt][valid]")
         CATCH_REQUIRE(file2->get_parameter("a") == "size");
         CATCH_REQUIRE(file2->get_parameter("b") == "tall");
         CATCH_REQUIRE(file2->get_parameter("c") == "1920");
+    }
     CATCH_END_SECTION()
 }
 
@@ -2055,6 +2223,7 @@ CATCH_TEST_CASE("save_config_file", "[config][getopt][valid]")
 CATCH_TEST_CASE("invalid_configuration_setup", "[config][getopt][invalid]")
 {
     CATCH_START_SECTION("Empty Filename")
+    {
         CATCH_REQUIRE_THROWS_MATCHES(
               advgetopt::conf_file_setup(
                               std::string()
@@ -2065,9 +2234,11 @@ CATCH_TEST_CASE("invalid_configuration_setup", "[config][getopt][invalid]")
             , advgetopt::getopt_invalid
             , Catch::Matchers::ExceptionMessage(
                           "getopt_exception: trying to load a configuration file using an empty filename."));
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Invalid Line Continuation")
+    {
         for(int count(0); count < 5; ++count)
         {
             advgetopt::line_continuation_t lc(advgetopt::line_continuation_t::line_continuation_unix);
@@ -2093,6 +2264,7 @@ CATCH_TEST_CASE("invalid_configuration_setup", "[config][getopt][invalid]")
                 , Catch::Matchers::ExceptionMessage(
                               "getopt_logic_error: unexpected line continuation."));
         }
+    }
     CATCH_END_SECTION()
 }
 
@@ -2105,6 +2277,7 @@ CATCH_TEST_CASE("invalid_configuration_setup", "[config][getopt][invalid]")
 CATCH_TEST_CASE("config_reload_invalid_setup", "[config][getopt][invalid]")
 {
     CATCH_START_SECTION("Load a file, update it, verify it does not get reloaded")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-reload", "load-twice-wrong-parameters");
 
         {
@@ -2207,6 +2380,7 @@ CATCH_TEST_CASE("config_reload_invalid_setup", "[config][getopt][invalid]")
                 }
             }
         }
+    }
     CATCH_END_SECTION()
 }
 
@@ -2214,6 +2388,7 @@ CATCH_TEST_CASE("config_reload_invalid_setup", "[config][getopt][invalid]")
 CATCH_TEST_CASE("missing_configuration_file", "[config][getopt][invalid]")
 {
     CATCH_START_SECTION("Create a conf_file without the file")
+    {
         for(int count(0); count < 5; ++count)
         {
             int const id(rand());
@@ -2263,6 +2438,7 @@ CATCH_TEST_CASE("missing_configuration_file", "[config][getopt][invalid]")
             advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
             CATCH_REQUIRE(file->get_errno() == ENOENT);
         }
+    }
     CATCH_END_SECTION()
 }
 
@@ -2270,6 +2446,7 @@ CATCH_TEST_CASE("missing_configuration_file", "[config][getopt][invalid]")
 CATCH_TEST_CASE("invalid_sections", "[config][getopt][invalid]")
 {
     CATCH_START_SECTION("variable name cannot start with a period when C operator is active")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-section-operator", "period-name");
 
         {
@@ -2330,9 +2507,11 @@ CATCH_TEST_CASE("invalid_sections", "[config][getopt][invalid]")
         CATCH_REQUIRE(file->get_parameter("z") == "edge");
         CATCH_REQUIRE(file->get_parameter("z::b") == "line");
         CATCH_REQUIRE(file->get_parameter("z::b::c") == "12.72");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("two section operators one after another can cause trouble")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-section-operator", "name-period-cpp-name");
 
         {
@@ -2393,9 +2572,11 @@ CATCH_TEST_CASE("invalid_sections", "[config][getopt][invalid]")
         CATCH_REQUIRE(file->get_parameter("z") == "edge");
         CATCH_REQUIRE(file->get_parameter("z::b") == "line");
         CATCH_REQUIRE(file->get_parameter("z::b::c") == "12.72");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("section operator cannot appear at the end")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-section-operator", "name-period-name-cpp");
 
         {
@@ -2456,9 +2637,11 @@ CATCH_TEST_CASE("invalid_sections", "[config][getopt][invalid]")
         CATCH_REQUIRE(file->get_parameter("z") == "edge");
         CATCH_REQUIRE(file->get_parameter("z::b") == "line");
         CATCH_REQUIRE(file->get_parameter("z::b::c") == "12.72");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("sections not allowed")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-section-operator", "section-not-allowed");
 
         {
@@ -2521,9 +2704,11 @@ CATCH_TEST_CASE("invalid_sections", "[config][getopt][invalid]")
                     " for this configuration file.");
         file->set_parameter("j::k", "blue::shepard", "2001");
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("invalid characters in names")
+    {
         std::string const bad_chars(
                     "\x01\x02\x03\x04\x05\x06\x07"
                 "\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F"
@@ -2624,10 +2809,12 @@ CATCH_TEST_CASE("invalid_sections", "[config][getopt][invalid]")
                 CATCH_REQUIRE(file->get_parameter("fine") == "param");
             }
         }
-                SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("too many sections")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-section-operator", "too-many-sections");
 
         {
@@ -2678,9 +2865,11 @@ CATCH_TEST_CASE("invalid_sections", "[config][getopt][invalid]")
         CATCH_REQUIRE(file->get_parameter("a") == "color");
         CATCH_REQUIRE(file->get_parameter("a::b") == "red");
         CATCH_REQUIRE(file->get_parameter("z") == "edge");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("all '{' were not closed")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-section-operator", "unclosed-brackets");
 
         {
@@ -2731,9 +2920,11 @@ CATCH_TEST_CASE("invalid_sections", "[config][getopt][invalid]")
 
         CATCH_REQUIRE(file->get_parameter("colors::b") == "red");
         CATCH_REQUIRE(file->get_parameter("colors::c") == "blue");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("data after ']' in INI file")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-section-operator", "additional-data");
 
         {
@@ -2791,9 +2982,11 @@ CATCH_TEST_CASE("invalid_sections", "[config][getopt][invalid]")
         CATCH_REQUIRE(file->get_parameter("colors::c") == "blue");
         CATCH_REQUIRE(file->get_parameter("colors::q") == "1000");
         CATCH_REQUIRE(file->get_parameter("colors::r") == "9999");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("INI file section inside a block is not allowed")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-section-operator", "ini-inside-block");
 
         {
@@ -2860,6 +3053,7 @@ CATCH_TEST_CASE("invalid_sections", "[config][getopt][invalid]")
         CATCH_REQUIRE(file->get_parameter("colors::block::f") == "filename");
         CATCH_REQUIRE(file->get_parameter("colors::block::q") == "1000");
         CATCH_REQUIRE(file->get_parameter("colors::block::r") == "9999");
+    }
     CATCH_END_SECTION()
 }
 
@@ -2868,6 +3062,7 @@ CATCH_TEST_CASE("invalid_sections", "[config][getopt][invalid]")
 CATCH_TEST_CASE("invalid_variable_name", "[config][getopt][invalid]")
 {
     CATCH_START_SECTION("empty variable name")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-variable-name", "name-missing");
 
         {
@@ -2918,9 +3113,11 @@ CATCH_TEST_CASE("invalid_variable_name", "[config][getopt][invalid]")
 
         CATCH_REQUIRE(file->get_parameter("a::b") == "red");
         CATCH_REQUIRE(file->get_parameter("a::b::c") == "142");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("empty variable name after section name")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-variable-name", "section-and-name-missing");
 
         {
@@ -2967,9 +3164,11 @@ CATCH_TEST_CASE("invalid_variable_name", "[config][getopt][invalid]")
 
         CATCH_REQUIRE(file->get_parameter("a::b") == "red");
         CATCH_REQUIRE(file->get_parameter("a::b::c") == "142");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("variable name starts with a dash")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-variable-name", "dash-name");
 
         {
@@ -3018,9 +3217,11 @@ CATCH_TEST_CASE("invalid_variable_name", "[config][getopt][invalid]")
 
         CATCH_REQUIRE(file->get_parameter("a") == "color");
         CATCH_REQUIRE(file->get_parameter("size") == "412");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("variable name starts with an underscore")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-variable-name", "underscore-name");
 
         {
@@ -3069,9 +3270,11 @@ CATCH_TEST_CASE("invalid_variable_name", "[config][getopt][invalid]")
 
         CATCH_REQUIRE(file->get_parameter("a-variable") == "color");
         CATCH_REQUIRE(file->get_parameter("pos-and-size") == "412x33+32-18");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("variable name with spaces")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-variable-name", "name-space-more-name");
 
         {
@@ -3123,6 +3326,7 @@ CATCH_TEST_CASE("invalid_variable_name", "[config][getopt][invalid]")
         CATCH_REQUIRE(file->get_sections().empty());
 
         CATCH_REQUIRE(file->get_parameters().empty());
+    }
     CATCH_END_SECTION()
 }
 

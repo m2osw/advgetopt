@@ -68,6 +68,7 @@ add_library( ${PROJECT_NAME} SHARED
     validator_integer.cpp
     validator_regex.cpp
     validator_size.cpp
+    variables.cpp
     version.cpp
 )
 
@@ -114,6 +115,7 @@ install(
         validator_integer.h
         validator_regex.h
         validator_size.h
+        variables.h
         ${CMAKE_CURRENT_BINARY_DIR}/version.h
     DESTINATION
         include/advgetopt

@@ -519,6 +519,7 @@ void check_for_show_sources(int argc, char * argv[])
  * \sa finish_parsing()
  */
 getopt::getopt(options_environment const & opt_env)
+    : f_variables(std::make_shared<variables>())
 {
     initialize_parser(opt_env);
 }
@@ -681,8 +682,8 @@ void getopt::is_parsed() const
     {
         throw getopt_initialization(
                 "function called too soon, parser is not done yet"
-                " (i.e. is_defined(), get_string(), get_integer()"
-                " cannot be called until the parser is done)");
+                " (i.e. is_defined(), get_string(), get_integer(),"
+                " get_double() cannot be called until the parser is done)");
     }
 }
 
@@ -1284,6 +1285,9 @@ option_info::map_by_name_t const & getopt::get_options() const
  * \p exact_option parameter to true. It is really rare that you
  * would need to do so, though.
  *
+ * \note
+ * The \p name parameter cannot be an empty string.
+ *
  * \param[in] name  The name of the option to retrieve.
  * \param[in] exact_option  Return the exact option, not its alias.
  *
@@ -1297,6 +1301,11 @@ option_info::pointer_t getopt::get_option(std::string const & name, bool exact_o
     // example.)
     //
     option_info::pointer_t opt;
+
+    if(name.empty())
+    {
+        throw getopt_invalid_parameter("argument `name` cannot be empty.");
+    }
 
     std::string const n(boost::replace_all_copy(name, "_", "-"));
 

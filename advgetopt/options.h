@@ -421,6 +421,7 @@ struct options_environment
     option const *              f_options = nullptr;                    // raw options
     char const *                f_options_files_directory = nullptr;    // directory to check for option files (default "/usr/shared/advgetopt")
     char const *                f_environment_variable_name = nullptr;  // environment variable with additional options (%e)
+    char const *                f_section_variables_name = nullptr;     // the name of a section representing variables (%m)
     char const * const *        f_configuration_files = nullptr;        // nullptr terminated array of full paths to configuration files (%f)
     char const *                f_configuration_filename = nullptr;     // the configuration filename to search in f_configuration_directories (%g)
     char const * const *        f_configuration_directories = nullptr;  // nullptr terminated array of paths only to configuration files (%d)
@@ -432,7 +433,7 @@ struct options_environment
     char const *                f_copyright = nullptr;                  // show on --copyright and %c
     char const *                f_build_date = UTC_BUILD_DATE;          // available to parameter %b
     char const *                f_build_time = UTC_BUILD_TIME;          // available to parameter %t
-    group_description const *   f_groups = nullptr;                     // nullptr terminated array of group names
+    group_description const *   f_groups = nullptr;                     // nullptr terminated array of group names %s
 };
 
 

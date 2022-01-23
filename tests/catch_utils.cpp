@@ -606,6 +606,7 @@ CATCH_TEST_CASE("utils_insert_group_name", "[utils][valid]")
                     .f_options = opts,
                     .f_options_files_directory = nullptr,
                     .f_environment_variable_name = nullptr,
+                    .f_section_variables_name = nullptr,
                     .f_configuration_files = nullptr,
                     .f_configuration_filename = "sorted-user-conf.config",
                     .f_configuration_directories = dirs,

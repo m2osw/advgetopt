@@ -880,6 +880,39 @@ int conf_file::get_errno() const
 }
 
 
+/** \brief Attach a variables object to the configuration file.
+ *
+ * The get_parameter() of the configuration file can be transformed to
+ * apply user variables to the values of the parameters.
+ *
+ * By default, this is not used by the getopt since it loads the values
+ * in its tables which then apply the variable when the get_value() is
+ * called on the getopt_info objects.
+ *
+ * \note
+ * You can detach a variables object by attaching a null pointer.
+ *
+ * \param[in] variables  The variable to attach to this configuration file.
+ */
+void conf_file::set_variables(variables::pointer_t variables)
+{
+    f_variables = variables;
+}
+
+
+/** \brief Retrieve the currently attached variables.
+ *
+ * This function returns the attached variables. This function may return
+ * a nullptr.
+ *
+ * \return The variables attached to the configuration file or nullptr.
+ */
+variables::pointer_t conf_file::get_variables() const
+{
+    return f_variables;
+}
+
+
 /** \brief Get a list of sections.
  *
  * This function returns a copy of the list of sections defined in
@@ -914,6 +947,11 @@ conf_file::sections_t conf_file::get_sections() const
  * We return a list because in a multithread environment another thread
  * may decide to make changes to the list of parameters (including
  * erasing a parameter.)
+ *
+ * \remarks
+ * Note that the parameters, when retrieved in this way, are returned raw.
+ * This means the variables are not going to be applied to the values. You
+ * can still do so by yourself calling the process_value() function.
  *
  * \return A copy of the list of parameters.
  */
@@ -977,7 +1015,14 @@ std::string conf_file::get_parameter(std::string name) const
     auto it(f_parameters.find(name));
     if(it != f_parameters.end())
     {
-        return it->second;
+        if(f_variables != nullptr)
+        {
+            return f_variables->process_value(it->second);
+        }
+        else
+        {
+            return it->second;
+        }
     }
     return std::string();
 }
@@ -1821,6 +1866,62 @@ bool conf_file::is_comment(char const * s) const
     }
 
     return false;
+}
+
+
+/** \brief Look for a section to convert in a list of variables.
+ *
+ * This function checks for a section named \p section_name. If it exists,
+ * then it gets converted to a set of variables in \p var and gets
+ * removed from the conf_file list of sections.
+ *
+ * \note
+ * The getopt has an f_variables field used to save variables. This is
+ * usually the same one that will be set in a conf_file. However, by
+ * default a conf_file is not assigned a variables object.
+ *
+ * \param[in] section_name  The name of the section to convert to variables.
+ * \param[in] var  The variables object where the parameters are saved as
+ * variables.
+ *
+ * \return -1 if the secontion doesn't exist, the number of parameters
+ * converted otherwise
+ */
+int conf_file::section_to_variables(
+      std::string const & section_name
+    , variables::pointer_t var)
+{
+    // verify/canonicalize the section variable name
+    //
+    auto section(f_sections.find(section_name));
+    if(section == f_sections.end())
+    {
+        return -1;
+    }
+
+    // do not view that section as such anymore
+    //
+    f_sections.erase(section);
+
+    int found(0);
+    std::string starts_with(section_name);
+    starts_with += "::";
+    for(auto const & param : get_parameters())
+    {
+        if(param.first.length() > starts_with.length()
+        && param.first.substr(0, starts_with.length()) == starts_with)
+        {
+            var->set_variable(param.first.substr(starts_with.length()), param.second);
+            ++found;
+
+            // this is safe because get_parameters() returned
+            // a copy of the list of parameters
+            //
+            erase_parameter(param.first);
+        }
+    }
+
+    return found;
 }
 
 

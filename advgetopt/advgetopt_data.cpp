@@ -155,11 +155,6 @@ size_t getopt::size(std::string const & name) const
  */
 bool getopt::has_default(std::string const & name) const
 {
-    if(name.empty())
-    {
-        throw getopt_logic_error("argument name cannot be empty.");
-    }
-
     option_info::pointer_t opt(get_option(name));
     if(opt != nullptr)
     {
@@ -195,11 +190,6 @@ bool getopt::has_default(std::string const & name) const
  */
 std::string getopt::get_default(std::string const & name) const
 {
-    if(name.empty())
-    {
-        throw getopt_logic_error("argument name cannot be empty.");
-    }
-
     option_info::pointer_t opt(get_option(name));
     if(opt != nullptr)
     {
@@ -433,6 +423,10 @@ double getopt::get_double(std::string const & name, int idx, double min, double 
  * a default value. For options that do not have a default value, you want
  * to call the is_defined() function first.
  *
+ * \note
+ * If the function returns the default value, it gets returned as is. i.e.
+ * it won't be passed through the variable processing function.
+ *
  * \exception getopt_exception_undefined
  * The getopt_exception_undefined exception is raised if \p name was not
  * found on the command line and it has no default, or if \p idx is
@@ -440,10 +434,14 @@ double getopt::get_double(std::string const & name, int idx, double min, double 
  *
  * \param[in] name  The name of the option to read.
  * \param[in] idx  The zero based index of a multi-argument command line option.
+ * \param[in] raw  Whethre to return the value without replacing the variables.
  *
  * \return The option argument as a string.
  */
-std::string getopt::get_string(std::string const & name, int idx) const
+std::string getopt::get_string(
+      std::string const & name
+    , int idx
+    , bool raw) const
 {
     is_parsed();
 
@@ -468,7 +466,7 @@ std::string getopt::get_string(std::string const & name, int idx) const
                 + " option was not defined on the command line and it has no default.");
     }
 
-    return opt->get_value(idx);
+    return opt->get_value(idx, raw);
 }
 
 
@@ -584,6 +582,7 @@ option_info_ref getopt::operator [] (std::string const & name)
         // The option doesn't exist yet, create it
         //
         opt = std::make_shared<option_info>(name);
+        opt->set_variables(f_variables);
         opt->add_flag(GETOPT_FLAG_DYNAMIC_CONFIGURATION);
         f_options_by_name[name] = opt;
     }

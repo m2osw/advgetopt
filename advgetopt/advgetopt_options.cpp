@@ -125,6 +125,7 @@ void getopt::parse_options_info(option const * opts, bool ignore_duplicates)
         option_info::pointer_t o(std::make_shared<option_info>(
                                               opts->f_name
                                             , short_name));
+        o->set_variables(f_variables);
 
         o->add_flag(opts->f_flags);
         o->set_default(opts->f_default);
@@ -362,6 +363,7 @@ void getopt::parse_options_from_file(
                                     : NO_SHORT_NAME);
 
         option_info::pointer_t opt(std::make_shared<option_info>(parameter_name, sn));
+        opt->set_variables(f_variables);
 
         std::string const default_name(parameter_name + "::default");
         if(conf->has_parameter(default_name))

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2021  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2006-2022  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/project/advgetopt
 // contact@m2osw.com
@@ -31,6 +31,7 @@
 #include    "advgetopt/option_info.h"
 #include    "advgetopt/options.h"
 #include    "advgetopt/validator.h"
+#include    "advgetopt/variables.h"
 
 
 // C++ lib
@@ -52,6 +53,7 @@ constexpr char const        CONFIGURATION_SECTIONS[] = "configuration_sections";
 
 constexpr flag_t            SYSTEM_OPTION_NONE                          = 0x0000;
 
+// system commands
 constexpr flag_t            SYSTEM_OPTION_HELP                          = 0x0001;
 constexpr flag_t            SYSTEM_OPTION_VERSION                       = 0x0002;
 constexpr flag_t            SYSTEM_OPTION_COPYRIGHT                     = 0x0004;
@@ -62,7 +64,8 @@ constexpr flag_t            SYSTEM_OPTION_CONFIGURATION_FILENAMES       = 0x0040
 constexpr flag_t            SYSTEM_OPTION_PATH_TO_OPTION_DEFINITIONS    = 0x0080;
 constexpr flag_t            SYSTEM_OPTION_SHOW_OPTION_SOURCES           = 0x0100;
 
-constexpr flag_t            SYSTEM_OPTION_CONFIG_DIR                    = 0x1000;   // option
+// system options
+constexpr flag_t            SYSTEM_OPTION_CONFIG_DIR                    = 0x1000;
 
 constexpr flag_t            SYSTEM_OPTION_COMMANDS_MASK                 = 0x0FFF;
 constexpr flag_t            SYSTEM_OPTION_OPTIONS_MASK                  = 0xF000;
@@ -140,7 +143,10 @@ public:
                                     , int idx = 0
                                     , double min = std::numeric_limits<double>::min()
                                     , double max = std::numeric_limits<double>::max()) const;
-    std::string             get_string(std::string const & name, int idx = 0) const;
+    std::string             get_string(
+                                      std::string const & name
+                                    , int idx = 0
+                                    , bool raw = false) const;
     std::string             operator [] (std::string const & name) const;
     option_info_ref         operator [] (std::string const & name);
 
@@ -173,6 +179,8 @@ public:
     static size_t           get_line_width();
     static std::string      sanitizer_details();
 
+    variables::pointer_t    get_variables() const;
+
 private:
     void                    initialize_parser(options_environment const & opt_env);
     void                    parse_options_from_group_names();
@@ -203,6 +211,7 @@ private:
     option_info::map_by_short_name_t    f_options_by_short_name = option_info::map_by_short_name_t();
     option_info::pointer_t              f_default_option = option_info::pointer_t();
     std::string                         f_environment_variable = std::string();
+    variables::pointer_t                f_variables = variables::pointer_t();
     bool                                f_parsed = false;
 };
 
