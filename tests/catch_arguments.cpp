@@ -3870,13 +3870,13 @@ CATCH_TEST_CASE("manual_arguments", "[arguments][valid][getopt]")
                       opt.is_defined("invalid-parameter")
                     , advgetopt::getopt_initialization
                     , Catch::Matchers::ExceptionMessage(
-                                  "getopt_exception: function called too soon, parser is not done yet (i.e. is_defined(), get_string(), get_integer() cannot be called until the parser is done)"));
+                                  "getopt_exception: function called too soon, parser is not done yet (i.e. is_defined(), get_string(), get_integer(), get_double() cannot be called until the parser is done)"));
             CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
             CATCH_REQUIRE_THROWS_MATCHES(
                       opt.size("invalid-parameter")
                     , advgetopt::getopt_initialization
                     , Catch::Matchers::ExceptionMessage(
-                                  "getopt_exception: function called too soon, parser is not done yet (i.e. is_defined(), get_string(), get_integer() cannot be called until the parser is done)"));
+                                  "getopt_exception: function called too soon, parser is not done yet (i.e. is_defined(), get_string(), get_integer(), get_double() cannot be called until the parser is done)"));
 
             // verbose
             //
@@ -3886,13 +3886,13 @@ CATCH_TEST_CASE("manual_arguments", "[arguments][valid][getopt]")
                       opt.is_defined("verbose")
                     , advgetopt::getopt_initialization
                     , Catch::Matchers::ExceptionMessage(
-                                  "getopt_exception: function called too soon, parser is not done yet (i.e. is_defined(), get_string(), get_integer() cannot be called until the parser is done)"));
+                                  "getopt_exception: function called too soon, parser is not done yet (i.e. is_defined(), get_string(), get_integer(), get_double() cannot be called until the parser is done)"));
             CATCH_REQUIRE(opt.get_default("verbose").empty());
             CATCH_REQUIRE_THROWS_MATCHES(
                       opt.size("verbose")
                     , advgetopt::getopt_initialization
                     , Catch::Matchers::ExceptionMessage(
-                                  "getopt_exception: function called too soon, parser is not done yet (i.e. is_defined(), get_string(), get_integer() cannot be called until the parser is done)"));
+                                  "getopt_exception: function called too soon, parser is not done yet (i.e. is_defined(), get_string(), get_integer(), get_double() cannot be called until the parser is done)"));
 
             // help
             //

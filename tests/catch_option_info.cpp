@@ -97,7 +97,7 @@ CATCH_TEST_CASE("parsing_string", "[environment][valid]")
                   opt.is_defined("invalid-parameter")
                 , advgetopt::getopt_initialization
                 , Catch::Matchers::ExceptionMessage(
-                              "getopt_exception: function called too soon, parser is not done yet (i.e. is_defined(), get_string(), get_integer() cannot be called until the parser is done)"));
+                              "getopt_exception: function called too soon, parser is not done yet (i.e. is_defined(), get_string(), get_integer(), get_double() cannot be called until the parser is done)"));
 
         opt.parse_string("");
 
@@ -107,7 +107,7 @@ CATCH_TEST_CASE("parsing_string", "[environment][valid]")
                   opt.is_defined("invalid-parameter")
                 , advgetopt::getopt_initialization
                 , Catch::Matchers::ExceptionMessage(
-                              "getopt_exception: function called too soon, parser is not done yet (i.e. is_defined(), get_string(), get_integer() cannot be called until the parser is done)"));
+                              "getopt_exception: function called too soon, parser is not done yet (i.e. is_defined(), get_string(), get_integer(), get_double() cannot be called until the parser is done)"));
     }
     CATCH_END_SECTION()
 }

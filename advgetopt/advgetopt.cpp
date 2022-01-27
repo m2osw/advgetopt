@@ -1273,7 +1273,7 @@ option_info::map_by_name_t const & getopt::get_options() const
  *
  * This function retrieves an option by name. The function handles the
  * special case of the default option. This means "--" can always be
- * used to access the default option, whever the name given to that
+ * used to access the default option, whatever the name given to that
  * option in the declaration of your options.
  *
  * Of course, if no default is defined, then "--" returns a nullptr.
@@ -1283,10 +1283,14 @@ option_info::map_by_name_t const & getopt::get_options() const
  * the alias. This way the rest of the code is much simpler. You may
  * get the exact option, even if it is aliased, by setting the
  * \p exact_option parameter to true. It is really rare that you
- * would need to do so, though.
+ * would need to do so.
  *
  * \note
- * The \p name parameter cannot be an empty string.
+ * The \p name parameter could be an empty string to represent the default
+ * value (I think that's what that was for, now you use "--"). I've added
+ * the throw in this function to catch that invalid use, which either means
+ * you tried to check something with an invalid name or are expected to use
+ * the "--".
  *
  * \param[in] name  The name of the option to retrieve.
  * \param[in] exact_option  Return the exact option, not its alias.
@@ -1295,20 +1299,21 @@ option_info::map_by_name_t const & getopt::get_options() const
  */
 option_info::pointer_t getopt::get_option(std::string const & name, bool exact_option) const
 {
-    // we need a special case when looking for the default option
-    // because the name may not be "--" in the option table
-    // (i.e. you could call your default option "filenames" for
-    // example.)
-    //
     option_info::pointer_t opt;
 
     if(name.empty())
     {
+        // see \note section in doxy above about this
+        //
         throw getopt_invalid_parameter("argument `name` cannot be empty.");
     }
 
     std::string const n(boost::replace_all_copy(name, "_", "-"));
 
+    // we need this special case when looking for the default option
+    // because the name may not be "--" in the option table
+    // (i.e. you could call your default option "filenames" for example.)
+    //
     if(n.length() == 2
     && n[0] == '-'
     && n[1] == '-')
