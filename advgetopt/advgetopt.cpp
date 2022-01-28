@@ -1530,6 +1530,23 @@ void getopt::add_option_from_string(
 }
 
 
+/** \brief Retrieve a pointer to the variables defined in the getopt object.
+ *
+ * This function retrieves the variables defined in the getopt object.
+ * This is useful if you want to support those variables within
+ * configuration files that you read later on.
+ *
+ * \note
+ * This pointer is never a nullptr.
+ *
+ * \return A pointer to the getopt variables.
+ */
+variables::pointer_t getopt::get_variables() const
+{
+    return f_variables;
+}
+
+
 
 } // namespace advgetopt
 // vim: ts=4 sw=4 et
