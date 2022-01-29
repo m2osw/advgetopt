@@ -186,6 +186,10 @@ namespace
  * Print out all the options and their sources. This shows you where a
  * value come from: command line, environment variable, configuration file,
  * etc.
+ *
+ * \todo
+ * Add a `--config` option to allow the user to name one specific
+ * configuration file to use with an executable.
  */
 option const g_system_options[] =
 {
@@ -659,6 +663,11 @@ void getopt::finish_parsing(int argc, char * argv[])
         {
             throw getopt_exit("system command processed.", 0);
         }
+    }
+
+    if(cppthread::log.get_errors() != 0)
+    {
+        throw getopt_exit("error where found in your command line, environment variable, or configuration file.", 0);
     }
 }
 
