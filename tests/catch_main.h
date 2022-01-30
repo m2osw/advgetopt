@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2022  Made to Order Software Corp.  All Rights Reserved
 //
-// https://snapwebsites.org/
+// https://snapwebsites.org/project/advgetopt
 // contact@m2osw.com
 //
 // This program is free software; you can redistribute it and/or modify

@@ -29,7 +29,6 @@ find_package(LibExcept        REQUIRED)
 find_package(LibUtf8          REQUIRED)
 find_package(SnapCMakeModules REQUIRED)
 find_package(SnapDev          REQUIRED)
-find_package(SnapDoxygen              )
 
 SnapGetVersion(LIBADVGETOPT ${CMAKE_CURRENT_SOURCE_DIR})
 
