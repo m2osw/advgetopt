@@ -88,7 +88,7 @@ public:
 
     virtual std::shared_ptr<validator> create(string_list_t const & data) const override
     {
-        snap::NOT_USED(data); // ignore `data`
+        snapdev::NOT_USED(data); // ignore `data`
         return std::make_shared<validator_integer>(data);
     }
 };

@@ -179,7 +179,7 @@ CATCH_TEST_CASE("flag_argument", "[arguments][valid][getopt]")
 
         CATCH_WHEN("using long form")
         {
-            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--verbose");
+            snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--verbose");
 
             char const * cargv[] =
             {
@@ -222,7 +222,7 @@ CATCH_TEST_CASE("flag_argument", "[arguments][valid][getopt]")
 
         CATCH_WHEN("using short form")
         {
-            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "-v");
+            snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "-v");
 
             char const * cargv[] =
             {
@@ -413,7 +413,7 @@ CATCH_TEST_CASE("flag_argument", "[arguments][valid][getopt]")
 
         CATCH_WHEN("using long form")
         {
-            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--verbosity");
+            snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--verbosity");
 
             char const * cargv[] =
             {
@@ -461,7 +461,7 @@ CATCH_TEST_CASE("flag_argument", "[arguments][valid][getopt]")
 
         CATCH_WHEN("using short form")
         {
-            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "-n");
+            snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "-n");
 
             char const * cargv[] =
             {
@@ -841,7 +841,7 @@ CATCH_TEST_CASE("require_argument", "[arguments][valid][required][getopt]")
 
         CATCH_WHEN("using long form")
         {
-            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--out_dir my-filename.out");
+            snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--out_dir my-filename.out");
 
             char const * cargv[] =
             {
@@ -880,7 +880,7 @@ CATCH_TEST_CASE("require_argument", "[arguments][valid][required][getopt]")
 
         CATCH_WHEN("using long form with an equal sign")
         {
-            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--out_dir=my-filename.out");
+            snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--out_dir=my-filename.out");
 
             char const * cargv[] =
             {
@@ -917,7 +917,7 @@ CATCH_TEST_CASE("require_argument", "[arguments][valid][required][getopt]")
 
         CATCH_WHEN("using short form")
         {
-            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "-o my-filename.out");
+            snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "-o my-filename.out");
 
             char const * cargv[] =
             {
@@ -980,7 +980,7 @@ CATCH_TEST_CASE("require_argument", "[arguments][valid][required][getopt]")
 
         CATCH_WHEN("using long form")
         {
-            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--results my-filename.out");
+            snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--results my-filename.out");
 
             char const * cargv[] =
             {
@@ -1026,7 +1026,7 @@ CATCH_TEST_CASE("require_argument", "[arguments][valid][required][getopt]")
 
         CATCH_WHEN("using short form")
         {
-            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "-r my-filename.out");
+            snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "-r my-filename.out");
 
             char const * cargv[] =
             {
@@ -1326,7 +1326,7 @@ CATCH_TEST_CASE("require_arguments", "[arguments][valid][required][multiple][get
 
         CATCH_WHEN("using long form")
         {
-            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--out \"my filename.out\" another.out last.out");
+            snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--out \"my filename.out\" another.out last.out");
 
             char const * cargv[] =
             {
@@ -1365,7 +1365,7 @@ CATCH_TEST_CASE("require_arguments", "[arguments][valid][required][multiple][get
 
         CATCH_WHEN("using short form")
         {
-            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "-o 'my filename.out' another.out last.out");
+            snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "-o 'my filename.out' another.out last.out");
 
             char const * cargv[] =
             {
@@ -1792,7 +1792,7 @@ CATCH_TEST_CASE("optional_arguments", "[arguments][valid][multiple][getopt]")
 
         CATCH_WHEN("using long form and no arguments")
         {
-            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--out");
+            snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--out");
 
             char const * cargv[] =
             {
@@ -1829,7 +1829,7 @@ CATCH_TEST_CASE("optional_arguments", "[arguments][valid][multiple][getopt]")
 
         CATCH_WHEN("using long form and one argument")
         {
-            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--out my-filename.out");
+            snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--out my-filename.out");
 
             char const * cargv[] =
             {
@@ -1866,7 +1866,7 @@ CATCH_TEST_CASE("optional_arguments", "[arguments][valid][multiple][getopt]")
 
         CATCH_WHEN("using long form and three arguments")
         {
-            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--out my-filename.out another.out last.out");
+            snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--out my-filename.out another.out last.out");
 
             char const * cargv[] =
             {
@@ -1905,7 +1905,7 @@ CATCH_TEST_CASE("optional_arguments", "[arguments][valid][multiple][getopt]")
 
         CATCH_WHEN("using short form and no arguments")
         {
-            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "-o");
+            snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "-o");
 
             char const * cargv[] =
             {
@@ -1942,7 +1942,7 @@ CATCH_TEST_CASE("optional_arguments", "[arguments][valid][multiple][getopt]")
 
         CATCH_WHEN("using short form and one argument")
         {
-            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "-o my-filename.out");
+            snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "-o my-filename.out");
 
             char const * cargv[] =
             {
@@ -1979,7 +1979,7 @@ CATCH_TEST_CASE("optional_arguments", "[arguments][valid][multiple][getopt]")
 
         CATCH_WHEN("using short form and three arguments")
         {
-            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "-o my-filename.out another.out last.out");
+            snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "-o my-filename.out another.out last.out");
 
             char const * cargv[] =
             {
@@ -2822,7 +2822,7 @@ CATCH_TEST_CASE("default_argument", "[arguments][valid][getopt]")
 
         CATCH_WHEN("no arguments")
         {
-            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "");
+            snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "");
 
             char const * cargv[] =
             {
@@ -2864,7 +2864,7 @@ CATCH_TEST_CASE("default_argument", "[arguments][valid][getopt]")
 
         CATCH_WHEN("one argument")
         {
-            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "my-filename.out");
+            snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "my-filename.out");
 
             char const * cargv[] =
             {
@@ -2910,7 +2910,7 @@ CATCH_TEST_CASE("default_argument", "[arguments][valid][getopt]")
 
         CATCH_WHEN("three arguments")
         {
-            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "my-filename.out another.out last.out");
+            snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "my-filename.out another.out last.out");
 
             char const * cargv[] =
             {
@@ -2956,7 +2956,7 @@ CATCH_TEST_CASE("default_argument", "[arguments][valid][getopt]")
 
         CATCH_WHEN("four arguments with a '-'")
         {
-            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "my-filename.out another.out - last.out");
+            snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "my-filename.out another.out - last.out");
 
             char const * cargv[] =
             {
@@ -3002,7 +3002,7 @@ CATCH_TEST_CASE("default_argument", "[arguments][valid][getopt]")
 
         CATCH_WHEN("using the '--' separator and no arguments")
         {
-            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--");
+            snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--");
 
             char const * cargv[] =
             {
@@ -3044,7 +3044,7 @@ CATCH_TEST_CASE("default_argument", "[arguments][valid][getopt]")
 
         CATCH_WHEN("using the '--' separator and one argument")
         {
-            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "-- my-filename.out");
+            snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "-- my-filename.out");
 
             char const * cargv[] =
             {
@@ -3090,7 +3090,7 @@ CATCH_TEST_CASE("default_argument", "[arguments][valid][getopt]")
 
         CATCH_WHEN("using the '--' separator and three arguments")
         {
-            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "-- my-filename.out -another.out --last.out");
+            snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "-- my-filename.out -another.out --last.out");
 
             char const * cargv[] =
             {
@@ -3136,7 +3136,7 @@ CATCH_TEST_CASE("default_argument", "[arguments][valid][getopt]")
 
         CATCH_WHEN("using the '--' separator and four arguments with a '-'")
         {
-            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "-- my-filename.out -another.out - --last.out");
+            snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "-- my-filename.out -another.out - --last.out");
 
             char const * cargv[] =
             {
@@ -3697,7 +3697,7 @@ CATCH_TEST_CASE("default_arguments", "[arguments][valid][multiple][getopt]")
 
         CATCH_WHEN("no arguments")
         {
-            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "");
+            snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "");
 
             char const * cargv[] =
             {
@@ -3732,7 +3732,7 @@ CATCH_TEST_CASE("default_arguments", "[arguments][valid][multiple][getopt]")
 
         CATCH_WHEN("one argument")
         {
-            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "my-filename.out");
+            snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "my-filename.out");
 
             char const * cargv[] =
             {
@@ -3769,7 +3769,7 @@ CATCH_TEST_CASE("default_arguments", "[arguments][valid][multiple][getopt]")
 
         CATCH_WHEN("three arguments")
         {
-            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "my-filename.out another.out last.out");
+            snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "my-filename.out another.out last.out");
 
             char const * cargv[] =
             {
@@ -3808,7 +3808,7 @@ CATCH_TEST_CASE("default_arguments", "[arguments][valid][multiple][getopt]")
 
         CATCH_WHEN("four arguments with a '-'")
         {
-            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "my-filename.out another.out - last.out");
+            snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "my-filename.out another.out - last.out");
 
             char const * cargv[] =
             {
@@ -4111,7 +4111,7 @@ CATCH_TEST_CASE("manual_arguments", "[arguments][valid][getopt]")
 
         // first parse the environment variable
         //
-        snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "file.exe file.so file.dll file.lib file.a");
+        snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "file.exe file.so file.dll file.lib file.a");
         opt.parse_environment_variable();
 
             // an invalid parameter, MUST NEVER EXIST
@@ -4392,7 +4392,7 @@ CATCH_TEST_CASE("manual_arguments", "[arguments][valid][getopt]")
 
         // first parse the environment variable
         //
-        snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "file.exe file.so file.dll file.lib file.a");
+        snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "file.exe file.so file.dll file.lib file.a");
         opt.parse_environment_variable();
 
             // an invalid parameter, MUST NEVER EXIST
@@ -4684,7 +4684,7 @@ CATCH_TEST_CASE("auto_process_system_arguments", "[arguments][valid][getopt]")
             // and exit code of the exception and it's easier to do it
             // this way
             //
-            snap::ostream_to_buf<char> out(std::cout);
+            snapdev::ostream_to_buf<char> out(std::cout);
             try
             {
                 advgetopt::getopt::pointer_t opt(std::make_shared<advgetopt::getopt>(options, argc, argv));
@@ -4724,7 +4724,7 @@ CATCH_TEST_CASE("auto_process_system_arguments", "[arguments][valid][getopt]")
             // and exit code of the exception and it's easier to do it
             // this way
             //
-            snap::ostream_to_buf<char> out(std::cout);
+            snapdev::ostream_to_buf<char> out(std::cout);
             try
             {
                 advgetopt::getopt::pointer_t opt(std::make_shared<advgetopt::getopt>(options, argc, argv));
@@ -4764,7 +4764,7 @@ CATCH_TEST_CASE("auto_process_system_arguments", "[arguments][valid][getopt]")
             // and exit code of the exception and it's easier to do it
             // this way
             //
-            snap::ostream_to_buf<char> out(std::cout);
+            snapdev::ostream_to_buf<char> out(std::cout);
             try
             {
                 advgetopt::getopt::pointer_t opt(std::make_shared<advgetopt::getopt>(options, argc, argv));
@@ -4804,7 +4804,7 @@ CATCH_TEST_CASE("auto_process_system_arguments", "[arguments][valid][getopt]")
             // and exit code of the exception and it's easier to do it
             // this way
             //
-            snap::ostream_to_buf<char> out(std::cout);
+            snapdev::ostream_to_buf<char> out(std::cout);
             try
             {
                 advgetopt::getopt::pointer_t opt(std::make_shared<advgetopt::getopt>(options, argc, argv));
@@ -5276,7 +5276,7 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
         environment_options.f_help_header = "Usage: use '--' on the command line when only allowed in the variable.";
         environment_options.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
 
-        snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "allowed.jpg");
+        snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "allowed.jpg");
 
         char const * cargv[] =
         {
@@ -5344,7 +5344,7 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
         environment_options.f_help_header = "Usage: use '--' on the command line when only allowed in the variable.";
         environment_options.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
 
-        snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "file.txt");
+        snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "file.txt");
 
         char const * cargv[] =
         {
@@ -5471,7 +5471,7 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
         environment_options.f_help_header = "Usage: use '--' when no default option was defined.";
         environment_options.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
 
-        snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "-- allowed.txt");
+        snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "-- allowed.txt");
 
         char const * cargv[] =
         {
@@ -5540,7 +5540,7 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
         environment_options.f_help_header = "Usage: use '--' when no default option was defined.";
         environment_options.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
 
-        snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", " -- file.txt ");
+        snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", " -- file.txt ");
 
         char const * cargv[] =
         {
@@ -5668,7 +5668,7 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
         environment_options.f_help_header = "Usage: use '-' when no default option was defined.";
         environment_options.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
 
-        snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "- allowed.txt");
+        snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "- allowed.txt");
 
         char const * cargv[] =
         {
@@ -5737,7 +5737,7 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
         environment_options.f_help_header = "Usage: use '-' when no default option was defined.";
         environment_options.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
 
-        snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", " -  file.txt ");
+        snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", " -  file.txt ");
 
         char const * cargv[] =
         {
@@ -5907,7 +5907,7 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
         environment_options.f_help_header = "Usage: use an unknown long option.";
         environment_options.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
 
-        snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--size 4551");
+        snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--size 4551");
 
         char const * cargv[] =
         {
@@ -5966,7 +5966,7 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
         environment_options.f_help_header = "Usage: use an unknown long option.";
         environment_options.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
 
-        snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--size 4551");
+        snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--size 4551");
 
         char const * cargv[] =
         {
@@ -6095,7 +6095,7 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
         environment_options.f_help_header = "Usage: use an unknown long option.";
         environment_options.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
 
-        snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "-s 4551");
+        snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "-s 4551");
 
         char const * cargv[] =
         {
@@ -6170,7 +6170,7 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
         environment_options.f_help_header = "Usage: use an unknown long option.";
         environment_options.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
 
-        snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "-s 4551");
+        snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "-s 4551");
 
         char const * cargv[] =
         {
@@ -6708,7 +6708,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
         options_no_defaults_in_envvar.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
 
         {
-            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--verbose - no default here");
+            snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--verbose - no default here");
             char const * sub_cargv[] =
             {
                 "tests/unittests/AdvGetOptUnitTests::invalid_parameters",
@@ -6727,7 +6727,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
             SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         }
         {
-            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--verbose no default here");
+            snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--verbose no default here");
             const char *sub_cargv[] =
             {
                 "tests/unittests/AdvGetOptUnitTests::invalid_parameters",
@@ -6746,7 +6746,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
             SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         }
         {
-            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--verbose -- foo bar blah");
+            snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--verbose -- foo bar blah");
             const char *sub_cargv[] =
             {
                 "tests/unittests/AdvGetOptUnitTests::invalid_parameters",
@@ -6842,7 +6842,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
 
         {
             // long
-            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--verbose");
+            snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--verbose");
 
             SNAP_CATCH2_NAMESPACE::push_expected_log("error: option --verbose is not supported in the environment variable.");
             SNAP_CATCH2_NAMESPACE::push_expected_log("error: option --ignore-parameters is not supported.");
@@ -6851,7 +6851,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
         }
         {
             // short
-            snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "-v");
+            snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "-v");
 
             SNAP_CATCH2_NAMESPACE::push_expected_log("error: option -v is not supported in the environment variable.");
             SNAP_CATCH2_NAMESPACE::push_expected_log("error: option --ignore-parameters is not supported.");

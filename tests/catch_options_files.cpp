@@ -325,7 +325,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
         valid_options_from_file.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
         valid_options_from_file.f_help_header = "Usage: test valid options from file";
 
-        snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS"
+        snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS"
                             , "--verbose"
                              " --more purple"
                              " -f left.txt center.txt right.txt"
@@ -536,7 +536,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
         // expected when we use the wrong options.)
         //
         {
-            snap::safe_setenv subenv("ADVGETOPT_TEST_OPTIONS"
+            snapdev::safe_setenv subenv("ADVGETOPT_TEST_OPTIONS"
                                 , "--verbose"
                                  " --size '1001 meters'"
                                  " -f valid.cpp"
@@ -612,7 +612,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
         valid_options_from_file.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
         valid_options_from_file.f_help_header = "Usage: test valid options from file";
 
-        snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS"
+        snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS"
                             , "--verbose"
                              " --more purple"
                              " -f left.txt center.txt right.txt"

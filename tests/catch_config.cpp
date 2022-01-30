@@ -393,7 +393,7 @@ CATCH_TEST_CASE("configuration_filenames", "[config][getopt][filenames]")
 
             std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
             tmpdir += "/.config/home-that-never-gets-created";
-            snap::safe_setenv env("HOME", tmpdir);
+            snapdev::safe_setenv env("HOME", tmpdir);
 
             {
                 std::ofstream config_file;
@@ -729,7 +729,7 @@ CATCH_TEST_CASE("load_multiple_configurations", "[config][getopt][filenames]")
             exit(1);
         }
 
-        snap::safe_setenv env("HOME", tmpdir);
+        snapdev::safe_setenv env("HOME", tmpdir);
 
         {
             std::ofstream config_file;
@@ -856,7 +856,7 @@ CATCH_TEST_CASE("load_multiple_configurations", "[config][getopt][filenames]")
             exit(1);
         }
 
-        snap::safe_setenv env("HOME", tmpdir);
+        snapdev::safe_setenv env("HOME", tmpdir);
 
         {
             std::ofstream config_file;

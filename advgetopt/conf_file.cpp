@@ -1123,12 +1123,12 @@ bool conf_file::set_parameter(std::string section, std::string name, std::string
     }
     else
     {
-        snap::tokenize_string(section_list
+        snapdev::tokenize_string(section_list
                             , section
                             , "::"
                             , true
                             , std::string()
-                            , &snap::string_predicate<string_list_t>);
+                            , &snapdev::string_predicate<string_list_t>);
     }
 
     char const * s(n);
@@ -1604,7 +1604,7 @@ bool conf_file::get_line(std::ifstream & in, std::string & line)
  */
 void conf_file::read_configuration()
 {
-    snap::safe_variable<decltype(f_reading)> safe_reading(f_reading, true);
+    snapdev::safe_variable<decltype(f_reading)> safe_reading(f_reading, true);
 
     std::ifstream conf(f_setup.get_filename());
     if(!conf)

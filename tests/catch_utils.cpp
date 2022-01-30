@@ -642,7 +642,7 @@ CATCH_TEST_CASE("utils_insert_group_name", "[utils][valid]")
 CATCH_TEST_CASE("utils_handle_user_directory", "[utils][valid]")
 {
     CATCH_START_SECTION("Valid cases")
-        snap::safe_setenv env("HOME", "/home/advgetopt");
+        snapdev::safe_setenv env("HOME", "/home/advgetopt");
 
         {
             std::string result(advgetopt::handle_user_directory("~"));
@@ -661,7 +661,7 @@ CATCH_TEST_CASE("utils_handle_user_directory", "[utils][valid]")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("$HOME is empty")
-        snap::safe_setenv env("HOME", "");
+        snapdev::safe_setenv env("HOME", "");
 
         {
             std::string result(advgetopt::handle_user_directory("~"));
@@ -675,7 +675,7 @@ CATCH_TEST_CASE("utils_handle_user_directory", "[utils][valid]")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Paths do not start with ~")
-        snap::safe_setenv env("HOME", "/home/advgetopt");
+        snapdev::safe_setenv env("HOME", "/home/advgetopt");
 
         {
             std::string result(advgetopt::handle_user_directory("/~"));

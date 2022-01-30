@@ -316,7 +316,7 @@ void getopt::parse_options_from_file(
     for(auto & section_names : sections)
     {
         std::list<std::string> names;
-        snap::tokenize_string(
+        snapdev::tokenize_string(
               names
             , section_names
             , "::");

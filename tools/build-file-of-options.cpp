@@ -197,7 +197,7 @@ int main(int argc, char * argv[])
         std::cerr << "error: exception caught: " << e.what() << std::endl;
         return 1;
     }
-    snap::NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 

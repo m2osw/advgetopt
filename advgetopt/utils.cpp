@@ -362,12 +362,12 @@ string_list_t insert_group_name(
                 + (".d/[0-9][0-9]-" + filename);
     }
 
-    snap::glob_to_list<std::set<std::string>> glob;
+    snapdev::glob_to_list<std::set<std::string>> glob;
 
     // the glob() function is not thread safe
     {
         cppthread::guard lock(get_global_mutex());
-        snap::NOT_USED(glob.read_path<snap::glob_to_list_flag_t::GLOB_FLAG_IGNORE_ERRORS>(pattern));
+        snapdev::NOT_USED(glob.read_path<snapdev::glob_to_list_flag_t::GLOB_FLAG_IGNORE_ERRORS>(pattern));
     }
 
     // we add the default name if none other exists

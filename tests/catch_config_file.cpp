@@ -156,7 +156,7 @@ CATCH_TEST_CASE("configuration_setup", "[config][getopt][valid]")
                                 std::string const qs(url.substr(qm_pos + 1));
 
                                 std::vector<std::string> strings;
-                                snap::tokenize_string(strings, qs, "&");
+                                snapdev::tokenize_string(strings, qs, "&");
 
                                 bool def_lc(true);
                                 bool def_ao(true);
@@ -210,7 +210,7 @@ CATCH_TEST_CASE("configuration_setup", "[config][getopt][valid]")
                                     {
                                         def_ao = false;
                                         std::vector<std::string> operators;
-                                        snap::tokenize_string(operators, var_value, ",");
+                                        snapdev::tokenize_string(operators, var_value, ",");
 
                                         if((real_ao & advgetopt::ASSIGNMENT_OPERATOR_EQUAL) != 0)
                                         {
@@ -237,7 +237,7 @@ CATCH_TEST_CASE("configuration_setup", "[config][getopt][valid]")
                                     {
                                         def_c = false;
                                         std::vector<std::string> comments;
-                                        snap::tokenize_string(comments, var_value, ",");
+                                        snapdev::tokenize_string(comments, var_value, ",");
 
                                         if((c & advgetopt::COMMENT_INI) != 0)
                                         {
@@ -270,7 +270,7 @@ CATCH_TEST_CASE("configuration_setup", "[config][getopt][valid]")
                                     {
                                         def_so = false;
                                         std::vector<std::string> section_operators;
-                                        snap::tokenize_string(section_operators, var_value, ",");
+                                        snapdev::tokenize_string(section_operators, var_value, ",");
 
                                         if((so & advgetopt::SECTION_OPERATOR_C) != 0)
                                         {

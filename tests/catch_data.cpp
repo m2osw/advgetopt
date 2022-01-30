@@ -2553,7 +2553,7 @@ CATCH_TEST_CASE("system_flags_configuration_filenames", "[arguments][valid][geto
 {
     CATCH_START_SECTION("Check with the --configuration-filenames system flag")
     {
-        snap::safe_setenv env("HOME", "/home/advgetopt");
+        snapdev::safe_setenv env("HOME", "/home/advgetopt");
 
         advgetopt::option const options[] =
         {
@@ -2667,7 +2667,7 @@ CATCH_TEST_CASE("system_flags_configuration_filenames", "[arguments][valid][geto
 
     CATCH_START_SECTION("Check with the --configuration-filenames system flag with --config-dir too")
     {
-        snap::safe_setenv env("HOME", "/home/advgetopt");
+        snapdev::safe_setenv env("HOME", "/home/advgetopt");
 
         advgetopt::option const options[] =
         {

@@ -414,12 +414,12 @@ string_list_t option_info::get_section_name_list() const
     }
 
     string_list_t section_list;
-    snap::tokenize_string(section_list
+    snapdev::tokenize_string(section_list
                         , f_name.substr(0, pos)
                         , "::"
                         , true
                         , std::string()
-                        , &snap::string_predicate<string_list_t>);
+                        , &snapdev::string_predicate<string_list_t>);
     return section_list;
 }
 
@@ -790,7 +790,7 @@ bool option_info::set_validator(validator::pointer_t validator)
  */
 bool option_info::set_validator(std::nullptr_t null_ptr)
 {
-    snap::NOT_USED(null_ptr);
+    snapdev::NOT_USED(null_ptr);
 
     f_validator.reset();
 

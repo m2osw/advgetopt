@@ -274,7 +274,7 @@ CATCH_TEST_CASE("options_sources_environment_variable_and_config_file", "[option
             advgetopt::end_options()
         };
 
-        snap::safe_setenv env(
+        snapdev::safe_setenv env(
                   "ADVGETOPT_TEST_OPTIONS"
                 , "--verbose --more=instructions --color black orange purple --sources=all");
 
@@ -608,7 +608,7 @@ CATCH_TEST_CASE("options_sources_environment_variable_and_config_file", "[option
         };
 
         std::string const config_dir("--config-dir=\"" + SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config\"");
-        snap::safe_setenv env(
+        snapdev::safe_setenv env(
                   "ADVGETOPT_TEST_OPTIONS"
                 , "--verbose --more=instructions "
                 + config_dir

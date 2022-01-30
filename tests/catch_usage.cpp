@@ -52,7 +52,7 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
 {
     std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
     tmpdir += "/.config/home";
-    snap::safe_setenv env("HOME", tmpdir);
+    snapdev::safe_setenv env("HOME", tmpdir);
 
     CATCH_START_SECTION("usage() using \"--filename\" for the default option accepting multiple entries")
     {
@@ -2099,7 +2099,7 @@ CATCH_TEST_CASE("help_string_environment_variable", "[getopt][usage]")
 {
     CATCH_START_SECTION("Percent Environment Variable (fully defined, variable set)")
     {
-        snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--verbose");
+        snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--verbose");
 
         const advgetopt::option options_list[] =
         {
@@ -2217,7 +2217,7 @@ advgetopt::getopt::breakup_line(
 
     CATCH_START_SECTION("Percent Asterisk Environment Variable (fully defined, variable set)")
     {
-        snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--verbose");
+        snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--verbose");
 
         const advgetopt::option options_list[] =
         {
@@ -2335,7 +2335,7 @@ advgetopt::getopt::breakup_line(
 
     CATCH_START_SECTION("Percent Environment Variable (nullptr, variable set)")
     {
-        snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--verbose");
+        snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--verbose");
 
         const advgetopt::option options_list[] =
         {
@@ -2431,7 +2431,7 @@ advgetopt::getopt::breakup_line(
 
     CATCH_START_SECTION("Percent Asterisk Environment Variable (nullptr, variable set)")
     {
-        snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--verbose");
+        snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--verbose");
 
         const advgetopt::option options_list[] =
         {
@@ -2527,7 +2527,7 @@ advgetopt::getopt::breakup_line(
 
     CATCH_START_SECTION("Percent Environment Variable (empty string, variable set)")
     {
-        snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--verbose");
+        snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--verbose");
 
         const advgetopt::option options_list[] =
         {
@@ -2625,7 +2625,7 @@ advgetopt::getopt::breakup_line(
 
     CATCH_START_SECTION("Percent Asterisk Environment Variable (empty string, variable set)")
     {
-        snap::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--verbose");
+        snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--verbose");
 
         const advgetopt::option options_list[] =
         {

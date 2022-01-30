@@ -110,7 +110,7 @@ namespace
 
 int finish_init(Catch::Session & session)
 {
-    snap::NOT_USED(session);
+    snapdev::NOT_USED(session);
 
     cppthread::set_log_callback(SNAP_CATCH2_NAMESPACE::log_for_test);
 

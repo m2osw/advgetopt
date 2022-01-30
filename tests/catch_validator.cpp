@@ -973,7 +973,7 @@ CATCH_TEST_CASE("invalid_validator", "[validator][invalid][validation]")
 
             virtual std::shared_ptr<advgetopt::validator> create(advgetopt::string_list_t const & data) const override
             {
-                snap::NOT_USED(data); // ignore `data`
+                snapdev::NOT_USED(data); // ignore `data`
                 return std::make_shared<duplicate_integer>();
             }
         };
