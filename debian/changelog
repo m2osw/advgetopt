@@ -1,3 +1,9 @@
+advgetopt (2.0.25.0~bionic) bionic; urgency=high
+
+  * Explicitly include limits for the doubles.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 01 Feb 2022 07:03:19 -0800
+
 advgetopt (2.0.24.0~bionic) bionic; urgency=high
 
   * Added an add_option() to be able to dynamically add options (instead of
