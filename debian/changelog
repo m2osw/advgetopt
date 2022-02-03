@@ -4,7 +4,7 @@ advgetopt (2.0.26.0~bionic) bionic; urgency=high
   * Fixed an exception message to make it clearer.
   * Updated the tests accordingly, they all pass again.
 
- -- Alexis Wilke <alexis@m2osw.com>  Tue, 01 Feb 2022 07:03:19 -0800
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 02 Feb 2022 20:57:23 -0800
 
 advgetopt (2.0.25.0~bionic) bionic; urgency=high
 
