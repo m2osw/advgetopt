@@ -3306,27 +3306,27 @@ CATCH_TEST_CASE("invalid_option_name", "[arguments][invalid][getopt]")
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.has_default("")
-                , advgetopt::getopt_logic_error
+                , advgetopt::getopt_invalid_parameter
                 , Catch::Matchers::ExceptionMessage(
-                              "getopt_logic_error: argument name cannot be empty."));
+                              "getopt_exception: get_option() `name` argument cannot be empty."));
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.has_default(std::string())
-                , advgetopt::getopt_logic_error
+                , advgetopt::getopt_invalid_parameter
                 , Catch::Matchers::ExceptionMessage(
-                              "getopt_logic_error: argument name cannot be empty."));
+                              "getopt_exception: get_option() `name` argument cannot be empty."));
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.get_default("")
-                , advgetopt::getopt_logic_error
+                , advgetopt::getopt_invalid_parameter
                 , Catch::Matchers::ExceptionMessage(
-                              "getopt_logic_error: argument name cannot be empty."));
+                              "getopt_exception: get_option() `name` argument cannot be empty."));
 
         CATCH_REQUIRE_THROWS_MATCHES(
                   opt.get_default(std::string())
-                , advgetopt::getopt_logic_error
+                , advgetopt::getopt_invalid_parameter
                 , Catch::Matchers::ExceptionMessage(
-                              "getopt_logic_error: argument name cannot be empty."));
+                              "getopt_exception: get_option() `name` argument cannot be empty."));
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("[] operators want a valid name")

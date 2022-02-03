@@ -456,6 +456,7 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid number (\xE4\xA0\x99) in parameter --unknown at offset 0.");
         CATCH_REQUIRE(unknown_ref.get_long() == -1);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         CATCH_REQUIRE(static_cast<std::string>(unknown_ref) == "\xE4\xA0\x99");
         CATCH_REQUIRE(opt.is_defined("unknown"));
@@ -1451,6 +1452,7 @@ CATCH_TEST_CASE("option_info_ref_with_invalid_default", "[option_info][invalid][
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid default value for a number (undefined) in parameter --reference at offset 0.");
         CATCH_REQUIRE(reference_ref.get_long() == -1);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         CATCH_REQUIRE(reference_ref == reference_ref);
         CATCH_REQUIRE_FALSE(reference_ref != reference_ref);

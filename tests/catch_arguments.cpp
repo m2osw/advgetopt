@@ -4912,6 +4912,7 @@ CATCH_TEST_CASE("invalid_getopt_missing_options", "[invalid][getopt][arguments]"
 CATCH_TEST_CASE("invalid_getopt_missing_required_option", "[invalid][getopt][arguments][alias]")
 {
     CATCH_START_SECTION("Specify the option without a corresponding parameter.")
+    {
         const advgetopt::option options[] =
         {
             advgetopt::define_option(
@@ -4945,12 +4946,22 @@ CATCH_TEST_CASE("invalid_getopt_missing_required_option", "[invalid][getopt][arg
         char ** argv = const_cast<char **>(cargv);
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: option --size expects an argument.");
-        advgetopt::getopt opt(environment_options, argc, argv);
+        advgetopt::getopt opt(environment_options);
+        try
+        {
+            opt.finish_parsing(argc, argv);
+            CATCH_REQUIRE(false);   // the library is expected to throw here
+        }
+        catch(advgetopt::getopt_exit const & e)
+        {
+            CATCH_REQUIRE(e.code() == 1);
+            CATCH_REQUIRE(e.what() == std::string("getopt_exception: errors were found on your command line, environment variable, or configuration file."));
+        }
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
 
-        // an invalid parameter, MUST NOT EXIST
+        // an "invalid-parameter", MUST NOT EXIST
         CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
         CATCH_REQUIRE(opt.get_option('Z') == nullptr);
         CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
@@ -4979,9 +4990,11 @@ CATCH_TEST_CASE("invalid_getopt_missing_required_option", "[invalid][getopt][arg
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Specify the option with an equal sign but without a corresponding parameter.")
+    {
         const advgetopt::option options[] =
         {
             advgetopt::define_option(
@@ -5015,7 +5028,17 @@ CATCH_TEST_CASE("invalid_getopt_missing_required_option", "[invalid][getopt][arg
         char ** argv = const_cast<char **>(cargv);
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: option --size must be given a value.");
-        advgetopt::getopt opt(environment_options, argc, argv);
+        advgetopt::getopt opt(environment_options);
+        try
+        {
+            opt.finish_parsing(argc, argv);
+            CATCH_REQUIRE(false);   // the library is expected to throw here
+        }
+        catch(advgetopt::getopt_exit const & e)
+        {
+            CATCH_REQUIRE(e.code() == 1);
+            CATCH_REQUIRE(e.what() == std::string("getopt_exception: errors were found on your command line, environment variable, or configuration file."));
+        }
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
@@ -5049,6 +5072,7 @@ CATCH_TEST_CASE("invalid_getopt_missing_required_option", "[invalid][getopt][arg
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Specify the option without a corresponding parameter followed by a long argument.")
@@ -5085,7 +5109,17 @@ CATCH_TEST_CASE("invalid_getopt_missing_required_option", "[invalid][getopt][arg
         char ** argv = const_cast<char **>(cargv);
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: option --size expects an argument.");
-        advgetopt::getopt opt(environment_options, argc, argv);
+        advgetopt::getopt opt(environment_options);
+        try
+        {
+            opt.finish_parsing(argc, argv);
+            CATCH_REQUIRE(false);   // the library is expected to throw here
+        }
+        catch(advgetopt::getopt_exit const & e)
+        {
+            CATCH_REQUIRE(e.code() == 1);
+            CATCH_REQUIRE(e.what() == std::string("getopt_exception: errors were found on your command line, environment variable, or configuration file."));
+        }
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
@@ -5155,7 +5189,17 @@ CATCH_TEST_CASE("invalid_getopt_missing_required_option", "[invalid][getopt][arg
         char ** argv = const_cast<char **>(cargv);
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: option --size expects an argument.");
-        advgetopt::getopt opt(environment_options, argc, argv);
+        advgetopt::getopt opt(environment_options);
+        try
+        {
+            opt.finish_parsing(argc, argv);
+            CATCH_REQUIRE(false);   // the library is expected to throw here
+        }
+        catch(advgetopt::getopt_exit const & e)
+        {
+            CATCH_REQUIRE(e.code() == 1);
+            CATCH_REQUIRE(e.what() == std::string("getopt_exception: errors were found on your command line, environment variable, or configuration file."));
+        }
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
@@ -5223,7 +5267,17 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
         char ** argv = const_cast<char **>(cargv);
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: no default options defined; we do not know what to do of \"file.txt\"; standalone parameters are not accepted by this program.");
-        advgetopt::getopt opt(environment_options, argc, argv);
+        advgetopt::getopt opt(environment_options);
+        try
+        {
+            opt.finish_parsing(argc, argv);
+            CATCH_REQUIRE(false);   // the library is expected to throw here
+        }
+        catch(advgetopt::getopt_exit const & e)
+        {
+            CATCH_REQUIRE(e.code() == 1);
+            CATCH_REQUIRE(e.what() == std::string("getopt_exception: errors were found on your command line, environment variable, or configuration file."));
+        }
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
@@ -5289,7 +5343,17 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
         char ** argv = const_cast<char **>(cargv);
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: default options are not supported on the command line.");
-        advgetopt::getopt opt(environment_options, argc, argv);
+        advgetopt::getopt opt(environment_options);
+        try
+        {
+            opt.finish_parsing(argc, argv);
+            CATCH_REQUIRE(false);   // the library is expected to throw here
+        }
+        catch(advgetopt::getopt_exit const & e)
+        {
+            CATCH_REQUIRE(e.code() == 1);
+            CATCH_REQUIRE(e.what() == std::string("getopt_exception: errors were found on your command line, environment variable, or configuration file."));
+        }
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
@@ -5357,7 +5421,17 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
         char ** argv = const_cast<char **>(cargv);
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: default options are not supported in the environment variable.");
-        advgetopt::getopt opt(environment_options, argc, argv);
+        advgetopt::getopt opt(environment_options);
+        try
+        {
+            opt.finish_parsing(argc, argv);
+            CATCH_REQUIRE(false);   // the library is expected to throw here
+        }
+        catch(advgetopt::getopt_exit const & e)
+        {
+            CATCH_REQUIRE(e.code() == 1);
+            CATCH_REQUIRE(e.what() == std::string("getopt_exception: errors were found on your command line, environment variable, or configuration file."));
+        }
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
@@ -5418,7 +5492,17 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
         char ** argv = const_cast<char **>(cargv);
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: no default options defined; thus \"--\" is not accepted by this program.");
-        advgetopt::getopt opt(environment_options, argc, argv);
+        advgetopt::getopt opt(environment_options);
+        try
+        {
+            opt.finish_parsing(argc, argv);
+            CATCH_REQUIRE(false);   // the library is expected to throw here
+        }
+        catch(advgetopt::getopt_exit const & e)
+        {
+            CATCH_REQUIRE(e.code() == 1);
+            CATCH_REQUIRE(e.what() == std::string("getopt_exception: errors were found on your command line, environment variable, or configuration file."));
+        }
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
@@ -5485,7 +5569,17 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
         char ** argv = const_cast<char **>(cargv);
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: option \"--\" is not supported on the command line.");
-        advgetopt::getopt opt(environment_options, argc, argv);
+        advgetopt::getopt opt(environment_options);
+        try
+        {
+            opt.finish_parsing(argc, argv);
+            CATCH_REQUIRE(false);   // the library is expected to throw here
+        }
+        catch(advgetopt::getopt_exit const & e)
+        {
+            CATCH_REQUIRE(e.code() == 1);
+            CATCH_REQUIRE(e.what() == std::string("getopt_exception: errors were found on your command line, environment variable, or configuration file."));
+        }
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
@@ -5554,7 +5648,17 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
         char ** argv = const_cast<char **>(cargv);
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: option \"--\" is not supported in the environment variable.");
-        advgetopt::getopt opt(environment_options, argc, argv);
+        advgetopt::getopt opt(environment_options);
+        try
+        {
+            opt.finish_parsing(argc, argv);
+            CATCH_REQUIRE(false);   // the library is expected to throw here
+        }
+        catch(advgetopt::getopt_exit const & e)
+        {
+            CATCH_REQUIRE(e.code() == 1);
+            CATCH_REQUIRE(e.what() == std::string("getopt_exception: errors were found on your command line, environment variable, or configuration file."));
+        }
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
@@ -5615,7 +5719,17 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
         char ** argv = const_cast<char **>(cargv);
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: no default options defined; thus \"-\" is not accepted by this program.");
-        advgetopt::getopt opt(environment_options, argc, argv);
+        advgetopt::getopt opt(environment_options);
+        try
+        {
+            opt.finish_parsing(argc, argv);
+            CATCH_REQUIRE(false);   // the library is expected to throw here
+        }
+        catch(advgetopt::getopt_exit const & e)
+        {
+            CATCH_REQUIRE(e.code() == 1);
+            CATCH_REQUIRE(e.what() == std::string("getopt_exception: errors were found on your command line, environment variable, or configuration file."));
+        }
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
@@ -5682,7 +5796,17 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
         char ** argv = const_cast<char **>(cargv);
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: option \"-\" is not supported on the command line.");
-        advgetopt::getopt opt(environment_options, argc, argv);
+        advgetopt::getopt opt(environment_options);
+        try
+        {
+            opt.finish_parsing(argc, argv);
+            CATCH_REQUIRE(false);   // the library is expected to throw here
+        }
+        catch(advgetopt::getopt_exit const & e)
+        {
+            CATCH_REQUIRE(e.code() == 1);
+            CATCH_REQUIRE(e.what() == std::string("getopt_exception: errors were found on your command line, environment variable, or configuration file."));
+        }
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
@@ -5751,7 +5875,17 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
         char ** argv = const_cast<char **>(cargv);
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: option \"-\" is not supported in the environment variable.");
-        advgetopt::getopt opt(environment_options, argc, argv);
+        advgetopt::getopt opt(environment_options);
+        try
+        {
+            opt.finish_parsing(argc, argv);
+            CATCH_REQUIRE(false);   // the library is expected to throw here
+        }
+        catch(advgetopt::getopt_exit const & e)
+        {
+            CATCH_REQUIRE(e.code() == 1);
+            CATCH_REQUIRE(e.what() == std::string("getopt_exception: errors were found on your command line, environment variable, or configuration file."));
+        }
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
@@ -5814,7 +5948,17 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
         char ** argv = const_cast<char **>(cargv);
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: name missing in \"--=591\".");
-        advgetopt::getopt opt(environment_options, argc, argv);
+        advgetopt::getopt opt(environment_options);
+        try
+        {
+            opt.finish_parsing(argc, argv);
+            CATCH_REQUIRE(false);   // the library is expected to throw here
+        }
+        catch(advgetopt::getopt_exit const & e)
+        {
+            CATCH_REQUIRE(e.code() == 1);
+            CATCH_REQUIRE(e.what() == std::string("getopt_exception: errors were found on your command line, environment variable, or configuration file."));
+        }
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
@@ -5865,7 +6009,17 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
         char ** argv = const_cast<char **>(cargv);
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: option \"--unknown\" is not supported.");
-        advgetopt::getopt opt(environment_options, argc, argv);
+        advgetopt::getopt opt(environment_options);
+        try
+        {
+            opt.finish_parsing(argc, argv);
+            CATCH_REQUIRE(false);   // the library is expected to throw here
+        }
+        catch(advgetopt::getopt_exit const & e)
+        {
+            CATCH_REQUIRE(e.code() == 1);
+            CATCH_REQUIRE(e.what() == std::string("getopt_exception: errors were found on your command line, environment variable, or configuration file."));
+        }
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
@@ -5919,7 +6073,17 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
         char ** argv = const_cast<char **>(cargv);
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: option \"--size\" is not supported in the environment variable.");
-        advgetopt::getopt opt(environment_options, argc, argv);
+        advgetopt::getopt opt(environment_options);
+        try
+        {
+            opt.finish_parsing(argc, argv);
+            CATCH_REQUIRE(false);   // the library is expected to throw here
+        }
+        catch(advgetopt::getopt_exit const & e)
+        {
+            CATCH_REQUIRE(e.code() == 1);
+            CATCH_REQUIRE(e.what() == std::string("getopt_exception: errors were found on your command line, environment variable, or configuration file."));
+        }
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
@@ -5978,7 +6142,17 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
         char ** argv = const_cast<char **>(cargv);
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: option \"--size\" is not supported on the command line.");
-        advgetopt::getopt opt(environment_options, argc, argv);
+        advgetopt::getopt opt(environment_options);
+        try
+        {
+            opt.finish_parsing(argc, argv);
+            CATCH_REQUIRE(false);   // the library is expected to throw here
+        }
+        catch(advgetopt::getopt_exit const & e)
+        {
+            CATCH_REQUIRE(e.code() == 1);
+            CATCH_REQUIRE(e.what() == std::string("getopt_exception: errors were found on your command line, environment variable, or configuration file."));
+        }
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
@@ -6039,7 +6213,17 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
         char ** argv = const_cast<char **>(cargv);
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: option \"-q\" is not supported.");
-        advgetopt::getopt opt(environment_options, argc, argv);
+        advgetopt::getopt opt(environment_options);
+        try
+        {
+            opt.finish_parsing(argc, argv);
+            CATCH_REQUIRE(false);   // the library is expected to throw here
+        }
+        catch(advgetopt::getopt_exit const & e)
+        {
+            CATCH_REQUIRE(e.code() == 1);
+            CATCH_REQUIRE(e.what() == std::string("getopt_exception: errors were found on your command line, environment variable, or configuration file."));
+        }
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
@@ -6109,7 +6293,17 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: option \"-s\" is not supported in the environment variable.");
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: no default options defined; we do not know what to do of \"4551\"; standalone parameters are not accepted by this program.");
-        advgetopt::getopt opt(environment_options, argc, argv);
+        advgetopt::getopt opt(environment_options);
+        try
+        {
+            opt.finish_parsing(argc, argv);
+            CATCH_REQUIRE(false);   // the library is expected to throw here
+        }
+        catch(advgetopt::getopt_exit const & e)
+        {
+            CATCH_REQUIRE(e.code() == 1);
+            CATCH_REQUIRE(e.what() == std::string("getopt_exception: errors were found on your command line, environment variable, or configuration file."));
+        }
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid
@@ -6183,7 +6377,17 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: option \"-s\" is not supported on the command line.");
         //SNAP_CATCH2_NAMESPACE::push_expected_log("error: no default options defined; we do not know what to do of \"4551\"; standalone parameters are not accepted by this program.");
-        advgetopt::getopt opt(environment_options, argc, argv);
+        advgetopt::getopt opt(environment_options);
+        try
+        {
+            opt.finish_parsing(argc, argv);
+            CATCH_REQUIRE(false);   // the library is expected to throw here
+        }
+        catch(advgetopt::getopt_exit const & e)
+        {
+            CATCH_REQUIRE(e.code() == 1);
+            CATCH_REQUIRE(e.what() == std::string("getopt_exception: errors were found on your command line, environment variable, or configuration file."));
+        }
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         // check that the result is valid

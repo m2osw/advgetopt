@@ -440,7 +440,7 @@ CATCH_TEST_CASE("option_info_validator", "[option_info][valid][validator]")
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"3\" given to parameter --validator is not considered valid.");
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"11\" given to parameter --validator is not considered valid.");
-        auto_validate.set_multiple_values("6,3,18,11", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        CATCH_REQUIRE_FALSE(auto_validate.set_multiple_values("6,3,18,11", advgetopt::option_source_t::SOURCE_COMMAND_LINE));
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         CATCH_REQUIRE(auto_validate.size() == 2);
         CATCH_REQUIRE(auto_validate.get_value(0) == "6");
@@ -451,7 +451,7 @@ CATCH_TEST_CASE("option_info_validator", "[option_info][valid][validator]")
         auto_validate.set_validator(nullptr);
         CATCH_REQUIRE(auto_validate.get_validator() == nullptr);
 
-        auto_validate.set_multiple_values("6,3,18,11", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        CATCH_REQUIRE(auto_validate.set_multiple_values("6,3,18,11", advgetopt::option_source_t::SOURCE_COMMAND_LINE));
         CATCH_REQUIRE(auto_validate.size() == 4);
         CATCH_REQUIRE(auto_validate.get_value(0) == "6");
         CATCH_REQUIRE(auto_validate.get_long(0) == 6);
@@ -494,7 +494,7 @@ CATCH_TEST_CASE("option_info_validator", "[option_info][valid][validator]")
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"3\" given to parameter --validator is not considered valid.");
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"11\" given to parameter --validator is not considered valid.");
-        auto_validate.set_multiple_values("6,3,18,11", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        CATCH_REQUIRE_FALSE(auto_validate.set_multiple_values("6,3,18,11", advgetopt::option_source_t::SOURCE_COMMAND_LINE));
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         CATCH_REQUIRE(auto_validate.size() == 2);
         CATCH_REQUIRE(auto_validate.get_value(0) == "6");
@@ -505,7 +505,7 @@ CATCH_TEST_CASE("option_info_validator", "[option_info][valid][validator]")
         auto_validate.set_validator(std::string());
         CATCH_REQUIRE(auto_validate.get_validator() == nullptr);
 
-        auto_validate.set_multiple_values("6,3,18,11", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        CATCH_REQUIRE(auto_validate.set_multiple_values("6,3,18,11", advgetopt::option_source_t::SOURCE_COMMAND_LINE));
         CATCH_REQUIRE(auto_validate.size() == 4);
         CATCH_REQUIRE(auto_validate.get_value(0) == "6");
         CATCH_REQUIRE(auto_validate.get_long(0) == 6);
@@ -545,7 +545,7 @@ CATCH_TEST_CASE("option_info_validator", "[option_info][valid][validator]")
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"33\" given to parameter --validator is not considered valid.");
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"45\" given to parameter --validator is not considered valid.");
-        auto_validate.set_multiple_values("abc,qqq,33,zac,pop,45", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        CATCH_REQUIRE_FALSE(auto_validate.set_multiple_values("abc,qqq,33,zac,pop,45", advgetopt::option_source_t::SOURCE_COMMAND_LINE));
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         CATCH_REQUIRE(auto_validate.size() == 4);
         CATCH_REQUIRE(auto_validate.get_value(0) == "abc");
@@ -556,7 +556,7 @@ CATCH_TEST_CASE("option_info_validator", "[option_info][valid][validator]")
         auto_validate.set_validator(std::string());
         CATCH_REQUIRE(auto_validate.get_validator() == nullptr);
 
-        auto_validate.set_multiple_values("abc,-56,zoc", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        CATCH_REQUIRE(auto_validate.set_multiple_values("abc,-56,zoc", advgetopt::option_source_t::SOURCE_COMMAND_LINE));
         CATCH_REQUIRE(auto_validate.size() == 3);
         CATCH_REQUIRE(auto_validate.get_value(0) == "abc");
         CATCH_REQUIRE(auto_validate.get_value(1) == "-56");
@@ -596,7 +596,7 @@ CATCH_TEST_CASE("option_info_multiple_separators", "[option_info][valid][separat
         separators.set_multiple_separators(nullptr);
         CATCH_REQUIRE(separators.get_multiple_separators().empty());
 
-        separators.set_multiple_values("n1,n2;n3 n4 ^ n5", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        CATCH_REQUIRE(separators.set_multiple_values("n1,n2;n3 n4 ^ n5", advgetopt::option_source_t::SOURCE_COMMAND_LINE));
         CATCH_REQUIRE(separators.size() == 1);
         CATCH_REQUIRE(separators.get_value(0) == "n1,n2;n3 n4 ^ n5");
 
@@ -604,7 +604,7 @@ CATCH_TEST_CASE("option_info_multiple_separators", "[option_info][valid][separat
         separators.set_multiple_separators(empty_list);
         CATCH_REQUIRE(separators.get_multiple_separators().empty());
 
-        separators.set_multiple_values("n1,n2;n3 n4 ^ n5", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        CATCH_REQUIRE(separators.set_multiple_values("n1,n2;n3 n4 ^ n5", advgetopt::option_source_t::SOURCE_COMMAND_LINE));
         CATCH_REQUIRE(separators.size() == 1);
         CATCH_REQUIRE(separators.get_value(0) == "n1,n2;n3 n4 ^ n5");
 
@@ -614,7 +614,7 @@ CATCH_TEST_CASE("option_info_multiple_separators", "[option_info][valid][separat
         separators.set_multiple_separators(empty_separator_list);
         CATCH_REQUIRE(separators.get_multiple_separators().empty());
 
-        separators.set_multiple_values("n1,n2;n3 n4 ^ n5", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        CATCH_REQUIRE(separators.set_multiple_values("n1,n2;n3 n4 ^ n5", advgetopt::option_source_t::SOURCE_COMMAND_LINE));
         CATCH_REQUIRE(separators.size() == 1);
         CATCH_REQUIRE(separators.get_value(0) == "n1,n2;n3 n4 ^ n5");
 
@@ -628,7 +628,7 @@ CATCH_TEST_CASE("option_info_multiple_separators", "[option_info][valid][separat
         separators.set_multiple_separators(separator_list);
         CATCH_REQUIRE(separators.get_multiple_separators().size() == 4);
 
-        separators.set_multiple_values("n1,n2;n3 n4 ^ n5", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        CATCH_REQUIRE(separators.set_multiple_values("n1,n2;n3 n4 ^ n5", advgetopt::option_source_t::SOURCE_COMMAND_LINE));
         CATCH_REQUIRE(separators.size() == 5);
         CATCH_REQUIRE(separators.get_value(0) == "n1");
         CATCH_REQUIRE(separators.get_value(1) == "n2");
@@ -639,7 +639,7 @@ CATCH_TEST_CASE("option_info_multiple_separators", "[option_info][valid][separat
         separators.set_multiple_separators(empty_separator_list);
         CATCH_REQUIRE(separators.get_multiple_separators().empty());
 
-        separators.set_multiple_values("n1,n2;n3 n4 ^ n5", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        CATCH_REQUIRE(separators.set_multiple_values("n1,n2;n3 n4 ^ n5", advgetopt::option_source_t::SOURCE_COMMAND_LINE));
         CATCH_REQUIRE(separators.size() == 1);
         CATCH_REQUIRE(separators.get_value(0) == "n1,n2;n3 n4 ^ n5");
 
@@ -652,7 +652,7 @@ CATCH_TEST_CASE("option_info_multiple_separators", "[option_info][valid][separat
         separators.set_multiple_separators(list);
         CATCH_REQUIRE(separators.get_multiple_separators().size() == 4);
 
-        separators.set_multiple_values("n1,n2;n3 n4 ^ n5", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        CATCH_REQUIRE(separators.set_multiple_values("n1,n2;n3 n4 ^ n5", advgetopt::option_source_t::SOURCE_COMMAND_LINE));
         CATCH_REQUIRE(separators.size() == 5);
         CATCH_REQUIRE(separators.get_value(0) == "n1");
         CATCH_REQUIRE(separators.get_value(1) == "n2");
@@ -663,7 +663,7 @@ CATCH_TEST_CASE("option_info_multiple_separators", "[option_info][valid][separat
         separators.set_multiple_separators(empty_list);
         CATCH_REQUIRE(separators.get_multiple_separators().empty());
 
-        separators.set_multiple_values("n1,n2;n3 n4 ^ n5", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        CATCH_REQUIRE(separators.set_multiple_values("n1,n2;n3 n4 ^ n5", advgetopt::option_source_t::SOURCE_COMMAND_LINE));
         CATCH_REQUIRE(separators.size() == 1);
         CATCH_REQUIRE(separators.get_value(0) == "n1,n2;n3 n4 ^ n5");
     CATCH_END_SECTION()

@@ -574,7 +574,11 @@ getopt::getopt(options_environment const & opt_env
              , int argc
              , char * argv[])
 {
+    // TODO: I do not think that this check_for_show_sources() is required
+    //       because we also do it in finish_parsing()
+    //
     check_for_show_sources(argc, argv);
+
     initialize_parser(opt_env);
     finish_parsing(argc, argv);
 }
@@ -667,7 +671,7 @@ void getopt::finish_parsing(int argc, char * argv[])
 
     if(cppthread::log.get_errors() != 0)
     {
-        throw getopt_exit("error where found in your command line, environment variable, or configuration file.", 0);
+        throw getopt_exit("errors were found on your command line, environment variable, or configuration file.", 1);
     }
 }
 
@@ -1314,7 +1318,7 @@ option_info::pointer_t getopt::get_option(std::string const & name, bool exact_o
     {
         // see \note section in doxy above about this
         //
-        throw getopt_invalid_parameter("argument `name` cannot be empty.");
+        throw getopt_invalid_parameter("get_option() `name` argument cannot be empty.");
     }
 
     std::string const n(boost::replace_all_copy(name, "_", "-"));

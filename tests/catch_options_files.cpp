@@ -890,7 +890,17 @@ CATCH_TEST_CASE("invalid_options_files", "[options][invalid][files]")
                     "error: option name \"allowed\" cannot be added to"
                     " section \"invalid::name\" because this"
                     " configuration only accepts one section level.");
-        advgetopt::getopt::pointer_t opt(std::make_shared<advgetopt::getopt>(options_environment, sub_argc, sub_argv));
+        advgetopt::getopt::pointer_t opt(std::make_shared<advgetopt::getopt>(options_environment));
+        try
+        {
+            opt->finish_parsing(sub_argc, sub_argv);
+            CATCH_REQUIRE(false);   // the library is expected to throw here
+        }
+        catch(advgetopt::getopt_exit const & e)
+        {
+            CATCH_REQUIRE(e.code() == 1);
+            CATCH_REQUIRE(e.what() == std::string("getopt_exception: errors were found on your command line, environment variable, or configuration file."));
+        }
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         CATCH_REQUIRE(opt->size("invalid::name::shortname") == 0);
