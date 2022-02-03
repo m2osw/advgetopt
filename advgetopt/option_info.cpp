@@ -1163,6 +1163,7 @@ bool option_info::set_value(int idx, std::string const & value, option_source_t 
         f_value[idx] = value;
     }
     f_integer.clear();
+    f_double.clear();
 
     bool const r(validates(idx));
 
@@ -1231,11 +1232,17 @@ bool option_info::set_multiple_values(std::string const & value, option_source_t
     f_source = source;
     f_value.swap(result);
     f_integer.clear();
+    f_double.clear();
 
-    bool const r(!validate_all_values());
+    bool const r(validate_all_values());
 
     if(f_value != result)
     {
+        // TBD: should we not call this function with all instances?
+        //      i.e. for(int idx(0); idx < f_value.size(); ++idx) ...
+        //      and check each value in f_value with the old value in
+        //      the result variable (knowing that result may be smaller)
+        //
         value_changed(0);
     }
 
@@ -1678,6 +1685,7 @@ void option_info::reset()
         f_source = option_source_t::SOURCE_UNDEFINED;
         f_value.clear();
         f_integer.clear();
+        f_double.clear();
 
         value_changed(0);
     }
