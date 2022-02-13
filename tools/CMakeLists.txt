@@ -24,7 +24,7 @@
 project(build-file-of-options)
 
 add_executable(${PROJECT_NAME}
-    build-file-of-options.cpp
+    build_file_of_options.cpp
 )
 
 target_include_directories(${PROJECT_NAME}
@@ -56,7 +56,7 @@ install(
 project(hide-warnings)
 
 add_executable(${PROJECT_NAME}
-    hide-warnings.cpp
+    hide_warnings.cpp
 )
 
 install(

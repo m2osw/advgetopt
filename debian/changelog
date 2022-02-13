@@ -1,3 +1,9 @@
+advgetopt (2.0.28.0~bionic) bionic; urgency=high
+
+  * Actually install the edit-config tool in the package.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 13 Feb 2022 06:33:00 -0800
+
 advgetopt (2.0.27.0~bionic) bionic; urgency=high
 
   * Added the edit-config tool to edit Unix like configuration files.
