@@ -1,0 +1,186 @@
+.TH EDIT\-CONFIG 1 "February 2022" "edit-config 1.x" "User Commands"
+.SH NAME
+edit\-config \- Edit a configuration file parameter
+.SH SYNOPSIS
+.B edit-config
+[\fIOPTION\fR]... \fI<filename>\fR \fI<field-name>\fR [\fI<value\>\fR]
+
+.SH DESCRIPTION
+This command reads a Unix configuration and either prints the value of
+a field or replaces it.
+.PP
+The tool is built from the advgetopt library. The read feature will
+work with any input format. However, the write is currently limited
+to the Unix syntax.
+
+.SH "READING A FIELD"
+In order to read a field, use the command with a \fI<filename>\fR and a
+\fI<field-name>\fR. Do not include a \fI<value>\fR on the command line.
+The command will read \fI<filename>\fR and print out the value of the
+named field \fI<field-name>\fR. If the field is not defined, then the
+command prints an empty string (an empty line).
+.PP
+If you want to make sure that the field exists, use the
+\fI\-\-must\-exists\fR command line option.
+
+.SH "UPDATING A FIELD"
+To update a field, you want to include a \fI<filename\fR, a
+\fI<field-name>\fR, and a \fI<new-value>\fR. The command will read the
+configuration file, and set the value of \fI<field-name>\fR to
+\fR<new-value>\fI.
+.P
+If you want to make sure to replace a field, instead of possibly creating
+it, then use the \fI\-\-must\-exists\fR command line option. If the option
+is not yet set, then the process fails with an error and exits with 1.
+
+.SH "COMMAND LINE OPTIONS"
+.TP
+\fB\-\-build\-date\fR
+Display the date and time when the tool was last built.
+
+.TP
+\fB\-\-command\-help\fR
+List the commands understood by `ipmgr'.
+
+.TP
+\fB\-\-compiler\-version\fR
+Output the version information of the C++ compiler used to compile the
+`advgetopt' library. In most cases, this is the same as the compiler used
+to compile the `ipmgr' tool.
+
+.TP
+\fB\-\-configuration\-filenames\fR
+List the filename of each configuration file that the `ipmgr' will read
+to get initialized. (Note that at the moment the ipmgr does not make
+use of a configuration file).
+
+.TP
+\fB\-C\fR, \fB\-\-copyright\fR
+Print put the copyright notice of the `ipmgr' tool.
+
+.TP
+\fB\-\-create\-backup\fR [\fI<extension>\fR]
+Create a backup file if it does not yet exist. Optionally, you can specify
+the extension. If not specified, it defaults to ".bak".
+
+.TP
+\fB\-\-environment\-variable\-name\fR
+Print the name of the variable to the console. This variable can be used
+to enter options instead of writing them on the command line or the
+setup file. Commands are not allowed in the environment variable.
+
+.TP
+\fB\-\-has\-sanitizer\fR
+Print whether this version was compiled with the C++ compiler sanitizer.
+
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print a brief document about the tool usage, then exit.
+
+.TP
+\fB\-L\fR, \fB\-\-license\fR
+Print out the license of `ipmgr' and exit.
+
+.TP
+\fB\-\-must\-exist\fR
+Load the configuration file, check whether the field exists, if not, then
+print out an error and exit with 1. Otherwise either print the current
+value (no new value specified on the command line) or replace the existing
+value.
+
+.TP
+\fB\-\-no\-warning\fR
+If the command is able to add a warning to the new configuration file, then
+don't do it. By default, comments are saved so the command does not change
+the comments at all (and thus, it does not add a warning at the start of
+the file). If comments are being removed with the \fI\-\-remove-comments\fR
+command line option, then a warning is inserted at the start of the file.
+If you do not want the warning, then also use this option.
+
+.TP
+\fB\-\-option\-help\fR
+Print the list of options supported by `ipmgr'.
+
+.TP
+\fB\-\-priority\fR \fIPRIORITY\fR
+Define a priority level from 00 to 99 (leading 0 is not required). This is
+used only if a sub-directory was defined. It is assumed that the priorty
+will be followed by a dash and the filename of the configuration file as
+supported by the advgetopt library.
+
+.TP
+\fB\-\-path\-to\-option\-definitions\fR
+Option definitions can be defined in a .ini file. If it exists, this is the
+path where it can be found.
+
+.TP
+\fB\-\-remove\-comments\fR
+By default, the command keeps the comments found in the original file.
+This can cause some issues as the output is sorted by known fields.
+If that's the case with the file you are dealing with, use this
+option to remove all the comments and only keep field names and
+value pairs.
+
+.TP
+\fB\-\-replace\-backup\fR [\fI<extension>\fR]
+Create a backup file if it does not yet exist or replace it with the
+current version of the configuration file being edited. Optionally,
+you can specify the extension. If not specified, it defaults to ".bak".
+
+.TP
+\fB\-\-show\-option\-sources\fR
+The `advgetopt' library has the ability to trace where each value is
+read from: which file, the command line, the environment variable.
+This option can be used to determine where a value is defined, which
+once in a while is particularly useful.
+
+.TP
+\fB\-\-sub\-directory\fR
+Define a sub-directory where the file is expected to be saved. If such is
+defined, the command first tries to load the existing configuration from
+that sub-directory. If it does not exist, it tries the original instead. It
+always saves the result in the sub-directory. This is particularly useful if
+the configuration file is read by a tool which is capable of reading any
+number of files from within that sub-directory.
+
+Note that if you use the \fI\-\-sub\-directory\fR option, then you probably
+will not need to use the \fI\-\-create\-backup\fR or \fI\-\-replace\-backup\fR
+options since the original is not going to be modified anyway.
+
+The sub-directory gets created if it does not yet exist.
+
+.TP
+\fB\-V\fR, \fB\-\-version\fR
+print version number, then exit
+
+.SH COMMENTS
+.PP
+The advgetopt configuration file comments are simply ignored by default.
+However, contrary to the library default, the \fIedit-config\fR command
+tries to keep the comments in an attempt to keep the file intact except
+for the fields it will update. The issue here is that the fields get
+sorted so when we write the results, it won't be in the same order.
+.PP
+A later version will fix this issue.
+.PP
+To revert back to the library default behavior, use the
+\fI\-\-remove\-comments\fR option. If you also do not want the command to
+add a comment at the start of the resulting file, use \fI\-\-no\-warning\fR
+option.
+
+.SH AUTHOR
+Written by Alexis Wilke <alexis@m2osw.com>.
+.SH "REPORTING BUGS"
+Report bugs to <https://github.com/m2osw/ipmgr/issues>.
+.br
+ipmgr home page: <https://snapwebsites.org/project/ipmgr>.
+.SH COPYRIGHT
+Copyright \(co 2022 Made to Order Software Corporation
+.br
+License: GPLv3
+.br
+This is free software: you are free to change and redistribute it.
+.br
+There is NO WARRANTY, to the extent permitted by law.
+.SH "SEE ALSO"
+.BR advgetopt::getopt(3)

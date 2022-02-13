@@ -81,6 +81,37 @@ So in the configuration file it would look like this:
     long_option=123
 
 
+## `edit-config`
+
+This tool can be used to edit simple Unix-like configuration file. You can
+either retrieve the value of a field or set the value of a field.
+
+    edit-config <config>.conf <field-name> [<new-value>]
+
+Say you have file named "/etc/log/settings.conf" with the following
+parameters:
+
+    severity=DEBUG
+    path=/var/log/advgetopt/output.log
+    auto_reload=false
+
+Then runinng command:
+
+    edit-config /etc/log/settings.conf path
+
+prints out:
+
+    /var/log/advgetopt/output.log
+
+And command:
+
+    edit-config /etc/log/settings.conf auto_reload true
+
+replaces the value of `auto_reload` with `true`.
+
+**Note:** make sure to quote the value if it includes special characters.
+
+
 # Numbers
 
 The options can be marked as optional or required.

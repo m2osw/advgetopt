@@ -23,13 +23,15 @@
 ##
 project(build-file-of-options)
 
-include_directories(
-    ${LIBEXCEPT_INCLUDE_DIRS}
-    ${SNAPDEV_INCLUDE_DIRS}
-)
-
 add_executable(${PROJECT_NAME}
     build-file-of-options.cpp
+)
+
+target_include_directories(${PROJECT_NAME}
+    PUBLIC
+        ${ADVGETOPT_INCLUDE_DIRS}
+        ${LIBEXCEPT_INCLUDE_DIRS}
+        ${SNAPDEV_INCLUDE_DIRS}
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -55,6 +57,39 @@ project(hide-warnings)
 
 add_executable(${PROJECT_NAME}
     hide-warnings.cpp
+)
+
+install(
+    TARGETS
+        ${PROJECT_NAME}
+
+    RUNTIME DESTINATION
+        bin
+
+    COMPONENT
+        runtime
+)
+
+
+
+##
+## edit-config command line tool
+##
+project(edit-config)
+
+add_executable(${PROJECT_NAME}
+    edit_config.cpp
+)
+
+target_include_directories(${PROJECT_NAME}
+    PUBLIC
+        ${ADVGETOPT_INCLUDE_DIRS}
+        ${LIBEXCEPT_INCLUDE_DIRS}
+        ${SNAPDEV_INCLUDE_DIRS}
+)
+
+target_link_libraries(${PROJECT_NAME}
+    advgetopt
 )
 
 install(

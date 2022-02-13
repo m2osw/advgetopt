@@ -1,3 +1,18 @@
+advgetopt (2.0.27.0~bionic) bionic; urgency=high
+
+  * Added the edit-config tool to edit Unix like configuration files.
+  * Allow for saving the comments when reading configuration files.
+  * Allow for writing the comments back out in save_configuration().
+  * Changed the backup flag in a string so we can specify the extension.
+  * Allow to save in a file other than the file we loaded from.
+  * Create sub-directories if necessary to save the new configuration file.
+  * Replaced the boost replace_all() calls with one string_replace_many().
+  * Fixed a bug in the get_line() while reading the last line without a '\n'.
+  * Return default value on a get_string() when option is used by itself
+    and REQUIRED flag is not set.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 12 Feb 2022 22:04:38 -0800
+
 advgetopt (2.0.26.0~bionic) bionic; urgency=high
 
   * Return a code() of 1 on a getopt_exit() for errors.

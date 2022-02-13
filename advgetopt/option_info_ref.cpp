@@ -47,11 +47,6 @@
 #include    <libutf8/libutf8.h>
 
 
-// boost lib
-//
-#include    <boost/algorithm/string/replace.hpp>
-
-
 // last include
 //
 #include    <snapdev/poison.h>

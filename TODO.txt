@@ -10,4 +10,5 @@
 * The output of --help can be saved in a stringstream so we know how large it
   is and if larger than one screen, we can pass the result to `less` (we also
   want to make sure isatty() is true and that less is indeed accessible)
+* Look at keeping the comments when editing a configuration file.
 

@@ -23,6 +23,12 @@
  *
  * This is the implementation of the class used to load and save
  * configuration files.
+ *
+ * \warning
+ * This version uses the advgetopt::conf_file which sorts the fields
+ * it read, therefore, the output is going to be correct, but possibly
+ * sorted in a "funny way", especially if you keep the comments and
+ * some of the values are commented out.
  */
 
 // self
@@ -38,7 +44,9 @@
 
 // snapdev lib
 //
+#include    <snapdev/mkdir_p.h>
 #include    <snapdev/safe_variable.h>
+#include    <snapdev/string_replace_many.h>
 #include    <snapdev/tokenize_string.h>
 
 
@@ -52,7 +60,6 @@
 // boost lib
 //
 #include    <boost/algorithm/string/join.hpp>
-#include    <boost/algorithm/string/replace.hpp>
 
 
 // C++ lib
@@ -510,6 +517,10 @@ std::string conf_file_setup::get_config_url() const
             {
                 comment.push_back("cpp");
             }
+            if((f_comment & COMMENT_SAVE) != 0)
+            {
+                comment.push_back("save");
+            }
             if(comment.empty())
             {
                 params.push_back("comment=none");
@@ -557,6 +568,82 @@ std::string conf_file_setup::get_config_url() const
 
     return f_url;
 }
+
+
+
+
+
+
+
+parameter_value::parameter_value()
+{
+}
+
+
+parameter_value::parameter_value(parameter_value const & rhs)
+    : f_value(rhs.f_value)
+    , f_comment(rhs.f_comment)
+{
+}
+
+
+parameter_value::parameter_value(std::string const & value)
+    : f_value(value)
+{
+}
+
+
+parameter_value & parameter_value::operator = (parameter_value const & rhs)
+{
+    if(this != &rhs)
+    {
+        f_value = rhs.f_value;
+        f_comment = rhs.f_comment;
+    }
+    return *this;
+}
+
+
+parameter_value & parameter_value::operator = (std::string const & value)
+{
+    f_value = value;
+    return *this;
+}
+
+
+parameter_value::operator std::string () const
+{
+    return f_value;
+}
+
+
+void parameter_value::set_value(std::string const & value)
+{
+    f_value = value;
+}
+
+
+void parameter_value::set_comment(std::string const & comment)
+{
+    f_comment = comment;
+}
+
+
+std::string const & parameter_value::get_value() const
+{
+    return f_value;
+}
+
+
+std::string const & parameter_value::get_comment() const
+{
+    return f_comment;
+}
+
+
+
+
+
 
 
 
@@ -633,71 +720,115 @@ conf_file::pointer_t conf_file::get_conf_file(conf_file_setup const & setup)
  * If the conf is not marked as modified, the function returns immediately
  * with true.
  *
- * \param[in] create_backup  Whether to create a backup or not.
+ * \param[in] backup_extension  If not empty, create a backup.
+ * \param[in] replace_backup  If true and a backup exists, replace it.
+ * \param[in] prepend_warning  Whether to write a warning at the start of the
+ * file.
+ * \param[in] output_filename  The output filename, if empty, use the setup
+ * defined filename.
  *
  * \return true if the save worked as expected.
  */
-bool conf_file::save_configuration(bool create_backup)
+bool conf_file::save_configuration(
+          std::string backup_extension
+        , bool replace_backup
+        , bool prepend_warning
+        , std::string output_filename)
 {
     if(f_modified)
     {
         // create backup?
         //
-        if(create_backup)
+        if(!backup_extension.empty())
         {
-            // TODO: offer means to set the backup extension
-            //
-            std::string const backup_filename(f_setup.get_filename() + ".bak");
-
-            if(unlink(backup_filename.c_str()) != 0
-            && errno != ENOENT)
+            if(backup_extension[0] != '.'
+            && backup_extension[0] != '~')
             {
-                f_errno = errno;   // LCOV_EXCL_LINE
-                return false;      // LCOV_EXCL_LINE
+                backup_extension.insert(0, 1, '.');
             }
 
-            if(rename(f_setup.get_filename().c_str(), backup_filename.c_str()) != 0)
+            std::string const backup_filename(f_setup.get_filename() + backup_extension);
+
+            if(access(backup_filename.c_str(), F_OK) != 0
+            || replace_backup)
             {
-                f_errno = errno;   // LCOV_EXCL_LINE
-                return false;      // LCOV_EXCL_LINE
+                if(unlink(backup_filename.c_str()) != 0
+                && errno != ENOENT)
+                {
+                    f_errno = errno;   // LCOV_EXCL_LINE
+                    return false;      // LCOV_EXCL_LINE
+                }
+
+                if(rename(f_setup.get_filename().c_str(), backup_filename.c_str()) != 0)
+                {
+                    f_errno = errno;   // LCOV_EXCL_LINE
+                    return false;      // LCOV_EXCL_LINE
+                }
             }
+        }
+
+        std::string const & filename(output_filename.empty()
+                    ? f_setup.get_filename()
+                    : output_filename);
+
+        // TODO: look at adding the user:group info
+        //
+        if(snapdev::mkdir_p(filename, true) != 0)
+        {
+            f_errno = errno;   // LCOV_EXCL_LINE
+            return false;      // LCOV_EXCL_LINE
         }
 
         // save parameters to file
         //
         std::ofstream conf;
-        conf.open(f_setup.get_filename().c_str());
+        conf.open(filename);
         if(!conf.is_open())
         {
             f_errno = errno;   // LCOV_EXCL_LINE
             return false;      // LCOV_EXCL_LINE
         }
 
-        time_t const now(time(nullptr));
-        tm t;
-        gmtime_r(&now, &t);
-        char str_date[16];
-        strftime(str_date, sizeof(str_date), "%Y/%m/%d", &t);
-        char str_time[16];
-        strftime(str_time, sizeof(str_time), "%H:%M:%S", &t);
-
         // header warning with date & time
         //
-        conf << "# This file was auto-generated by snap_config.cpp on " << str_date << " at " << str_time << "." << std::endl
-             << "# Making modifications here is likely safe unless the tool handling this" << std::endl
-             << "# configuration file is actively working on it while you do the edits." << std::endl;
+        // (but only if the user doesn't already save comments otherwise
+        // that one would get re-added each time--some form of recursivity)
+        //
+        if(prepend_warning
+        && !f_parameters.empty()
+        && f_parameters.begin()->second.get_comment().empty())
+        {
+            time_t const now(time(nullptr));
+            tm t;
+            gmtime_r(&now, &t);
+            char str_date[16];
+            strftime(str_date, sizeof(str_date), "%Y/%m/%d", &t);
+            char str_time[16];
+            strftime(str_time, sizeof(str_time), "%H:%M:%S", &t);
+
+            conf << "# This file was auto-generated by advgetopt on " << str_date << " at " << str_time << "." << std::endl
+                 << "# Making modifications here is likely safe unless the tool handling this" << std::endl
+                 << "# configuration file is actively working on it while you do the edits." << std::endl;
+        }
         for(auto p : f_parameters)
         {
+            // if the value has a comment, output it
+            //
+            conf << p.second.get_comment();
+
             conf << p.first << "=";
 
             // prevent saving \r and \n characters as is when part of the
             // value; also double \ otherwise reading those back would fail
             //
-            std::string value(p.second);
-            boost::replace_all(value, "\\", "\\\\");
-            boost::replace_all(value, "\r", "\\r");
-            boost::replace_all(value, "\n", "\\n");
-            boost::replace_all(value, "\t", "\\t");
+            std::string const value(snapdev::string_replace_many(
+                  p.second.get_value()
+                , {
+                    { "\\", "\\\\" },
+                    { "\\r", "\\r" },
+                    { "\\n", "\\n" },
+                    { "\\t", "\\t" },
+                }));
             conf << value << std::endl;
 
             if(!conf)
@@ -1076,12 +1207,13 @@ std::string conf_file::get_parameter(std::string name) const
  * \li assignment ('=', ':', '?', '+')
  *
  * \note
- * The \p section and \p name parameters have any underscore (`_`)
+ * The \p section and \p name parameters have underscores (`_`)
  * replaced with dashes (`-`) before getting used. The very first
  * character can be a dash. This allows you to therefore create
- * parameters which cannot appear in a configuration file, an
- * environment variable or on the command line (where parameter are
- * not allowed to start with a dash.)
+ * a form of internal parameters; i.e. parameters which cannot
+ * appear in a configuration file, an environment variable or on
+ * the command line (where parameter are not allowed to start with
+ * a dash).
  *
  * \warning
  * It is important to note that when a \p name includes a C++ scope
@@ -1092,11 +1224,23 @@ std::string conf_file::get_parameter(std::string name) const
  * There should not be any concern about this small \em glitch though
  * since you do not have to accept any such parameter.
  *
- * \param[in] section  The list of section or an empty string.
+ * \todo
+ * The section/name combo should be dealt with inside this function
+ * instead of outside, especially if the are to support all the
+ * namespace operators.
+ *
+ * \param[in] section  The list of sections or an empty string.
  * \param[in] name  The name of the parameter.
  * \param[in] value  The value of the parameter.
+ * \param[in] comment  The comment appearing before value.
+ *
+ * \return true if the parameter was modified, false if an error occurs.
  */
-bool conf_file::set_parameter(std::string section, std::string name, std::string const & value)
+bool conf_file::set_parameter(
+      std::string section
+    , std::string name
+    , std::string const & value
+    , std::string const & comment)
 {
     // use the tokenize_string() function because we do not want to support
     // quoted strings in this list of sections which our split_string()
@@ -1307,6 +1451,7 @@ bool conf_file::set_parameter(std::string section, std::string name, std::string
     if(it == f_parameters.end())
     {
         f_parameters[full_name] = value;
+        f_parameters[full_name].set_comment(comment);
     }
     else
     {
@@ -1484,7 +1629,7 @@ bool conf_file::get_line(std::ifstream & in, std::string & line)
         int c(getc(in));
         if(c == EOF)
         {
-            return false;
+            return !line.empty();
         }
         if(c == ';'
         && f_setup.get_line_continuation() == line_continuation_t::line_continuation_semicolon)
@@ -1613,9 +1758,11 @@ void conf_file::read_configuration()
         return;
     }
 
+    bool const save_comment((f_setup.get_comment() & COMMENT_SAVE) != 0);
     std::string current_section;
     std::vector<std::string> sections;
     std::string str;
+    std::string last_comment;
     f_line = 0;
     while(get_line(conf, str))
     {
@@ -1628,6 +1775,12 @@ void conf_file::read_configuration()
         || is_comment(s))
         {
             // skip empty lines and comments
+            //
+            if(save_comment)
+            {
+                last_comment += str;
+                last_comment += '\n';   // str does not include the newline
+            }
             continue;
         }
         if((f_setup.get_section_operator() & SECTION_OPERATOR_BLOCK) != 0
@@ -1749,6 +1902,7 @@ void conf_file::read_configuration()
                 current_section = name.substr(1);
                 current_section += "::";
             }
+            last_comment.clear();
         }
         else if((f_setup.get_section_operator() & SECTION_OPERATOR_BLOCK) != 0
              && *s == '{')
@@ -1756,6 +1910,7 @@ void conf_file::read_configuration()
             sections.push_back(current_section);
             current_section += name;
             current_section += "::";
+            last_comment.clear();
         }
         else
         {
@@ -1775,12 +1930,16 @@ void conf_file::read_configuration()
                 }
             }
             size_t const len(e - s);
-            std::string value(s, len);
-            boost::replace_all(value, "\\\\", "\\");
-            boost::replace_all(value, "\\r", "\r");
-            boost::replace_all(value, "\\n", "\n");
-            boost::replace_all(value, "\\t", "\t");
-            set_parameter(current_section, name, unquote(value));
+            std::string const value(snapdev::string_replace_many(
+                  std::string(s, len)
+                , {
+                    { "\\\\", "\\" },
+                    { "\\r", "\r" },
+                    { "\\n", "\n" },
+                    { "\\t", "\t" },
+                }));
+            set_parameter(current_section, name, unquote(value), last_comment);
+            last_comment.clear();
         }
     }
     if(!conf.eof())

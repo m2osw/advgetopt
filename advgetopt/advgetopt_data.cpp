@@ -466,6 +466,15 @@ std::string getopt::get_string(
                 + " option was not defined on the command line and it has no default.");
     }
 
+    // it was defined, but if REQUIRED is not set and the value is empty
+    // then we want to return the default if it has such defined
+    //
+    if(opt->has_default()
+    && !opt->has_flag(GETOPT_FLAG_REQUIRED))
+    {
+        return opt->get_default();
+    }
+
     return opt->get_value(idx, raw);
 }
 

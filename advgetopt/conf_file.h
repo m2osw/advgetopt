@@ -81,6 +81,8 @@ constexpr comment_t             COMMENT_INI                     = 0x0001;       
 constexpr comment_t             COMMENT_SHELL                   = 0x0002;       // # comment
 constexpr comment_t             COMMENT_CPP                     = 0x0004;       // // comment
 
+constexpr comment_t             COMMENT_SAVE                    = 0x8000;       // save comments along parameters
+
 constexpr comment_t             COMMENT_MASK                    = 0x0007;
 
 
@@ -127,13 +129,36 @@ private:
 };
 
 
+class parameter_value
+{
+public:
+                                parameter_value();
+                                parameter_value(parameter_value const & rhs);
+                                parameter_value(std::string const & value);
+
+    parameter_value &           operator = (parameter_value const & rhs);
+    parameter_value &           operator = (std::string const & value);
+                                operator std::string () const;
+
+    void                        set_value(std::string const & value);
+    void                        set_comment(std::string const & comment);
+
+    std::string const &         get_value() const;
+    std::string const &         get_comment() const;
+
+private:
+    std::string                 f_value = std::string();
+    std::string                 f_comment = std::string();
+};
+
+
 class conf_file
     : public std::enable_shared_from_this<conf_file>
 {
 public:
     typedef std::shared_ptr<conf_file>              pointer_t;
     typedef std::set<std::string>                   sections_t;
-    typedef std::map<std::string, std::string>      parameters_t;
+    typedef std::map<std::string, parameter_value>  parameters_t;
     typedef std::function<void(
                   pointer_t conf_file
                 , callback_action_t action
@@ -143,7 +168,11 @@ public:
 
     static pointer_t            get_conf_file(conf_file_setup const & setup);
 
-    bool                        save_configuration(bool create_backup = true);
+    bool                        save_configuration(
+                                      std::string backup_extension = std::string(".bak")
+                                    , bool replace_backup = false
+                                    , bool prepend_warning = true
+                                    , std::string output_filename = std::string());
 
     conf_file_setup const &     get_setup() const;
     callback_id_t               add_callback(
@@ -162,7 +191,11 @@ public:
     parameters_t                get_parameters() const;
     bool                        has_parameter(std::string name) const;
     std::string                 get_parameter(std::string name) const;
-    bool                        set_parameter(std::string section, std::string name, std::string const & value);
+    bool                        set_parameter(
+                                      std::string section
+                                    , std::string name
+                                    , std::string const & value
+                                    , std::string const & comment = std::string());
     bool                        erase_parameter(std::string name);
     bool                        was_modified() const;
 
