@@ -1,3 +1,9 @@
+advgetopt (2.0.28.1~bionic) bionic; urgency=high
+
+  * Bumped build version to rebuild on Launchpad.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 13 Feb 2022 13:10:14 -0800
+
 advgetopt (2.0.28.0~bionic) bionic; urgency=high
 
   * Actually install the edit-config tool in the package.
