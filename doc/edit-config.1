@@ -55,6 +55,10 @@ to get initialized. (Note that at the moment the ipmgr does not make
 use of a configuration file).
 
 .TP
+\fB\-\-colon\fR
+Accept the colon character as the assignment operator (name: value).
+
+.TP
 \fB\-C\fR, \fB\-\-copyright\fR
 Print put the copyright notice of the `ipmgr' tool.
 
@@ -68,6 +72,12 @@ the extension. If not specified, it defaults to ".bak".
 Print the name of the variable to the console. This variable can be used
 to enter options instead of writing them on the command line or the
 setup file. Commands are not allowed in the environment variable.
+
+.TP
+\fB\-\-equal\fR
+Accept the equal character as the assignment operator (name = value). If
+none of the \fB\-\-colon\fR, \fB\-\-equal\fR, and \fB\-\-space\fR are
+specified, then this is the fallback for the assignment type to use.
 
 .TP
 \fB\-\-has\-sanitizer\fR
@@ -133,6 +143,10 @@ The `advgetopt' library has the ability to trace where each value is
 read from: which file, the command line, the environment variable.
 This option can be used to determine where a value is defined, which
 once in a while is particularly useful.
+
+.TP
+\fB\-\-space\fR
+Accept the space character as the assignment operator (name value).
 
 .TP
 \fB\-\-sub\-directory\fR

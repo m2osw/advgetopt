@@ -1,3 +1,9 @@
+advgetopt (2.0.29.0~bionic) bionic; urgency=high
+
+  * Added support for spaces and colons as assignment operators in edit-config.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 24 Feb 2022 21:16:31 -0800
+
 advgetopt (2.0.28.1~bionic) bionic; urgency=high
 
   * Bumped build version to rebuild on Launchpad.

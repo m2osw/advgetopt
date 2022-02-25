@@ -62,11 +62,23 @@
 advgetopt::option const g_options[] =
 {
     advgetopt::define_option(
+          advgetopt::Name("colon")
+        , advgetopt::Flags(advgetopt::standalone_all_flags<
+                      advgetopt::GETOPT_FLAG_GROUP_OPTIONS>())
+        , advgetopt::Help("Accept a colon as the assignment operator.")
+    ),
+    advgetopt::define_option(
           advgetopt::Name("create-backup")
         , advgetopt::Flags(advgetopt::all_flags<
                       advgetopt::GETOPT_FLAG_GROUP_OPTIONS>())
         , advgetopt::DefaultValue(".bak")
         , advgetopt::Help("Create a backup before updating the configuration file. If the file exists, keep that old backup instead.")
+    ),
+    advgetopt::define_option(
+          advgetopt::Name("equal")
+        , advgetopt::Flags(advgetopt::standalone_all_flags<
+                      advgetopt::GETOPT_FLAG_GROUP_OPTIONS>())
+        , advgetopt::Help("Accept an equal sign as the assignment operator (this is the default is not assignment is specified).")
     ),
     advgetopt::define_option(
           advgetopt::Name("must-exist")
@@ -99,6 +111,12 @@ advgetopt::option const g_options[] =
                       advgetopt::GETOPT_FLAG_GROUP_OPTIONS>())
         , advgetopt::DefaultValue(".bak")
         , advgetopt::Help("Create a backup before updating the configuration file. If the file exists, replace it.")
+    ),
+    advgetopt::define_option(
+          advgetopt::Name("space")
+        , advgetopt::Flags(advgetopt::standalone_all_flags<
+                      advgetopt::GETOPT_FLAG_GROUP_OPTIONS>())
+        , advgetopt::Help("Accept just a space as the assignment operator.")
     ),
     advgetopt::define_option(
           advgetopt::Name("sub-directory")
@@ -262,9 +280,24 @@ void edit_config::run()
         }
     }
 
+    advgetopt::assignment_operator_t assignment_operator(0);
+
+    if(f_opt.is_defined("colon"))
+    {
+        assignment_operator |= advgetopt::ASSIGNMENT_OPERATOR_COLON;
+    }
+    if(f_opt.is_defined("equal"))
+    {
+        assignment_operator |= advgetopt::ASSIGNMENT_OPERATOR_EQUAL;
+    }
+    if(f_opt.is_defined("space"))
+    {
+        assignment_operator |= advgetopt::ASSIGNMENT_OPERATOR_SPACE;
+    }
+
     advgetopt::conf_file_setup setup(config_name
                                    , advgetopt::line_continuation_t::line_continuation_unix
-                                   , advgetopt::ASSIGNMENT_OPERATOR_EQUAL
+                                   , assignment_operator
                                    , advgetopt::COMMENT_INI
                                         | advgetopt::COMMENT_SHELL
                                         | (f_opt.is_defined("remove-comments")

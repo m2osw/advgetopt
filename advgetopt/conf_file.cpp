@@ -26,7 +26,7 @@
  *
  * \warning
  * This version uses the advgetopt::conf_file which sorts the fields
- * it read, therefore, the output is going to be correct, but possibly
+ * it reads, therefore, the output is going to be correct, but possibly
  * sorted in a "funny way", especially if you keep the comments and
  * some of the values are commented out.
  */
@@ -720,6 +720,11 @@ conf_file::pointer_t conf_file::get_conf_file(conf_file_setup const & setup)
  * If the conf is not marked as modified, the function returns immediately
  * with true.
  *
+ * The assignment operator used is the space if allowed, the colon if
+ * allowed, otherwise it falls back to the equal operator. At this time,
+ * the colon and equal operators are not preceeded or followed by a space
+ * (i.e. `name=value`).
+ *
  * \param[in] backup_extension  If not empty, create a backup.
  * \param[in] replace_backup  If true and a backup exists, replace it.
  * \param[in] prepend_warning  Whether to write a warning at the start of the
@@ -816,7 +821,20 @@ bool conf_file::save_configuration(
             //
             conf << p.second.get_comment();
 
-            conf << p.first << "=";
+            conf << p.first;
+
+            if((f_setup.get_assignment_operator() & ASSIGNMENT_OPERATOR_SPACE) != 0)
+            {
+                conf << ' ';
+            }
+            else if((f_setup.get_assignment_operator() & ASSIGNMENT_OPERATOR_COLON) != 0)
+            {
+                conf << ':';
+            }
+            else
+            {
+                conf << '=';
+            }
 
             // prevent saving \r and \n characters as is when part of the
             // value; also double \ otherwise reading those back would fail
