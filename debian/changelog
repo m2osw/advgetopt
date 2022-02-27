@@ -1,3 +1,9 @@
+advgetopt (2.0.30.0~bionic) bionic; urgency=high
+
+  * Allow for the output of a config file to either use '-' or '_'.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 26 Feb 2022 20:42:37 -0800
+
 advgetopt (2.0.29.0~bionic) bionic; urgency=high
 
   * Added support for spaces and colons as assignment operators in edit-config.

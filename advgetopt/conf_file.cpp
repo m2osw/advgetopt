@@ -183,7 +183,8 @@ conf_file_setup::conf_file_setup(
         , line_continuation_t line_continuation
         , assignment_operator_t assignment_operator
         , comment_t comment
-        , section_operator_t section_operator)
+        , section_operator_t section_operator
+        , name_separator_t name_separator)
     : f_original_filename(filename)
     , f_line_continuation(line_continuation)
     , f_assignment_operator(assignment_operator == 0
@@ -191,6 +192,7 @@ conf_file_setup::conf_file_setup(
                 : assignment_operator)
     , f_comment(comment)
     , f_section_operator(section_operator)
+    , f_name_separator(name_separator)
 {
     if(filename.empty())
     {
@@ -570,6 +572,24 @@ std::string conf_file_setup::get_config_url() const
 }
 
 
+/** \brief Retrieve the separator to use within names.
+ *
+ * A parameter name can include dashes or underscores. The advgetopt supports
+ * either one and internally, it saves the names with dashes. Most other tools,
+ * though will only expect one or the other, most likely underscores, which is the
+ * default here.
+ *
+ * You can specify either one when building the conf_file_setup. At the moment,
+ * there is no option to keep the dashes and underscores as found in the input.
+ *
+ * \return Whether to save the names with underscores or dashes.
+ */
+name_separator_t conf_file_setup::get_name_separator() const
+{
+    return f_name_separator;
+}
+
+
 
 
 
@@ -821,7 +841,19 @@ bool conf_file::save_configuration(
             //
             conf << p.second.get_comment();
 
-            conf << p.first;
+            if(f_setup.get_name_separator() == NAME_SEPARATOR_DASHES)
+            {
+                // `first` already has dashes
+                //
+                conf << p.first;
+            }
+            else
+            {
+                for(auto const c : p.first)
+                {
+                    conf << (c == '-' ? '_' : c);
+                }
+            }
 
             if((f_setup.get_assignment_operator() & ASSIGNMENT_OPERATOR_SPACE) != 0)
             {

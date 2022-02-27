@@ -99,6 +99,12 @@ constexpr section_operator_t    SECTION_OPERATOR_ONE_SECTION    = 0x8000;       
 constexpr section_operator_t    SECTION_OPERATOR_MASK           = 0x000F;
 
 
+typedef std::uint_fast16_t      name_separator_t;
+
+constexpr name_separator_t      NAME_SEPARATOR_UNDERSCORES      = 0x0001;       // output underscore ('_') instead of dashes
+constexpr name_separator_t      NAME_SEPARATOR_DASHES           = 0x0002;       // output dashes ('-')
+
+
 class conf_file_setup
 {
 public:
@@ -107,7 +113,8 @@ public:
                                             , line_continuation_t line_continuation = line_continuation_t::line_continuation_unix
                                             , assignment_operator_t assignment_operator = ASSIGNMENT_OPERATOR_EQUAL
                                             , comment_t comment = COMMENT_INI | COMMENT_SHELL
-                                            , section_operator_t section_operator = SECTION_OPERATOR_INI_FILE);
+                                            , section_operator_t section_operator = SECTION_OPERATOR_INI_FILE
+                                            , name_separator_t name_separator = NAME_SEPARATOR_UNDERSCORES);
 
     bool                        is_valid() const;
     std::string const &         get_original_filename() const;
@@ -117,6 +124,7 @@ public:
     comment_t                   get_comment() const;
     section_operator_t          get_section_operator() const;
     std::string                 get_config_url() const;
+    name_separator_t            get_name_separator() const;
 
 private:
     std::string                 f_original_filename = std::string();
@@ -126,6 +134,7 @@ private:
     comment_t                   f_comment = COMMENT_INI | COMMENT_SHELL;
     section_operator_t          f_section_operator = SECTION_OPERATOR_INI_FILE;
     mutable std::string         f_url = std::string();
+    name_separator_t            f_name_separator = NAME_SEPARATOR_UNDERSCORES;
 };
 
 

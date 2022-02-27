@@ -75,6 +75,12 @@ advgetopt::option const g_options[] =
         , advgetopt::Help("Create a backup before updating the configuration file. If the file exists, keep that old backup instead.")
     ),
     advgetopt::define_option(
+          advgetopt::Name("dashes")
+        , advgetopt::Flags(advgetopt::standalone_all_flags<
+                      advgetopt::GETOPT_FLAG_GROUP_OPTIONS>())
+        , advgetopt::Help("Output parameter names with dashes.")
+    ),
+    advgetopt::define_option(
           advgetopt::Name("equal")
         , advgetopt::Flags(advgetopt::standalone_all_flags<
                       advgetopt::GETOPT_FLAG_GROUP_OPTIONS>())
@@ -124,6 +130,12 @@ advgetopt::option const g_options[] =
                       advgetopt::GETOPT_FLAG_REQUIRED
                     , advgetopt::GETOPT_FLAG_GROUP_OPTIONS>())
         , advgetopt::Help("If defined, try reading the file from that sub-directory. If not found there, try in the parent (as defined on the command line). Always save in that sub-directory if editing.")
+    ),
+    advgetopt::define_option(
+          advgetopt::Name("underscores")
+        , advgetopt::Flags(advgetopt::standalone_all_flags<
+                      advgetopt::GETOPT_FLAG_GROUP_OPTIONS>())
+        , advgetopt::Help("Output parameter names with underscores (default).")
     ),
     advgetopt::define_option(
           advgetopt::Name("--")
@@ -295,15 +307,28 @@ void edit_config::run()
         assignment_operator |= advgetopt::ASSIGNMENT_OPERATOR_SPACE;
     }
 
-    advgetopt::conf_file_setup setup(config_name
-                                   , advgetopt::line_continuation_t::line_continuation_unix
-                                   , assignment_operator
-                                   , advgetopt::COMMENT_INI
-                                        | advgetopt::COMMENT_SHELL
-                                        | (f_opt.is_defined("remove-comments")
-                                                ? 0
-                                                : advgetopt::COMMENT_SAVE)
-                                   , advgetopt::SECTION_OPERATOR_INI_FILE);
+    name_separator = NAME_SEPARATOR_UNDERSCORES;
+    if(f_opt.is_defined("dashes"))
+    {
+        if(f_opt.is_defined("underscore"))
+        {
+            std::cerr << "error: --dashes & --underscores are mutually exclusive.\n";
+            exit(1);
+        }
+        name_separator = advgetopt::NAME_SEPARATOR_DASHES;
+    }
+
+    advgetopt::conf_file_setup setup(
+              config_name
+            , advgetopt::line_continuation_t::line_continuation_unix
+            , assignment_operator
+            , advgetopt::COMMENT_INI
+                | advgetopt::COMMENT_SHELL
+                | (f_opt.is_defined("remove-comments")
+                        ? 0
+                        : advgetopt::COMMENT_SAVE)
+            , advgetopt::SECTION_OPERATOR_INI_FILE
+            , name_separator);
     advgetopt::conf_file::pointer_t config(advgetopt::conf_file::get_conf_file(setup));
 
     std::string const field_name(f_opt.get_string("--", 1));
