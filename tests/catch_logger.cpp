@@ -182,6 +182,11 @@ CATCH_TEST_CASE("logger_without_callback", "[logger][valid][log]")
 
         // restore the callback
         cppthread::set_log_callback(SNAP_CATCH2_NAMESPACE::log_for_test);
+
+        // make sure we have at least one assertion otherwise the
+        // coverage will fail with an error
+        //
+        CATCH_REQUIRE(true);
     CATCH_END_SECTION()
 }
 

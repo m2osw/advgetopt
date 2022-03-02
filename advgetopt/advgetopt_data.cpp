@@ -434,7 +434,7 @@ double getopt::get_double(std::string const & name, int idx, double min, double 
  *
  * \param[in] name  The name of the option to read.
  * \param[in] idx  The zero based index of a multi-argument command line option.
- * \param[in] raw  Whethre to return the value without replacing the variables.
+ * \param[in] raw  Whether to return the value without replacing the variables.
  *
  * \return The option argument as a string.
  */
@@ -469,13 +469,15 @@ std::string getopt::get_string(
     // it was defined, but if REQUIRED is not set and the value is empty
     // then we want to return the default if it has such defined
     //
-    if(opt->has_default()
+    std::string const value(opt->get_value(idx, raw));
+    if(value.empty()
+    && opt->has_default()
     && !opt->has_flag(GETOPT_FLAG_REQUIRED))
     {
         return opt->get_default();
     }
 
-    return opt->get_value(idx, raw);
+    return value;
 }
 
 

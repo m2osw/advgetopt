@@ -3244,8 +3244,8 @@ CATCH_TEST_CASE("default_argument", "[arguments][valid][getopt]")
             CATCH_REQUIRE(opt.get_option("before") != nullptr);
             CATCH_REQUIRE(opt.get_option('b') != nullptr);
             CATCH_REQUIRE(opt.is_defined("before"));
-            CATCH_REQUIRE(opt.get_string("before").empty());
-            CATCH_REQUIRE(opt.get_string("before", 0).empty());
+            CATCH_REQUIRE(opt.get_string("before") == "early");
+            CATCH_REQUIRE(opt.get_string("before", 0) == "early");
             CATCH_REQUIRE(opt.get_default("before") == "early");
             CATCH_REQUIRE(opt.size("before") == 1);
 
@@ -3253,8 +3253,8 @@ CATCH_TEST_CASE("default_argument", "[arguments][valid][getopt]")
             CATCH_REQUIRE(opt.get_option("out") != nullptr);
             CATCH_REQUIRE(opt.get_option('o') != nullptr);
             CATCH_REQUIRE(opt.is_defined("out"));
-            CATCH_REQUIRE(opt.get_string("out").empty());
-            CATCH_REQUIRE(opt.get_string("out", 0).empty());
+            CATCH_REQUIRE(opt.get_string("out") == "default-name");
+            CATCH_REQUIRE(opt.get_string("out", 0) == "default-name");
             CATCH_REQUIRE(opt.get_default("out") == "default-name");
             CATCH_REQUIRE(opt.size("out") == 1);
 
@@ -3262,8 +3262,8 @@ CATCH_TEST_CASE("default_argument", "[arguments][valid][getopt]")
             CATCH_REQUIRE(opt.get_option("after") != nullptr);
             CATCH_REQUIRE(opt.get_option('a') != nullptr);
             CATCH_REQUIRE(opt.is_defined("after"));
-            CATCH_REQUIRE(opt.get_string("after").empty());
-            CATCH_REQUIRE(opt.get_string("after", 0).empty());
+            CATCH_REQUIRE(opt.get_string("after") == "late");
+            CATCH_REQUIRE(opt.get_string("after", 0) == "late");
             CATCH_REQUIRE(opt.get_default("after") == "late");
             CATCH_REQUIRE(opt.size("after") == 1);
 
@@ -3281,7 +3281,7 @@ CATCH_TEST_CASE("default_argument", "[arguments][valid][getopt]")
                 "avant",
                 "--out",
                 "--after",
-                "apres",
+                "apr\xC3\xA8s", // UTF-8 of "`e"
                 nullptr
             };
             int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
@@ -3311,8 +3311,8 @@ CATCH_TEST_CASE("default_argument", "[arguments][valid][getopt]")
             CATCH_REQUIRE(opt.get_option("out") != nullptr);
             CATCH_REQUIRE(opt.get_option('o') != nullptr);
             CATCH_REQUIRE(opt.is_defined("out"));
-            CATCH_REQUIRE(opt.get_string("out").empty());
-            CATCH_REQUIRE(opt.get_string("out", 0).empty());
+            CATCH_REQUIRE(opt.get_string("out") == "default-name");
+            CATCH_REQUIRE(opt.get_string("out", 0) == "default-name");
             CATCH_REQUIRE(opt.get_default("out") == "default-name");
             CATCH_REQUIRE(opt.size("out") == 1);
 
@@ -3320,8 +3320,8 @@ CATCH_TEST_CASE("default_argument", "[arguments][valid][getopt]")
             CATCH_REQUIRE(opt.get_option("after") != nullptr);
             CATCH_REQUIRE(opt.get_option('a') != nullptr);
             CATCH_REQUIRE(opt.is_defined("after"));
-            CATCH_REQUIRE(opt.get_string("after") == "apres");
-            CATCH_REQUIRE(opt.get_string("after", 0) == "apres");
+            CATCH_REQUIRE(opt.get_string("after") == "apr\xC3\xA8s");
+            CATCH_REQUIRE(opt.get_string("after", 0) == "apr\xC3\xA8s");
             CATCH_REQUIRE(opt.get_default("after") == "late");
             CATCH_REQUIRE(opt.size("after") == 1);
 

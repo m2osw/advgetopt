@@ -307,7 +307,7 @@ void edit_config::run()
         assignment_operator |= advgetopt::ASSIGNMENT_OPERATOR_SPACE;
     }
 
-    name_separator = NAME_SEPARATOR_UNDERSCORES;
+    advgetopt::name_separator_t name_separator(advgetopt::NAME_SEPARATOR_UNDERSCORES);
     if(f_opt.is_defined("dashes"))
     {
         if(f_opt.is_defined("underscore"))

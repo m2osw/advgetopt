@@ -683,7 +683,39 @@ CATCH_TEST_CASE("double_validator", "[validator][valid][validation]")
 
 CATCH_TEST_CASE("duration_validator", "[validator][valid][validation]")
 {
-    CATCH_START_SECTION("Verify the duration validator")
+    CATCH_START_SECTION("Verify the duration validator (simple values)")
+    {
+        double duration(0.0);
+
+        // simple seconds with decimal point
+        //
+        CATCH_REQUIRE(advgetopt::validator_duration::convert_string("22.3s", 0, duration));
+        CATCH_REQUIRE(SNAP_CATCH2_NAMESPACE::nearly_equal(duration, 22.3, 0.0));
+
+        // "seconds" is the default
+        //
+        CATCH_REQUIRE(advgetopt::validator_duration::convert_string("1.05", 0, duration));
+        CATCH_REQUIRE(SNAP_CATCH2_NAMESPACE::nearly_equal(duration, 1.05, 0.0));
+
+        // number can start with a decimal point
+        //
+        CATCH_REQUIRE(advgetopt::validator_duration::convert_string(".0503", 0, duration));
+        CATCH_REQUIRE(SNAP_CATCH2_NAMESPACE::nearly_equal(duration, 0.0503, 0.0));
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Verify the duration validator (multiple values)")
+    {
+        double duration(0.0);
+        CATCH_REQUIRE(advgetopt::validator_duration::convert_string("1d 3h 2m 15.3s", 0, duration));
+        CATCH_REQUIRE(SNAP_CATCH2_NAMESPACE::nearly_equal(duration, 1.0 * 86400.0 + 3.0 * 3600.0 + 2.0 * 60.0 + 15.3, 0.0));
+
+        CATCH_REQUIRE(advgetopt::validator_duration::convert_string("3d 15h 52m 21.801s", 0, duration));
+        CATCH_REQUIRE(SNAP_CATCH2_NAMESPACE::nearly_equal(duration, 3.0 * 86400.0 + 15.0 * 3600.0 + 52.0 * 60.0 + 21.801, 0.0));
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Verify the duration validator (one value)")
     {
         // this test does not verify that double conversion works since we
         // have a separate test for that specific validator
@@ -718,7 +750,18 @@ CATCH_TEST_CASE("duration_validator", "[validator][valid][validation]")
             for(int idx(0); idx < 1000; ++idx)
             {
                 // use smaller values between 0 and 1
-                double value(static_cast<double>(rand()) / static_cast<double>(RAND_MAX));
+                // (the loop is to make sure we don't end up with "123e-10"
+                // type of numbers... which do not work here)
+                //
+                double value(0.0);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+                do
+                {
+                    value = static_cast<double>(rand()) / static_cast<double>(RAND_MAX);
+                }
+                while(value < 0.0001 && value != 0.0);
+#pragma GCC diagnostic pop
                 if(rand() % 2 == 0)
                 {
                     value *= -1.0;

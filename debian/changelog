@@ -1,3 +1,14 @@
+advgetopt (2.0.31.0~bionic) bionic; urgency=high
+
+  * Fixed compiling issue from 2.0.30 (edit_config.cpp).
+  * Added support for multiple duration values (i.e. "3m 10s").
+  * Added tests to verify that multiple durations work.
+  * Fixed the tests affected by the mew handling of the default value.
+  * Added a UTF-8 string in one of the tests.
+  * Fixed a test which had no assertions so it passes the coverage test.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 01 Mar 2022 12:59:45 -0800
+
 advgetopt (2.0.30.0~bionic) bionic; urgency=high
 
   * Allow for the output of a config file to either use '-' or '_'.

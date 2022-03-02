@@ -207,148 +207,190 @@ bool validator_duration::convert_string(
         , flag_t flags
         , double & result)
 {
-    // determine the factor by checking the suffix
+    result = 0.0;
+
+    // TODO: use libutf8 to walk the string and skip all UTF-8 spaces
     //
-    double factor(1.0);
-    std::string::size_type pos(value.length());
-    for(; pos > 0; --pos)
+    char const * s(value.c_str());
+    while(isspace(*s))
     {
-        char c(value[pos - 1]);
-        if(c >= '0'
-        && c <= '9'
-        || c == '.')
-        {
-            break;
-        }
+        ++s;
     }
-    if(pos == 0)
+    if(*s == '\0')
     {
         return false;
     }
-    std::string const number(value.substr(0, pos));
-    for(; pos < value.length() && isspace(value[pos]); ++pos);
-    if(pos < value.length())
+
+    double r(0.0);
+    while(*s != '\0')
     {
-        // copy and force lowercase
+        // get the number
+        //
+        char const * number(s);
+        if(*s == '+'
+        || *s == '-')
+        {
+            ++s;
+        }
+        while(*s >= '0' && *s <= '9')
+        {
+            ++s;
+        }
+        if(*s == '.')
+        {
+            do
+            {
+                ++s;
+            }
+            while(*s >= '0' && *s <= '9');
+        }
+        double n(0.0);
+        if(!validator_double::convert_string(
+                  (*number == '.' ? "0" : "") + std::string(number, s - number)
+                , n))
+        {
+            return false;
+        }
+
+        while(isspace(*s))
+        {
+            ++s;
+        }
+
+        // get the suffix
         //
         std::string suffix;
-        for(; pos < value.length(); ++pos)
+        for(;; ++s)
         {
-            if(value[pos] >= 'A'
-            && value[pos] <= 'Z')
+            if(*s >= 'A'
+            && *s <= 'Z')
             {
-                suffix += value[pos] + 0x20;
+                // make lowercase as we're at it
+                //
+                suffix += *s + 0x20;
+            }
+            else if(*s >= 'a'
+                 && *s <= 'z')
+            {
+                suffix += *s;
             }
             else
             {
-                suffix += value[pos];
+                break;
             }
         }
 
-        switch(suffix[0])
+        double factor(1.0);
+        if(!suffix.empty())     // empty == "seconds"
         {
-        case 'd':
-            if(suffix == "d"
-            || suffix == "day"
-            || suffix == "days")
+            switch(suffix[0])
             {
-                factor = 86400;
-            }
-            else
-            {
-                return false;
-            }
-            break;
-
-        case 'h':
-            if(suffix == "h"
-            || suffix == "hour"
-            || suffix == "hours")
-            {
-                factor = 3600;
-            }
-            else
-            {
-                return false;
-            }
-            break;
-
-        case 'm':
-            if(suffix == "m")
-            {
-                if((flags & VALIDATOR_DURATION_LONG) != 0)
+            case 'd':
+                if(suffix == "d"
+                || suffix == "day"
+                || suffix == "days")
                 {
-                    factor = 86400.0 * 30.0;    // 1 month
+                    factor = 86400.0;
                 }
                 else
                 {
-                    factor = 60;                // 1 minute
+                    return false;
                 }
-            }
-            else if(suffix == "minute"
-                 || suffix == "minutes")
-            {
-                factor = 60;
-            }
-            else if(suffix == "month"
-                 || suffix == "months")
-            {
-                factor = 86400.0 * 30.0;
-            }
-            else
-            {
+                break;
+
+            case 'h':
+                if(suffix == "h"
+                || suffix == "hour"
+                || suffix == "hours")
+                {
+                    factor = 3600.0;
+                }
+                else
+                {
+                    return false;
+                }
+                break;
+
+            case 'm':
+                if(suffix == "m")
+                {
+                    if((flags & VALIDATOR_DURATION_LONG) != 0)
+                    {
+                        factor = 86400.0 * 30.0;    // 1 month
+                    }
+                    else
+                    {
+                        factor = 60.0;              // 1 minute
+                    }
+                }
+                else if(suffix == "minute"
+                     || suffix == "minutes")
+                {
+                    factor = 60.0;
+                }
+                else if(suffix == "month"
+                     || suffix == "months")
+                {
+                    factor = 86400.0 * 30.0;
+                }
+                else
+                {
+                    return false;
+                }
+                break;
+
+            case 's':
+                if(suffix != "s"
+                && suffix != "second"
+                && suffix != "seconds")
+                {
+                    return false;
+                }
+                break;
+
+            case 'w':
+                if(suffix == "w"
+                || suffix == "week"
+                || suffix == "weeks")
+                {
+                    factor = 86400.0 * 7.0;
+                }
+                else
+                {
+                    return false;
+                }
+                break;
+
+            case 'y':
+                if(suffix == "y"
+                || suffix == "year"
+                || suffix == "years")
+                {
+                    factor = 86400.0 * 365.0;
+                }
+                else
+                {
+                    return false;
+                }
+                break;
+
+            default:
                 return false;
-            }
-            break;
 
-        case 's':
-            if(suffix != "s"
-            && suffix != "second"
-            && suffix != "seconds")
-            {
-                return false;
             }
-            break;
+        }
 
-        case 'w':
-            if(suffix == "w"
-            || suffix == "week"
-            || suffix == "weeks")
-            {
-                factor = 86400 * 7;
-            }
-            else
-            {
-                return false;
-            }
-            break;
+        // TODO: catch ERANGE errors
+        //
+        r += n * factor;
 
-        case 'y':
-            if(suffix == "y"
-            || suffix == "year"
-            || suffix == "years")
-            {
-                factor = 86400 * 365;
-            }
-            else
-            {
-                return false;
-            }
-            break;
-
-        default:
-            return false;
-
+        while(isspace(*s))
+        {
+            ++s;
         }
     }
 
-    if(!validator_double::convert_string(number, result))
-    {
-        return false;
-    }
-
-    // TODO: catch ERANGE errors
-    result *= factor;
+    result = r;
 
     return true;
 }
