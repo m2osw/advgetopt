@@ -187,9 +187,63 @@ set to `/etc/my-project/file.conf` and you defined a project name
 
     /etc/my-project/sub-name.d/file.conf
 
-Note that although it is not checked, you probably should not include
-slashes in your project name.
+Note that although it is not currently checked, you probably should
+not include slashes in your project name.
 
+
+# Updating Configuration Files (`edit-config`)
+
+The `edit-config` tool can be used to edit configuration files. This
+works well with standard Unix files (`name=value`). It may not do exactly
+what you expect for other types of files.
+
+The `--space` can be used to use a space instead of an equal sign between
+the name nad value (`name value`). Similarly, use the `--colon` option to
+support a colon instead of the equal or space (`name: value`). The `--equal`
+restores the default.
+
+Another issue is that some configuration files use dashes in their variable
+names instead of the default underscore that most system use. The `--dashes`
+option switches to dashes (`-`). The `--underscores` restores the default
+(`_`).
+
+The `--sub-directory` option let you handle a file from within a sub-directory
+instead of the directory defined in the path to the configuration file.
+With advgetopt, you can create a sub-directory just so you can edit the file
+in that sub-directory instead of the original so that way we can avoid missing
+developer changes at a later time. For example, a snapwebsite configuration
+file could be:
+
+    /etc/snapwebsites/server.conf     # file coming from the server package
+    /etc/snapwebsites/snapwebsites.d/50-server.conf   # admin managed
+
+In this example, the `/etc/snapwebsites/server.conf` is installed by a
+package in snapwebsites. You should never edit that file. The tools loading
+that file will also look in `/etc/snapwebsites/snapwebsites.d/??-server.conf`.
+The `--sub-directory` option allows you to load the
+`/etc/snapwebsites/server.conf` file if the
+`/etc/snapwebsites/snapwebsites.d/50-server.conf` does not exist.
+In most cases, though, you probably want to just update the files in
+the sub-directory, so have a command line such as:
+
+    edit-config /etc/snapwebsites/snapwebsites.d/30-server.conf name value
+
+When the `edit-config` is not enough, you may be interested in using the
+`sed` command. Here is an example that makes a backup of the configuration
+file if it gets updated, it otherwise searches for an option and if the
+option is already present, do nothing (`q`), otherwise appened (`$a`) a line
+to the file:
+
+    sed \
+        -i.bak \
+        -e '/^\(include "\/etc\/bind\/ipmgr-options.conf";\)/ {s//\1/;:a;n;ba;q}' \
+        -e '$ainclude "/etc/bind/ipmgr-options.conf";' \
+            /etc/bind/named.conf.local
+
+_Note: the `ipmgr` project also comes with a tool named `dns-options`
+allowing for the editing of DNS configuration files. It is still in
+development as it doesn't yet work properly in all situations, but
+works for what we currently need it for. It may also be useful to you._
 
 # Logger Extension
 
