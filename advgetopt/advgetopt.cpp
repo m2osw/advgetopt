@@ -803,7 +803,7 @@ void getopt::parse_environment_variable()
 
     // second check each option environment variable
     //
-    for(auto const opt : f_options_by_name)
+    for(auto const & opt : f_options_by_name)
     {
         std::string const name(opt.second->get_environment_variable_name());
         if(!name.empty())
