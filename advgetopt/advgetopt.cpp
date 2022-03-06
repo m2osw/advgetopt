@@ -808,11 +808,17 @@ void getopt::parse_environment_variable()
         std::string const name(opt.second->get_environment_variable_name());
         if(!name.empty())
         {
-            add_option_from_string(
-                      opt.second
-                    , opt.second->get_environment_variable_value(f_options_environment.f_environment_variable_intro)
-                    , std::string()
-                    , option_source_t::SOURCE_ENVIRONMENT_VARIABLE);
+            // make sure the value is defined, if empty, ignore altogether
+            //
+            std::string const value(opt.second->get_environment_variable_value(f_options_environment.f_environment_variable_intro));
+            if(!value.empty())
+            {
+                add_option_from_string(
+                          opt.second
+                        , value
+                        , std::string()
+                        , option_source_t::SOURCE_ENVIRONMENT_VARIABLE);
+            }
         }
     }
 
