@@ -130,6 +130,7 @@ advgetopt::option const g_options[] =
                       advgetopt::GETOPT_FLAG_REQUIRED
                     , advgetopt::GETOPT_FLAG_GROUP_OPTIONS>())
         , advgetopt::Help("If defined, try reading the file from that sub-directory. If not found there, try in the parent (as defined on the command line). Always save in that sub-directory if editing.")
+        , advgetopt::EnvironmentVariableName("SUBDIRECTORY")
     ),
     advgetopt::define_option(
           advgetopt::Name("underscores")
@@ -176,6 +177,7 @@ advgetopt::options_environment const g_options_environment =
     .f_options = g_options,
     .f_options_files_directory = nullptr,
     .f_environment_variable_name = nullptr,
+    .f_environment_variable_intro = "EDIT_CONFIG_",
     .f_section_variables_name = nullptr,
     .f_configuration_files = nullptr,
     .f_configuration_filename = nullptr,

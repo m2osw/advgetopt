@@ -374,8 +374,19 @@ std::string getopt::usage( flag_t show ) const
             }
             else
             {
+                std::string variable_name;
+                if(!opt.second->get_environment_variable_name().empty())
+                {
+                    variable_name += "\nEnvironment Variable Name: \"";
+                    if(f_options_environment.f_environment_variable_intro != nullptr)
+                    {
+                        variable_name += f_options_environment.f_environment_variable_intro;
+                    }
+                    variable_name += opt.second->get_environment_variable_name();
+                    variable_name += '"';
+                }
                 ss << format_usage_string(argument.str()
-                                        , process_help_string(help.c_str())
+                                        , process_help_string((help + variable_name).c_str())
                                         , 30
                                         , line_width);
             }
@@ -604,6 +615,14 @@ std::string getopt::process_help_string(char const * help) const
                 if(f_options_environment.f_environment_variable_name != nullptr)
                 {
                     result += f_options_environment.f_environment_variable_name;
+                }
+                help += 2;
+                break;
+
+            case 'E':
+                if(f_options_environment.f_environment_variable_intro != nullptr)
+                {
+                    result += f_options_environment.f_environment_variable_intro;
                 }
                 help += 2;
                 break;

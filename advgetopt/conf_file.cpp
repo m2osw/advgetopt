@@ -199,6 +199,8 @@ conf_file_setup::conf_file_setup(
         throw getopt_invalid("trying to load a configuration file using an empty filename.");
     }
 
+    // canonicalization so we can properly cache files
+    //
     std::unique_ptr<char, decltype(&::free)> fn(realpath(filename.c_str(), nullptr), &::free);
     if(fn != nullptr)
     {
@@ -258,8 +260,8 @@ std::string const & conf_file_setup::get_original_filename() const
  * file. If such does not exist then no filename is defined, so this
  * function may return an empty string.
  *
- * \return The filename or an empty string if the realpath() could not
- *         be calculated.
+ * \return The canonicalized filename or the original filename if
+ *         realpath() failed.
  *
  * \sa get_original_filename()
  */
@@ -719,7 +721,7 @@ conf_file::pointer_t conf_file::get_conf_file(conf_file_setup const & setup)
         return it->second;
     }
 
-    // TODO: look into not blocking forever?
+    // TODO: look into not blocking "forever"?
     //
     conf_file::pointer_t cf(new conf_file(setup));
     g_conf_files[setup.get_filename()] = cf;
@@ -744,6 +746,11 @@ conf_file::pointer_t conf_file::get_conf_file(conf_file_setup const & setup)
  * allowed, otherwise it falls back to the equal operator. At this time,
  * the colon and equal operators are not preceeded or followed by a space
  * (i.e. `name=value`).
+ *
+ * \todo
+ * Fix the canonicalization of the filename on a first save. Right now,
+ * the original filename was used but the path could change when saving
+ * (see the realpath() call in the constructor; this needs to be fixed).
  *
  * \param[in] backup_extension  If not empty, create a backup.
  * \param[in] replace_backup  If true and a backup exists, replace it.

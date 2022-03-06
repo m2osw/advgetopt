@@ -3860,6 +3860,7 @@ CATCH_TEST_CASE("manual_arguments", "[arguments][valid][getopt]")
         environment_options.f_help_header = "Usage: test simple --verbose option";
         environment_options.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
 
+        snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "file.exe file.so file.dll file.lib file.a");
         advgetopt::getopt opt(environment_options);
 
             // an invalid parameter, MUST NEVER EXIST
@@ -4111,7 +4112,6 @@ CATCH_TEST_CASE("manual_arguments", "[arguments][valid][getopt]")
 
         // first parse the environment variable
         //
-        snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "file.exe file.so file.dll file.lib file.a");
         opt.parse_environment_variable();
 
             // an invalid parameter, MUST NEVER EXIST
@@ -4237,6 +4237,7 @@ CATCH_TEST_CASE("manual_arguments", "[arguments][valid][getopt]")
         environment_options.f_help_header = "Usage: test simple --verbose option";
         environment_options.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
 
+        snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "file.exe file.so file.dll file.lib file.a");
         advgetopt::getopt opt(environment_options);
 
             // an invalid parameter, MUST NEVER EXIST
@@ -4392,7 +4393,6 @@ CATCH_TEST_CASE("manual_arguments", "[arguments][valid][getopt]")
 
         // first parse the environment variable
         //
-        snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "file.exe file.so file.dll file.lib file.a");
         opt.parse_environment_variable();
 
             // an invalid parameter, MUST NEVER EXIST

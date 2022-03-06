@@ -614,6 +614,8 @@ void getopt::initialize_parser(options_environment const & opt_env)
             parse_options_info(g_if_configuration_filename_system_options, true);
         }
     }
+
+    define_environment_variable_data();
 }
 
 
@@ -651,8 +653,6 @@ void getopt::finish_parsing(int argc, char * argv[])
     }
 
     link_aliases();
-
-    define_environment_variable_data();
 
     parse_configuration_files(argc, argv);
     f_parsed = false;
@@ -782,16 +782,38 @@ void getopt::define_environment_variable_data()
  * marked by the GETOPT_FLAG_ENVIRONMENT_VARIABLE flag. In other words,
  * you may allow options to appear on the command line, in configuration
  * files, in environment variables or a mix of all of these locations.
+ *
+ * \note
+ * If you change the environment variable between the creation of the
+ * getopt object and a call to this function, you want to call the
+ * define_environment_variable_data() again to make sure it can be
+ * parsed.
  */
 void getopt::parse_environment_variable()
 {
-    define_environment_variable_data();
+    // first test the global environment variable
+    //
     if(!f_environment_variable.empty())
     {
         parse_string(
                   f_environment_variable
                 , option_source_t::SOURCE_ENVIRONMENT_VARIABLE
                 , true);
+    }
+
+    // second check each option environment variable
+    //
+    for(auto const opt : f_options_by_name)
+    {
+        std::string const name(opt.second->get_environment_variable_name());
+        if(!name.empty())
+        {
+            add_option_from_string(
+                      opt.second
+                    , opt.second->get_environment_variable_value(f_options_environment.f_environment_variable_intro)
+                    , std::string()
+                    , option_source_t::SOURCE_ENVIRONMENT_VARIABLE);
+        }
     }
 
     f_parsed = true;

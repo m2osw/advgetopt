@@ -154,6 +154,7 @@ public:
     std::string             get_program_fullname() const;
     std::string             get_project_name() const;
     std::string             get_group_name() const;
+    void                    define_environment_variable_data();
     std::string             get_environment_variable_name() const;
     size_t                  get_configuration_filename_size() const;
     std::string             get_configuration_filename(int idx) const;
@@ -187,7 +188,6 @@ private:
     void                    parse_options_from_file();
     void                    show_option_sources(std::basic_ostream<char> & out);
     option_info::pointer_t  get_alias_destination(option_info::pointer_t opt) const;
-    void                    define_environment_variable_data();
     void                    is_parsed() const;
     static string_list_t    find_config_dir(int argc, char * argv[]);
 

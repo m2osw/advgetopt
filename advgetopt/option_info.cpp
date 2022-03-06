@@ -444,6 +444,103 @@ bool option_info::is_default_option() const
 }
 
 
+/** \brief Set the option specific environment variable name.
+ *
+ * Each option can be given a specific environment variable name. That
+ * parameter is used to retrieve the option value if not defined on the
+ * command line.
+ *
+ * By default this is an empty string.
+ *
+ * \param[in] name  The name of the environment variable attached to this
+ * option.
+ *
+ * \sa get_environment_variable_name()
+ * \sa get_environment_variable_value()
+ */
+void option_info::set_environment_variable_name(std::string const & name)
+{
+    f_environment_variable_name = name;
+}
+
+
+/** \brief Set the default value of this option.
+ *
+ * This function is an overload which allows us to call set_default()
+ * with a nullptr.
+ *
+ * \param[in] default_value  The new default value for this option.
+ *
+ * \sa get_environment_variable_name()
+ * \sa get_environment_variable_value()
+ */
+void option_info::set_environment_variable_name(char const * name)
+{
+    if(name != nullptr)
+    {
+        set_environment_variable_name(std::string(name));
+    }
+}
+
+
+/**  \brief Retrieve the environment variable name of this option.
+ *
+ * Each command line option can be assigned an environment variable
+ * name. When checking for the global environment variable name, the
+ * advgetopt library also checks each option's environment variable
+ * name which has priority over the global variable (i.e. it will
+ * overwrite a value found in the global environment variable).
+ *
+ * The value returned is an empty string by default, which means the
+ * option does not have a value defined in an environment variable.
+ *
+ * \return The environment variable name of this option.
+ *
+ * \sa set_environment_variable_name()
+ * \sa get_environment_variable_value()
+ */
+std::string option_info::get_environment_variable_name() const
+{
+    return f_environment_variable_name;
+}
+
+
+/**  \brief Retrieve the environment variable value of this option.
+ *
+ * Each command line option can be assigned an environment variable
+ * name. Using this name, this function attempts to retrieve the
+ * corresponding value defined in that variable.
+ *
+ * \param[in] intro  The introducer to prepend. May be nullptr.
+ *
+ * \return The value of the environment variable of this option.
+ *
+ * \sa set_environment_variable_name()
+ * \sa get_environment_variable_name()
+ */
+std::string option_info::get_environment_variable_value(char const * intro) const
+{
+    if(f_environment_variable_name.empty())
+    {
+        return std::string();
+    }
+
+    std::string name(f_environment_variable_name);
+    if(intro != nullptr)
+    {
+        name = intro + name;
+    }
+
+    char const * env(getenv(name.c_str()));
+    if(env == nullptr)
+    {
+        return std::string();
+    }
+
+    return env;
+}
+
+
 /** \brief Get the flags.
  *
  * The options have flags determining various sub-options available

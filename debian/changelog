@@ -1,3 +1,14 @@
+advgetopt (2.0.32.0~bionic) bionic; urgency=high
+
+  * Added a test to forbid "/filename.conf" as a configuration filename.
+  * Added a default_group_name() function.
+  * Added support for a variable name for each option.
+  * Updated the README.md a little mode.
+  * Updated the tests to pass against the new environment variable handling.
+  * Added an option specific variable to the edit-config tool as an example.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 05 Mar 2022 09:39:06 -0800
+
 advgetopt (2.0.31.0~bionic) bionic; urgency=high
 
   * Fixed compiling issue from 2.0.30 (edit_config.cpp).

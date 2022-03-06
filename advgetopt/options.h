@@ -66,13 +66,14 @@ namespace advgetopt
 //
 struct option
 {
-    short_name_t        f_short_name = NO_SHORT_NAME;   // letter option (or '\0')
-    flag_t              f_flags = GETOPT_FLAG_NONE;     // set of flags
-    char const *        f_name = nullptr;               // name of the option (i.e. "test" for --test, or nullptr)
-    char const *        f_default = nullptr;            // a default value if not nullptr
-    char const *        f_help = nullptr;               // help for this option, if nullptr it's a hidden option; if ALIAS then this is the actual alias
-    char const *        f_validator = nullptr;          // the name of a validator and optional parameters between parenthesis
-    char const * const *f_multiple_separators = nullptr;// nullptr terminated list of strings used as separators when GETOPT_FLAG_MULTIPLE is set
+    short_name_t        f_short_name = NO_SHORT_NAME;           // letter option (or NO_SHORT_NAME == U'\0')
+    flag_t              f_flags = GETOPT_FLAG_NONE;             // set of flags
+    char const *        f_name = nullptr;                       // name of the option (i.e. "test" for --test, or nullptr)
+    char const *        f_environment_variable_name = nullptr;  // name of an environment variable to read for the value from
+    char const *        f_default = nullptr;                    // a default value if not nullptr
+    char const *        f_help = nullptr;                       // help for this option, if nullptr it's a hidden option; if ALIAS then this is the actual alias
+    char const *        f_validator = nullptr;                  // the name of a validator and optional parameters between parenthesis
+    char const * const *f_multiple_separators = nullptr;        // nullptr terminated list of strings used as separators when GETOPT_FLAG_MULTIPLE is set
 };
 
 
@@ -138,6 +139,21 @@ public:
     }
 
     constexpr Name(char const * name)
+        : OptionValue<char const *>(name)
+    {
+    }
+};
+
+class EnvironmentVariableName
+    : public OptionValue<char const *>
+{
+public:
+    constexpr EnvironmentVariableName()
+        : OptionValue<char const *>(nullptr)
+    {
+    }
+
+    constexpr EnvironmentVariableName(char const * name)
         : OptionValue<char const *>(name)
     {
     }
@@ -246,14 +262,19 @@ constexpr option define_option(ARGS ...args)
     {
         .f_short_name =          find_option<ShortName   >(args..., ShortName()),
         .f_flags =               find_option<Flags       >(args..., Flags())
-                                    | (find_option<Alias       >(args..., Alias()) != nullptr
+                                    | (find_option<Alias>(args..., Alias()) != nullptr
                                             ? GETOPT_FLAG_ALIAS
+                                            : GETOPT_FLAG_NONE)
+                                    | (find_option<EnvironmentVariableName>(args..., EnvironmentVariableName()) != nullptr
+                                            ? GETOPT_FLAG_ENVIRONMENT_VARIABLE
                                             : GETOPT_FLAG_NONE),
         .f_name =                find_option<Name        >(args...),    // no default, must be defined
+        .f_environment_variable_name =
+                                 find_option<EnvironmentVariableName>(args..., EnvironmentVariableName()),
         .f_default =             find_option<DefaultValue>(args..., DefaultValue()),
         .f_help =                find_option<Alias       >(args..., Alias()) != nullptr
-                                    ? find_option<Alias       >(args..., Alias())
-                                    : find_option<Help        >(args..., Help()),
+                                            ? find_option<Alias       >(args..., Alias())
+                                            : find_option<Help        >(args..., Help()),
         .f_validator =           find_option<Validator   >(args..., Validator()),
         .f_multiple_separators = find_option<Separators  >(args..., Separators()),
     };
@@ -421,6 +442,7 @@ struct options_environment
     option const *              f_options = nullptr;                    // raw options
     char const *                f_options_files_directory = nullptr;    // directory to check for option files (default "/usr/shared/advgetopt")
     char const *                f_environment_variable_name = nullptr;  // environment variable with additional options (%e)
+    char const *                f_environment_variable_intro = nullptr; // introducer for option specific environment variable names (%E)
     char const *                f_section_variables_name = nullptr;     // the name of a section representing variables (%m)
     char const * const *        f_configuration_files = nullptr;        // nullptr terminated array of full paths to configuration files (%f)
     char const *                f_configuration_filename = nullptr;     // the configuration filename to search in f_configuration_directories (%g)

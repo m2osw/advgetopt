@@ -127,6 +127,7 @@ void getopt::parse_options_info(option const * opts, bool ignore_duplicates)
                                             , short_name));
         o->set_variables(f_variables);
 
+        o->set_environment_variable_name(opts->f_environment_variable_name);
         o->add_flag(opts->f_flags);
         o->set_default(opts->f_default);
         o->set_help(opts->f_help);
@@ -364,6 +365,12 @@ void getopt::parse_options_from_file(
 
         option_info::pointer_t opt(std::make_shared<option_info>(parameter_name, sn));
         opt->set_variables(f_variables);
+
+        std::string const environment_variable_name(parameter_name + "::environment_variable_name");
+        if(conf->has_parameter(environment_variable_name))
+        {
+            opt->set_environment_variable_name(unquote(conf->get_parameter(environment_variable_name)));
+        }
 
         std::string const default_name(parameter_name + "::default");
         if(conf->has_parameter(default_name))

@@ -29,6 +29,8 @@
 //
 #include    "advgetopt/utils.h"
 
+#include    "advgetopt/exception.h"
+
 
 // snapdev lib
 //
@@ -313,12 +315,15 @@ void split_string(std::string const & str
  * If the group name is empty or null, then the project name is used. If
  * both are empty, then nothing happens (the function returns an empty list).
  *
+ * \exception getopt_root_filename
+ * The \p filename parameter cannot be a file in the root directory.
+ *
  * \param[in] filename  The filename where the project name gets injected.
  * \param[in] group_name  The name of the group to inject in the filename.
  * \param[in] project_name  The name of the project to inject in the filename.
  *
  * \return The list of filenames or an empty list if no group or project name
- *         or filename are specified.
+ *         or filename were specified.
  */
 string_list_t insert_group_name(
           std::string const & filename
@@ -348,6 +353,10 @@ string_list_t insert_group_name(
 
     std::string pattern;
     std::string::size_type const pos(filename.find_last_of('/'));
+    if(pos == 0)
+    {
+        throw getopt_root_filename("filename \"" + filename + "\" starts with a slash (/), which is not allowed.");
+    }
     if(pos != std::string::npos
     && pos > 0)
     {
@@ -362,6 +371,8 @@ string_list_t insert_group_name(
                 + (".d/[0-9][0-9]-" + filename);
     }
 
+    // we use an std::set so the resulting list is sorted
+    //
     snapdev::glob_to_list<std::set<std::string>> glob;
 
     // the glob() function is not thread safe
@@ -393,6 +404,117 @@ string_list_t insert_group_name(
 }
 
 
+/** \brief Generate the default filename (the ".../50-...")
+ *
+ * This function generates the default filename as the insert_group_name()
+ * expects to find in the configuration sub-directory.
+ *
+ * The name is formed as follow:
+ *
+ *     <path> / <directory> ".d" / <priority> "-" <basename>
+ *
+ * Where `<path>` is the path found in \p filename. If no path is defined in
+ * \p filename, then the `<path> /` part is not prepended:
+ *
+ *     <directory> ".d" / <priority> "-" <basename>
+ *
+ * Where `<directory>` is the \p group_name if defined, otherwise it uses
+ * the \p project_name. This is why if neither is defined, then the function
+ * immediately returns an empty string.
+ *
+ * Where `<priority>` is a number from 0 to 99 inclusive. This is used to
+ * sort the files before processing them. File with lower priorities are
+ * loaded first. Parameters found in files with higher priorities overwrite
+ * the values of parameters found in files with lower priorities.
+ *
+ * Where `<basename>` is the end of \p filename, the part after the last
+ * slash (`/`). If \p filename is not empty and it does not include a slash
+ * then the entire \p filename is taken as the `<basename>`. Note that
+ * \p filename is expected to include an extension such as `.conf`. The
+ * extension is not modified in any way.
+ *
+ * Since the result is not viable when \p filename is empty, the function
+ * immediately returns an empty string in that situation.
+ *
+ * \exception getopt_root_filename
+ * The \p filename parameter cannot be a file in the root directory.
+ *
+ * \param[in] filename  The filename where the project name gets injected.
+ * \param[in] group_name  The name of the group to inject in the filename.
+ * \param[in] project_name  The name of the project to inject in the filename.
+ * \param[in] priority  The priority of the new file (0 to 99).
+ *
+ * \return The default filenames or an empty list if no group or project
+ *         or file name were specified.
+ */
+std::string default_group_name(
+          std::string const & filename
+        , char const * group_name
+        , char const * project_name
+        , int priority)
+{
+    if(priority < 0 || priority >= 100)
+    {
+        throw getopt_invalid_parameter(
+              "priority must be a number between 0 and 99 inclusive; "
+            + std::to_string(priority)
+            + " is invalid.");
+    }
+
+    if(filename.empty())
+    {
+        return std::string();
+    }
+
+    char const * name(nullptr);
+    if(group_name == nullptr
+    || *group_name == '\0')
+    {
+        if(project_name == nullptr
+        || *project_name == '\0')
+        {
+            return std::string();
+        }
+        name = project_name;
+    }
+    else
+    {
+        name = group_name;
+    }
+
+    std::string::size_type const pos(filename.find_last_of('/'));
+    if(pos == 0)
+    {
+        throw getopt_root_filename("filename \"" + filename + "\" starts with a slash (/), which is not allowed.");
+    }
+
+    std::string result;
+    result.reserve(filename.length() + strlen(name) + 6);
+    if(pos != std::string::npos)
+    {
+        result = filename.substr(0, pos + 1);
+    }
+    result += name;
+    result += ".d/";
+    if(priority < 10)
+    {
+        result += '0';
+    }
+    result += std::to_string(priority);
+    result += '-';
+    if(pos == std::string::npos)
+    {
+        result += filename;
+    }
+    else
+    {
+        result += filename.substr(pos + 1);
+    }
+
+    return result;
+}
+
+
 /** \brief Replace a starting `~/...` with the contents of the \$HOME variable.
  *
  * This function checks the beginning of \p filename. If it starts with `'~/'`
@@ -418,13 +540,13 @@ string_list_t insert_group_name(
  */
 std::string handle_user_directory(std::string const & filename)
 {
-    char const * const home(getenv("HOME"));
-    if(home != nullptr
-    && *home != '\0')
+    if(!filename.empty()
+    && filename[0] == '~'
+    && (filename.length() == 1 || filename[1] == '/'))
     {
-        if(!filename.empty()
-        && filename[0] == '~'
-        && (filename.length() == 1 || filename[1] == '/'))
+        char const * const home(getenv("HOME"));
+        if(home != nullptr
+        && *home != '\0')
         {
             return home + filename.substr(1);
         }

@@ -542,6 +542,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
                                  " -f valid.cpp"
                                  " --from auto-build"
                                  " --more black");
+            opt.define_environment_variable_data();
 
             SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"1001 meters\" given to parameter --size is not considered valid.");
             SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"valid.cpp\" given to parameter --files is not considered valid.");

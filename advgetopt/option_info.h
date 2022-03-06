@@ -92,6 +92,11 @@ public:
     string_list_t               get_section_name_list() const;
     bool                        is_default_option() const;
 
+    void                        set_environment_variable_name(std::string const & name);
+    void                        set_environment_variable_name(char const * name);
+    std::string                 get_environment_variable_name() const;
+    std::string                 get_environment_variable_value(char const * intro = nullptr) const;
+
     void                        set_flags(flag_t flags);
     void                        add_flag(flag_t flag);
     void                        remove_flag(flag_t flag);
@@ -166,6 +171,7 @@ private:
     //
     std::string                 f_name = std::string();
     short_name_t                f_short_name = NO_SHORT_NAME;
+    std::string                 f_environment_variable_name = std::string();
     flag_t                      f_flags = GETOPT_FLAG_NONE;
     std::string                 f_default_value = std::string();
     std::string                 f_help = std::string();
