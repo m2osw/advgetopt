@@ -287,14 +287,6 @@ option const g_if_configuration_filename_system_options[] =
 
 
 
-/** \brief Value when no default option was defined.
- *
- * Some options may have defaults in which case their indexes are used.
- * By default, an option has no defaults and we instead use -1.
- */
-int const NO_DEFAULT_OPT = -1;
-
-
 /** \brief Check whether this parameter is an argument.
  *
  * An argument is defined as a command line parameter that starts with

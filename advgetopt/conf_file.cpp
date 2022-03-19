@@ -1044,6 +1044,26 @@ void conf_file::value_changed(
 }
 
 
+/** \brief Whether an input file was found.
+ *
+ * This function returns true if a file was opened for reading. Whether the
+ * file is valid is not marked in this flag.
+ *
+ * If you want to know whether an error occurred while reading the file,
+ * try the get_errno().
+ *
+ * \return true if a file was read.
+ *
+ * \sa get_errno()
+ */
+bool conf_file::exists() const
+{
+    cppthread::guard lock(get_global_mutex());
+
+    return f_exists;
+}
+
+
 /** \brief Get the error number opening/reading the configuration file.
  *
  * The class registers the errno value whenever an I/O error happens
@@ -1221,9 +1241,9 @@ std::string conf_file::get_parameter(std::string name) const
  * This function sets a parameter to the specified value.
  *
  * The name of the value includes the \p section names and the \p name
- * parameter concatenated with a C++ scopre operator (::) in between
+ * parameter concatenated with a C++ scope operator (::) in between
  * (unless \p section is the empty string in which case no scope operator
- * gets added.)
+ * gets added).
  *
  * When the \p name parameter starts with a scope parameter, the \p section
  * parameter is ignored. This allows one to ignore the current section
@@ -1249,9 +1269,9 @@ std::string conf_file::get_parameter(std::string name) const
  *     var=twice
  * \endcode
  *
- * The variable named `var` will be set to `twice` on return and a warning
- * will have been generated warning about the fact that the variable was
- * modified while reading the configuration file.
+ * the variable named `var` is set to `twice` on exit. A warning
+ * will have been generated about the fact that the variable was
+ * set twice while reading the configuration file.
  *
  * The full name of the parameter (i.e. section + name) cannot include any
  * of the following characters:
@@ -1261,7 +1281,7 @@ std::string conf_file::get_parameter(std::string name) const
  * \li a backslash (`\`)
  * \li quotation (`"` and `'`)
  * \li comment (';', '#', '/')
- * \li assignment ('=', ':', '?', '+')
+ * \li assignment operators ('=', ':', '?', '+')
  *
  * \note
  * The \p section and \p name parameters have underscores (`_`)
@@ -1814,6 +1834,7 @@ void conf_file::read_configuration()
         f_errno = errno;
         return;
     }
+    f_exists = true;
 
     bool const save_comment((f_setup.get_comment() & COMMENT_SAVE) != 0);
     std::string current_section;

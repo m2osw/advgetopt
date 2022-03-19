@@ -43,13 +43,6 @@ configure_file(
     ${CMAKE_CURRENT_BINARY_DIR}/version.h
 )
 
-include_directories(
-    ${CPPTHREAD_INCLUDE_DIRS}
-    ${LIBEXCEPT_INCLUDE_DIRS}
-    ${BOOST_INCLUDE_DIRS}
-    ${LIBUTF8_INCLUDE_DIRS}
-)
-
 add_library( ${PROJECT_NAME} SHARED
     advgetopt.cpp
     advgetopt_access.cpp
@@ -70,6 +63,16 @@ add_library( ${PROJECT_NAME} SHARED
     validator_size.cpp
     variables.cpp
     version.cpp
+)
+
+
+target_include_directories(${PROJECT_NAME}
+    PUBLIC
+        ${BOOST_INCLUDE_DIRS}
+        ${CPPTHREAD_INCLUDE_DIRS}
+        ${LIBEXCEPT_INCLUDE_DIRS}
+        ${LIBUTF8_INCLUDE_DIRS}
+        ${SNAPDEV_INCLUDE_DIRS}
 )
 
 

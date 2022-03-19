@@ -27,4 +27,12 @@ install(
         share/cmake/AdvGetOpt
 )
 
+install(
+    FILES
+        AtomicNamesConfig.cmake
+
+    DESTINATION
+        share/cmake/AtomicNames
+)
+
 # vim: ts=4 sw=4 et nocindent

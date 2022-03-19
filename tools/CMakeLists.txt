@@ -103,4 +103,40 @@ install(
         runtime
 )
 
+
+
+##
+## convert a file of names/strings to C++
+##
+project(atomic-names)
+
+add_executable(${PROJECT_NAME}
+    atomic_names.cpp
+)
+
+target_include_directories(${PROJECT_NAME}
+    PUBLIC
+        ${BOOST_INCLUDE_DIRS}
+        ${CPPTHREAD_INCLUDE_DIRS}
+        ${LIBEXCEPT_INCLUDE_DIRS}
+        ${LIBUTF8_INCLUDE_DIRS}
+        ${SNAPDEV_INCLUDE_DIRS}
+)
+
+target_link_libraries(${PROJECT_NAME}
+    advgetopt
+)
+
+install(
+    TARGETS
+        ${PROJECT_NAME}
+
+    RUNTIME DESTINATION
+        bin
+
+    COMPONENT
+        runtime
+)
+
+
 # vim: ts=4 sw=4 et nocindent

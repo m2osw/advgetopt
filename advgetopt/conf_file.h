@@ -189,6 +189,7 @@ public:
                                     , std::string const & parameter_name = std::string());
     void                        remove_callback(callback_id_t id);
 
+    bool                        exists() const;
     int                         get_errno() const;
 
     int                         section_to_variables(
@@ -248,6 +249,7 @@ private:
     int                         f_line = 0;
     int                         f_errno = 0;
     bool                        f_reading = false;
+    bool                        f_exists = false;
 
     bool                        f_modified = false;
     sections_t                  f_sections = sections_t();
