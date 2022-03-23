@@ -32,24 +32,9 @@
 #include    "advgetopt/validator_regex.h"
 
 
-//// advgetopt lib
-////
-//#include    "advgetopt/exception.h"
-
-
-// cppthread lib
+// cppthread
 //
 #include    <cppthread/log.h>
-
-
-//// snapdev lib
-////
-//#include    <snapdev/not_used.h>
-//
-//
-//// boost lib
-////
-//#include    <boost/algorithm/string/trim.hpp>
 
 
 // last include

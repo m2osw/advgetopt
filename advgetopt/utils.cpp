@@ -32,26 +32,27 @@
 #include    "advgetopt/exception.h"
 
 
-// snapdev lib
+// snapdev
 //
 #include    <snapdev/glob_to_list.h>
 #include    <snapdev/not_used.h>
+#include    <snapdev/trim_string.h>
 
 
-// cppthread lib
+// cppthread
 //
 #include    <cppthread/guard.h>
 #include    <cppthread/mutex.h>
 
 
-// boost lib
-//
-#include    <boost/algorithm/string/trim.hpp>
-
-
 // C++ lib
 //
 #include    <set>
+
+
+// C
+//
+#include    <string.h>
 
 
 // last include
@@ -220,8 +221,7 @@ void split_string(std::string const & str
         {
             if(start < pos)
             {
-                std::string v(str.substr(start, pos - start));
-                boost::trim(v);
+                std::string const v(snapdev::trim_string(str.substr(start, pos - start)));
                 if(!v.empty())
                 {
                     result.push_back(v);
@@ -260,8 +260,7 @@ void split_string(std::string const & str
                         //
                         if(start < pos)
                         {
-                            std::string v(str.substr(start, pos - start));
-                            boost::trim(v);
+                            std::string const v(snapdev::trim_string(str.substr(start, pos - start)));
                             if(!v.empty())
                             {
                                 result.push_back(v);
@@ -284,8 +283,7 @@ void split_string(std::string const & str
 
     if(start < pos)
     {
-        std::string v(str.substr(start, pos - start));
-        boost::trim(v);
+        std::string const v(snapdev::trim_string(str.substr(start, pos - start)));
         if(!v.empty())
         {
             result.push_back(v);

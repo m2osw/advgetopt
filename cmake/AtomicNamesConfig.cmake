@@ -40,7 +40,10 @@ include( CMakeParseArguments )
 function(AtomicNames ATOMIC_NAMES)
     cmake_parse_arguments(PARSE_ARGV 1 "" "" "" "")
 
-    project(${ATOMIC_NAMES}_AtomicNames)
+    file(RELATIVE_PATH RELATIVE_SOURCE_DIR ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
+    string(REPLACE "/" "_" INTRODUCER ${RELATIVE_SOURCE_DIR})
+
+    project(${INTRODUCER}_${ATOMIC_NAMES}_AtomicNames)
 
     get_filename_component(ATOMIC_NAMES_BASENAME ${ATOMIC_NAMES} NAME_WE)
 
