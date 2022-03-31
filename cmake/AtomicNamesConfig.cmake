@@ -22,7 +22,27 @@
 # File:         AtomicNamesConfig.cmake
 # Object:       Provide function to generate atomic name C++ files.
 #
-include( CMakeParseArguments )
+include(CMakeParseArguments)
+
+get_filename_component(CMAKE_BINARY_PARENT_DIR ${CMAKE_BINARY_DIR} DIRECTORY)
+find_program(
+    ATOMIC_NAMES_PROGRAM
+        atomic-names
+
+    HINTS
+        ${CMAKE_BINARY_PARENT_DIR}/advgetopt/tools
+        ${CMAKE_BINARY_PARENT_DIR}/contrib/advgetopt/tools
+
+    NO_DEFAULT_PATH
+    REQUIRED
+)
+find_program(
+    ATOMIC_NAMES_PROGRAM
+        atomic-names
+
+    REQUIRED
+)
+
 
 # This function generates three outputs files:
 #
@@ -54,7 +74,7 @@ function(AtomicNames ATOMIC_NAMES)
             ${CMAKE_CURRENT_BINARY_DIR}/${ATOMIC_NAMES_BASENAME}.h
 
         COMMAND
-            "atomic-names"
+            "${ATOMIC_NAMES_PROGRAM}"
                     "--output-path"
                         "${CMAKE_CURRENT_BINARY_DIR}"
                     "${CMAKE_CURRENT_SOURCE_DIR}/${ATOMIC_NAMES}"
