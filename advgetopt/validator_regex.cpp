@@ -158,7 +158,7 @@ validator_regex::validator_regex(string_list_t const & regex_list)
  *
  * \return "regex".
  */
-std::string const validator_regex::name() const
+std::string validator_regex::name() const
 {
     return std::string("regex");
 }

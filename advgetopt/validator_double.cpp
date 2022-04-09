@@ -199,7 +199,7 @@ validator_double::validator_double(string_list_t const & range_list)
  *
  * \return "double".
  */
-std::string const validator_double::name() const
+std::string validator_double::name() const
 {
     return std::string("double");
 }

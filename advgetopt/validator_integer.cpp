@@ -208,7 +208,7 @@ validator_integer::validator_integer(string_list_t const & range_list)
  *
  * \return "integer".
  */
-std::string const validator_integer::name() const
+std::string validator_integer::name() const
 {
     return std::string("integer");
 }

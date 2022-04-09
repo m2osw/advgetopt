@@ -53,8 +53,8 @@ public:
 
     // validator implementation
     //
-    virtual std::string const   name() const;
-    virtual bool                validate(std::string const & value) const;
+    virtual std::string         name() const override;
+    virtual bool                validate(std::string const & value) const override;
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"

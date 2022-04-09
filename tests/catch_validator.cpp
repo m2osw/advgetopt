@@ -995,7 +995,7 @@ CATCH_TEST_CASE("invalid_validator", "[validator][invalid][validation]")
             : public advgetopt::validator
         {
         public:
-            virtual std::string const name() const
+            virtual std::string name() const override
             {
                 return "integer";
             }
@@ -1009,7 +1009,7 @@ CATCH_TEST_CASE("invalid_validator", "[validator][invalid][validation]")
             : public advgetopt::validator_factory
         {
         public:
-            virtual std::string get_name() const
+            virtual std::string get_name() const override
             {
                 return "integer";
             }

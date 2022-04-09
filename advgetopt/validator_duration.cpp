@@ -140,7 +140,7 @@ validator_duration::validator_duration(string_list_t const & flag_list)
  *
  * \return "duration".
  */
-std::string const validator_duration::name() const
+std::string validator_duration::name() const
 {
     return std::string("duration");
 }

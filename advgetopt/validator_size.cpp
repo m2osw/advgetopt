@@ -44,24 +44,9 @@
 #include    "advgetopt/validator_double.h"
 
 
-//// advgetopt lib
-////
-//#include    "advgetopt/exception.h"
-
-
-// cppthread lib
+// cppthread
 //
 #include    <cppthread/log.h>
-
-
-//// snapdev lib
-////
-//#include    <snapdev/not_used.h>
-//
-//
-//// boost lib
-////
-//#include    <boost/algorithm/string/trim.hpp>
 
 
 // last include
@@ -180,7 +165,7 @@ validator_size::validator_size(string_list_t const & flag_list)
  *
  * \return "size".
  */
-std::string const validator_size::name() const
+std::string validator_size::name() const
 {
     return std::string("size");
 }

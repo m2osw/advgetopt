@@ -66,7 +66,7 @@ public:
 
     // virtuals
     //
-    virtual std::string const   name() const = 0;
+    virtual std::string         name() const = 0;
     virtual bool                validate(std::string const & value) const = 0;
 
     static void                 register_validator(validator_factory const & factory);

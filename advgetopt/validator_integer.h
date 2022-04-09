@@ -56,8 +56,8 @@ public:
 
     // validator implementation
     //
-    virtual std::string const   name() const;
-    virtual bool                validate(std::string const & value) const;
+    virtual std::string         name() const override;
+    virtual bool                validate(std::string const & value) const override;
 
     static bool                 convert_string(std::string const & number
                                              , std::int64_t & result);
