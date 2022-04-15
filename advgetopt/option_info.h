@@ -62,7 +62,7 @@ enum class option_source_t
     SOURCE_COMMAND_LINE,            // set on command line
     SOURCE_CONFIGURATION,           // read from config file
     SOURCE_DIRECT,                  // set by programmer directly
-    SOURCE_DYNAMIC,                 // set dynamically
+    SOURCE_DYNAMIC,                 // set dynamically (a.k.a. fluid-settings)
     SOURCE_ENVIRONMENT_VARIABLE,    // found in environment variable
 
     SOURCE_UNDEFINED,               // the option object exists, but the value is still undefined

@@ -282,19 +282,33 @@ void getopt::parse_options_from_file()
  *     required
  * \endcode
  *
+ * The number of namespaces in `<command-name>` can be limited using the
+ * \p min_sections and \p max_sections parameters.
+ *
+ * The function can be called multiple times. The first time, it verifies
+ * that there are not duplicated settings. On following loads, that test
+ * is ignored.
+ *
+ * \todo
+ * Test that options get 100% updated on a reload.
+ *
  * \note
  * By default, this function is called with one specific filename based
  * on the f_project_name field and the f_options_files_directory as
  * defined in the options environment.
  *
  * \param[in] filename  The filename to load.
+ * \param[in] min_sections  The minimum number of namespaces.
+ * \param[in] max_sections  The maximum number of namespaces.
+ * \param[in] ignore_duplicates  Whether duplicates are okay or not.
  *
  * \sa parse_options_from_file()
  */
 void getopt::parse_options_from_file(
           std::string const & filename
         , int min_sections
-        , int max_sections)
+        , int max_sections
+        , bool ignore_duplicates)
 {
     section_operator_t operators(SECTION_OPERATOR_INI_FILE);
     if(min_sections == 1
@@ -442,7 +456,7 @@ void getopt::parse_options_from_file(
             opt->add_flag(GETOPT_FLAG_REQUIRED);
         }
 
-        add_option(opt);
+        add_option(opt, ignore_duplicates);
     }
 }
 

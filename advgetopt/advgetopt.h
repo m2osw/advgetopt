@@ -92,9 +92,12 @@ public:
                                     , bool ignore_duplicates = false);
     void                    parse_options_from_file(
                                       std::string const & filename
-                                    , int min_section
-                                    , int max_section);
-    void                    add_option(option_info::pointer_t opt, bool ignore_duplicates = false);
+                                    , int min_sections
+                                    , int max_sections
+                                    , bool ignore_duplicates = false);
+    void                    add_option(
+                                      option_info::pointer_t opt
+                                    , bool ignore_duplicates = false);
     void                    link_aliases();
     void                    set_short_name(
                                       std::string const & name
