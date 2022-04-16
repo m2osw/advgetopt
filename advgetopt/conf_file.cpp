@@ -1598,6 +1598,24 @@ bool conf_file::erase_parameter(std::string name)
 }
 
 
+/** \brief Clear the list of all existing parameters from this file.
+ *
+ * This function goes through the list of parameters it contains and
+ * erase each one of them in turn.
+ *
+ * The function calls the erase_parameter() function with each one of
+ * the parameter still in the list. It is done that way to make sure that
+ * the value_changed() function gets called as expected for each value.
+ */
+void conf_file::erase_all_parameters()
+{
+    while(!f_parameters.empty())
+    {
+        erase_parameter(f_parameters.begin()->first);
+    }
+}
+
+
 /** \brief Check whether this configuration file was modified.
  *
  * This function returns the value of the f_modified flag which is true
@@ -1823,6 +1841,9 @@ bool conf_file::get_line(std::ifstream & in, std::string & line)
  * Add support for quotes in configuration files as parameters are otherwise
  * saved as a separated list of parameters losing the number of spaces between
  * each entry.
+ *
+ * \todo
+ * Add support for reading a backup file if the main file is not found.
  */
 void conf_file::read_configuration()
 {

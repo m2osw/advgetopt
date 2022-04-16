@@ -207,6 +207,7 @@ public:
                                     , std::string const & value
                                     , std::string const & comment = std::string());
     bool                        erase_parameter(std::string name);
+    void                        erase_all_parameters();
     bool                        was_modified() const;
 
     bool                        is_assignment_operator(int c) const;
