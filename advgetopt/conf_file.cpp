@@ -605,6 +605,7 @@ parameter_value::parameter_value()
 parameter_value::parameter_value(parameter_value const & rhs)
     : f_value(rhs.f_value)
     , f_comment(rhs.f_comment)
+    , f_line(rhs.f_line)
 {
 }
 
@@ -621,6 +622,7 @@ parameter_value & parameter_value::operator = (parameter_value const & rhs)
     {
         f_value = rhs.f_value;
         f_comment = rhs.f_comment;
+        f_line = rhs.f_line;
     }
     return *this;
 }
@@ -651,6 +653,12 @@ void parameter_value::set_comment(std::string const & comment)
 }
 
 
+void parameter_value::set_line(int line)
+{
+    f_line = line;
+}
+
+
 std::string const & parameter_value::get_value() const
 {
     return f_value;
@@ -660,6 +668,12 @@ std::string const & parameter_value::get_value() const
 std::string const & parameter_value::get_comment() const
 {
     return f_comment;
+}
+
+
+int parameter_value::get_line() const
+{
+    return f_line;
 }
 
 
@@ -1529,6 +1543,7 @@ bool conf_file::set_parameter(
     {
         f_parameters[full_name] = value;
         f_parameters[full_name].set_comment(comment);
+        f_parameters[full_name].set_line(f_line);
     }
     else
     {
@@ -2037,7 +2052,11 @@ void conf_file::read_configuration()
                     { "\\n", "\n" },
                     { "\\t", "\t" },
                 }));
-            set_parameter(current_section, name, unquote(value), last_comment);
+            set_parameter(
+                      current_section
+                    , name
+                    , unquote(value)
+                    , last_comment);
             last_comment.clear();
         }
     }

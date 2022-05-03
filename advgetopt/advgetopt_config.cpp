@@ -429,7 +429,9 @@ void getopt::process_configuration_file(std::string const & filename)
                                << boost::replace_all_copy(param.first, "-", "_")
                                << "\" found in configuration file \""
                                << filename
-                               << "\"."
+                               << "\" on line "
+                               << param.second.get_line()
+                               << "."
                                << cppthread::end;
                 continue;
             }

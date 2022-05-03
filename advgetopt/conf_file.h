@@ -151,13 +151,16 @@ public:
 
     void                        set_value(std::string const & value);
     void                        set_comment(std::string const & comment);
+    void                        set_line(int line);
 
     std::string const &         get_value() const;
     std::string const &         get_comment() const;
+    int                         get_line() const;
 
 private:
     std::string                 f_value = std::string();
     std::string                 f_comment = std::string();
+    int                         f_line = 0;
 };
 
 

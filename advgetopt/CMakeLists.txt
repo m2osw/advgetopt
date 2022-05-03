@@ -49,6 +49,7 @@ add_library( ${PROJECT_NAME} SHARED
     advgetopt_config.cpp
     advgetopt_data.cpp
     advgetopt_options.cpp
+    advgetopt_string.cpp
     advgetopt_usage.cpp
     conf_file.cpp
     license_gpl2.cpp

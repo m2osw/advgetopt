@@ -130,8 +130,15 @@ public:
 
     option_info::map_by_name_t const &
                             get_options() const;
-    option_info::pointer_t  get_option(std::string const & name, bool exact_option = false) const;
-    option_info::pointer_t  get_option(short_name_t name, bool exact_option = false) const;
+    option_info::pointer_t  get_option(
+                                      std::string const & name
+                                    , bool exact_option = false) const;
+    option_info::pointer_t  get_option(
+                                      short_name_t name
+                                    , bool exact_option = false) const;
+    std::string             options_to_string(
+                                      bool include_progname = false
+                                    , bool keep_defaults = false) const;
     bool                    is_defined(std::string const & name) const;
     std::size_t             size(std::string const & name) const;
     bool                    has_default(std::string const & name) const;
@@ -182,6 +189,7 @@ public:
                                     , size_t const line_width);
     static size_t           get_line_width();
     static std::string      sanitizer_details();
+    static std::string      escape_shell_argument(std::string const & arg);
 
     variables::pointer_t    get_variables() const;
 
