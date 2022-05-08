@@ -26,6 +26,7 @@
  * The format is:
  *
  * \code
+ *     introducer=<name>
  *     project=<name>
  *     sub_project=<name>       # optional (used by plugins)
  *
@@ -263,7 +264,7 @@ int atomic_names::get_filenames()
     if(f_basename.empty())
     {
         std::cerr
-            << "error: somehow the basedname of \""
+            << "error: somehow the basename of \""
             << f_filename
             << "\" is an empty string.\n";
         return 1;
