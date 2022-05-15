@@ -63,6 +63,7 @@ constexpr flag_t            SYSTEM_OPTION_ENVIRONMENT_VARIABLE_NAME     = 0x0020
 constexpr flag_t            SYSTEM_OPTION_CONFIGURATION_FILENAMES       = 0x0040;
 constexpr flag_t            SYSTEM_OPTION_PATH_TO_OPTION_DEFINITIONS    = 0x0080;
 constexpr flag_t            SYSTEM_OPTION_SHOW_OPTION_SOURCES           = 0x0100;
+constexpr flag_t            SYSTEM_OPTION_SHOW_OPTION_VALUE             = 0x0200;
 
 // system options
 constexpr flag_t            SYSTEM_OPTION_CONFIG_DIR                    = 0x1000;

@@ -852,6 +852,21 @@ flag_t getopt::process_system_options(std::basic_ostream<char> & out)
         result |= SYSTEM_OPTION_SHOW_OPTION_SOURCES;
     }
 
+    // --print-option
+    if(is_defined("print-option"))
+    {
+        std::string const name(get_string("print-option"));
+        if(is_defined(name))
+        {
+            out << get_string(name) << std::endl;
+        }
+        else if(has_default(name))
+        {
+            out << get_default(name) << std::endl;
+        }
+        result |= SYSTEM_OPTION_SHOW_OPTION_VALUE;
+    }
+
     return result;
 }
 

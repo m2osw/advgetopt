@@ -243,6 +243,12 @@ option const g_system_options[] =
         , Help("print out the path to the option definitions.")
     ),
     define_option(
+          Name("print-option")
+        , Flags(command_flags<GETOPT_FLAG_GROUP_COMMANDS
+                            , GETOPT_FLAG_REQUIRED>())
+        , Help("print the value of the named option after loading all the command line options.")
+    ),
+    define_option(
           Name("show-option-sources")
         , Flags(standalone_command_flags<GETOPT_FLAG_GROUP_COMMANDS>())
         , Help("parse all the options and then print out the source of each value and each override.")
