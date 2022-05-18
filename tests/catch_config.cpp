@@ -1047,7 +1047,7 @@ CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                   "error: unknown option \"f\" found in configuration file \""
                 + SNAP_CATCH2_NAMESPACE::g_config_filename
-                + "\".");
+                + "\" on line 3.");
         opt.process_configuration_file(SNAP_CATCH2_NAMESPACE::g_config_filename);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
@@ -1118,7 +1118,7 @@ CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                   "error: unknown option \"f\" found in configuration file \""
                 + SNAP_CATCH2_NAMESPACE::g_config_filename
-                + "\".");
+                + "\" on line 3.");
         opt.process_configuration_file(SNAP_CATCH2_NAMESPACE::g_config_filename);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
@@ -1189,7 +1189,7 @@ CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                   "error: unknown option \"dynamic\" found in configuration file \""
                 + SNAP_CATCH2_NAMESPACE::g_config_filename
-                + "\".");
+                + "\" on line 3.");
         opt.process_configuration_file(SNAP_CATCH2_NAMESPACE::g_config_filename);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 

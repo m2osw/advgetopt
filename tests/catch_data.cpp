@@ -991,8 +991,11 @@ CATCH_TEST_CASE("system_flags_help", "[arguments][valid][getopt][system_flags]")
         // check that the result is valid
 
         // check the list of options
+        //   3 -- the number of user defined option (see above)
+        //  12 -- the number of system options (see advgetopt.cpp)
+        //   1 -- auto-added long-help
         advgetopt::option_info::map_by_name_t const & list_of_options(opt.get_options());
-        CATCH_REQUIRE(list_of_options.size() == 3 + 11 + 1);
+        CATCH_REQUIRE(list_of_options.size() == 3 + 12 + 1);
 
         // user options
         CATCH_REQUIRE(list_of_options.find("size") != list_of_options.end());
@@ -1110,6 +1113,11 @@ advgetopt::getopt::breakup_line(
 + advgetopt::getopt::format_usage_string(
               "--path-to-option-definitions"
             , "print out the path to the option definitions."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--print-option <arg>"
+            , "print the value of the named option after loading all the command line options."
             , 30
             , advgetopt::getopt::get_line_width())
 + advgetopt::getopt::format_usage_string(
@@ -1290,6 +1298,11 @@ advgetopt::getopt::breakup_line(
 + advgetopt::getopt::format_usage_string(
               "--path-to-option-definitions"
             , "print out the path to the option definitions."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--print-option <arg>"
+            , "print the value of the named option after loading all the command line options."
             , 30
             , advgetopt::getopt::get_line_width())
 + advgetopt::getopt::format_usage_string(
@@ -1575,6 +1588,11 @@ advgetopt::getopt::breakup_line(
 + advgetopt::getopt::format_usage_string(
               "--path-to-option-definitions"
             , "print out the path to the option definitions."
+            , 30
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--print-option <arg>"
+            , "print the value of the named option after loading all the command line options."
             , 30
             , advgetopt::getopt::get_line_width())
 + advgetopt::getopt::format_usage_string(

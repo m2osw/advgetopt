@@ -1,11 +1,11 @@
-# Copyright (c) 2021  Made to Order Software Corp.  All Rights Reserved
+# Copyright (c) 2022  Made to Order Software Corp.  All Rights Reserved
 #
 # http://snapwebsites.org/project/advgetopt
 # contact@m2osw.com
 #
-# This program is free software; you can redistribute it and/or modify
+# This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
+# the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
@@ -13,9 +13,8 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 ################################################################################
 #
@@ -24,6 +23,7 @@
 #
 include(CMakeParseArguments)
 
+# First try to find the one we just compiled (developer environment)
 get_filename_component(CMAKE_BINARY_PARENT_DIR ${CMAKE_BINARY_DIR} DIRECTORY)
 find_program(
     ATOMIC_NAMES_PROGRAM
@@ -36,6 +36,9 @@ find_program(
     NO_DEFAULT_PATH
     REQUIRED
 )
+
+# Second, if the first find_program() came up empty handed, try again to
+# find an installed version (i.e. generally under /usr/bin)
 find_program(
     ATOMIC_NAMES_PROGRAM
         atomic-names
@@ -85,8 +88,8 @@ function(AtomicNames ATOMIC_NAMES)
         MAIN_DEPENDENCY
             ${ATOMIC_NAMES}
 
-        # Add "atomic-names" itself (but we need a full path...
-        # we may want to have a form of "find . -name atomic-names")
+        # Here "atomic-names" is not enoug, a full path would be required
+        # but since we have the `find_program + REQUIRED` earlier, we're good
         #DEPENDS
         #    "atomic-names"
     )

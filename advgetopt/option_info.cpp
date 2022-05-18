@@ -1026,6 +1026,11 @@ option_info::pointer_t option_info::get_alias_destination() const
  *
  * This function saves the list of separators in a vector.
  *
+ * \todo
+ * At the moment, this is only applied when the parameter is specified with
+ * the long option and an equal sign, as in: `--tags=a,b,c,d`. I thinks that
+ * it should also work without the equal sign.
+ *
  * \param[in] separators  The list of separators to be used for this argument.
  */
 void option_info::set_multiple_separators(char const * const * separators)
@@ -1051,6 +1056,10 @@ void option_info::set_multiple_separators(char const * const * separators)
  *
  * This function saves the specified list of separators.
  *
+ * \todo
+ * See the other set_multiple_separators() function about the issue of
+ * the separators not being used in all cases.
+ *
  * \param[in] separators  The list of separators to be used for this argument.
  */
 void option_info::set_multiple_separators(string_list_t const & separators)
@@ -1066,6 +1075,13 @@ void option_info::set_multiple_separators(string_list_t const & separators)
  * configuration file or a command line in an environment variable.
  * Parameters on the command line are already broken down by the
  * shell and we do not do any further manipulation with those.
+ *
+ * \warning
+ * As mentioned in the set_multiple_separators() function, the separators
+ * are only used when parsing a long parameter using the equal sign notation
+ * (i.e. `--tags=a,b,c,d`). It also works in environment variables. I am
+ * thinking that the `--tags a,b,c,d` should probably work the same way
+ * though because otherwise many people will have a surprise.
  *
  * \return A reference to the list of separators used to cut multiple
  *         arguments found in a configuration file or an environment

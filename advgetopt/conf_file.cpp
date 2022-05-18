@@ -48,6 +48,7 @@
 #include    <snapdev/safe_variable.h>
 #include    <snapdev/string_replace_many.h>
 #include    <snapdev/tokenize_string.h>
+#include    <snapdev/trim_string.h>
 
 
 // cppthread lib
@@ -649,7 +650,20 @@ void parameter_value::set_value(std::string const & value)
 
 void parameter_value::set_comment(std::string const & comment)
 {
-    f_comment = comment;
+    // ignore if the comment is only composed of spaces, tabs, empty lines
+    //
+    std::string const trimmed(snapdev::trim_string(comment));
+    if(trimmed.empty())
+    {
+        f_comment.clear();
+    }
+    else
+    {
+        // IMPORTANT: we do not save the trimmed version we only use that
+        //            to make sure it's not a completely empty comment
+        //
+        f_comment = comment;
+    }
 }
 
 
@@ -665,8 +679,19 @@ std::string const & parameter_value::get_value() const
 }
 
 
-std::string const & parameter_value::get_comment() const
+std::string parameter_value::get_comment(bool ensure_newline) const
 {
+    if(f_comment.empty())
+    {
+        return f_comment;
+    }
+
+    if(ensure_newline
+    && f_comment.back() != '\n')
+    {
+        return f_comment + '\n';
+    }
+
     return f_comment;
 }
 
@@ -746,15 +771,15 @@ conf_file::pointer_t conf_file::get_conf_file(conf_file_setup const & setup)
 /** \brief Save the configuration file.
  *
  * This function saves the current data from this configuration file to
- * the file. It overwrites the existing file.
+ * the output file. It overwrites the existing file.
  *
- * Note that when you load the configuration, you may get data from
- * many different configuration files. This very file will only
- * include the data that was loaded from this file, though, and whatever
- * modifications you made.
+ * Note that when you load configuration files for the command line, you
+ * may load data from many different files. This function only handles
+ * the data found in this very file and only that data and whatever
+ * modifications you made is included in the output .
  *
- * If the conf is not marked as modified, the function returns immediately
- * with true.
+ * If the conf_file is not marked as modified, the function returns
+ * immediately with true.
  *
  * The assignment operator used is the space if allowed, the colon if
  * allowed, otherwise it falls back to the equal operator. At this time,
@@ -766,12 +791,13 @@ conf_file::pointer_t conf_file::get_conf_file(conf_file_setup const & setup)
  * the original filename was used but the path could change when saving
  * (see the realpath() call in the constructor; this needs to be fixed).
  *
- * \param[in] backup_extension  If not empty, create a backup.
+ * \param[in] backup_extension  If not empty, create a backup with that
+ * extension.
  * \param[in] replace_backup  If true and a backup exists, replace it.
- * \param[in] prepend_warning  Whether to write a warning at the start of the
- * file.
- * \param[in] output_filename  The output filename, if empty, use the setup
- * defined filename.
+ * \param[in] prepend_warning  Whether to write a warning at the start of
+ * the file.
+ * \param[in] output_filename  The output filename; if empty, fallback to
+ * the filename defined in conf_file_setup.
  *
  * \return true if the save worked as expected.
  */
@@ -783,39 +809,43 @@ bool conf_file::save_configuration(
 {
     if(f_modified)
     {
+        std::string const & filename(output_filename.empty()
+                    ? f_setup.get_filename()
+                    : output_filename);
+
         // create backup?
         //
         if(!backup_extension.empty())
         {
-            if(backup_extension[0] != '.'
-            && backup_extension[0] != '~')
+            struct stat s = {};
+            if(stat(filename.c_str(), &s) == 0)
             {
-                backup_extension.insert(0, 1, '.');
-            }
-
-            std::string const backup_filename(f_setup.get_filename() + backup_extension);
-
-            if(access(backup_filename.c_str(), F_OK) != 0
-            || replace_backup)
-            {
-                if(unlink(backup_filename.c_str()) != 0
-                && errno != ENOENT)
+                if(backup_extension[0] != '.'
+                && backup_extension[0] != '~')
                 {
-                    f_errno = errno;   // LCOV_EXCL_LINE
-                    return false;      // LCOV_EXCL_LINE
+                    backup_extension.insert(0, 1, '.');
                 }
 
-                if(rename(f_setup.get_filename().c_str(), backup_filename.c_str()) != 0)
+                std::string const backup_filename(filename + backup_extension);
+
+                if(replace_backup
+                || access(backup_filename.c_str(), F_OK) != 0)
                 {
-                    f_errno = errno;   // LCOV_EXCL_LINE
-                    return false;      // LCOV_EXCL_LINE
+                    if(unlink(backup_filename.c_str()) != 0
+                    && errno != ENOENT)
+                    {
+                        f_errno = errno;   // LCOV_EXCL_LINE
+                        return false;      // LCOV_EXCL_LINE
+                    }
+
+                    if(rename(filename.c_str(), backup_filename.c_str()) != 0)
+                    {
+                        f_errno = errno;   // LCOV_EXCL_LINE
+                        return false;      // LCOV_EXCL_LINE
+                    }
                 }
             }
         }
-
-        std::string const & filename(output_filename.empty()
-                    ? f_setup.get_filename()
-                    : output_filename);
 
         // TODO: look at adding the user:group info
         //
@@ -841,8 +871,8 @@ bool conf_file::save_configuration(
         // that one would get re-added each time--some form of recursivity)
         //
         if(prepend_warning
-        && !f_parameters.empty()
-        && f_parameters.begin()->second.get_comment().empty())
+        && (f_parameters.empty()
+            || f_parameters.begin()->second.get_comment().empty()))
         {
             time_t const now(time(nullptr));
             tm t;
@@ -860,7 +890,7 @@ bool conf_file::save_configuration(
         {
             // if the value has a comment, output it
             //
-            conf << p.second.get_comment();
+            conf << p.second.get_comment(true);
 
             if(f_setup.get_name_separator() == NAME_SEPARATOR_DASHES)
             {
