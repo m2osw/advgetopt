@@ -1,3 +1,9 @@
+advgetopt (2.0.35.1~bionic) bionic; urgency=high
+
+  * Bumped build version to rebuild on Launchpad.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 20 May 2022 12:57:33 -0700
+
 advgetopt (2.0.35.0~bionic) bionic; urgency=high
 
   * Added tool/cmake rule to automatically generate Atomic Names.
