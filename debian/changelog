@@ -1,15 +1,10 @@
-advgetopt (2.0.35.1~bionic) bionic; urgency=high
-
-  * Updated the compat file to v10.
-
- -- Alexis Wilke <alexis@m2osw.com>  Thu, 19 May 2022 20:29:09 -0700
-
 advgetopt (2.0.35.0~bionic) bionic; urgency=high
 
   * Added tool/cmake rule to automatically generate Atomic Names.
   * Added a exists() function for configuration files.
   * Fixes to the CMakeLists.txt files.
   * Removed one more dependency on boost.
+  * Updated the compat file to v10.
 
  -- Alexis Wilke <alexis@m2osw.com>  Sat, 12 Mar 2022 10:35:31 -0800
 
