@@ -1,3 +1,4 @@
+usr/bin/atomic-names
 usr/include/*
 usr/lib/lib*.so
 usr/share/cmake/*
