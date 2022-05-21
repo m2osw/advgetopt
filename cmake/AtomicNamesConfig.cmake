@@ -34,11 +34,11 @@ find_program(
         ${CMAKE_BINARY_PARENT_DIR}/contrib/advgetopt/tools
 
     NO_DEFAULT_PATH
-    REQUIRED
 )
 
 # Second, if the first find_program() came up empty handed, try again to
 # find an installed version (i.e. generally under /usr/bin)
+# This one is marked as REQUIRED.
 find_program(
     ATOMIC_NAMES_PROGRAM
         atomic-names
