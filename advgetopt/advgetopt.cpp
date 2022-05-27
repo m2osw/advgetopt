@@ -521,7 +521,6 @@ void check_for_show_sources(int argc, char * argv[])
  * \sa finish_parsing()
  */
 getopt::getopt(options_environment const & opt_env)
-    : f_variables(std::make_shared<variables>())
 {
     initialize_parser(opt_env);
 }
@@ -596,6 +595,7 @@ getopt::getopt(options_environment const & opt_env
  */
 void getopt::initialize_parser(options_environment const & opt_env)
 {
+    f_variables = std::make_shared<variables>();
     f_options_environment = opt_env;
 
     parse_options_info(f_options_environment.f_options, false);
@@ -806,10 +806,12 @@ void getopt::parse_environment_variable()
         std::string const name(opt.second->get_environment_variable_name());
         if(!name.empty())
         {
-            // make sure the value is defined, if empty, ignore altogether
+            // get the value, only set the option if the variable is set
             //
-            std::string const value(opt.second->get_environment_variable_value(f_options_environment.f_environment_variable_intro));
-            if(!value.empty())
+            std::string value;
+            if(opt.second->get_environment_variable_value(
+                      value
+                    , f_options_environment.f_environment_variable_intro))
             {
                 add_option_from_string(
                           opt.second
@@ -1511,35 +1513,54 @@ void getopt::add_option_from_string(
     //
     if(!value.empty())
     {
-        if(opt->has_flag(GETOPT_FLAG_FLAG))
+        if(!opt->has_flag(GETOPT_FLAG_FLAG))
         {
-            cppthread::log << cppthread::log_level_t::error
-                           << "option "
-                           << (filename.empty()
-                                   ? "--" + opt->get_name()
-                                   : "\"" + boost::replace_all_copy(opt->get_name(), "-", "_") + "\"")
-                           << " cannot be given a value"
-                           << (filename.empty()
-                               ? std::string()
-                               : " in configuration file \""
-                                   + filename
-                                   + "\"")
-                           << "."
-                           << cppthread::end;
+            // does the option support multiple entries?
+            //
+            if(opt->has_flag(GETOPT_FLAG_MULTIPLE))
+            {
+                opt->set_multiple_values(value, source);
+            }
+            else
+            {
+                opt->set_value(0, value, source);
+            }
             return;
         }
 
-        // does the option support multiple entries?
+        // for flags, allow "true" or "false" that way we can reset those
+        // flags and especially, it's possible to use them in configuration
+        // files that way
         //
-        if(opt->has_flag(GETOPT_FLAG_MULTIPLE))
+        if(is_false(value))
         {
-            opt->set_multiple_values(value, source);
-        }
-        else
-        {
-            opt->set_value(0, value, source);
+            opt->reset();
+            return;
         }
 
+        if(is_true(value))
+        {
+            // for this, pass an empty string to the next layer
+            //
+            opt->set_value(0, std::string(), source);
+            return;
+        }
+
+        cppthread::log << cppthread::log_level_t::error
+                       << "option "
+                       << (filename.empty()
+                               ? "--" + opt->get_name()
+                               : "\"" + boost::replace_all_copy(opt->get_name(), "-", "_") + "\"")
+                       << " cannot be given value \""
+                       << value
+                       << "\""
+                       << (filename.empty()
+                           ? std::string()
+                           : " in configuration file \""
+                               + filename
+                               + "\"")
+                       << ". It only accepts \"true\" or \"false\"."
+                       << cppthread::end;
         return;
     }
 

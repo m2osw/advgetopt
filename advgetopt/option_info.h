@@ -95,7 +95,9 @@ public:
     void                        set_environment_variable_name(std::string const & name);
     void                        set_environment_variable_name(char const * name);
     std::string                 get_environment_variable_name() const;
-    std::string                 get_environment_variable_value(char const * intro = nullptr) const;
+    bool                        get_environment_variable_value(
+                                      std::string & value
+                                    , char const * intro = nullptr) const;
 
     void                        set_flags(flag_t flags);
     void                        add_flag(flag_t flag);

@@ -29,21 +29,10 @@
 //
 #include    "advgetopt/advgetopt.h"
 
-//#include    "advgetopt/conf_file.h"
-//#include    "advgetopt/exception.h"
-//#include    "advgetopt/validator_double.h"
-//#include    "advgetopt/validator_integer.h"
-//#include    "advgetopt/version.h"
-
 
 // cppthread lib
 //
 #include    <cppthread/log.h>
-
-
-// C lib
-//
-//#include    <string.h>
 
 
 // last include
@@ -63,7 +52,7 @@ constexpr char const g_single_quote = '\'';
 constexpr char const g_space = ' ';
 constexpr char const * g_empty_string = "\"\"";
 constexpr char const * g_escaped_single_quotes = "'\\''";
-constexpr char const * g_simple_characters = "-+0123456789ABCEFGHIJKLMNOPQRSTUVWXYZabcefghijklmnopqrstuvwxyz_";
+constexpr char const * g_simple_characters = "+-./0123456789=ABCEFGHIJKLMNOPQRSTUVWXYZabcefghijklmnopqrstuvwxyz_";
 
 } // no name namespace
 
@@ -100,13 +89,13 @@ std::string getopt::escape_shell_argument(std::string const & arg)
     std::string::size_type p1(0);
     while(p1 < arg.length())
     {
-        std::string::size_type const p2(arg.find('\''));
+        std::string::size_type const p2(arg.find('\'', p1));
         if(p2 == std::string::npos)
         {
             result += arg.substr(p1);
             break;
         }
-        result += arg.substr(p1, p2);
+        result += arg.substr(p1, p2 - p1);
         result += g_escaped_single_quotes;
         p1 = p2 + 1;                            // skip the '
     }
@@ -139,18 +128,25 @@ std::string getopt::options_to_string(bool include_progname, bool keep_defaults)
         result += escape_shell_argument(get_program_fullname());
     }
 
+    advgetopt::option_info::pointer_t default_option;
     for(auto const & opt : f_options_by_name)
     {
         if(!opt.second->is_defined())
         {
             continue;
         }
+        if(opt.second->is_default_option())
+        {
+            default_option = opt.second;
+            continue;
+        }
 
-        // same as default, there should be no need to add that parameter
-        //
         if(!keep_defaults
+        && !opt.second->has_flag(advgetopt::GETOPT_FLAG_FLAG)
         && opt.second->get_default() == opt.second->get_value())
         {
+            // same as default, no need to add that parameter
+            //
             continue;
         }
 
@@ -158,7 +154,34 @@ std::string getopt::options_to_string(bool include_progname, bool keep_defaults)
         {
             result += g_space;
         }
-        result += escape_shell_argument(opt.second->get_value());
+
+        result += "--";
+        result += opt.second->get_name();
+
+        if(!opt.second->has_flag(advgetopt::GETOPT_FLAG_FLAG))
+        {
+            result += g_space;
+            result += escape_shell_argument(opt.second->get_value());
+            std::size_t const max(opt.second->size());
+            for(std::size_t idx(1); idx < max; ++idx)
+            {
+                result += g_space;
+                result += escape_shell_argument(opt.second->get_value(idx));
+            }
+        }
+    }
+
+    if(default_option != nullptr)
+    {
+        result += " -- ";
+
+        result += escape_shell_argument(default_option->get_value());
+        std::size_t const max(default_option->size());
+        for(std::size_t idx(1); idx < max; ++idx)
+        {
+            result += g_space;
+            result += escape_shell_argument(default_option->get_value(idx));
+        }
     }
 
     return result;

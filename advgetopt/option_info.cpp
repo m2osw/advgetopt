@@ -511,18 +511,25 @@ std::string option_info::get_environment_variable_name() const
  * name. Using this name, this function attempts to retrieve the
  * corresponding value defined in that variable.
  *
+ * \param[out] value  Save the resulting value in this variable.
  * \param[in] intro  The introducer to prepend. May be nullptr.
  *
- * \return The value of the environment variable of this option.
+ * \return true if a value was defined.
  *
  * \sa set_environment_variable_name()
  * \sa get_environment_variable_name()
  */
-std::string option_info::get_environment_variable_value(char const * intro) const
+bool option_info::get_environment_variable_value(
+          std::string & value
+        , char const * intro) const
 {
+    // make it empty by default
+    //
+    value.clear();
+
     if(f_environment_variable_name.empty())
     {
-        return std::string();
+        return false;
     }
 
     std::string name(f_environment_variable_name);
@@ -534,10 +541,12 @@ std::string option_info::get_environment_variable_value(char const * intro) cons
     char const * env(getenv(name.c_str()));
     if(env == nullptr)
     {
-        return std::string();
+        return false;
     }
 
-    return env;
+    value = env;
+
+    return true;
 }
 
 
@@ -1730,7 +1739,7 @@ double option_info::get_double(int idx) const
 /** \brief Lock this value.
  *
  * This function allows for locking a value so further reading of data
- * will not overwrite it.
+ * from different sources will not overwrite it.
  *
  * When parsing the data we have multiple levels. Here are these levels
  * in priority order (first option found is the one we keep):

@@ -57,6 +57,7 @@
 CATCH_TEST_CASE("flag_argument", "[arguments][valid][getopt]")
 {
     CATCH_START_SECTION("Verify a simple --verbose argument")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -156,9 +157,11 @@ CATCH_TEST_CASE("flag_argument", "[arguments][valid][getopt]")
             CATCH_REQUIRE(opt.get_program_name() == "arguments");
             CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
         }
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Verify a simple --verbose argument in a variable")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -262,9 +265,11 @@ CATCH_TEST_CASE("flag_argument", "[arguments][valid][getopt]")
             CATCH_REQUIRE(opt.get_program_name() == "arguments");
             CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
         }
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Verify a simple alias argument")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -384,9 +389,11 @@ CATCH_TEST_CASE("flag_argument", "[arguments][valid][getopt]")
             CATCH_REQUIRE(opt.get_program_name() == "arguments");
             CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
         }
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Verify a simple alias argument in a variable")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -506,6 +513,7 @@ CATCH_TEST_CASE("flag_argument", "[arguments][valid][getopt]")
             CATCH_REQUIRE(opt.get_program_name() == "arguments");
             CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
         }
+    }
     CATCH_END_SECTION()
 }
 
@@ -513,6 +521,7 @@ CATCH_TEST_CASE("flag_argument", "[arguments][valid][getopt]")
 CATCH_TEST_CASE("require_argument", "[arguments][valid][required][getopt]")
 {
     CATCH_START_SECTION("Verify a simple --out <filename> argument")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -654,9 +663,11 @@ CATCH_TEST_CASE("require_argument", "[arguments][valid][required][getopt]")
             CATCH_REQUIRE(opt.get_program_name() == "arguments");
             CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
         }
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Verify a simple alias of --out <filename> argument")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -818,9 +829,11 @@ CATCH_TEST_CASE("require_argument", "[arguments][valid][required][getopt]")
             CATCH_REQUIRE(opt.get_program_name() == "arguments");
             CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
         }
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Verify a simple --out <filename> argument in a variable")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -951,9 +964,11 @@ CATCH_TEST_CASE("require_argument", "[arguments][valid][required][getopt]")
             CATCH_REQUIRE(opt.get_program_name() == "arguments");
             CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
         }
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Verify a simple alias of --out <filename> argument in a variable")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -1069,6 +1084,7 @@ CATCH_TEST_CASE("require_argument", "[arguments][valid][required][getopt]")
             CATCH_REQUIRE(opt.get_program_name() == "arguments");
             CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
         }
+    }
     CATCH_END_SECTION()
 }
 
@@ -1076,6 +1092,7 @@ CATCH_TEST_CASE("require_argument", "[arguments][valid][required][getopt]")
 CATCH_TEST_CASE("require_arguments", "[arguments][valid][required][multiple][getopt]")
 {
     CATCH_START_SECTION("Verify a simple --out <filename> ... argument")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -1174,9 +1191,11 @@ CATCH_TEST_CASE("require_arguments", "[arguments][valid][required][multiple][get
             CATCH_REQUIRE(opt.get_program_name() == "arguments");
             CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
         }
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Verify a simple alias of --out <filename> ... argument")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -1303,9 +1322,11 @@ CATCH_TEST_CASE("require_arguments", "[arguments][valid][required][multiple][get
             CATCH_REQUIRE(opt.get_program_name() == "arguments");
             CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
         }
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Verify a simple --out <filename> ... argument in a variable")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -1401,6 +1422,7 @@ CATCH_TEST_CASE("require_arguments", "[arguments][valid][required][multiple][get
             CATCH_REQUIRE(opt.get_program_name() == "arguments");
             CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
         }
+    }
     CATCH_END_SECTION()
 }
 
@@ -1408,6 +1430,7 @@ CATCH_TEST_CASE("require_arguments", "[arguments][valid][required][multiple][get
 CATCH_TEST_CASE("optional_arguments", "[arguments][valid][multiple][getopt]")
 {
     CATCH_START_SECTION("Verify a simple --out [<filename> ...] argument")
+    {
         char const * const separators[] =
         {
             ",",
@@ -1769,9 +1792,11 @@ CATCH_TEST_CASE("optional_arguments", "[arguments][valid][multiple][getopt]")
             CATCH_REQUIRE(opt.get_program_name() == "arguments");
             CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
         }
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Verify a simple --out [<filename> ...] argument in a variable")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -2015,6 +2040,7 @@ CATCH_TEST_CASE("optional_arguments", "[arguments][valid][multiple][getopt]")
             CATCH_REQUIRE(opt.get_program_name() == "arguments");
             CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
         }
+    }
     CATCH_END_SECTION()
 }
 
@@ -2514,6 +2540,7 @@ CATCH_TEST_CASE("config_dir_argument", "[arguments][valid][getopt][config]")
 CATCH_TEST_CASE("default_argument", "[arguments][valid][getopt]")
 {
     CATCH_START_SECTION("Verify a simple [<filename>] argument")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -2798,9 +2825,11 @@ CATCH_TEST_CASE("default_argument", "[arguments][valid][getopt]")
             CATCH_REQUIRE(opt.get_program_name() == "arguments");
             CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
         }
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Verify a simple [<filename>] argument in a variable")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -3179,9 +3208,11 @@ CATCH_TEST_CASE("default_argument", "[arguments][valid][getopt]")
             CATCH_REQUIRE(opt.get_program_name() == "arguments");
             CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
         }
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Verify that we can have a non-require argument with an invalid default")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -3329,6 +3360,7 @@ CATCH_TEST_CASE("default_argument", "[arguments][valid][getopt]")
             CATCH_REQUIRE(opt.get_program_name() == "arguments");
             CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
         }
+    }
     CATCH_END_SECTION()
 }
 
@@ -3336,6 +3368,7 @@ CATCH_TEST_CASE("default_argument", "[arguments][valid][getopt]")
 CATCH_TEST_CASE("default_arguments", "[arguments][valid][multiple][getopt]")
 {
     CATCH_START_SECTION("Verify a simple [<filename> ...] argument")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -3505,9 +3538,11 @@ CATCH_TEST_CASE("default_arguments", "[arguments][valid][multiple][getopt]")
             CATCH_REQUIRE(opt.get_program_name() == "arguments");
             CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
         }
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Verify a simple [<filename> ...] argument with the default name (a.k.a. \"--\")")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -3672,9 +3707,11 @@ CATCH_TEST_CASE("default_arguments", "[arguments][valid][multiple][getopt]")
             CATCH_REQUIRE(opt.get_program_name() == "arguments");
             CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
         }
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Verify a simple [<filename> ...] argument in a variable")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -3845,6 +3882,7 @@ CATCH_TEST_CASE("default_arguments", "[arguments][valid][multiple][getopt]")
             CATCH_REQUIRE(opt.get_program_name() == "arguments");
             CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
         }
+    }
     CATCH_END_SECTION()
 }
 
@@ -3852,7 +3890,7 @@ CATCH_TEST_CASE("default_arguments", "[arguments][valid][multiple][getopt]")
 CATCH_TEST_CASE("manual_arguments", "[arguments][valid][getopt]")
 {
     CATCH_START_SECTION("Verify a few arguments added manually")
-
+    {
         // create a getopt object
         //
         advgetopt::options_environment environment_options;
@@ -4201,10 +4239,11 @@ CATCH_TEST_CASE("manual_arguments", "[arguments][valid][getopt]")
             //
             CATCH_REQUIRE(opt.get_program_name() == "arguments");
             CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
-
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Verify a few arguments added manually and system options")
+    {
         // create a getopt object with options
         //
         advgetopt::option const options[] =
@@ -4602,10 +4641,11 @@ CATCH_TEST_CASE("manual_arguments", "[arguments][valid][getopt]")
             //
             CATCH_REQUIRE(opt.get_program_name() == "arguments");
             CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
-
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Verify that not calling link_aliases() causes problems")
+    {
         // create a getopt object, we will part the options "manually" later
         //
         advgetopt::options_environment environment_options;
@@ -4651,6 +4691,218 @@ CATCH_TEST_CASE("manual_arguments", "[arguments][valid][getopt]")
                 , advgetopt::getopt_undefined
                 , Catch::Matchers::ExceptionMessage(
                               "getopt_exception: getopt::get_alias_destination(): alias is missing. Did you call link_aliases()?"));
+    }
+    CATCH_END_SECTION()
+}
+
+
+CATCH_TEST_CASE("individual_argument_variable", "[arguments][valid][variable][getopt]")
+{
+    CATCH_START_SECTION("Test that we get the values of individual environment variables without an INTRO_...")
+    {
+        // create a getopt object with options
+        //
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("verbose")
+                , advgetopt::ShortName('v')
+                , advgetopt::Flags(advgetopt::standalone_command_flags())
+                , advgetopt::EnvironmentVariableName("VERBOSE")
+                , advgetopt::Help("print info as we work.")
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::DefaultValue("123")
+                , advgetopt::EnvironmentVariableName("SIZE")
+                , advgetopt::Help("define a size.")
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("--")
+                , advgetopt::Flags(advgetopt::all_flags<advgetopt::GETOPT_FLAG_MULTIPLE>())
+                , advgetopt::EnvironmentVariableName("FILENAMES")
+                , advgetopt::Help("filenames to handle by this command.")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS;
+        environment_options.f_help_header = "Usage: testing system arguments.";
+        environment_options.f_options = options;
+        environment_options.f_version = "2.0.1";
+        environment_options.f_license = "MIT";
+        environment_options.f_copyright = "Copyright (c) 2019  Made to Order Software Corp. -- All Rights Reserved";
+        environment_options.f_build_date = "Jun  4 2019";
+        environment_options.f_build_time = "23:02:36";
+
+        CATCH_WHEN("Testing all parameters defined on command line")
+        {
+            snapdev::safe_setenv env_verbose("VERBOSE", "");
+            snapdev::safe_setenv env_size("SIZE", "22159");
+            snapdev::safe_setenv env_filenames("FILENAMES", "name1 other-name more-names");
+
+            char const * cargv[] =
+            {
+                "tests/system-arguments",
+                "--verbose",
+                "--size",
+                "5003",
+                "special/file",
+                "organic/test",
+                nullptr
+            };
+            int const argc = sizeof(cargv) / sizeof(cargv[0]) - 1;
+            char ** argv = const_cast<char **>(cargv);
+
+            // the command line has priority, but the MULTIPLE creates a
+            // problem here...
+            //
+            advgetopt::getopt::pointer_t opt(std::make_shared<advgetopt::getopt>(environment_options, argc, argv));
+            CATCH_REQUIRE(opt != nullptr);
+
+            CATCH_REQUIRE(opt->is_defined("verbose"));
+
+            CATCH_REQUIRE(opt->is_defined("size"));
+            CATCH_REQUIRE(opt->get_string("size") == "5003");
+
+            CATCH_REQUIRE(opt->is_defined("--"));
+            CATCH_REQUIRE(opt->get_string("--", 0) == "name1 other-name more-names");
+            CATCH_REQUIRE(opt->get_string("--", 1) == "special/file");
+            CATCH_REQUIRE(opt->get_string("--", 2) == "organic/test");
+        }
+
+        CATCH_WHEN("Testing with verbose not on the list")
+        {
+            snapdev::safe_setenv env_verbose("VERBOSE", "");
+            snapdev::safe_setenv env_size("SIZE", "22159");
+            snapdev::safe_setenv env_filenames("FILENAMES", "name1 other-name more-names");
+
+            char const * cargv[] =
+            {
+                "tests/system-arguments",
+                "--size",
+                "5003",
+                "special/file",
+                "organic/test",
+                nullptr
+            };
+            int const argc = sizeof(cargv) / sizeof(cargv[0]) - 1;
+            char ** argv = const_cast<char **>(cargv);
+
+            // the command line has priority, but the MULTIPLE creates a
+            // problem here...
+            //
+            advgetopt::getopt::pointer_t opt(std::make_shared<advgetopt::getopt>(environment_options, argc, argv));
+            CATCH_REQUIRE(opt != nullptr);
+
+            CATCH_REQUIRE(opt->is_defined("verbose"));
+
+            CATCH_REQUIRE(opt->is_defined("size"));
+            CATCH_REQUIRE(opt->get_string("size") == "5003");
+
+            CATCH_REQUIRE(opt->is_defined("--"));
+            CATCH_REQUIRE(opt->get_string("--", 0) == "name1 other-name more-names");
+            CATCH_REQUIRE(opt->get_string("--", 1) == "special/file");
+            CATCH_REQUIRE(opt->get_string("--", 2) == "organic/test");
+        }
+
+        CATCH_WHEN("Testing with verbose set to false")
+        {
+            snapdev::safe_setenv env_verbose("VERBOSE", "false");
+            snapdev::safe_setenv env_size("SIZE", "22159");
+            snapdev::safe_setenv env_filenames("FILENAMES", "name1 other-name more-names");
+
+            char const * cargv[] =
+            {
+                "tests/system-arguments",
+                "--size",
+                "5003",
+                "special/file",
+                "organic/test",
+                nullptr
+            };
+            int const argc = sizeof(cargv) / sizeof(cargv[0]) - 1;
+            char ** argv = const_cast<char **>(cargv);
+
+            // the command line has priority, but the MULTIPLE creates a
+            // problem here...
+            //
+            advgetopt::getopt::pointer_t opt(std::make_shared<advgetopt::getopt>(environment_options, argc, argv));
+            CATCH_REQUIRE(opt != nullptr);
+
+            CATCH_REQUIRE_FALSE(opt->is_defined("verbose"));
+
+            CATCH_REQUIRE(opt->is_defined("size"));
+            CATCH_REQUIRE(opt->get_string("size") == "5003");
+
+            CATCH_REQUIRE(opt->is_defined("--"));
+            CATCH_REQUIRE(opt->get_string("--", 0) == "name1 other-name more-names");
+            CATCH_REQUIRE(opt->get_string("--", 1) == "special/file");
+            CATCH_REQUIRE(opt->get_string("--", 2) == "organic/test");
+        }
+
+        CATCH_WHEN("Testing with no verbose, but size in environment")
+        {
+            snapdev::safe_setenv env_size("SIZE", "22159");
+            snapdev::safe_setenv env_filenames("FILENAMES", "name1 other-name more-names");
+
+            char const * cargv[] =
+            {
+                "tests/system-arguments",
+                "special/file",
+                "organic/test",
+                nullptr
+            };
+            int const argc = sizeof(cargv) / sizeof(cargv[0]) - 1;
+            char ** argv = const_cast<char **>(cargv);
+
+            // the command line has priority, but the MULTIPLE creates a
+            // problem here...
+            //
+            advgetopt::getopt::pointer_t opt(std::make_shared<advgetopt::getopt>(environment_options, argc, argv));
+            CATCH_REQUIRE(opt != nullptr);
+
+            CATCH_REQUIRE_FALSE(opt->is_defined("verbose"));
+
+            CATCH_REQUIRE(opt->is_defined("size"));
+            CATCH_REQUIRE(opt->get_string("size") == "22159");
+
+            CATCH_REQUIRE(opt->is_defined("--"));
+            CATCH_REQUIRE(opt->get_string("--", 0) == "name1 other-name more-names");
+            CATCH_REQUIRE(opt->get_string("--", 1) == "special/file");
+            CATCH_REQUIRE(opt->get_string("--", 2) == "organic/test");
+        }
+
+        CATCH_WHEN("Testing with no command line parameters, but filenames in environment only")
+        {
+            snapdev::safe_setenv env_filenames("FILENAMES", "name1 other-name more-names");
+
+            char const * cargv[] =
+            {
+                "tests/system-arguments",
+                nullptr
+            };
+            int const argc = sizeof(cargv) / sizeof(cargv[0]) - 1;
+            char ** argv = const_cast<char **>(cargv);
+
+            // the command line has priority, but the MULTIPLE creates a
+            // problem here...
+            //
+            advgetopt::getopt::pointer_t opt(std::make_shared<advgetopt::getopt>(environment_options, argc, argv));
+            CATCH_REQUIRE(opt != nullptr);
+
+            CATCH_REQUIRE_FALSE(opt->is_defined("verbose"));
+
+            CATCH_REQUIRE_FALSE(opt->is_defined("size"));
+
+            CATCH_REQUIRE(opt->is_defined("--"));
+            CATCH_REQUIRE(opt->get_string("--", 0) == "name1 other-name more-names");
+        }
+    }
     CATCH_END_SECTION()
 }
 
@@ -4836,6 +5088,7 @@ CATCH_TEST_CASE("auto_process_system_arguments", "[arguments][valid][getopt]")
 CATCH_TEST_CASE("invalid_getopt_pointers", "[invalid][getopt][arguments]")
 {
     CATCH_START_SECTION("Create getopt with argv set to nullptr.")
+    {
         advgetopt::options_environment const environment_opt;
 
         CATCH_REQUIRE_THROWS_MATCHES(
@@ -4843,6 +5096,7 @@ CATCH_TEST_CASE("invalid_getopt_pointers", "[invalid][getopt][arguments]")
                 , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
                     "getopt_logic_error: argv pointer cannot be nullptr"));
+    }
     CATCH_END_SECTION()
 }
 
@@ -4850,6 +5104,7 @@ CATCH_TEST_CASE("invalid_getopt_pointers", "[invalid][getopt][arguments]")
 CATCH_TEST_CASE("invalid_getopt_missing_options", "[invalid][getopt][arguments]")
 {
     CATCH_START_SECTION("Create getopt with no options.")
+    {
         advgetopt::options_environment options_empty;
         options_empty.f_project_name = "unittest";
         options_empty.f_options = nullptr;
@@ -4870,9 +5125,11 @@ CATCH_TEST_CASE("invalid_getopt_missing_options", "[invalid][getopt][arguments]"
                 , Catch::Matchers::ExceptionMessage(
                     "getopt_logic_error: an empty list of options is not legal, you must"
                     " defined at least one (i.e. --version, --help...)"));
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Create getopt with an empty list of options.")
+    {
         const advgetopt::option options_empty_list[] =
         {
             {
@@ -4905,6 +5162,7 @@ CATCH_TEST_CASE("invalid_getopt_missing_options", "[invalid][getopt][arguments]"
                 , Catch::Matchers::ExceptionMessage(
                     "getopt_logic_error: an empty list of options is not legal, you must"
                     " defined at least one (i.e. --version, --help...)"));
+    }
     CATCH_END_SECTION()
 }
 
@@ -5076,6 +5334,7 @@ CATCH_TEST_CASE("invalid_getopt_missing_required_option", "[invalid][getopt][arg
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Specify the option without a corresponding parameter followed by a long argument.")
+    {
         const advgetopt::option options[] =
         {
             advgetopt::define_option(
@@ -5153,9 +5412,11 @@ CATCH_TEST_CASE("invalid_getopt_missing_required_option", "[invalid][getopt][arg
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Specify the option without a corresponding parameter followed by a short argument.")
+    {
         const advgetopt::option options[] =
         {
             advgetopt::define_option(
@@ -5233,6 +5494,7 @@ CATCH_TEST_CASE("invalid_getopt_missing_required_option", "[invalid][getopt][arg
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
     CATCH_END_SECTION()
 }
 
@@ -5240,6 +5502,7 @@ CATCH_TEST_CASE("invalid_getopt_missing_required_option", "[invalid][getopt][arg
 CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
 {
     CATCH_START_SECTION("Using a standalone 'file.txt' when no default option is allowed.")
+    {
         const advgetopt::option options[] =
         {
             advgetopt::define_option(
@@ -5305,9 +5568,11 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Using a standalone 'file.txt' on the command line when only allowed in a variable.")
+    {
         const advgetopt::option options[] =
         {
             advgetopt::define_option(
@@ -5383,9 +5648,11 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Using a standalone 'file.txt' in a variable when only allowed on the command line.")
+    {
         const advgetopt::option options[] =
         {
             advgetopt::define_option(
@@ -5461,9 +5728,11 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Using a '--' when no default option is allowed.")
+    {
         const advgetopt::option options[] =
         {
             advgetopt::define_option(
@@ -5530,9 +5799,11 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Using a '--' when on the command line when only accepted in variables.")
+    {
         const advgetopt::option options[] =
         {
             advgetopt::define_option(
@@ -5609,9 +5880,11 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Using a '--' in the environment variable when only accepted on the command line.")
+    {
         const advgetopt::option options[] =
         {
             advgetopt::define_option(
@@ -5688,9 +5961,11 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Using a '-' when no default option is allowed.")
+    {
         const advgetopt::option options[] =
         {
             advgetopt::define_option(
@@ -5757,9 +6032,11 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Using a '-' when on the command line when only accepted in variables.")
+    {
         const advgetopt::option options[] =
         {
             advgetopt::define_option(
@@ -5836,9 +6113,11 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Using a '-' in the environment variable when only accepted on the command line.")
+    {
         const advgetopt::option options[] =
         {
             advgetopt::define_option(
@@ -5915,6 +6194,7 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
     CATCH_END_SECTION()
 }
 
@@ -5922,6 +6202,7 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
 CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
 {
     CATCH_START_SECTION("Long option with an equal sign but not name.")
+    {
         const advgetopt::option options[] =
         {
             advgetopt::define_option(
@@ -5980,9 +6261,11 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Unknown long option.")
+    {
         const advgetopt::option options[] =
         {
             advgetopt::define_option(
@@ -6041,9 +6324,11 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Long option not available in environment variable.")
+    {
         const advgetopt::option options[] =
         {
             advgetopt::define_option(
@@ -6109,9 +6394,11 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Long option not available on command line.")
+    {
         const advgetopt::option options[] =
         {
             advgetopt::define_option(
@@ -6178,9 +6465,11 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Unknown short option.")
+    {
         const advgetopt::option options[] =
         {
             advgetopt::define_option(
@@ -6253,9 +6542,11 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Short option not available in environment variable.")
+    {
         const advgetopt::option options[] =
         {
             advgetopt::define_option(
@@ -6337,9 +6628,11 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Long option not available on command line.")
+    {
         const advgetopt::option options[] =
         {
             advgetopt::define_option(
@@ -6413,6 +6706,7 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
     CATCH_END_SECTION()
 }
 
@@ -6431,7 +6725,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
 {
 
     CATCH_START_SECTION("Check all possible invalid argument")
-
+    {
         // default arguments
         //
         char const * cargv[] =
@@ -7997,6 +8291,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
                 SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
             }
         }
+    }
     CATCH_END_SECTION()
 }
 #endif

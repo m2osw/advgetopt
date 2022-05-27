@@ -40,6 +40,7 @@ if(SnapCatch2_FOUND)
         catch_options_files.cpp
         catch_options_parser.cpp
         catch_options_sources.cpp
+        catch_string.cpp
         catch_usage.cpp
         catch_utils.cpp
         catch_validator.cpp

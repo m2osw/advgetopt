@@ -1272,7 +1272,7 @@ CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Load a Configuration File with a Flag given a Value")
+    CATCH_START_SECTION("Load a Configuration File with a Flag given a Value other than true or false")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("load-flag-with-value", "unexpected-value-in-config");
 
@@ -1283,7 +1283,7 @@ CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][
             config_file <<
                 "# Auto-generated\n"
                 "sizes=4153629\n"
-                "color-flag=true\n"
+                "color-flag=turn it on\n"   // not true or false
             ;
         }
 
@@ -1321,11 +1321,127 @@ CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][
         advgetopt::getopt opt(environment_options);
 
         SNAP_CATCH2_NAMESPACE::push_expected_log(
-                  "error: option \"color_flag\" cannot be given a value in configuration file \""
+                  "error: option \"color_flag\" cannot be given value \"turn it on\" in configuration file \""
                 + SNAP_CATCH2_NAMESPACE::g_config_filename
-                + "\".");
+                + "\". It only accepts \"true\" or \"false\".");
         opt.process_configuration_file(SNAP_CATCH2_NAMESPACE::g_config_filename);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
+
+        CATCH_REQUIRE(opt.size("sizes") == 1);
+        CATCH_REQUIRE(opt.get_string("sizes") == "4153629");
+
+        CATCH_REQUIRE(opt.size("color-flag") == 0);
+        CATCH_REQUIRE_FALSE(opt.is_defined("color-flag"));
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Load a Configuration File with a Flag given the Value \"true\"")
+    {
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("load-flag-with-true", "true-value-in-config");
+
+        {
+            std::ofstream config_file;
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "sizes=4153629\n"
+                "color-flag=true\n"   // true is like specifying it on the command line
+            ;
+        }
+
+        char const * confs[] =
+        {
+            "~/.config/file-which-was-never-created.mdi",
+            SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(),
+            "/etc/snapwebsites/not/an-existing-file.conf",
+            nullptr
+        };
+
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("sizes")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::all_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("sizes.")
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("color-flag")
+                , advgetopt::Flags(advgetopt::all_flags<advgetopt::GETOPT_FLAG_FLAG>())
+                , advgetopt::Help("flag that you want color.")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "load";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_help_header = "Testing loading an invalid flag";
+        environment_options.f_configuration_files = confs;
+
+        advgetopt::getopt opt(environment_options);
+
+        opt.process_configuration_file(SNAP_CATCH2_NAMESPACE::g_config_filename);
+
+        CATCH_REQUIRE(opt.size("sizes") == 1);
+        CATCH_REQUIRE(opt.get_string("sizes") == "4153629");
+
+        CATCH_REQUIRE(opt.size("color-flag") == 1);
+        CATCH_REQUIRE(opt.is_defined("color-flag"));
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Load a Configuration File with a Flag given the Value \"false\"")
+    {
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("load-flag-with-false", "false-value-in-config");
+
+        {
+            std::ofstream config_file;
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "sizes=4153629\n"
+                "color-flag=false\n"   // false is like "unspecifying" it on the command line
+            ;
+        }
+
+        char const * confs[] =
+        {
+            "~/.config/file-which-was-never-created.mdi",
+            SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(),
+            "/etc/snapwebsites/not/an-existing-file.conf",
+            nullptr
+        };
+
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("sizes")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::all_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("sizes.")
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("color-flag")
+                , advgetopt::Flags(advgetopt::all_flags<advgetopt::GETOPT_FLAG_FLAG>())
+                , advgetopt::Help("flag that you want color.")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "load";
+        environment_options.f_options = options;
+        environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
+        environment_options.f_help_header = "Testing loading an invalid flag";
+        environment_options.f_configuration_files = confs;
+
+        advgetopt::getopt opt(environment_options);
+
+        opt.process_configuration_file(SNAP_CATCH2_NAMESPACE::g_config_filename);
 
         CATCH_REQUIRE(opt.size("sizes") == 1);
         CATCH_REQUIRE(opt.get_string("sizes") == "4153629");

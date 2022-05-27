@@ -1098,10 +1098,6 @@ CATCH_TEST_CASE("config_line_continuation_tests", "[config][getopt][valid]")
 
         advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
 
-std::cerr << "------------------ " << file->get_setup().get_config_url()
-    << "\n------------------ " << setup.get_config_url()
-    << "\n";
-
         CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
         CATCH_REQUIRE(file->get_errno() == 0);
         CATCH_REQUIRE(file->get_sections().empty());
@@ -2079,6 +2075,7 @@ CATCH_TEST_CASE("config_section_tests", "[config][getopt][valid]")
         advgetopt::variables::pointer_t vars(std::make_shared<advgetopt::variables>());
         CATCH_REQUIRE(file->section_to_variables("variables", vars) == 7);
         file->set_variables(vars);
+        CATCH_REQUIRE(file->get_variables() == vars);
 
         sections = file->get_sections();
         CATCH_REQUIRE(sections.size() == 1);
@@ -2108,6 +2105,142 @@ CATCH_TEST_CASE("config_section_tests", "[config][getopt][valid]")
     }
     CATCH_END_SECTION()
 
+    CATCH_START_SECTION("command line with .conf including section of variables ([variables])")
+    {
+        // in a config file variables are not auto-managed
+        //
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("command-line-and-section-variables", "command-section-with-variables");
+
+        {
+            std::ofstream config_file;
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "edge=${blue}\n"
+                "background=${white}\n"
+                "foreground=${black}\n"
+                "[error]\n"
+                "edge=${red}\n"
+                "background=${gray}\n"
+                "[variables]\n"
+                "red=\"#ff0000\"\n"
+                "green=\"#00ff00\"\n"
+                "blue=\"#0000ff\"\n"
+                "no_color=\"#000000\"\n"
+                "black=${no_color}\n"
+                "orange=\"#80ff00\"\n"
+                "white=\"#ffffff\"\n"
+                "gray=\"#aaaaaa\"\n"
+            ;
+        }
+
+        const advgetopt::option options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("edge")
+                , advgetopt::Flags(advgetopt::all_flags<
+                      advgetopt::GETOPT_FLAG_REQUIRED
+                    , advgetopt::GETOPT_FLAG_PROCESS_VARIABLES>())
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("background")
+                , advgetopt::Flags(advgetopt::all_flags<
+                      advgetopt::GETOPT_FLAG_REQUIRED
+                    , advgetopt::GETOPT_FLAG_PROCESS_VARIABLES>())
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("foreground")
+                , advgetopt::Flags(advgetopt::all_flags<
+                      advgetopt::GETOPT_FLAG_REQUIRED
+                    , advgetopt::GETOPT_FLAG_PROCESS_VARIABLES>())
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("error::edge")
+                , advgetopt::Flags(advgetopt::all_flags<
+                      advgetopt::GETOPT_FLAG_REQUIRED
+                    , advgetopt::GETOPT_FLAG_PROCESS_VARIABLES>())
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("error::background")
+                , advgetopt::Flags(advgetopt::all_flags<
+                      advgetopt::GETOPT_FLAG_REQUIRED
+                    , advgetopt::GETOPT_FLAG_PROCESS_VARIABLES>())
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("error::foreground")
+                , advgetopt::Flags(advgetopt::all_flags<
+                      advgetopt::GETOPT_FLAG_REQUIRED
+                    , advgetopt::GETOPT_FLAG_PROCESS_VARIABLES>())
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("see-config")
+                , advgetopt::Flags(advgetopt::standalone_command_flags<>())
+            ),
+            advgetopt::end_options()
+        };
+
+        char const * const configuration_files[] =
+        {
+            SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(),
+            nullptr
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_help_header = "Usage: configuration with variables through environment.";
+        environment_options.f_section_variables_name = "variables";
+        environment_options.f_configuration_files = configuration_files;
+
+        char const * cargv[] =
+        {
+            "/usr/bin/cmd-n-config",
+            "--see-config",
+            "--error::foreground",
+            "${orange}",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt::pointer_t opts(std::make_shared<advgetopt::getopt>(environment_options, argc, argv));
+        CATCH_REQUIRE(opts != nullptr);
+
+        advgetopt::variables::pointer_t variables(opts->get_variables());
+        CATCH_REQUIRE(variables != nullptr);
+
+        CATCH_REQUIRE(opts->is_defined("see-config"));
+        CATCH_REQUIRE(opts->is_defined("edge"));
+        CATCH_REQUIRE(opts->is_defined("background"));
+        CATCH_REQUIRE(opts->is_defined("foreground"));
+        CATCH_REQUIRE(opts->is_defined("error::edge"));
+        CATCH_REQUIRE(opts->is_defined("error::background"));
+        CATCH_REQUIRE(opts->is_defined("error::foreground"));
+        CATCH_REQUIRE_FALSE(opts->is_defined("variables::red"));
+        CATCH_REQUIRE_FALSE(opts->is_defined("variables::green"));
+        CATCH_REQUIRE_FALSE(opts->is_defined("variables::blue"));
+        CATCH_REQUIRE_FALSE(opts->is_defined("variables::no_color"));
+        CATCH_REQUIRE_FALSE(opts->is_defined("variables::black"));
+        CATCH_REQUIRE_FALSE(opts->is_defined("variables::orange"));
+        CATCH_REQUIRE_FALSE(opts->is_defined("variables::white"));
+        CATCH_REQUIRE_FALSE(opts->is_defined("variables::gray"));
+
+        CATCH_REQUIRE(opts->get_string("edge") == "#0000ff");
+        CATCH_REQUIRE(opts->get_string("background") == "#ffffff");
+        CATCH_REQUIRE(opts->get_string("foreground") == "#000000");
+        CATCH_REQUIRE(opts->get_string("error::edge") == "#ff0000");
+        CATCH_REQUIRE(opts->get_string("error::background") == "#aaaaaa");
+        CATCH_REQUIRE(opts->get_string("error::foreground") == "#80ff00");
+
+        CATCH_REQUIRE(opts->get_option("edge")->get_variables() == variables);
+        CATCH_REQUIRE(opts->get_option("background")->get_variables() == variables);
+        CATCH_REQUIRE(opts->get_option("foreground")->get_variables() == variables);
+        CATCH_REQUIRE(opts->get_option("error::edge")->get_variables() == variables);
+        CATCH_REQUIRE(opts->get_option("error::background")->get_variables() == variables);
+        CATCH_REQUIRE(opts->get_option("error::foreground")->get_variables() == variables);
+    }
+    CATCH_END_SECTION()
 }
 
 
