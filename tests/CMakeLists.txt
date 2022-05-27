@@ -44,6 +44,7 @@ if(SnapCatch2_FOUND)
         catch_usage.cpp
         catch_utils.cpp
         catch_validator.cpp
+        catch_variables.cpp
         catch_version.cpp
     )
 

@@ -80,7 +80,7 @@ std::string variables::canonicalize_variable_name(std::string const & name)
     {
         if(*n == ':' || *n == '.')
         {
-            while(*n == ':' || *n == '.')
+            while(n[1] == ':' || n[1] == '.')
             {
                 ++n;
             }
@@ -268,6 +268,7 @@ std::string variables::recursive_process_value(
             {
                 // invalid variable reference
                 //
+                result += "${";
                 result += name;
                 return result;
             }

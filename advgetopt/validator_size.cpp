@@ -178,7 +178,7 @@ std::string validator_size::name() const
 #pragma GCC diagnostic ignored "-Wpedantic"
 bool validator_size::validate(std::string const & value) const
 {
-    using namespace snapdev::literals;    
+    using namespace snapdev::literals;
     __int128 result(0_int128);
     return convert_string(value, f_flags, result);
 }
@@ -242,7 +242,7 @@ bool validator_size::convert_string(
         , flag_t flags
         , __int128 & result)
 {
-    using namespace snapdev::literals;    
+    using namespace snapdev::literals;
 
     // determine the factor by checking the suffix
     //

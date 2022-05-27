@@ -5,7 +5,8 @@ advgetopt (2.0.38.0~bionic) bionic; urgency=high
   * When parsing environment variable, distinguish between empty and undefined.
   * Allow for flags (i.e. "--verbose") to accept "true" and "false".
   * Added '=', '.', and '/' to the list of characters not requiring escaping.
-  * Added coverage tests for new code.
+  * Added coverage tests for new code (validators, variables, etc.)
+  * Applied some fixes to the variables implementation so errors work.
 
  -- Alexis Wilke <alexis@m2osw.com>  Thu, 26 May 2022 21:42:41 -0700
 

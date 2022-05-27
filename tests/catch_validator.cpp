@@ -22,23 +22,23 @@
 #include    "catch_main.h"
 
 
-// advgetopt lib
+// advgetopt
 //
 #include    <advgetopt/exception.h>
 #include    <advgetopt/validator_duration.h>
 #include    <advgetopt/validator_size.h>
 
 
-// snapdev lib
+// snapdev
 //
 #include    <snapdev/ostream_int128.h>
 
 
-// C++ lib
+// C++
 //
-#include <cmath>
-#include <fstream>
-#include <iomanip>
+#include    <cmath>
+#include    <fstream>
+#include    <iomanip>
 
 
 // last include
