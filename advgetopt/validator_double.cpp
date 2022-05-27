@@ -29,11 +29,6 @@
 #include    "advgetopt/validator_double.h"
 
 
-//// advgetopt lib
-////
-//#include    "advgetopt/exception.h"
-
-
 // cppthread lib
 //
 #include    <cppthread/log.h>
@@ -142,7 +137,7 @@ validator_double::validator_double(string_list_t const & range_list)
                 cppthread::log << cppthread::log_level_t::error
                                << r
                                << " is not a valid standalone value;"
-                                  " it must only be valid floating points,"
+                                  " it must be a valid floating point,"
                                   " optionally preceeded by a sign (+ or -)."
                                << cppthread::end;
                 continue;
@@ -158,7 +153,7 @@ validator_double::validator_double(string_list_t const & range_list)
                 cppthread::log << cppthread::log_level_t::error
                                << min_value
                                << " is not a valid value for your range's start;"
-                                  " it must only be valid floating points,"
+                                  " it must be a valid floating point,"
                                   " optionally preceeded by a sign (+ or -)."
                                << cppthread::end;
                 continue;
@@ -171,7 +166,7 @@ validator_double::validator_double(string_list_t const & range_list)
                 cppthread::log << cppthread::log_level_t::error
                                << max_value
                                << " is not a valid value for your range's end;"
-                                  " it must only be valid floating points,"
+                                  " it must be a valid floating point,"
                                   " optionally preceeded by a sign (+ or -)."
                                << cppthread::end;
                 continue;

@@ -710,6 +710,10 @@ CATCH_TEST_CASE("duration_validator", "[validator][valid][validation]")
         CATCH_REQUIRE(advgetopt::validator_duration::convert_string("1d 3h 2m 15.3s", 0, duration));
         CATCH_REQUIRE(SNAP_CATCH2_NAMESPACE::nearly_equal(duration, 1.0 * 86400.0 + 3.0 * 3600.0 + 2.0 * 60.0 + 15.3, 0.0));
 
+        // same in uppercase
+        CATCH_REQUIRE(advgetopt::validator_duration::convert_string("1D 3H 2M 15.3S", 0, duration));
+        CATCH_REQUIRE(SNAP_CATCH2_NAMESPACE::nearly_equal(duration, 1.0 * 86400.0 + 3.0 * 3600.0 + 2.0 * 60.0 + 15.3, 0.0));
+
         CATCH_REQUIRE(advgetopt::validator_duration::convert_string("3d 15h 52m 21.801s", 0, duration));
         CATCH_REQUIRE(SNAP_CATCH2_NAMESPACE::nearly_equal(duration, 3.0 * 86400.0 + 15.0 * 3600.0 + 52.0 * 60.0 + 21.801, 0.0));
     }
@@ -737,15 +741,6 @@ CATCH_TEST_CASE("duration_validator", "[validator][valid][validation]")
 
             CATCH_REQUIRE(duration_validator != nullptr);
             CATCH_REQUIRE(duration_validator->name() == "duration");
-
-            CATCH_REQUIRE_FALSE(duration_validator->validate(""));
-            CATCH_REQUIRE_FALSE(duration_validator->validate("+"));
-            CATCH_REQUIRE_FALSE(duration_validator->validate("-"));
-            CATCH_REQUIRE_FALSE(duration_validator->validate("alpha"));
-            CATCH_REQUIRE_FALSE(duration_validator->validate("3.5 beta"));
-            CATCH_REQUIRE_FALSE(duration_validator->validate("7.5delta"));
-            CATCH_REQUIRE_FALSE(duration_validator->validate("+8.1 gamma"));
-            CATCH_REQUIRE_FALSE(duration_validator->validate("-2.3eta"));
 
             for(int idx(0); idx < 1000; ++idx)
             {
@@ -850,15 +845,6 @@ CATCH_TEST_CASE("size_validator", "[validator][valid][validation]")
 
             CATCH_REQUIRE(size_validator != nullptr);
             CATCH_REQUIRE(size_validator->name() == "size");
-
-            CATCH_REQUIRE_FALSE(size_validator->validate(""));
-            CATCH_REQUIRE_FALSE(size_validator->validate("+"));
-            CATCH_REQUIRE_FALSE(size_validator->validate("-"));
-            CATCH_REQUIRE_FALSE(size_validator->validate("alpha"));
-            CATCH_REQUIRE_FALSE(size_validator->validate("3.5 beta"));
-            CATCH_REQUIRE_FALSE(size_validator->validate("7.5delta"));
-            CATCH_REQUIRE_FALSE(size_validator->validate("+8.1 gamma"));
-            CATCH_REQUIRE_FALSE(size_validator->validate("-2.3eta"));
 
             for(int idx(0); idx < 1000; ++idx)
             {
@@ -988,9 +974,10 @@ CATCH_TEST_CASE("regex_validator", "[validator][valid][validation]")
 
 
 
-CATCH_TEST_CASE("invalid_validator", "[validator][invalid][validation]")
+CATCH_TEST_CASE("invalid_validator_factory", "[validator][invalid][validation]")
 {
     CATCH_START_SECTION("Register duplicated factories")
+    {
         class duplicate_integer
             : public advgetopt::validator
         {
@@ -1026,26 +1013,148 @@ CATCH_TEST_CASE("invalid_validator", "[validator][invalid][validation]")
                 , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
                           "getopt_logic_error: you have two or more validator factories named \"integer\"."));
+    }
     CATCH_END_SECTION()
+}
 
+CATCH_TEST_CASE("invalid_validator_create", "[validator][invalid][validation]")
+{
+    CATCH_START_SECTION("Verify missing ')' in string based create")
+    {
+        CATCH_REQUIRE_THROWS_MATCHES(
+                  advgetopt::validator::create("integer(1...7")
+                , advgetopt::getopt_logic_error
+                , Catch::Matchers::ExceptionMessage(
+                          "getopt_logic_error: invalid validator parameter definition: \"integer(1...7\", the ')' is missing."));
 
-    CATCH_START_SECTION("Verify invalid ranges")
+        CATCH_REQUIRE_THROWS_MATCHES(
+                  advgetopt::validator::create("regex([a-z]+")
+                , advgetopt::getopt_logic_error
+                , Catch::Matchers::ExceptionMessage(
+                          "getopt_logic_error: invalid validator parameter definition: \"regex([a-z]+\", the ')' is missing."));
+    }
+    CATCH_END_SECTION()
+}
+
+CATCH_TEST_CASE("invalid_integer_validator", "[validator][invalid][validation]")
+{
+    CATCH_START_SECTION("Verify invalid integer ranges")
+    {
         advgetopt::string_list_t range{
             "abc",
             "abc...6",
             "3...def",
             "10...1"};
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: abc is not a valid value for your ranges; it must only be digits, optionally preceeded by a sign (+ or -) and not overflow an int64_t value.");
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: abc is not a valid value for your ranges; it must only be digits, optionally preceeded by a sign (+ or -) and not overflow an int64_t value.");
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: def is not a valid value for your ranges; it must only be digits, optionally preceeded by a sign (+ or -) and not overflow an int64_t value.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: abc is not a valid standalone value for your ranges; it must only be digits, optionally preceeded by a sign (+ or -) and not overflow an int64_t value.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: abc is not a valid value for your range's start; it must only be digits, optionally preceeded by a sign (+ or -) and not overflow an int64_t value.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: def is not a valid value for your range's end; it must only be digits, optionally preceeded by a sign (+ or -) and not overflow an int64_t value.");
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: 10 has to be smaller or equal to 1; you have an invalid range.");
 
         advgetopt::validator::pointer_t integer_validator(advgetopt::validator::create("integer", range));
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
+    }
     CATCH_END_SECTION()
+}
 
+CATCH_TEST_CASE("invalid_double_validator", "[validator][invalid][validation]")
+{
+    CATCH_START_SECTION("Verify invalid double ranges")
+    {
+        advgetopt::string_list_t range{
+            "abc",
+            "abc...6.3",
+            "13.3...def",
+            "10.5...1.2"};
+
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: abc is not a valid standalone value; it must be a valid floating point, optionally preceeded by a sign (+ or -).");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: abc is not a valid value for your range's start; it must be a valid floating point, optionally preceeded by a sign (+ or -).");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: def is not a valid value for your range's end; it must be a valid floating point, optionally preceeded by a sign (+ or -).");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: 10.5 has to be smaller or equal to 1.2; you have an invalid range.");
+
+        advgetopt::validator::pointer_t integer_validator(advgetopt::validator::create("double", range));
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
+    }
+    CATCH_END_SECTION()
+}
+
+CATCH_TEST_CASE("invalid_duration_validator", "[invalid][validation]")
+{
+    CATCH_START_SECTION("Verify invalid duration flags")
+    {
+        advgetopt::string_list_t range{
+            "small",
+            "medium",
+            "large"};
+
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: medium is not a valid flag for the duration validator.");
+        advgetopt::validator::pointer_t duration_validator(advgetopt::validator::create("duration", range));
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
+
+        CATCH_REQUIRE_FALSE(duration_validator->validate(""));
+        CATCH_REQUIRE_FALSE(duration_validator->validate("  "));
+        CATCH_REQUIRE_FALSE(duration_validator->validate("+"));
+        CATCH_REQUIRE_FALSE(duration_validator->validate("-"));
+        CATCH_REQUIRE_FALSE(duration_validator->validate("alpha"));
+        CATCH_REQUIRE_FALSE(duration_validator->validate("3.5 beta"));
+        CATCH_REQUIRE_FALSE(duration_validator->validate("7.5delta"));
+        CATCH_REQUIRE_FALSE(duration_validator->validate("+8.1 gamma"));
+        CATCH_REQUIRE_FALSE(duration_validator->validate("-2.3eta"));
+        CATCH_REQUIRE_FALSE(duration_validator->validate("-202.3   HERO"));
+        CATCH_REQUIRE_FALSE(duration_validator->validate("-7.31Hr"));
+        CATCH_REQUIRE_FALSE(duration_validator->validate("-1.32mom"));
+        CATCH_REQUIRE_FALSE(duration_validator->validate("-5.36 secs"));
+        CATCH_REQUIRE_FALSE(duration_validator->validate("28.901 wkS"));
+        CATCH_REQUIRE_FALSE(duration_validator->validate("28 YY"));
+        CATCH_REQUIRE_FALSE(duration_validator->validate("2..8 year"));
+    }
+    CATCH_END_SECTION()
+}
+
+CATCH_TEST_CASE("invalid_size_validator", "[invalid][validation]")
+{
+    CATCH_START_SECTION("Verify invalid duration flags")
+    {
+        advgetopt::string_list_t flags{
+            "si",
+            "future",
+            "legacy"};
+
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: future is not a valid flag for the size validator.");
+        advgetopt::validator::pointer_t size_validator(advgetopt::validator::create("size", flags));
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
+
+        CATCH_REQUIRE_FALSE(size_validator->validate(""));
+        CATCH_REQUIRE_FALSE(size_validator->validate("  "));
+        CATCH_REQUIRE_FALSE(size_validator->validate("+"));
+        CATCH_REQUIRE_FALSE(size_validator->validate("-"));
+        CATCH_REQUIRE_FALSE(size_validator->validate("size"));
+        CATCH_REQUIRE_FALSE(size_validator->validate("3.5 large"));
+        CATCH_REQUIRE_FALSE(size_validator->validate("-1.31body"));
+        CATCH_REQUIRE_FALSE(size_validator->validate("7.5small"));
+        CATCH_REQUIRE_FALSE(size_validator->validate("+8.1 tiny"));
+        CATCH_REQUIRE_FALSE(size_validator->validate("-2.3medium"));
+        CATCH_REQUIRE_FALSE(size_validator->validate("1000kbit"));
+        CATCH_REQUIRE_FALSE(size_validator->validate("7 monster"));
+        CATCH_REQUIRE_FALSE(size_validator->validate("-101.101egret"));
+        CATCH_REQUIRE_FALSE(size_validator->validate("11 products"));
+        CATCH_REQUIRE_FALSE(size_validator->validate("1.01 tractor"));
+        CATCH_REQUIRE_FALSE(size_validator->validate("+7.0 years"));
+        CATCH_REQUIRE_FALSE(size_validator->validate("-51.7zeroes"));
+        CATCH_REQUIRE_FALSE(size_validator->validate("+121gruffalos"));
+        CATCH_REQUIRE_FALSE(size_validator->validate("++1.7 KiB"));
+        CATCH_REQUIRE_FALSE(size_validator->validate("-+3.1 MiB"));
+        CATCH_REQUIRE_FALSE(size_validator->validate("+-9.2 GiB"));
+        CATCH_REQUIRE_FALSE(size_validator->validate("--19.4 PiB"));
+        CATCH_REQUIRE_FALSE(size_validator->validate("-3.5.4B"));
+    }
+    CATCH_END_SECTION()
+}
+
+CATCH_TEST_CASE("invalid_regex_validator", "[validator][invalid][validation]")
+{
     CATCH_START_SECTION("Verify invalid regex flags")
+    {
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: unsupported regex flag f in regular expression \"/contact@.*\\..*/f\".");
 
         advgetopt::validator::pointer_t regex_validator(advgetopt::validator::create("regex", {"/contact@.*\\..*/f"}));
@@ -1061,9 +1170,11 @@ CATCH_TEST_CASE("invalid_validator", "[validator][invalid][validation]")
 
         CATCH_REQUIRE_FALSE(regex_validator->validate("contact@m2osw:com"));
         CATCH_REQUIRE_FALSE(regex_validator->validate("contact!m2osw.com"));
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify invalid regex flags")
+    CATCH_START_SECTION("Verify invalid regex: missing ending /")
+    {
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: unsupported regex flag * in regular expression \"/contact@.*\\..*\".");
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: unsupported regex flag . in regular expression \"/contact@.*\\..*\".");
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: unsupported regex flag . in regular expression \"/contact@.*\\..*\".");
@@ -1093,9 +1204,11 @@ CATCH_TEST_CASE("invalid_validator", "[validator][invalid][validation]")
 
         CATCH_REQUIRE_FALSE(regex_validator->validate("contact@m2osw:com"));
         CATCH_REQUIRE_FALSE(regex_validator->validate("contact!m2osw.com"));
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Verify regex refuses more than one parameter")
+    {
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                           "error: validator_regex() only supports one parameter;"
                           " 2 were supplied;"
@@ -1123,20 +1236,7 @@ CATCH_TEST_CASE("invalid_validator", "[validator][invalid][validation]")
                           " single or double quotation may be required?");
         advgetopt::validator::create("regex(\"[a-z]+\", \"[0-9]+\", \"[#!@]\")");
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
-    CATCH_END_SECTION()
-
-    CATCH_START_SECTION("Verify missing ')' in string based create")
-        CATCH_REQUIRE_THROWS_MATCHES(
-                  advgetopt::validator::create("integer(1...7")
-                , advgetopt::getopt_logic_error
-                , Catch::Matchers::ExceptionMessage(
-                          "getopt_logic_error: invalid validator parameter definition: \"integer(1...7\", the ')' is missing."));
-
-        CATCH_REQUIRE_THROWS_MATCHES(
-                  advgetopt::validator::create("regex([a-z]+")
-                , advgetopt::getopt_logic_error
-                , Catch::Matchers::ExceptionMessage(
-                          "getopt_logic_error: invalid validator parameter definition: \"regex([a-z]+\", the ')' is missing."));
+    }
     CATCH_END_SECTION()
 }
 

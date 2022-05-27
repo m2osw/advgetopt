@@ -49,6 +49,12 @@
 #include    <cppthread/log.h>
 
 
+// snapdev
+//
+#include    <snapdev/int128_literal.h>
+#include    <snapdev/math.h>
+
+
 // last include
 //
 #include    <snapdev/poison.h>
@@ -87,21 +93,6 @@ public:
 };
 
 validator_size_factory      g_validator_size_factory;
-
-
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpedantic"
-constexpr __int128 power128(__int128 value, int power)
-{
-    __int128 result(value);
-    for(--power; power > 0; --power)
-    {
-        result *= value;
-    }
-    return result;
-}
-#pragma GCC diagnostic pop
 
 
 
@@ -187,7 +178,8 @@ std::string validator_size::name() const
 #pragma GCC diagnostic ignored "-Wpedantic"
 bool validator_size::validate(std::string const & value) const
 {
-    __int128 result(0);
+    using namespace snapdev::literals;    
+    __int128 result(0_int128);
     return convert_string(value, f_flags, result);
 }
 #pragma GCC diagnostic pop
@@ -224,12 +216,18 @@ bool validator_size::validate(std::string const & value) const
  * is always used.
  *
  * The final result is an integer representing bytes. If you use a decimal
- * number, it will be rounded down. So "1.9B" returns 1. A decimal number
- * is practical for larger sizes such as writing "1.3GiB".
+ * number, it will be rounded down (floor). So "1.9B" returns 1. A decimal
+ * number is practical for larger sizes such as "1.3GiB".
  *
  * \note
- * The number is returned in a 128 bit number because Zeta and Yeta numbers
+ * The result is returned in a 128 bit number because Zeta and Yeta values
  * do not fit in 64 bits.
+ *
+ * \todo
+ * We may want to support full names instead of just the minimal abbreviated
+ * suffixes (i.e. "3 bytes" fails). Also we could support bits but that is
+ * \em complicated because the only difference is whether you use upper or
+ * lower case characters (i.e. kB is kilo bytes, kb is kilo bits).
  *
  * \param[in] value  The value to be converted to a size.
  * \param[in] flags  The flags to determine how to interpret the suffix.
@@ -244,9 +242,11 @@ bool validator_size::convert_string(
         , flag_t flags
         , __int128 & result)
 {
+    using namespace snapdev::literals;    
+
     // determine the factor by checking the suffix
     //
-    __int128 factor(1);
+    __int128 factor(1_int128);
     std::string::size_type pos(value.length());
     for(; pos > 0; --pos)
     {
@@ -264,8 +264,8 @@ bool validator_size::convert_string(
     }
     __int128 const base(
         (flags & VALIDATOR_SIZE_POWER_OF_TWO) != 0
-            ? 1024
-            : 1000);
+            ? 1024_int128
+            : 1000_int128);
     std::string const number(value.substr(0, pos));
     for(; pos < value.length() && isspace(value[pos]); ++pos);
     if(pos < value.length())
@@ -300,11 +300,11 @@ bool validator_size::convert_string(
         case 'e':
             if(suffix == "eb")
             {
-                factor = base * base * base * base * base * base;
+                factor = snapdev::power128(base, 6);
             }
             else if(suffix == "eib")
             {
-                factor = power128(1024, 6);
+                factor = snapdev::power128(1024_int128, 6);
             }
             else
             {
@@ -315,11 +315,11 @@ bool validator_size::convert_string(
         case 'g':
             if(suffix == "gb")
             {
-                factor = base * base * base;
+                factor = snapdev::power128(base, 3);
             }
             else if(suffix == "gib")
             {
-                factor = power128(1024, 3);
+                factor = snapdev::power128(1024_int128, 3);
             }
             else
             {
@@ -334,7 +334,7 @@ bool validator_size::convert_string(
             }
             else if(suffix == "kib")
             {
-                factor = 1024;
+                factor = 1024_int128;
             }
             else
             {
@@ -345,11 +345,11 @@ bool validator_size::convert_string(
         case 'm':
             if(suffix == "mb")
             {
-                factor = base * base;
+                factor = snapdev::power128(base, 2);
             }
             else if(suffix == "mib")
             {
-                factor = power128(1024, 2);
+                factor = snapdev::power128(1024_int128, 2);
             }
             else
             {
@@ -360,11 +360,11 @@ bool validator_size::convert_string(
         case 'p':
             if(suffix == "pb")
             {
-                factor = base * base * base * base * base;
+                factor = snapdev::power128(base, 5);
             }
             else if(suffix == "pib")
             {
-                factor = power128(1024, 5);
+                factor = snapdev::power128(1024_int128, 5);
             }
             else
             {
@@ -375,11 +375,11 @@ bool validator_size::convert_string(
         case 't':
             if(suffix == "tb")
             {
-                factor = base * base * base * base;
+                factor = snapdev::power128(base, 4);
             }
             else if(suffix == "tib")
             {
-                factor = power128(1024, 4);
+                factor = snapdev::power128(1024_int128, 4);
             }
             else
             {
@@ -390,11 +390,11 @@ bool validator_size::convert_string(
         case 'y':
             if(suffix == "yb")
             {
-                factor = base * base * base * base * base * base * base * base;
+                factor = snapdev::power128(base, 8);
             }
             else if(suffix == "yib")
             {
-                factor = power128(1024, 8);
+                factor = snapdev::power128(1024_int128, 8);
             }
             else
             {
@@ -405,11 +405,11 @@ bool validator_size::convert_string(
         case 'z':
             if(suffix == "zb")
             {
-                factor = base * base * base * base * base * base * base;
+                factor = snapdev::power128(base, 7);
             }
             else if(suffix == "zib")
             {
-                factor = power128(1024, 7);
+                factor = snapdev::power128(1024_int128, 7);
             }
             else
             {

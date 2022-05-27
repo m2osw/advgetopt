@@ -243,6 +243,13 @@ bool validator_duration::convert_string(
                 ++s;
             }
             while(*s >= '0' && *s <= '9');
+            if(*s == '.')
+            {
+                // this would otherwise allow "2..8 year" which is probably
+                // a mistake (i.e. not "2.s" and ".8 year")
+                //
+                return false;
+            }
         }
         double n(0.0);
         if(!validator_double::convert_string(
