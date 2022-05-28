@@ -25,6 +25,7 @@
 // advgetopt lib
 //
 #include    <advgetopt/conf_file.h>
+#include    <advgetopt/exception.h>
 #include    <advgetopt/utils.h>
 
 
@@ -327,7 +328,8 @@ CATCH_TEST_CASE("utils_split", "[utils][valid]")
 
 CATCH_TEST_CASE("utils_insert_group_name", "[utils][valid]")
 {
-    CATCH_START_SECTION("Full insert")
+    CATCH_START_SECTION("utils_insert_group_name: Full insert")
+    {
         // CONFIG FILE HAS NO EXTENSION
         {
             advgetopt::string_list_t fullname(advgetopt::insert_group_name(
@@ -419,9 +421,11 @@ CATCH_TEST_CASE("utils_insert_group_name", "[utils][valid]")
             CATCH_REQUIRE(fullname.size() == 1);
             CATCH_REQUIRE(fullname[0] == "/this/is/a/project-name.d/50-basename.ext");
         }
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Empty cases")
+    CATCH_START_SECTION("utils_insert_group_name: Empty cases")
+    {
         {
             advgetopt::string_list_t fullname(advgetopt::insert_group_name(
                               "/this/is/a/path"
@@ -493,9 +497,23 @@ CATCH_TEST_CASE("utils_insert_group_name", "[utils][valid]")
                             , nullptr));
             CATCH_REQUIRE(fullname.empty());
         }
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Basename Only")
+    CATCH_START_SECTION("utils_insert_group_name: cases")
+    {
+        CATCH_REQUIRE_THROWS_MATCHES(advgetopt::insert_group_name(
+                          "/this-is-a-path"
+                        , "group"
+                        , "project")
+                    , advgetopt::getopt_root_filename
+                    , Catch::Matchers::ExceptionMessage(
+                              "getopt_exception: filename \"/this-is-a-path\" last slash (/) is at the start, which is not allowed."));
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("utils_insert_group_name: Basename Only")
+    {
         {
             advgetopt::string_list_t fullname(advgetopt::insert_group_name(
                               "basename"
@@ -513,124 +531,384 @@ CATCH_TEST_CASE("utils_insert_group_name", "[utils][valid]")
             CATCH_REQUIRE(fullname.size() == 1);
             CATCH_REQUIRE(fullname[0] == "advgetopt.d/50-basename.ext");
         }
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Actual List of Files on Disk")
+    CATCH_START_SECTION("utils_insert_group_name: Actual List of Files on Disk")
+    {
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("advgetopt-multi", "sorted-user-conf", false);
+
+        // generate an array of numbers from 00 to 99
+        //
+        std::vector<int> numbers;
+        for(int i = 0; i < 100; ++i)
         {
-            SNAP_CATCH2_NAMESPACE::init_tmp_dir("advgetopt-multi", "sorted-user-conf", false);
+            numbers.push_back(i);
+        }
+        std::random_shuffle(numbers.begin(), numbers.end(), shuffle_rand);
+        int const max(rand() % 50 + 10);
+        numbers.resize(max);
+        std::string path(SNAP_CATCH2_NAMESPACE::g_config_project_filename);
+        std::string::size_type const pos(path.rfind('/'));
+        path = path.substr(0, pos);
+        advgetopt::string_list_t filenames;
+        for(int i = 0; i < max; ++i)
+        {
+            std::stringstream ss;
+            ss << path;
+            ss << '/';
+            int const n(numbers[i]);
+            if(n < 10)
+            {
+                ss << '0';
+            }
+            ss << n;
+            ss << "-sorted-user-conf.config";
+            filenames.push_back(ss.str());
+            std::ofstream conf;
+            conf.open(ss.str(), std::ios_base::out);
+            CATCH_REQUIRE(conf.is_open());
+            conf << "# Config with a number" << std::endl;
+            conf << "var=\"value: " << numbers[i] << "\"" << std::endl;
+        }
+        std::sort(filenames.begin(), filenames.end());
+        std::string const last_filename(*filenames.rbegin());
+        std::string::size_type const slash_pos(last_filename.rfind('/'));
+        std::string const expected_var("value: " + last_filename.substr(slash_pos + 1, 2));
 
-            // generate an array of numbers from 00 to 99
+        advgetopt::string_list_t fullnames(advgetopt::insert_group_name(
+                          SNAP_CATCH2_NAMESPACE::g_config_filename
+                        , "advgetopt-multi"
+                        , "multi-channels"));
+        CATCH_REQUIRE(fullnames.size() == filenames.size());
+        for(size_t idx(0); idx < filenames.size(); ++idx)
+        {
+            CATCH_REQUIRE(fullnames[idx] == filenames[idx]);
+        }
+
+        {
+            std::ofstream conf;
+            conf.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out);
+            CATCH_REQUIRE(conf.is_open());
+            conf << "# Original Config with a number" << std::endl;
+            conf << "var=master value" << std::endl;
+
+            // verify the master config file
             //
-            std::vector<int> numbers;
-            for(int i = 0; i < 100; ++i)
-            {
-                numbers.push_back(i);
-            }
-            std::random_shuffle(numbers.begin(), numbers.end(), shuffle_rand);
-            int const max(rand() % 50 + 10);
-            numbers.resize(max);
-            std::string path(SNAP_CATCH2_NAMESPACE::g_config_project_filename);
-            std::string::size_type const pos(path.rfind('/'));
-            path = path.substr(0, pos);
-            advgetopt::string_list_t filenames;
-            for(int i = 0; i < max; ++i)
-            {
-                std::stringstream ss;
-                ss << path;
-                ss << '/';
-                int const n(numbers[i]);
-                if(n < 10)
-                {
-                    ss << '0';
-                }
-                ss << n;
-                ss << "-sorted-user-conf.config";
-                filenames.push_back(ss.str());
-                std::ofstream conf;
-                conf.open(ss.str(), std::ios_base::out);
-                CATCH_REQUIRE(conf.is_open());
-                conf << "# Config with a number" << std::endl;
-                conf << "var=\"value: " << numbers[i] << "\"" << std::endl;
-            }
-            std::sort(filenames.begin(), filenames.end());
-            std::string const last_filename(*filenames.rbegin());
-            std::string::size_type const slash_pos(last_filename.rfind('/'));
-            std::string const expected_var("value: " + last_filename.substr(slash_pos + 1, 2));
+            advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename);
+            advgetopt::conf_file::pointer_t config_file(advgetopt::conf_file::get_conf_file(setup));
+            CATCH_REQUIRE(config_file->get_parameter("var") == "master value");
+        }
 
-            advgetopt::string_list_t fullnames(advgetopt::insert_group_name(
-                              SNAP_CATCH2_NAMESPACE::g_config_filename
-                            , "advgetopt-multi"
-                            , "multi-channels"));
-            CATCH_REQUIRE(fullnames.size() == filenames.size());
-            for(size_t idx(0); idx < filenames.size(); ++idx)
-            {
-                CATCH_REQUIRE(fullnames[idx] == filenames[idx]);
-            }
-
-            {
-                std::ofstream conf;
-                conf.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out);
-                CATCH_REQUIRE(conf.is_open());
-                conf << "# Original Config with a number" << std::endl;
-                conf << "var=master value" << std::endl;
-
-                // verify the master config file
-                //
-                advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename);
-                advgetopt::conf_file::pointer_t config_file(advgetopt::conf_file::get_conf_file(setup));
-                CATCH_REQUIRE(config_file->get_parameter("var") == "master value");
-            }
-
-            {
-                // run a load to verify that we indeed get the last var=...
-                // value and not some random entry
-                //
-                std::string temp_dir = SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config";
-                char const * const dirs[] = {
-                    temp_dir.c_str(),
-                    nullptr
-                };
-                advgetopt::option opts[] = {
-                    advgetopt::define_option(
-                          advgetopt::Name("var")
-                        , advgetopt::Flags(advgetopt::all_flags<advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR>())
-                        , advgetopt::Help("verify loading configuration files in a serie.")
-                    ),
-                    advgetopt::end_options()
-                };
+        {
+            // run a load to verify that we indeed get the last var=...
+            // value and not some random entry
+            //
+            std::string temp_dir = SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/.config";
+            char const * const dirs[] = {
+                temp_dir.c_str(),
+                nullptr
+            };
+            advgetopt::option opts[] = {
+                advgetopt::define_option(
+                      advgetopt::Name("var")
+                    , advgetopt::Flags(advgetopt::all_flags<advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR>())
+                    , advgetopt::Help("verify loading configuration files in a serie.")
+                ),
+                advgetopt::end_options()
+            };
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
-                advgetopt::options_environment env = {
-                    .f_project_name = "sorted-configs",
-                    .f_group_name = "advgetopt-multi",
-                    .f_options = opts,
-                    .f_options_files_directory = nullptr,
-                    .f_environment_variable_name = nullptr,
-                    .f_environment_variable_intro = nullptr,
-                    .f_section_variables_name = nullptr,
-                    .f_configuration_files = nullptr,
-                    .f_configuration_filename = "sorted-user-conf.config",
-                    .f_configuration_directories = dirs,
-                    .f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS,
-                    .f_help_header = nullptr,
-                    .f_help_footer = nullptr,
-                    .f_version = nullptr,
-                    .f_license = nullptr,
-                    .f_copyright = nullptr,
-                    .f_build_date = UTC_BUILD_DATE,
-                    .f_build_time = UTC_BUILD_TIME,
-                    .f_groups = nullptr
-                };
+            advgetopt::options_environment env = {
+                .f_project_name = "sorted-configs",
+                .f_group_name = "advgetopt-multi",
+                .f_options = opts,
+                .f_options_files_directory = nullptr,
+                .f_environment_variable_name = nullptr,
+                .f_environment_variable_intro = nullptr,
+                .f_section_variables_name = nullptr,
+                .f_configuration_files = nullptr,
+                .f_configuration_filename = "sorted-user-conf.config",
+                .f_configuration_directories = dirs,
+                .f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS,
+                .f_help_header = nullptr,
+                .f_help_footer = nullptr,
+                .f_version = nullptr,
+                .f_license = nullptr,
+                .f_copyright = nullptr,
+                .f_build_date = UTC_BUILD_DATE,
+                .f_build_time = UTC_BUILD_TIME,
+                .f_groups = nullptr
+            };
 #pragma GCC diagnostic pop
-                char const * const argv[] = {
-                    "test",
-                    nullptr
-                };
-                advgetopt::getopt opt(env, 1, const_cast<char **>(argv));
-                CATCH_REQUIRE(memcmp(&opt.get_options_environment(), &env, sizeof(env)) == 0);
-                CATCH_REQUIRE(opt.get_string("var") == expected_var);
-            }
+            char const * const argv[] = {
+                "test",
+                nullptr
+            };
+            advgetopt::getopt opt(env, 1, const_cast<char **>(argv));
+            CATCH_REQUIRE(memcmp(&opt.get_options_environment(), &env, sizeof(env)) == 0);
+            CATCH_REQUIRE(opt.get_string("var") == expected_var);
         }
+    }
+    CATCH_END_SECTION()
+}
+
+
+CATCH_TEST_CASE("utils_default_group_name", "[utils][valid]")
+{
+    CATCH_START_SECTION("utils_default_group_name: Full insert")
+    {
+        // CONFIG FILE HAS NO EXTENSION
+        {
+            std::string const fullname(advgetopt::default_group_name(
+                              "/this/is/a/config"
+                            , "group-name"
+                            , "project-name"));
+            CATCH_REQUIRE(fullname == "/this/is/a/group-name.d/50-config");
+        }
+
+        {
+            std::string const fullname(advgetopt::default_group_name(
+                              "/this/is/a/advgetopt"
+                            , "group-name"
+                            , ""));
+            CATCH_REQUIRE(fullname == "/this/is/a/group-name.d/50-advgetopt");
+        }
+
+        {
+            std::string const fullname(advgetopt::default_group_name(
+                              "/this/is/a/complete"
+                            , "group-name"
+                            , nullptr));
+            CATCH_REQUIRE(fullname == "/this/is/a/group-name.d/50-complete");
+        }
+
+        {
+            std::string const fullname(advgetopt::default_group_name(
+                              "/this/is/a/swapped"
+                            , ""
+                            , "project-name"));
+            CATCH_REQUIRE(fullname == "/this/is/a/project-name.d/50-swapped");
+        }
+
+        {
+            std::string const fullname(advgetopt::default_group_name(
+                              "/this/is/a/null"
+                            , nullptr
+                            , "project-name"));
+            CATCH_REQUIRE(fullname == "/this/is/a/project-name.d/50-null");
+        }
+
+        // CONFIG FILE HAS EXTENSION
+        {
+            std::string const fullname(advgetopt::default_group_name(
+                              "/this/is/a/basename.ext"
+                            , "group-name"
+                            , "project-name"));
+            CATCH_REQUIRE(fullname == "/this/is/a/group-name.d/50-basename.ext");
+        }
+
+        {
+            std::string const fullname(advgetopt::default_group_name(
+                              "/this/is/a/basename.ext"
+                            , "group-name"
+                            , ""));
+            CATCH_REQUIRE(fullname == "/this/is/a/group-name.d/50-basename.ext");
+        }
+
+        {
+            std::string const fullname(advgetopt::default_group_name(
+                              "/this/is/a/basename.ext"
+                            , "group-name"
+                            , nullptr));
+            CATCH_REQUIRE(fullname == "/this/is/a/group-name.d/50-basename.ext");
+        }
+
+        {
+            std::string const fullname(advgetopt::default_group_name(
+                              "/this/is/a/basename.ext"
+                            , ""
+                            , "project-name"));
+            CATCH_REQUIRE(fullname == "/this/is/a/project-name.d/50-basename.ext");
+        }
+
+        {
+            std::string const fullname(advgetopt::default_group_name(
+                              "/this/is/a/basename.ext"
+                            , nullptr
+                            , "project-name"));
+            CATCH_REQUIRE(fullname == "/this/is/a/project-name.d/50-basename.ext");
+        }
+
+        // verify all valid priorities
+        //
+        for(int priority(0); priority < 10; ++priority)
+        {
+            std::string const fullname(advgetopt::default_group_name(
+                              "/this/is/a/basename.ext"
+                            , "group-name"
+                            , "project-name"
+                            , priority));
+            CATCH_REQUIRE(fullname == "/this/is/a/group-name.d/0"
+                                        + std::to_string(priority)
+                                        + "-basename.ext");
+        }
+        for(int priority(10); priority < 100; ++priority)
+        {
+            std::string const fullname(advgetopt::default_group_name(
+                              "/this/is/a/basename.ext"
+                            , "group-name"
+                            , "project-name"
+                            , priority));
+            CATCH_REQUIRE(fullname == "/this/is/a/group-name.d/"
+                                        + std::to_string(priority)
+                                        + "-basename.ext");
+        }
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("utils_default_group_name: Empty cases")
+    {
+        {
+            std::string const fullname(advgetopt::default_group_name(
+                              "/this/is/a/path"
+                            , nullptr
+                            , nullptr));
+            CATCH_REQUIRE(fullname.empty());
+        }
+
+        {
+            std::string const fullname(advgetopt::default_group_name(
+                              "/this/is/a/path"
+                            , nullptr
+                            , ""));
+            CATCH_REQUIRE(fullname.empty());
+        }
+
+        {
+            std::string const fullname(advgetopt::default_group_name(
+                              "/this/is/a/path"
+                            , ""
+                            , nullptr));
+            CATCH_REQUIRE(fullname.empty());
+        }
+
+        {
+            std::string const fullname(advgetopt::default_group_name(
+                              "/this/is/a/path"
+                            , ""
+                            , ""));
+            CATCH_REQUIRE(fullname.empty());
+        }
+
+        {
+            std::string const fullname(advgetopt::default_group_name(
+                              ""
+                            , "group-name"
+                            , "project-name"));
+            CATCH_REQUIRE(fullname.empty());
+        }
+
+        {
+            std::string const fullname(advgetopt::default_group_name(
+                              ""
+                            , ""
+                            , "project-name"));
+            CATCH_REQUIRE(fullname.empty());
+        }
+
+        {
+            std::string const fullname(advgetopt::default_group_name(
+                              ""
+                            , nullptr
+                            , "project-name"));
+            CATCH_REQUIRE(fullname.empty());
+        }
+
+        {
+            std::string const fullname(advgetopt::default_group_name(
+                              ""
+                            , nullptr
+                            , ""));
+            CATCH_REQUIRE(fullname.empty());
+        }
+
+        {
+            std::string const fullname(advgetopt::default_group_name(
+                              ""
+                            , nullptr
+                            , nullptr));
+            CATCH_REQUIRE(fullname.empty());
+        }
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("utils_default_group_name: single '/' at the start")
+    {
+        CATCH_REQUIRE_THROWS_MATCHES(advgetopt::default_group_name(
+                          "/this-is-a-path"
+                        , "group"
+                        , "project")
+                    , advgetopt::getopt_root_filename
+                    , Catch::Matchers::ExceptionMessage(
+                              "getopt_exception: filename \"/this-is-a-path\" starts with a slash (/), which is not allowed."));
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("utils_default_group_name: invalid priority")
+    {
+        // verify that negative priorities are prevented
+        //
+        for(int priority(-20); priority < 0; ++priority)
+        {
+            CATCH_REQUIRE_THROWS_MATCHES(advgetopt::default_group_name(
+                          "/this/is/a/basename.ext"
+                        , ((rand() & 1) == 0 ? "group-name" : nullptr)
+                        , "project-name"
+                        , priority)
+                    , advgetopt::getopt_invalid_parameter
+                    , Catch::Matchers::ExceptionMessage(
+                          "getopt_exception: priority must be a number between 0 and 99 inclusive; "
+                        + std::to_string(priority)
+                        + " is invalid."));
+        }
+
+        // verify that large priorities are prevented
+        //
+        for(int priority(100); priority < 120; ++priority)
+        {
+            CATCH_REQUIRE_THROWS_MATCHES(advgetopt::default_group_name(
+                          "/this/is/a/basename.ext"
+                        , ((rand() & 1) == 0 ? "group-name" : nullptr)
+                        , "project-name"
+                        , priority)
+                    , advgetopt::getopt_invalid_parameter
+                    , Catch::Matchers::ExceptionMessage(
+                          "getopt_exception: priority must be a number between 0 and 99 inclusive; "
+                        + std::to_string(priority)
+                        + " is invalid."));
+        }
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("utils_default_group_name: Basename Only")
+    {
+        {
+            std::string const fullname(advgetopt::default_group_name(
+                              "basename"
+                            , nullptr
+                            , "advgetopt"));
+            CATCH_REQUIRE(fullname == "advgetopt.d/50-basename");
+        }
+
+        {
+            std::string const fullname(advgetopt::default_group_name(
+                              "basename.ext"
+                            , "advgetopt"
+                            , nullptr));
+            CATCH_REQUIRE(fullname == "advgetopt.d/50-basename.ext");
+        }
+    }
     CATCH_END_SECTION()
 }
 

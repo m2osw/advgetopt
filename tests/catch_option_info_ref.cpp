@@ -358,6 +358,14 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
         CATCH_REQUIRE(unknown_ref.length() == 0);
         CATCH_REQUIRE(unknown_ref.size() == 0);
         CATCH_REQUIRE(unknown_ref.get_long() == 0);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+        {
+std::cerr << "unknown ref double says [" << unknown_ref.get_double() << "]\n";
+            bool const a1(unknown_ref.get_double() == 0.0);
+            CATCH_REQUIRE(a1);
+        }
+#pragma GCC diagnostic pop
         CATCH_REQUIRE(static_cast<std::string>(unknown_ref) == "");
         CATCH_REQUIRE_FALSE(opt.is_defined("unknown"));
 
@@ -457,6 +465,16 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid number (\xE4\xA0\x99) in parameter --unknown at offset 0.");
         CATCH_REQUIRE(unknown_ref.get_long() == -1);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+        {
+            SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid number (\xE4\xA0\x99) in parameter --unknown at offset 0.");
+            bool const a2(unknown_ref.get_double() == -1.0);
+            CATCH_REQUIRE(a2);
+            SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
+        }
+#pragma GCC diagnostic pop
 
         CATCH_REQUIRE(static_cast<std::string>(unknown_ref) == "\xE4\xA0\x99");
         CATCH_REQUIRE(opt.is_defined("unknown"));
@@ -621,6 +639,13 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
         CATCH_REQUIRE(opt.size("reference") == 1);
         CATCH_REQUIRE(opt.get_string("reference") == "3100");
         CATCH_REQUIRE(opt.get_long("reference") == 3100);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+        {
+            bool const a3(opt.get_double("reference") == 3100.0);
+            CATCH_REQUIRE(a3);
+        }
+#pragma GCC diagnostic pop
 
         CATCH_REQUIRE(opt.get_option("verbose") != nullptr);
         CATCH_REQUIRE(opt.size("verbose") == 1);
@@ -647,6 +672,13 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
         CATCH_REQUIRE(opt.is_defined("reference"));
         CATCH_REQUIRE(opt.is_defined("verbose"));
         CATCH_REQUIRE(reference_ref.get_long() == 3100);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+        {
+            bool const a4(reference_ref.get_double() == 3100.0);
+            CATCH_REQUIRE(a4);
+        }
+#pragma GCC diagnostic pop
 
         CATCH_WHEN("with = & zero char")
         {
@@ -1375,6 +1407,99 @@ CATCH_TEST_CASE("option_info_ref_with_valid_default", "[option_info][valid][refe
         CATCH_REQUIRE_FALSE(reference_ref >= verbose_ref);
     }
     CATCH_END_SECTION()
+
+    CATCH_START_SECTION("No reference on command line, valid default for get_double()")
+    {
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("reference")
+                , advgetopt::ShortName('r')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("test reference.")
+                , advgetopt::DefaultValue("45.9")
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("verbose")
+                , advgetopt::ShortName('v')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("make it all verbose.")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_help_header = "Usage: verify references";
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--verbose",
+            "loud",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // verify both parameters the "normal" way
+        CATCH_REQUIRE(opt.get_option("reference") != nullptr);
+        CATCH_REQUIRE(opt.size("reference") == 0);
+        CATCH_REQUIRE(opt.get_string("reference") == "45.9");
+
+        CATCH_REQUIRE(opt.get_option("verbose") != nullptr);
+        CATCH_REQUIRE(opt.size("verbose") == 1);
+        CATCH_REQUIRE(opt.get_string("verbose") == "loud");
+
+        // check the read-only verbose which does not create a reference
+        CATCH_REQUIRE(const_cast<advgetopt::getopt const &>(opt)["reference"] == "45.9");
+        CATCH_REQUIRE(const_cast<advgetopt::getopt const &>(opt)["verbose"] == "loud");
+
+        std::string const reference_value(const_cast<advgetopt::getopt const &>(opt)["reference"]);
+        CATCH_REQUIRE(reference_value == "45.9");
+        std::string const verbose_value(const_cast<advgetopt::getopt const &>(opt)["verbose"]);
+        CATCH_REQUIRE(verbose_value == "loud");
+
+        // get a reference
+        advgetopt::option_info_ref reference_ref(opt["reference"]);
+        advgetopt::option_info_ref verbose_ref(opt["verbose"]);
+
+        CATCH_REQUIRE(reference_ref.empty());
+        CATCH_REQUIRE_FALSE(verbose_ref.empty());
+
+        CATCH_REQUIRE(reference_ref.length() == 4);
+        CATCH_REQUIRE(reference_ref.size() == 4);
+        CATCH_REQUIRE(verbose_ref.length() == 4);
+        CATCH_REQUIRE(verbose_ref.size() == 4);
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+        {
+            bool const a1(reference_ref.get_double() == 45.9);
+            CATCH_REQUIRE(a1);
+        }
+#pragma GCC diagnostic pop
+
+        CATCH_REQUIRE(reference_ref == reference_ref);
+        CATCH_REQUIRE_FALSE(reference_ref != reference_ref);
+        CATCH_REQUIRE_FALSE(reference_ref < reference_ref);
+        CATCH_REQUIRE(reference_ref <= reference_ref);
+        CATCH_REQUIRE_FALSE(reference_ref > reference_ref);
+        CATCH_REQUIRE(reference_ref >= reference_ref);
+
+        CATCH_REQUIRE_FALSE(reference_ref == verbose_ref);
+        CATCH_REQUIRE(reference_ref != verbose_ref);
+        CATCH_REQUIRE(reference_ref < verbose_ref);
+        CATCH_REQUIRE(reference_ref <= verbose_ref);
+        CATCH_REQUIRE_FALSE(reference_ref > verbose_ref);
+        CATCH_REQUIRE_FALSE(reference_ref >= verbose_ref);
+    }
+    CATCH_END_SECTION()
 }
 
 
@@ -1453,6 +1578,101 @@ CATCH_TEST_CASE("option_info_ref_with_invalid_default", "[option_info][invalid][
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid default value for a number (undefined) in parameter --reference at offset 0.");
         CATCH_REQUIRE(reference_ref.get_long() == -1);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
+
+        CATCH_REQUIRE(reference_ref == reference_ref);
+        CATCH_REQUIRE_FALSE(reference_ref != reference_ref);
+        CATCH_REQUIRE_FALSE(reference_ref < reference_ref);
+        CATCH_REQUIRE(reference_ref <= reference_ref);
+        CATCH_REQUIRE_FALSE(reference_ref > reference_ref);
+        CATCH_REQUIRE(reference_ref >= reference_ref);
+
+        CATCH_REQUIRE_FALSE(reference_ref == verbose_ref);
+        CATCH_REQUIRE(reference_ref != verbose_ref);
+        CATCH_REQUIRE_FALSE(reference_ref < verbose_ref);
+        CATCH_REQUIRE_FALSE(reference_ref <= verbose_ref);
+        CATCH_REQUIRE(reference_ref > verbose_ref);
+        CATCH_REQUIRE(reference_ref >= verbose_ref);
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("No reference on command line, not valid for get_double()")
+    {
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("reference")
+                , advgetopt::ShortName('r')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("test reference.")
+                , advgetopt::DefaultValue("undefined")
+            ),
+            advgetopt::define_option(
+                  advgetopt::Name("verbose")
+                , advgetopt::ShortName('v')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("make it all verbose.")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_help_header = "Usage: verify references";
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--verbose",
+            "loud",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // verify both parameters the "normal" way
+        CATCH_REQUIRE(opt.get_option("reference") != nullptr);
+        CATCH_REQUIRE(opt.size("reference") == 0);
+        CATCH_REQUIRE(opt.get_string("reference") == "undefined");
+
+        CATCH_REQUIRE(opt.get_option("verbose") != nullptr);
+        CATCH_REQUIRE(opt.size("verbose") == 1);
+        CATCH_REQUIRE(opt.get_string("verbose") == "loud");
+
+        // check the read-only verbose which does not create a reference
+        CATCH_REQUIRE(const_cast<advgetopt::getopt const &>(opt)["reference"] == "undefined");
+        CATCH_REQUIRE(const_cast<advgetopt::getopt const &>(opt)["verbose"] == "loud");
+
+        std::string const reference_value(const_cast<advgetopt::getopt const &>(opt)["reference"]);
+        CATCH_REQUIRE(reference_value == "undefined");
+        std::string const verbose_value(const_cast<advgetopt::getopt const &>(opt)["verbose"]);
+        CATCH_REQUIRE(verbose_value == "loud");
+
+        // get a reference
+        advgetopt::option_info_ref reference_ref(opt["reference"]);
+        advgetopt::option_info_ref verbose_ref(opt["verbose"]);
+
+        CATCH_REQUIRE(reference_ref.empty());
+        CATCH_REQUIRE_FALSE(verbose_ref.empty());
+
+        CATCH_REQUIRE(reference_ref.length() == 9);
+        CATCH_REQUIRE(reference_ref.size() == 9);
+        CATCH_REQUIRE(verbose_ref.length() == 4);
+        CATCH_REQUIRE(verbose_ref.size() == 4);
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+        {
+            SNAP_CATCH2_NAMESPACE::push_expected_log("error: invalid default value as a double number (undefined) in parameter --reference at offset 0.");
+            bool const a1(reference_ref.get_double() == -1);
+            CATCH_REQUIRE(a1);
+            SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
+        }
+#pragma GCC diagnostic pop
 
         CATCH_REQUIRE(reference_ref == reference_ref);
         CATCH_REQUIRE_FALSE(reference_ref != reference_ref);

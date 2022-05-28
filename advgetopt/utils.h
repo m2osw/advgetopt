@@ -39,6 +39,8 @@ namespace advgetopt
 
 typedef std::vector<std::string>                string_list_t;
 
+constexpr int const DEFAULT_PRIORITY = 50;
+
 
 std::string         unquote(std::string const & s, std::string const & pairs = "\"\"''");
 void                split_string(std::string const & str
@@ -50,7 +52,7 @@ string_list_t       insert_group_name(std::string const & filename
 std::string         default_group_name(std::string const & filename
                                     , char const * group_name
                                     , char const * project_name
-                                    , int priority = 50);
+                                    , int priority = DEFAULT_PRIORITY);
 std::string         handle_user_directory(std::string const & filename);
 bool                is_true(std::string s);
 bool                is_false(std::string s);

@@ -328,7 +328,7 @@ long getopt::get_long(std::string const & name, int idx, long min, long max) con
  * int level(6); // default to 6
  * if(opt.is_defined("zlevel"))
  * {
- *   zlevel = opt.get_double("zlevel", 0, 1, 9);
+ *   zlevel = opt.get_double("zlevel", 0, 1.0, 9.0);
  * }
  * \endcode
  *
@@ -384,7 +384,8 @@ double getopt::get_double(std::string const & name, int idx, double min, double 
                       "invalid default number \""
                     + d
                     + "\" for option --"
-                    + name);
+                    + name
+                    + ".");
         }
     }
     else

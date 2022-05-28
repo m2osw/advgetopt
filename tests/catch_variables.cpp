@@ -92,6 +92,11 @@ CATCH_TEST_CASE("variables", "[variables][valid]")
         CATCH_REQUIRE(vars.get_variable("first_variable") == "replaced value");
         CATCH_REQUIRE(vars.get_variables().size() == 3);
 
+        // attempt changing value when already set
+        vars.set_variable("first_variable", "replaced value", false);
+        CATCH_REQUIRE(vars.get_variable("first_variable") == "replaced value");
+        CATCH_REQUIRE(vars.get_variables().size() == 3);
+
         advgetopt::variables::variable_t list(vars.get_variables());
         for(auto l : list)
         {
@@ -122,8 +127,13 @@ CATCH_TEST_CASE("variables", "[variables][valid]")
         processed = vars.process_value("First Var = [${first-variable]");
         CATCH_REQUIRE(processed == "First Var = [${first-variable]");
 
-        vars.set_variable("loopA", "ref ${loopB}");
-        vars.set_variable("loopB", "ref ${loopA}");
+        vars.set_variable("loopA", "ref ${loopB}", false);
+        CATCH_REQUIRE(vars.get_variable("loopA") == "ref ${loopB}");
+        CATCH_REQUIRE(vars.get_variables().size() == 4);
+
+        vars.set_variable("loopB", "ref ${loopA}", false);
+        CATCH_REQUIRE(vars.get_variable("loopB") == "ref ${loopA}");
+        CATCH_REQUIRE(vars.get_variables().size() == 5);
 
         processed = vars.process_value("Looping like crazy: ${loopA}");
         CATCH_REQUIRE(processed == "Looping like crazy: ref ref <variable \"loopA\" loops>");

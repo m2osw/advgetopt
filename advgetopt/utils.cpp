@@ -353,7 +353,7 @@ string_list_t insert_group_name(
     std::string::size_type const pos(filename.find_last_of('/'));
     if(pos == 0)
     {
-        throw getopt_root_filename("filename \"" + filename + "\" starts with a slash (/), which is not allowed.");
+        throw getopt_root_filename("filename \"" + filename + "\" last slash (/) is at the start, which is not allowed.");
     }
     if(pos != std::string::npos
     && pos > 0)
@@ -383,19 +383,10 @@ string_list_t insert_group_name(
     //
     if(glob.empty())
     {
-        if(pos != std::string::npos
-        && pos > 0)
-        {
-            glob.insert(filename.substr(0, pos + 1)
-                    + name
-                    + ".d/50-"
-                    + filename.substr(pos + 1));
-        }
-        else
-        {
-            glob.insert(name
-                    + (".d/50-" + filename));
-        }
+        glob.insert(default_group_name(
+                  filename
+                , group_name
+                , project_name));
     }
 
     return string_list_t(glob.begin(), glob.end());

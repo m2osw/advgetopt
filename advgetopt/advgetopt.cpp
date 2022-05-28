@@ -693,7 +693,7 @@ void getopt::is_parsed() const
     {
         throw getopt_initialization(
                 "function called too soon, parser is not done yet"
-                " (i.e. is_defined(), get_string(), get_integer(),"
+                " (i.e. is_defined(), get_string(), get_long(),"
                 " get_double() cannot be called until the parser is done)");
     }
 }

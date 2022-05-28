@@ -178,7 +178,7 @@ CATCH_TEST_CASE("string_access", "[arguments][valid][getopt]")
 
 CATCH_TEST_CASE("long_access", "[arguments][valid][getopt]")
 {
-    CATCH_START_SECTION("Verify an integer (long) value in a long argument")
+    CATCH_START_SECTION("Verify an integer (long) value in an argument")
         long const default_value(rand());
         std::string const default_value_str(std::to_string(default_value));
         char const * const default_val(default_value_str.c_str());
@@ -380,6 +380,382 @@ CATCH_TEST_CASE("long_access", "[arguments][valid][getopt]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    CATCH_END_SECTION()
+}
+
+
+
+CATCH_TEST_CASE("double_access", "[arguments][valid][getopt]")
+{
+    CATCH_START_SECTION("double_access: Verify a double value in an argument")
+    {
+        long const default_value(rand());
+        std::string const default_value_str(std::to_string(default_value));
+        char const * const default_val(default_value_str.c_str());
+
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("define the size.")
+                , advgetopt::DefaultValue(default_val)
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_help_header = "Usage: test get_double() functions";
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "--size",
+            "98.21",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // the valid parameter
+        CATCH_REQUIRE(opt.get_option("size") != nullptr);
+        CATCH_REQUIRE(opt.get_option('s') != nullptr);
+        CATCH_REQUIRE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_string("size") == "98.21");
+        CATCH_REQUIRE(opt.get_string("size", 0) == "98.21");
+        CATCH_REQUIRE(opt["size"] == "98.21");
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+        {
+            bool const a1(opt.get_double("size") == 98.21);
+            CATCH_REQUIRE(a1);
+            bool const a2(opt.get_double("size", 0) == 98.21);
+            CATCH_REQUIRE(a2);
+        }
+#pragma GCC diagnostic pop
+        CATCH_REQUIRE(opt.has_default("size"));
+        CATCH_REQUIRE(opt.get_default("size") == default_value_str);
+        CATCH_REQUIRE(opt.size("size") == 1);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("double_access: Verify a double value in a short argument")
+    {
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("define the size.")
+                , advgetopt::DefaultValue("")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_help_header = "Usage: test get_double() functions";
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            "-s",
+            "98.21",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // to reach the constant version `opt` has to be constant
+        std::string const array_syntax_invalid_parameter(static_cast<advgetopt::getopt const &>(opt)["invalid-parameter"]);
+        CATCH_REQUIRE(array_syntax_invalid_parameter == std::string());
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // the valid parameter
+        CATCH_REQUIRE(opt.get_option("size") != nullptr);
+        CATCH_REQUIRE(opt.get_option('s') != nullptr);
+        CATCH_REQUIRE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_string("size") == "98.21");
+        CATCH_REQUIRE(opt.get_string("size", 0) == "98.21");
+        CATCH_REQUIRE(opt["size"] == "98.21");
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+        {
+            bool const a3(opt.get_double("size") == 98.21);
+            CATCH_REQUIRE(a3);
+            bool const a4(opt.get_double("size", 0) == 98.21);
+            CATCH_REQUIRE(a4);
+        }
+#pragma GCC diagnostic pop
+        CATCH_REQUIRE(opt.has_default("size"));
+        CATCH_REQUIRE(opt.get_default("size").empty());
+        CATCH_REQUIRE(opt.size("size") == 1);
+
+        // to access the constant reference we need a constant `opt`...
+        std::string const array_syntax1(static_cast<advgetopt::getopt const &>(opt)["size"]);
+        CATCH_REQUIRE(array_syntax1 == "98.21");
+        bool const array_syntax2(static_cast<advgetopt::getopt const &>(opt)["size"] == std::string("98.21"));
+        CATCH_REQUIRE(array_syntax2);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("double_access: Verify a double value with no default and nothing on the command line")
+    {
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("define the size.")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_help_header = "Usage: test get_double() functions";
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // to reach the constant version `opt` has to be constant
+        std::string const array_syntax_invalid_parameter(static_cast<advgetopt::getopt const &>(opt)["invalid-parameter"]);
+        CATCH_REQUIRE(array_syntax_invalid_parameter == std::string());
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // the valid parameter
+        CATCH_REQUIRE_FALSE(opt.is_defined("size"));
+        CATCH_REQUIRE_THROWS_MATCHES(
+                  opt.get_double("size", 3, -100.0, 100.0)
+                , advgetopt::getopt_logic_error
+                , Catch::Matchers::ExceptionMessage(
+                              "getopt_logic_error: the --size option was not defined on the command line and it has no or an empty default."));
+        CATCH_REQUIRE_FALSE(opt.has_default("size"));
+        CATCH_REQUIRE(opt.size("size") == 0);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("double_access: Verify a double value validity when a default is defined.")
+    {
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::DefaultValue("3.34 cans")
+                , advgetopt::Help("define the size.")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_help_header = "Usage: test get_double() functions";
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // to reach the constant version `opt` has to be constant
+        std::string const array_syntax_invalid_parameter(static_cast<advgetopt::getopt const &>(opt)["invalid-parameter"]);
+        CATCH_REQUIRE(array_syntax_invalid_parameter == std::string());
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // the valid parameter
+        CATCH_REQUIRE_FALSE(opt.is_defined("size"));
+        CATCH_REQUIRE_THROWS_MATCHES(
+                  opt.get_double("size", 5, -100.0, 100.0)
+                , advgetopt::getopt_logic_error
+                , Catch::Matchers::ExceptionMessage(
+                              "getopt_logic_error: invalid default number \"3.34 cans\" for option --size."));
+        CATCH_REQUIRE(opt.has_default("size"));
+        CATCH_REQUIRE(opt.get_default("size") == "3.34 cans");
+        CATCH_REQUIRE(opt.size("size") == 0);
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("double_access: Verify a double value in no arguments")
+    {
+        advgetopt::option const options[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("size")
+                , advgetopt::ShortName('s')
+                , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::Help("define the size.")
+                , advgetopt::DefaultValue("8.39")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment environment_options;
+        environment_options.f_project_name = "unittest";
+        environment_options.f_options = options;
+        environment_options.f_help_header = "Usage: test get_double() functions";
+
+        char const * cargv[] =
+        {
+            "/usr/bin/arguments",
+            nullptr
+        };
+        int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::getopt opt(environment_options, argc, argv);
+
+        // check that the result is valid
+        CATCH_REQUIRE_THROWS_MATCHES(
+                  opt.get_double("non-existant", 3, -100.0, 100.0)
+                , advgetopt::getopt_logic_error
+                , Catch::Matchers::ExceptionMessage(
+                              "getopt_logic_error: there is no --non-existant option defined."));
+
+        // an invalid parameter, MUST NOT EXIST
+        CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
+        CATCH_REQUIRE(opt.get_option('Z') == nullptr);
+        CATCH_REQUIRE(opt["invalid-parameter"] == std::string());
+        CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
+        CATCH_REQUIRE(opt.get_default("invalid-parameter").empty());
+        CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
+
+        // no default
+        CATCH_REQUIRE(opt.get_option("--") == nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("--"));
+        CATCH_REQUIRE(opt.get_default("--").empty());
+        CATCH_REQUIRE(opt.size("--") == 0);
+
+        // the valid parameter
+        CATCH_REQUIRE(opt.get_option("size") != nullptr);
+        CATCH_REQUIRE(opt.get_option('s') != nullptr);
+        CATCH_REQUIRE_FALSE(opt.is_defined("size"));
+        CATCH_REQUIRE(opt.get_string("size") == "8.39");
+        CATCH_REQUIRE(opt.get_string("size", 0) == "8.39");
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+        {
+            bool const a1(opt.get_double("size") == 8.39);
+            CATCH_REQUIRE(a1);
+            bool const a2(opt.get_double("size", 0, 0.0, 10.0) == 8.39);
+            CATCH_REQUIRE(a2);
+
+            SNAP_CATCH2_NAMESPACE::push_expected_log(
+                  "error: 8.39 is out of bounds (-5..5 inclusive) in parameter --size.");
+            bool const a3(opt.get_double("size", 0, -5.0, +5.0) == -1.0);
+            CATCH_REQUIRE(a3);
+            SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
+
+        }
+#pragma GCC diagnostic pop
+        CATCH_REQUIRE(opt.has_default("size"));
+        CATCH_REQUIRE(opt.get_default("size") == "8.39");
+        CATCH_REQUIRE(opt.size("size") == 0);
+
+        // with a constant opt, the array syntax returns the default string
+        CATCH_REQUIRE(static_cast<advgetopt::getopt const &>(opt)["size"] == "8.39");
+
+        // other parameters
+        CATCH_REQUIRE(opt.get_program_name() == "arguments");
+        CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
     CATCH_END_SECTION()
 }
 
