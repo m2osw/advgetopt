@@ -1167,7 +1167,7 @@ CATCH_TEST_CASE("redefine_option_short_name", "[options][valid][config]")
 
 CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
 {
-    CATCH_START_SECTION("No name")
+    CATCH_START_SECTION("invalid_option_info: No name")
         CATCH_REQUIRE_THROWS_MATCHES(
                   advgetopt::option_info("")
                 , advgetopt::getopt_logic_error
@@ -1193,7 +1193,7 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
                           "getopt_logic_error: option_info::option_info(): all options must at least have a long name (short name: 'p'.)"));
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Default with short name")
+    CATCH_START_SECTION("invalid_option_info: Default with short name")
         CATCH_REQUIRE_THROWS_MATCHES(
                   advgetopt::option_info("--", 'f')
                 , advgetopt::getopt_logic_error
@@ -1201,7 +1201,7 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
                           "getopt_logic_error: option_info::option_info(): the default parameter \"--\" cannot include a short name ('f'.)"));
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Long name cannot start with a dash (-)")
+    CATCH_START_SECTION("invalid_option_info: Long name cannot start with a dash (-)")
         CATCH_REQUIRE_THROWS_MATCHES(
                   advgetopt::option_info("--dashes")
                 , advgetopt::getopt_logic_error
@@ -1209,7 +1209,7 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
                           "getopt_logic_error: option_info::option_info(): an option cannot start with a dash (-), \"--dashes\" is not valid."));
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Short name cannot be a dash (-)")
+    CATCH_START_SECTION("invalid_option_info: Short name cannot be a dash (-)")
         CATCH_REQUIRE_THROWS_MATCHES(
                   advgetopt::option_info("dash", '-')
                 , advgetopt::getopt_logic_error
@@ -1217,7 +1217,7 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
                           "getopt_logic_error: option_info::option_info(): the short name of an option cannot be the dash (-)."));
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Set value with undefined source")
+    CATCH_START_SECTION("invalid_option_info: Set value with undefined source")
         advgetopt::option_info verbose("verbose", 'v');
         CATCH_REQUIRE_THROWS_MATCHES(
                   verbose.set_value(0, "true", advgetopt::option_source_t::SOURCE_UNDEFINED)
@@ -1226,7 +1226,7 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
                           "getopt_logic_error: option_info::set_value(): called with SOURCE_UNDEFINED (5)."));
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Set multiple values with undefined source")
+    CATCH_START_SECTION("invalid_option_info: Set multiple values with undefined source")
         advgetopt::option_info verbose("verbose", 'v');
         CATCH_REQUIRE_THROWS_MATCHES(
                   verbose.set_multiple_values("a,b,c", advgetopt::option_source_t::SOURCE_UNDEFINED)
@@ -1235,7 +1235,7 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
                           "getopt_logic_error: option_info::set_multiple_values(): called with SOURCE_UNDEFINED (5)."));
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Get value when undefined")
+    CATCH_START_SECTION("invalid_option_info: Get value when undefined")
         advgetopt::option_info verbose("verbose", 'v');
         CATCH_REQUIRE_THROWS_MATCHES(
                   verbose.get_value()
@@ -1244,7 +1244,7 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
                           "getopt_exception: option_info::get_value(): no value at index 0 (idx >= 0) for --verbose so you can't get this value."));
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Get long when undefined")
+    CATCH_START_SECTION("invalid_option_info: Get long when undefined")
         advgetopt::option_info verbose("verbose", 'v');
         CATCH_REQUIRE_THROWS_MATCHES(
                   verbose.get_long()
@@ -1253,7 +1253,16 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
                           "getopt_exception: option_info::get_long(): no value at index 0 (idx >= 0) for --verbose so you can't get this value."));
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Check alias of alias")
+    CATCH_START_SECTION("invalid_option_info: Get long when undefined")
+        advgetopt::option_info verbose("verbose", 'v');
+        CATCH_REQUIRE_THROWS_MATCHES(
+                  verbose.get_double()
+                , advgetopt::getopt_undefined
+                , Catch::Matchers::ExceptionMessage(
+                          "getopt_exception: option_info::get_double(): no value at index 0 (idx >= 0) for --verbose so you can't get this value."));
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("invalid_option_info: Check alias of alias")
         advgetopt::option_info::pointer_t option(std::make_shared<advgetopt::option_info>("option", 'o'));
         advgetopt::option_info alias("alias", 'a');
 
@@ -1271,7 +1280,7 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
         CATCH_REQUIRE(alias.get_alias_destination() == nullptr);
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Set value, verify multiple strings (with MULTIPLE)")
+    CATCH_START_SECTION("invalid_option_info: Set value, verify multiple strings (with MULTIPLE)")
         advgetopt::option_info multi_value("names", 'n');
 
         multi_value.add_flag(advgetopt::GETOPT_FLAG_MULTIPLE);
@@ -1293,7 +1302,7 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
         CATCH_REQUIRE(multi_value.get_value(0) == "value one");
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Set value, verify multiple integers (with MULTIPLE)")
+    CATCH_START_SECTION("invalid_option_info: Set value, verify multiple integers (with MULTIPLE)")
         advgetopt::option_info multi_value("names", 'n');
 
         multi_value.add_flag(advgetopt::GETOPT_FLAG_MULTIPLE);
@@ -1316,7 +1325,7 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
         CATCH_REQUIRE(multi_value.get_long(0) == 123);
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Set value, verify multiple strings (without MULTIPLE)")
+    CATCH_START_SECTION("invalid_option_info: Set value, verify multiple strings (without MULTIPLE)")
         advgetopt::option_info one_value("names", 'n');
 
         CATCH_REQUIRE(one_value.size() == 0);
@@ -1335,7 +1344,7 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
         CATCH_REQUIRE(one_value.get_value(0) == "value one");
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Set value, verify multiple integers (without MULTIPLE)")
+    CATCH_START_SECTION("invalid_option_info: Set value, verify multiple integers (without MULTIPLE)")
         advgetopt::option_info one_value("names", 'n');
 
         CATCH_REQUIRE(one_value.size() == 0);
@@ -1356,7 +1365,7 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
         CATCH_REQUIRE(one_value.get_long(0) == 123);
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Long number too large")
+    CATCH_START_SECTION("invalid_option_info: Long number too large")
         advgetopt::option_info size("size", 's');
 
         CATCH_REQUIRE(size.size() == 0);
@@ -1402,7 +1411,7 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Check multiple separators")
+    CATCH_START_SECTION("invalid_option_info: Check multiple separators")
         advgetopt::option_info separators("names", 'n');
 
         advgetopt::string_list_t list{
@@ -1423,7 +1432,7 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
         CATCH_REQUIRE(separators.size() == 0);
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Check multiple separators")
+    CATCH_START_SECTION("invalid_option_info: Check multiple separators")
         advgetopt::option_info auto_validate("validator", 'C');
         CATCH_REQUIRE_THROWS_MATCHES(
                   auto_validate.set_validator("regex('^[a-z]+$/'")

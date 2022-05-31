@@ -804,21 +804,19 @@ void getopt::parse_environment_variable()
     for(auto const & opt : f_options_by_name)
     {
         std::string const name(opt.second->get_environment_variable_name());
-        if(!name.empty())
+
+        // get the value, only set the option if the variable is set
+        //
+        std::string value;
+        if(opt.second->get_environment_variable_value(
+                  value
+                , f_options_environment.f_environment_variable_intro))
         {
-            // get the value, only set the option if the variable is set
-            //
-            std::string value;
-            if(opt.second->get_environment_variable_value(
-                      value
-                    , f_options_environment.f_environment_variable_intro))
-            {
-                add_option_from_string(
-                          opt.second
-                        , value
-                        , std::string()
-                        , option_source_t::SOURCE_ENVIRONMENT_VARIABLE);
-            }
+            add_option_from_string(
+                      opt.second
+                    , value
+                    , std::string()
+                    , option_source_t::SOURCE_ENVIRONMENT_VARIABLE);
         }
     }
 

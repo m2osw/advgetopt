@@ -203,12 +203,14 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
                                 "   . All Directories = [%*d]\n"
                                 "   . Environment Variable = [%e]\n"
                                 "   . Environment Variable and Value = [%*e]\n"
+                                "   . Environment Variable Intro = [%E]\n"
                                 "   . Configuration Files = [%f]\n"
                                 "   . All Configuration Files = [%*f]\n"
                                 "   . All Existing Configuration Files = [%g]\n"
                                 "   . All Possible Configuration Files = [%*g]\n"
                                 "   . Option File Directory = [%i]\n"
                                 "   . License = [%l]\n"
+                                "   . Section Variable Name = [%m]\n"
                                 "   . Output File [%o]\n"
                                 "   . Program Name = [%p]\n"
                                 "   . Program Fullname = [%*p]\n"
@@ -218,6 +220,8 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
                                 "   . Existing Writable Configuration Files = [%w]\n"
                 ;
         options.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
+        options.f_environment_variable_intro = "ADVGETOPT_";
+        options.f_section_variables_name = "configvars";
         options.f_version = "2.0.1";
         options.f_license = "MIT";
         options.f_copyright = "Copyright (c) 2019  Made to Order Software Corp. -- All Rights Reserved";
@@ -265,6 +269,7 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
 "/etc/advgetopt/advgetopt.d, ~/.config/advgetopt]\n"
 "   . Environment Variable = [ADVGETOPT_TEST_OPTIONS]\n"
 "   . Environment Variable and Value = [ADVGETOPT_TEST_OPTIONS (not set)]\n"
+"   . Environment Variable Intro = [ADVGETOPT_]\n"
 "   . Configuration Files = [advgetopt.conf]\n"
 "   . All Configuration Files = [advgetopt.conf, advgetopt.ini, advgetopt.xml, "
 "advgetopt.yaml]\n"
@@ -280,6 +285,7 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
 + tmpdir + "/.config/advgetopt/advgetopt.conf]\n"
 "   . Option File Directory = [/etc/advgetopt/]\n"
 "   . License = [MIT]\n"
+"   . Section Variable Name = [configvars]\n"
 "   . Output File [" + tmpdir + "/.config/advgetopt/advgetopt.conf]\n"
 "   . Program Name = [unittest_advgetopt]\n"
 "   . Program Fullname = [tests/unittests/unittest_advgetopt]\n"
@@ -519,11 +525,13 @@ advgetopt::getopt::breakup_line(
             advgetopt::define_option(
                   advgetopt::Name("not-specified-string-without-default")
                 , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE, advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::EnvironmentVariableName("String")
                 , advgetopt::Alias("string")
             ),
             advgetopt::define_option(
                   advgetopt::Name("string")
                 , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE, advgetopt::GETOPT_FLAG_REQUIRED>())
+                , advgetopt::EnvironmentVariableName("String")
                 , advgetopt::Help("string parameter.")
             ),
             advgetopt::define_option(
@@ -541,7 +549,7 @@ advgetopt::getopt::breakup_line(
             advgetopt::define_option(
                   advgetopt::Name("quiet")
                 , advgetopt::ShortName('q')
-                , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE, advgetopt::GETOPT_FLAG_MULTIPLE, advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR>())
+                , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE, advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE, advgetopt::GETOPT_FLAG_MULTIPLE, advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR>())
                 , advgetopt::Help("make it quiet (opposite of verbose).")
             ),
             advgetopt::define_option(
@@ -601,12 +609,14 @@ advgetopt::getopt::breakup_line(
                                 "   . All Directories = [%*d]\n"
                                 "   . Environment Variable = [%e]\n"
                                 "   . Environment Variable and Value = [%*e]\n"
+                                "   . Environment Variable Intro = [%E]\n"
                                 "   . Configuration Files = [%f]\n"
                                 "   . All Configuration Files = [%*f]\n"
                                 "   . All Existing Configuration Files = [%g]\n"
                                 "   . All Possible Configuration Files = [%*g]\n"
                                 "   . Option File Directory = [%i]\n"
                                 "   . License = [%l]\n"
+                                "   . Section Variable Name = [%m]\n"
                                 "   . Output File [%o]\n"
                                 "   . Program Name = [%p]\n"
                                 "   . Program Fullname = [%*p]\n"
@@ -615,11 +625,14 @@ advgetopt::getopt::breakup_line(
                                 "   . Existing Writable Configuration Files = [%w]\n"
                 ;
         options.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
+        options.f_environment_variable_intro = "Different_";
         options.f_version = "2.0.1";
         options.f_license = "MIT";
         options.f_copyright = "Copyright (c) 2019  Made to Order Software Corp. -- All Rights Reserved";
         options.f_build_date = "Jun  4 2019";
         options.f_build_time = "23:02:36";
+
+        snapdev::safe_setenv env_var("ADVGETOPT_TEST_OPTIONS", "-q");
 
         // this initialization works as expected
         //
@@ -640,7 +653,8 @@ advgetopt::getopt::breakup_line(
 "   . All Directories = [/etc/sys/advgetopt, /etc/advgetopt, "
 "/etc/advgetopt/advgetopt.d, ~/.config/advgetopt]\n"
 "   . Environment Variable = [ADVGETOPT_TEST_OPTIONS]\n"
-"   . Environment Variable and Value = [ADVGETOPT_TEST_OPTIONS (not set)]\n"
+"   . Environment Variable and Value = [ADVGETOPT_TEST_OPTIONS=-q]\n"
+"   . Environment Variable Intro = [Different_]\n"
 "   . Configuration Files = [advgetopt.conf]\n"
 "   . All Configuration Files = [advgetopt.conf, advgetopt.ini, advgetopt.xml, "
 "advgetopt.yaml]\n"
@@ -656,6 +670,7 @@ advgetopt::getopt::breakup_line(
 + tmpdir + "/.config/advgetopt/advgetopt.conf]\n"
 "   . Option File Directory = [/usr/share/advgetopt/]\n"
 "   . License = [MIT]\n"
+"   . Section Variable Name = []\n"
 "   . Output File [" + tmpdir + "/.config/advgetopt/advgetopt.conf]\n"
 "   . Program Name = [unittest_advgetopt]\n"
 "   . Program Fullname = [tests/unittests/unittest_advgetopt]\n"
@@ -695,6 +710,7 @@ advgetopt::getopt::breakup_line(
 + advgetopt::getopt::format_usage_string(
               "--string <arg>"
             , "string parameter."
+              "\nEnvironment Variable Name: \"Different_String\""
             , 30
             , advgetopt::getopt::get_line_width())
 + advgetopt::getopt::format_usage_string(
@@ -755,6 +771,7 @@ advgetopt::getopt::breakup_line(
 + advgetopt::getopt::format_usage_string(
               "--string <arg>"
             , "string parameter."
+              "\nEnvironment Variable Name: \"Different_String\""
             , 30
             , advgetopt::getopt::get_line_width())
 + advgetopt::getopt::format_usage_string(
@@ -2718,6 +2735,64 @@ advgetopt::getopt::breakup_line(
                 );
     }
     CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Environment Variable Intro (undefined)")
+    {
+        const advgetopt::option options_list[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("verbose")
+                , advgetopt::Flags(advgetopt::var_flags<advgetopt::GETOPT_FLAG_FLAG>())
+                , advgetopt::Help("inform you of what we're currently working on: %E.")
+            ),
+            advgetopt::end_options()
+        };
+        char const * cargv[] =
+        {
+            "tests/unittests/usage",
+            nullptr
+        };
+        int const argc = sizeof(cargv) / sizeof(cargv[0]) - 1;
+        char ** argv = const_cast<char **>(cargv);
+
+        advgetopt::options_environment options;
+        options.f_project_name = "unittest";
+        options.f_options = options_list;
+        options.f_options_files_directory = "/etc/advgetopt";
+        options.f_configuration_files = nullptr;
+        options.f_configuration_filename = "advgetopt.conf";
+        options.f_configuration_directories = nullptr;
+        options.f_help_header = "Usage: test usage: %E";
+        options.f_help_footer = "Percent Environment Variable: %E";
+        options.f_version = "2.0.1-%E";
+        options.f_license = "MIT-%E";
+        options.f_copyright = "Copyright (c) 2019  Made to Order Software Corp. -- All Rights Reserved %E";
+        options.f_build_date = "Jun  4 2019 %E";
+        options.f_build_time = "23:02:36 %E";
+
+        advgetopt::getopt opt(options, argc, argv);
+
+        CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
+
+        CATCH_REQUIRE_LONG_STRING(opt.usage(),
+advgetopt::getopt::breakup_line(
+              "Usage: test usage: "
+            , 0
+            , advgetopt::getopt::get_line_width())
++ advgetopt::getopt::format_usage_string(
+              "--verbose"
+            , "inform you of what we're currently working on:"
+              " ."
+            , 30
+            , advgetopt::getopt::get_line_width()) + "\n"
++ advgetopt::getopt::breakup_line(
+              "Percent Environment Variable: "
+            , 0
+            , advgetopt::getopt::get_line_width())
+                );
+    }
+    CATCH_END_SECTION()
+
 }
 
 

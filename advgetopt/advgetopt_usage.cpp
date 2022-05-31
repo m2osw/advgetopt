@@ -921,7 +921,7 @@ std::string getopt::breakup_line(std::string line
         if(!line.empty()
         && option_width > 0)
         {
-            ss << std::setw( option_width ) << " ";
+            ss << std::setw(option_width) << " ";
         }
     }
 
@@ -957,7 +957,7 @@ size_t getopt::get_line_width()
         // which means that isatty() returns false -- so at this time I just
         // exclude those since they are unreachable from my standard Unit Tests
         //
-        winsize w;
+        winsize w;                                                          // LCOV_EXCL_LINE
         if(ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) != -1)                      // LCOV_EXCL_LINE
         {
             cols = std::max(static_cast<unsigned short>(40), w.ws_col);     // LCOV_EXCL_LINE

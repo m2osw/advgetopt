@@ -361,7 +361,6 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
         {
-std::cerr << "unknown ref double says [" << unknown_ref.get_double() << "]\n";
             bool const a1(unknown_ref.get_double() == 0.0);
             CATCH_REQUIRE(a1);
         }
