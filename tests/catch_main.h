@@ -19,22 +19,22 @@
 #pragma once
 
 
-// advgetopt lib
+// advgetopt
 //
 #include    <advgetopt/advgetopt.h>
 
 
-// cppthread lib
+// cppthread
 //
 #include    <cppthread/log.h>
 
 
-// catch lib
+// catch2
 //
 #include    <catch2/snapcatch2.hpp>
 
 
-// C++ lib
+// C++
 //
 #include    <string>
 #include    <cstring>

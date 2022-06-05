@@ -22,12 +22,12 @@
 #include    "catch_main.h"
 
 
-// advgetopt lib
+// advgetopt
 //
 #include    <advgetopt/exception.h>
 
 
-// C++ lib
+// C++
 //
 #include    <fstream>
 

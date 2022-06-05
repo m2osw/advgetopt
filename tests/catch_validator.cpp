@@ -17,16 +17,17 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+// advgetopt
+//
+#include    <advgetopt/validator_duration.h>
+#include    <advgetopt/validator_size.h>
+
+#include    <advgetopt/exception.h>
+
+
 // self
 //
 #include    "catch_main.h"
-
-
-// advgetopt
-//
-#include    <advgetopt/exception.h>
-#include    <advgetopt/validator_duration.h>
-#include    <advgetopt/validator_size.h>
 
 
 // snapdev

@@ -17,29 +17,30 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+// advgetopt
+//
+#include    <advgetopt/conf_file.h>
+
+#include    <advgetopt/exception.h>
+
+
 // self
 //
 #include    "catch_main.h"
 
 
-// advgetopt lib
-//
-#include    <advgetopt/conf_file.h>
-#include    <advgetopt/exception.h>
-
-
-// snapdev lib
+// snapdev
 //
 #include    <snapdev/safe_setenv.h>
 #include    <snapdev/tokenize_string.h>
 
 
-// C++ lib
+// C++
 //
 #include    <fstream>
 
 
-// C lib
+// C
 //
 #include    <unistd.h>
 
