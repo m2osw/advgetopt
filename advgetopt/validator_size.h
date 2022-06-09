@@ -29,9 +29,9 @@
  * by specify the \em type of data it supports.
  */
 
-// advgetopt lib
+// advgetopt
 //
-#include    "advgetopt/validator.h"
+#include    <advgetopt/validator.h>
 
 
 

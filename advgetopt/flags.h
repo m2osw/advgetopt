@@ -27,7 +27,7 @@
  */
 
 
-// C++ lib
+// C++
 //
 #include    <cstdint>
 

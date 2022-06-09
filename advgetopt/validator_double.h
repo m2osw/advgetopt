@@ -29,12 +29,12 @@
  * by specify the \em type of data it supports.
  */
 
-// advgetopt lib
+// self
 //
-#include    "advgetopt/validator.h"
+#include    <advgetopt/validator.h>
 
 
-// C++ lib
+// C++
 //
 #include    <limits>
 

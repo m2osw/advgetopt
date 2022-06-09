@@ -26,7 +26,7 @@
  * This class handles the variable data store and replacement in strings.
  */
 
-// C++ lib
+// C++
 //
 #include    <map>
 #include    <memory>

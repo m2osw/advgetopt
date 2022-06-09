@@ -35,7 +35,7 @@
 #include    "advgetopt/variables.h"
 
 
-// C++ libd
+// C++
 //
 #include    <iostream>
 

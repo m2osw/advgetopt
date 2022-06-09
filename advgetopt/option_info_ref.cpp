@@ -28,21 +28,18 @@
 // self
 //
 #include    "advgetopt/option_info.h"
+
+#include    "advgetopt/exception.h"
 #include    "advgetopt/validator_double.h"
 #include    "advgetopt/validator_integer.h"
 
 
-// advgetopt lib
-//
-#include    "advgetopt/exception.h"
-
-
-// cppthread lib
+// cppthread
 //
 #include    <cppthread/log.h>
 
 
-// libutf8 lib
+// libutf8
 //
 #include    <libutf8/libutf8.h>
 
@@ -53,13 +50,8 @@
 
 
 
-
 namespace advgetopt
 {
-
-
-
-
 
 
 

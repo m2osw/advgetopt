@@ -25,7 +25,7 @@
  * command line.
  */
 
-// advgetopt lib
+// advgetopt
 //
 #include    <advgetopt/advgetopt.h>
 #include    <advgetopt/conf_file.h>
@@ -33,9 +33,14 @@
 #include    <advgetopt/version.h>
 
 
-// snapdev include
+// snapdev
 //
 #include    <snapdev/join_strings.h>
+
+
+// libexcept
+//
+#include    <libexcept/file_inheritance.h>
 
 
 // boost
@@ -43,12 +48,12 @@
 #include    <boost/preprocessor/stringize.hpp>
 
 
-// C++ lib
+// C++
 //
 #include    <iostream>
 
 
-// C lib
+// C
 //
 #include    <unistd.h>
 
@@ -405,6 +410,8 @@ void edit_config::run()
 
 int main(int argc, char * argv[])
 {
+    libexcept::verify_file_inheritance();
+
     try
     {
         edit_config s(argc, argv);

@@ -31,28 +31,25 @@
 //
 #include    "advgetopt/validator.h"
 
-
-// advgetopt lib
-//
 #include    "advgetopt/exception.h"
 
 
-// cppthread lib
+// cppthread
 //
 #include    <cppthread/log.h>
 
 
-// snapdev lib
+// snapdev
 //
 #include    <snapdev/not_used.h>
 
 
-// boost lib
+// boost
 //
 #include    <boost/algorithm/string/trim.hpp>
 
 
-// C++ lib
+// C++
 //
 #include    <map>
 
@@ -60,7 +57,6 @@
 // last include
 //
 #include    <snapdev/poison.h>
-
 
 
 

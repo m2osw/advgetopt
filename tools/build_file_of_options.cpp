@@ -29,11 +29,16 @@
  */
 
 
-// advgetopt lib
+// advgetopt
 //
 #include    <advgetopt/advgetopt.h>
 #include    <advgetopt/exception.h>
 #include    <advgetopt/version.h>
+
+
+// libexcept
+//
+#include    <libexcept/file_inheritance.h>
 
 
 // snapdev lib
@@ -56,7 +61,6 @@
 // last include
 //
 #include    <snapdev/poison.h>
-
 
 
 
@@ -184,6 +188,8 @@ int build_file::run()
 
 int main(int argc, char * argv[])
 {
+    libexcept::verify_file_inheritance();
+
     try
     {
         build_file session(argc, argv);

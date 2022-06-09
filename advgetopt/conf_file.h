@@ -28,10 +28,10 @@
 
 // self
 //
-#include    "advgetopt/variables.h"
+#include    <advgetopt/variables.h>
 
 
-// C++ lib
+// C++
 //
 #include    <fstream>
 #include    <functional>

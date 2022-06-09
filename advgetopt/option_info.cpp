@@ -29,35 +29,31 @@
 //
 #include    "advgetopt/option_info.h"
 
+#include    "advgetopt/exception.h"
 #include    "advgetopt/validator_double.h"
 #include    "advgetopt/validator_integer.h"
 
 
-// advgetopt lib
-//
-#include    "advgetopt/exception.h"
-
-
-// cppthread lib
+// cppthread
 //
 #include    <cppthread/guard.h>
 #include    <cppthread/log.h>
 #include    <cppthread/mutex.h>
 
 
-// snapdev lib
+// snapdev
 //
 #include    <snapdev/not_used.h>
 #include    <snapdev/tokenize_string.h>
 
 
-// libutf8 lib
+// libutf8
 //
 #include    <libutf8/libutf8.h>
 #include    <libutf8/iterator.h>
 
 
-// boost lib
+// boost
 //
 #include    <boost/algorithm/string/replace.hpp>
 
@@ -65,7 +61,6 @@
 // last include
 //
 #include    <snapdev/poison.h>
-
 
 
 

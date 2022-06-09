@@ -35,14 +35,11 @@
 //
 #include    "advgetopt/conf_file.h"
 
-
-// advgetopt lib
-//
 #include    "advgetopt/exception.h"
 #include    "advgetopt/utils.h"
 
 
-// snapdev lib
+// snapdev
 //
 #include    <snapdev/mkdir_p.h>
 #include    <snapdev/safe_variable.h>
@@ -51,25 +48,25 @@
 #include    <snapdev/trim_string.h>
 
 
-// cppthread lib
+// cppthread
 //
 #include    <cppthread/guard.h>
 #include    <cppthread/log.h>
 #include    <cppthread/mutex.h>
 
 
-// boost lib
+// boost
 //
 #include    <boost/algorithm/string/join.hpp>
 
 
-// C++ lib
+// C++
 //
 #include    <algorithm>
 #include    <fstream>
 
 
-// C lib
+// C
 //
 #include    <sys/stat.h>
 

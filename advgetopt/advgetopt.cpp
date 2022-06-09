@@ -85,23 +85,20 @@
 //
 #include    "advgetopt/advgetopt.h"
 
-
-// advgetopt lib
-//
 #include    "advgetopt/exception.h"
 
 
-// cppthread lib
+// cppthread
 //
 #include    <cppthread/log.h>
 
 
-// libutf8 lib
+// libutf8
 //
 #include    <libutf8/iterator.h>
 
 
-// boost lib
+// boost
 //
 #include    <boost/algorithm/string/replace.hpp>
 

@@ -28,19 +28,16 @@
 //
 #include    "advgetopt/advgetopt.h"
 
-
-// advgetopt lib
-//
 #include    "advgetopt/exception.h"
 
 
-// C++ lib
+// C++
 //
 #include    <iomanip>
 #include    <iostream>
 
 
-// C lib
+// C
 //
 #include    <unistd.h>
 #include    <sys/ioctl.h>

@@ -29,7 +29,7 @@
 #include    "advgetopt/advgetopt.h"
 
 
-// advgetopt lib
+// advgetopt
 //
 #include    "advgetopt/exception.h"
 

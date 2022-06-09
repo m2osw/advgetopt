@@ -27,12 +27,12 @@
  */
 
 
-// advgetopt lib
+// self
 //
-#include    "advgetopt/option_info.h"
+#include    <advgetopt/option_info.h>
 
 
-// snapdev lib
+// snapdev
 //
 #include    <snapdev/not_used.h>
 

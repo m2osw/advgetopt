@@ -28,14 +28,14 @@
  * The class defined in this file is used to describe an option.
  */
 
-// advgetopt lib
+// self
 //
-#include    "advgetopt/flags.h"
-#include    "advgetopt/validator.h"
-#include    "advgetopt/variables.h"
+#include    <advgetopt/flags.h>
+#include    <advgetopt/validator.h>
+#include    <advgetopt/variables.h>
 
 
-// C++ lib
+// C++
 //
 #include    <functional>
 #include    <map>

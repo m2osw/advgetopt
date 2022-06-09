@@ -35,7 +35,7 @@
 #include    "advgetopt/validator_double.h"
 
 
-// cppthread lib
+// cppthread
 //
 #include    <cppthread/log.h>
 
@@ -43,7 +43,6 @@
 // last include
 //
 #include    <snapdev/poison.h>
-
 
 
 

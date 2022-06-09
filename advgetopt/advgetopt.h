@@ -26,15 +26,15 @@
  * in configuration files.
  */
 
-// advgetopt lib
+// advgetopt
 //
-#include    "advgetopt/option_info.h"
-#include    "advgetopt/options.h"
-#include    "advgetopt/validator.h"
-#include    "advgetopt/variables.h"
+#include    <advgetopt/option_info.h>
+#include    <advgetopt/options.h>
+#include    <advgetopt/validator.h>
+#include    <advgetopt/variables.h>
 
 
-// C++ lib
+// C++
 //
 #include    <limits>
 #include    <map>

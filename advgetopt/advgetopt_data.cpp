@@ -35,12 +35,12 @@
 #include    "advgetopt/version.h"
 
 
-// cppthread lib
+// cppthread
 //
 #include    <cppthread/log.h>
 
 
-// C lib
+// C
 //
 #include    <string.h>
 

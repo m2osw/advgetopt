@@ -54,6 +54,7 @@
 // libexcept
 //
 #include    <libexcept/exception.h>
+#include    <libexcept/file_inheritance.h>
 
 
 // advgetopt
@@ -82,6 +83,7 @@
 // last include
 //
 #include    <snapdev/poison.h>
+
 
 
 namespace
@@ -629,6 +631,8 @@ int atomic_names::generate_files()
 
 int main(int argc, char * argv[])
 {
+    libexcept::verify_inherited_files();
+
     try
     {
         atomic_names n(argc, argv);

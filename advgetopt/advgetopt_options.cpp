@@ -35,24 +35,21 @@
 //
 #include    "advgetopt/advgetopt.h"
 
-
-// advgetopt lib
-//
 #include    "advgetopt/conf_file.h"
 #include    "advgetopt/exception.h"
 
 
-// cppthread lib
+// cppthread
 //
 #include    <cppthread/log.h>
 
 
-// snapdev lib
+// snapdev
 //
 #include    <snapdev/tokenize_string.h>
 
 
-// C++ lib
+// C++
 //
 #include    <list>
 

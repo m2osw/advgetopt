@@ -25,7 +25,7 @@
  * also be useful to others outside of the library.
  */
 
-// C++ lib
+// C++
 //
 #include    <string>
 #include    <vector>

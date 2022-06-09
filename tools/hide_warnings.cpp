@@ -58,8 +58,13 @@
 #define _GNU_SOURCE
 #endif
 
+// C++
+//
 #include    <iostream>
 
+
+// C
+//
 #include    <unistd.h>
 #include    <stdlib.h>
 #include    <stdio.h>
@@ -69,6 +74,8 @@
 #include    <errno.h>
 #include    <regex.h>
 #include    <poll.h>
+
+
 
 char const * const  g_version = "1.0";
 char const * const  g_default_regex = "gtk-warning|gtk-critical|glib-gobject-warning|^$";

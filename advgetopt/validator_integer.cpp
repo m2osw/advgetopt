@@ -35,17 +35,17 @@
 #include    "advgetopt/validator_integer.h"
 
 
-// cppthread lib
+// cppthread
 //
 #include    <cppthread/log.h>
 
 
-// snapdev lib
+// snapdev
 //
 #include    <snapdev/not_used.h>
 
 
-// boost lib
+// boost
 //
 #include    <boost/algorithm/string/trim.hpp>
 

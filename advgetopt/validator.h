@@ -29,14 +29,15 @@
  * by specify the \em type of data it supports.
  */
 
-// advgetopt lib
+// self
 //
-#include    "advgetopt/utils.h"
+#include    <advgetopt/utils.h>
 
 
-// C++ lib
+// C++
 //
 #include    <memory>
+
 
 
 namespace advgetopt

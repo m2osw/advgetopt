@@ -45,7 +45,7 @@
 #include    <cppthread/mutex.h>
 
 
-// C++ lib
+// C++
 //
 #include    <set>
 

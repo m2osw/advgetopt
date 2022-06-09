@@ -30,7 +30,7 @@
 #include    "advgetopt/advgetopt.h"
 
 
-// cppthread lib
+// cppthread
 //
 #include    <cppthread/log.h>
 

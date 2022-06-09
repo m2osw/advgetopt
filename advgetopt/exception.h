@@ -26,6 +26,8 @@
  * an exception occurs.
  */
 
+// libexcept
+//
 #include    <libexcept/exception.h>
 
 

@@ -28,16 +28,14 @@
 //
 #include    "advgetopt/advgetopt.h"
 
-// advgetopt lib
-//
 #include    "advgetopt/conf_file.h"
 
 
-// cppthread lib
+// cppthread
 //
 #include    <cppthread/log.h>
 
-// boost lib
+// boost
 //
 #include    <boost/algorithm/string/join.hpp>
 #include    <boost/algorithm/string/replace.hpp>
