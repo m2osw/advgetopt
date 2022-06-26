@@ -300,11 +300,11 @@ bool validator_size::convert_string(
         case 'e':
             if(suffix == "eb")
             {
-                factor = snapdev::power128(base, 6);
+                factor = snapdev::pow(base, 6);
             }
             else if(suffix == "eib")
             {
-                factor = snapdev::power128(1024_int128, 6);
+                factor = snapdev::pow(1024_int128, 6);
             }
             else
             {
@@ -315,11 +315,11 @@ bool validator_size::convert_string(
         case 'g':
             if(suffix == "gb")
             {
-                factor = snapdev::power128(base, 3);
+                factor = snapdev::pow(base, 3);
             }
             else if(suffix == "gib")
             {
-                factor = snapdev::power128(1024_int128, 3);
+                factor = snapdev::pow(1024_int128, 3);
             }
             else
             {
@@ -345,11 +345,11 @@ bool validator_size::convert_string(
         case 'm':
             if(suffix == "mb")
             {
-                factor = snapdev::power128(base, 2);
+                factor = snapdev::pow(base, 2);
             }
             else if(suffix == "mib")
             {
-                factor = snapdev::power128(1024_int128, 2);
+                factor = snapdev::pow(1024_int128, 2);
             }
             else
             {
@@ -360,11 +360,11 @@ bool validator_size::convert_string(
         case 'p':
             if(suffix == "pb")
             {
-                factor = snapdev::power128(base, 5);
+                factor = snapdev::pow(base, 5);
             }
             else if(suffix == "pib")
             {
-                factor = snapdev::power128(1024_int128, 5);
+                factor = snapdev::pow(1024_int128, 5);
             }
             else
             {
@@ -375,11 +375,11 @@ bool validator_size::convert_string(
         case 't':
             if(suffix == "tb")
             {
-                factor = snapdev::power128(base, 4);
+                factor = snapdev::pow(base, 4);
             }
             else if(suffix == "tib")
             {
-                factor = snapdev::power128(1024_int128, 4);
+                factor = snapdev::pow(1024_int128, 4);
             }
             else
             {
@@ -390,11 +390,11 @@ bool validator_size::convert_string(
         case 'y':
             if(suffix == "yb")
             {
-                factor = snapdev::power128(base, 8);
+                factor = snapdev::pow(base, 8);
             }
             else if(suffix == "yib")
             {
-                factor = snapdev::power128(1024_int128, 8);
+                factor = snapdev::pow(1024_int128, 8);
             }
             else
             {
@@ -405,11 +405,11 @@ bool validator_size::convert_string(
         case 'z':
             if(suffix == "zb")
             {
-                factor = snapdev::power128(base, 7);
+                factor = snapdev::pow(base, 7);
             }
             else if(suffix == "zib")
             {
-                factor = snapdev::power128(1024_int128, 7);
+                factor = snapdev::pow(1024_int128, 7);
             }
             else
             {

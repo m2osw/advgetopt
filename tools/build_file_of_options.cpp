@@ -188,7 +188,7 @@ int build_file::run()
 
 int main(int argc, char * argv[])
 {
-    libexcept::verify_file_inheritance();
+    libexcept::verify_inherited_files();
 
     try
     {
