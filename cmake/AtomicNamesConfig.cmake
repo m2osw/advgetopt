@@ -25,6 +25,12 @@ include(CMakeParseArguments)
 
 # First try to find the one we just compiled (developer environment)
 get_filename_component(CMAKE_BINARY_PARENT_DIR ${CMAKE_BINARY_DIR} DIRECTORY)
+get_filename_component(CMAKE_BINARY_PARENT_DIR_NAME ${CMAKE_BINARY_PARENT_DIR} NAME)
+if(${CMAKE_BINARY_PARENT_DIR_NAME} STREQUAL "coverage")
+    # we have a sub-sub-directory when building coverage
+    get_filename_component(CMAKE_BINARY_PARENT_DIR ${CMAKE_BINARY_PARENT_DIR} DIRECTORY)
+    get_filename_component(CMAKE_BINARY_PARENT_DIR ${CMAKE_BINARY_PARENT_DIR} DIRECTORY)
+endif()
 find_program(
     ATOMIC_NAMES_PROGRAM
         atomic-names
@@ -46,6 +52,9 @@ find_program(
     REQUIRED
 )
 
+if(${ATOMIC_NAMES_PROGRAM} STREQUAL "ATOMIC_NAMES_PROGRAM-NOTFOUND")
+    message(FATAL_ERROR "atomic-names tool not found")
+endif()
 
 # This function generates three outputs files:
 #
