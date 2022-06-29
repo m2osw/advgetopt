@@ -2249,9 +2249,9 @@ CATCH_TEST_CASE("config_section_tests", "[config][getopt][valid]")
 
 CATCH_TEST_CASE("save_config_file", "[config][getopt][valid]")
 {
-    CATCH_START_SECTION("load update save")
+    CATCH_START_SECTION("load update save (=)")
     {
-        SNAP_CATCH2_NAMESPACE::init_tmp_dir("save-operation", "configuration");
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("save-operation", "configuration-equal");
 
         {
             std::ofstream config_file;
@@ -2261,7 +2261,7 @@ CATCH_TEST_CASE("save_config_file", "[config][getopt][valid]")
                 "# Auto-generated\n"
                 "a=color\n"
                 "b=red\n"
-                "c=122\n"
+                "call-flag=122\n"
             ;
         }
 
@@ -2281,6 +2281,7 @@ CATCH_TEST_CASE("save_config_file", "[config][getopt][valid]")
 
         advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
 
+        CATCH_REQUIRE(file->exists());
         CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
         CATCH_REQUIRE(file->get_errno() == 0);
 
@@ -2291,11 +2292,11 @@ CATCH_TEST_CASE("save_config_file", "[config][getopt][valid]")
 
         CATCH_REQUIRE(file->has_parameter("a"));
         CATCH_REQUIRE(file->has_parameter("b"));
-        CATCH_REQUIRE(file->has_parameter("c"));
+        CATCH_REQUIRE(file->has_parameter("call-flag"));
 
         CATCH_REQUIRE(file->get_parameter("a") == "color");
         CATCH_REQUIRE(file->get_parameter("b") == "red");
-        CATCH_REQUIRE(file->get_parameter("c") == "122");
+        CATCH_REQUIRE(file->get_parameter("call-flag") == "122");
 
         CATCH_REQUIRE(file->save_configuration());
 
@@ -2305,11 +2306,19 @@ CATCH_TEST_CASE("save_config_file", "[config][getopt][valid]")
 
         file->set_parameter(std::string(), "a", "size");
         file->set_parameter(std::string(), "b", "tall");
-        file->set_parameter(std::string(), "c", "1920");
+        file->set_parameter(std::string(), "call-flag", "1920");
 
         CATCH_REQUIRE(file->save_configuration());
 
         CATCH_REQUIRE(access((SNAP_CATCH2_NAMESPACE::g_config_filename + ".bak").c_str(), F_OK) == 0);
+
+        file->set_parameter(std::string(), "a", "pace");
+        file->set_parameter(std::string(), "b", "fall");
+        file->set_parameter(std::string(), "call-flag", "2019");
+
+        CATCH_REQUIRE(file->save_configuration("save"));
+
+        CATCH_REQUIRE(access((SNAP_CATCH2_NAMESPACE::g_config_filename + ".save").c_str(), F_OK) == 0);
 
         std::string const new_name(SNAP_CATCH2_NAMESPACE::g_config_filename + ".conf2");
         rename(SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(), new_name.c_str());
@@ -2330,6 +2339,7 @@ CATCH_TEST_CASE("save_config_file", "[config][getopt][valid]")
 
         advgetopt::conf_file::pointer_t file2(advgetopt::conf_file::get_conf_file(setup2));
 
+        CATCH_REQUIRE(file2->exists());
         CATCH_REQUIRE(file2->get_setup().get_config_url() == setup2.get_config_url());
         CATCH_REQUIRE(file2->get_errno() == 0);
 
@@ -2339,11 +2349,259 @@ CATCH_TEST_CASE("save_config_file", "[config][getopt][valid]")
 
         CATCH_REQUIRE(file2->has_parameter("a"));
         CATCH_REQUIRE(file2->has_parameter("b"));
-        CATCH_REQUIRE(file2->has_parameter("c"));
+        CATCH_REQUIRE(file2->has_parameter("call-flag"));
 
-        CATCH_REQUIRE(file2->get_parameter("a") == "size");
-        CATCH_REQUIRE(file2->get_parameter("b") == "tall");
-        CATCH_REQUIRE(file2->get_parameter("c") == "1920");
+        CATCH_REQUIRE(file2->get_parameter("a") == "pace");
+        CATCH_REQUIRE(file2->get_parameter("b") == "fall");
+        CATCH_REQUIRE(file2->get_parameter("call-flag") == "2019");
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("load update save (:)")
+    {
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("save-operation", "configuration-colon");
+
+        {
+            std::ofstream config_file;
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "a: color\n"
+                "b: red\n"
+                "call-flag: 122\n"
+            ;
+        }
+
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
+                            , advgetopt::line_continuation_t::line_continuation_single_line
+                            , advgetopt::ASSIGNMENT_OPERATOR_COLON
+                            , advgetopt::COMMENT_SHELL
+                            , advgetopt::SECTION_OPERATOR_NONE
+                            , advgetopt::NAME_SEPARATOR_DASHES);
+
+        CATCH_REQUIRE(setup.get_original_filename() == SNAP_CATCH2_NAMESPACE::g_config_filename);
+
+        CATCH_REQUIRE(setup.is_valid());
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_single_line);
+        CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_COLON);
+        CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
+        CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_NONE);
+
+        advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+
+        CATCH_REQUIRE(file->exists());
+        CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
+        CATCH_REQUIRE(file->get_errno() == 0);
+
+        advgetopt::conf_file::sections_t sections(file->get_sections());
+        CATCH_REQUIRE(sections.empty());
+
+        CATCH_REQUIRE(file->get_parameters().size() == 3);
+
+        CATCH_REQUIRE(file->has_parameter("a"));
+        CATCH_REQUIRE(file->has_parameter("b"));
+        CATCH_REQUIRE(file->has_parameter("call-flag"));
+
+        CATCH_REQUIRE(file->get_parameter("a") == "color");
+        CATCH_REQUIRE(file->get_parameter("b") == "red");
+        CATCH_REQUIRE(file->get_parameter("call-flag") == "122");
+
+        CATCH_REQUIRE(file->save_configuration());
+
+        // no backup since there was no modification so the save did nothing
+        //
+        CATCH_REQUIRE(access((SNAP_CATCH2_NAMESPACE::g_config_filename + ".bak").c_str(), F_OK) != 0);
+
+        file->set_parameter(std::string(), "a", "size");
+        file->set_parameter(std::string(), "b", "tall");
+        file->set_parameter(std::string(), "call-flag", "1920");
+
+        CATCH_REQUIRE(file->save_configuration());
+
+        CATCH_REQUIRE(access((SNAP_CATCH2_NAMESPACE::g_config_filename + ".bak").c_str(), F_OK) == 0);
+
+        file->set_parameter(std::string(), "a", "pace");
+        file->set_parameter(std::string(), "b", "fall");
+        file->set_parameter(std::string(), "call-flag", "2019");
+
+        CATCH_REQUIRE(file->save_configuration("save"));
+
+        CATCH_REQUIRE(access((SNAP_CATCH2_NAMESPACE::g_config_filename + ".save").c_str(), F_OK) == 0);
+
+        std::string const new_name(SNAP_CATCH2_NAMESPACE::g_config_filename + ".conf2");
+        rename(SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(), new_name.c_str());
+
+        advgetopt::conf_file_setup setup2(new_name
+                            , advgetopt::line_continuation_t::line_continuation_single_line
+                            , advgetopt::ASSIGNMENT_OPERATOR_COLON
+                            , advgetopt::COMMENT_SHELL
+                            , advgetopt::SECTION_OPERATOR_NONE
+                            , advgetopt::NAME_SEPARATOR_DASHES);
+
+        CATCH_REQUIRE(setup.get_original_filename() == SNAP_CATCH2_NAMESPACE::g_config_filename);
+
+        CATCH_REQUIRE(setup2.is_valid());
+        CATCH_REQUIRE(setup2.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_single_line);
+        CATCH_REQUIRE(setup2.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_COLON);
+        CATCH_REQUIRE(setup2.get_comment() == advgetopt::COMMENT_SHELL);
+        CATCH_REQUIRE(setup2.get_section_operator() == advgetopt::SECTION_OPERATOR_NONE);
+
+        advgetopt::conf_file::pointer_t file2(advgetopt::conf_file::get_conf_file(setup2));
+
+        CATCH_REQUIRE(file2->exists());
+        CATCH_REQUIRE(file2->get_setup().get_config_url() == setup2.get_config_url());
+        CATCH_REQUIRE(file2->get_errno() == 0);
+
+        CATCH_REQUIRE(file->get_sections().empty());
+
+        CATCH_REQUIRE(file2->get_parameters().size() == 3);
+
+        CATCH_REQUIRE(file2->has_parameter("a"));
+        CATCH_REQUIRE(file2->has_parameter("b"));
+        CATCH_REQUIRE(file2->has_parameter("call-flag"));
+
+        CATCH_REQUIRE(file2->get_parameter("a") == "pace");
+        CATCH_REQUIRE(file2->get_parameter("b") == "fall");
+        CATCH_REQUIRE(file2->get_parameter("call-flag") == "2019");
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("load update save ( )")
+    {
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("save-operation", "configuration-space");
+
+        {
+            std::ofstream config_file;
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# This comment is kept along the a= variable\n"
+                "a color\n"
+                "b red\n"
+                "call-flag 122\n"
+            ;
+        }
+
+        advgetopt::comment_t const comment(advgetopt::COMMENT_SHELL | advgetopt::COMMENT_SAVE);
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
+                            , advgetopt::line_continuation_t::line_continuation_single_line
+                            , advgetopt::ASSIGNMENT_OPERATOR_SPACE
+                            , comment
+                            , advgetopt::SECTION_OPERATOR_NONE
+                            , advgetopt::NAME_SEPARATOR_DASHES);
+
+        CATCH_REQUIRE(setup.get_original_filename() == SNAP_CATCH2_NAMESPACE::g_config_filename);
+
+        CATCH_REQUIRE(setup.is_valid());
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_single_line);
+        CATCH_REQUIRE(setup.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_SPACE);
+        CATCH_REQUIRE(setup.get_comment() == comment);
+        CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_NONE);
+
+        advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+
+        CATCH_REQUIRE(file->exists());
+        CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
+        CATCH_REQUIRE(file->get_errno() == 0);
+
+        advgetopt::conf_file::sections_t sections(file->get_sections());
+        CATCH_REQUIRE(sections.empty());
+
+        CATCH_REQUIRE(file->get_parameters().size() == 3);
+
+        CATCH_REQUIRE(file->has_parameter("a"));
+        CATCH_REQUIRE(file->has_parameter("b"));
+        CATCH_REQUIRE(file->has_parameter("call-flag"));
+
+        CATCH_REQUIRE(file->get_parameter("a") == "color");
+        CATCH_REQUIRE(file->get_parameter("b") == "red");
+        CATCH_REQUIRE(file->get_parameter("call-flag") == "122");
+
+        advgetopt::conf_file::parameters_t params(file->get_parameters());
+        auto it(params.find("a"));
+        CATCH_REQUIRE(it != params.end());
+        CATCH_REQUIRE(it->second.get_comment() == "# This comment is kept along the a= variable\n");
+        CATCH_REQUIRE(it->second.get_comment(true) == "# This comment is kept along the a= variable\n");
+
+        it->second.set_comment("# Changing the comment");
+        CATCH_REQUIRE(it->second.get_comment() == "# Changing the comment");
+        CATCH_REQUIRE(it->second.get_comment(true) == "# Changing the comment\n");
+
+        CATCH_REQUIRE(file->save_configuration());
+
+        // no backup since there was no modification so the save did nothing
+        //
+        CATCH_REQUIRE(access((SNAP_CATCH2_NAMESPACE::g_config_filename + ".bak").c_str(), F_OK) != 0);
+
+        file->set_parameter(std::string(), "a", "size");
+        file->set_parameter(std::string(), "b", "tall");
+        file->set_parameter(std::string(), "call-flag", "1920");
+
+        CATCH_REQUIRE(file->save_configuration());
+
+        CATCH_REQUIRE(access((SNAP_CATCH2_NAMESPACE::g_config_filename + ".bak").c_str(), F_OK) == 0);
+
+        file->set_parameter(std::string(), "a", "pace");
+        file->set_parameter(std::string(), "b", "fall");
+        file->set_parameter(std::string(), "call-flag", "2019");
+
+        it->second.set_value("warning"); // WARNING: the parameters_t is a copy so you can't change the parameters that way
+        CATCH_REQUIRE(it->second.get_value() == "warning");
+        CATCH_REQUIRE(file->get_parameter("a") == "pace");
+
+        // the following constructor and assignment are defined although not
+        // used within the library at the moment
+        //
+        advgetopt::parameter_value const value("other value");
+        it->second = value;
+        CATCH_REQUIRE(it->second.get_value() == "other value");
+        CATCH_REQUIRE(file->get_parameter("a") == "pace");
+
+        CATCH_REQUIRE(file->save_configuration("save"));
+
+        CATCH_REQUIRE(access((SNAP_CATCH2_NAMESPACE::g_config_filename + ".save").c_str(), F_OK) == 0);
+
+        std::string const new_name(SNAP_CATCH2_NAMESPACE::g_config_filename + ".conf2");
+        rename(SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(), new_name.c_str());
+
+        advgetopt::conf_file_setup setup2(new_name
+                            , advgetopt::line_continuation_t::line_continuation_single_line
+                            , advgetopt::ASSIGNMENT_OPERATOR_SPACE
+                            , comment
+                            , advgetopt::SECTION_OPERATOR_NONE
+                            , advgetopt::NAME_SEPARATOR_DASHES);
+
+        CATCH_REQUIRE(setup.get_original_filename() == SNAP_CATCH2_NAMESPACE::g_config_filename);
+
+        CATCH_REQUIRE(setup2.is_valid());
+        CATCH_REQUIRE(setup2.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_single_line);
+        CATCH_REQUIRE(setup2.get_assignment_operator() == advgetopt::ASSIGNMENT_OPERATOR_SPACE);
+        CATCH_REQUIRE(setup2.get_comment() == comment);
+        CATCH_REQUIRE(setup2.get_section_operator() == advgetopt::SECTION_OPERATOR_NONE);
+
+        advgetopt::conf_file::pointer_t file2(advgetopt::conf_file::get_conf_file(setup2));
+
+        CATCH_REQUIRE(file2->exists());
+        CATCH_REQUIRE(file2->get_setup().get_config_url() == setup2.get_config_url());
+        CATCH_REQUIRE(file2->get_errno() == 0);
+
+        CATCH_REQUIRE(file->get_sections().empty());
+
+        CATCH_REQUIRE(file2->get_parameters().size() == 3);
+
+        CATCH_REQUIRE(file2->has_parameter("a"));
+        CATCH_REQUIRE(file2->has_parameter("b"));
+        CATCH_REQUIRE(file2->has_parameter("call-flag"));
+
+        CATCH_REQUIRE(file2->get_parameter("a") == "pace");
+        CATCH_REQUIRE(file2->get_parameter("b") == "fall");
+        CATCH_REQUIRE(file2->get_parameter("call-flag") == "2019");
+
+        file2->erase_all_parameters();
+        CATCH_REQUIRE_FALSE(file2->has_parameter("a"));
+        CATCH_REQUIRE_FALSE(file2->has_parameter("b"));
+        CATCH_REQUIRE_FALSE(file2->has_parameter("call-flag"));
     }
     CATCH_END_SECTION()
 }
@@ -2571,6 +2829,7 @@ CATCH_TEST_CASE("missing_configuration_file", "[config][getopt][invalid]")
             //
             advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
             CATCH_REQUIRE(file->get_errno() == ENOENT);
+            CATCH_REQUIRE_FALSE(file->exists());
         }
     }
     CATCH_END_SECTION()

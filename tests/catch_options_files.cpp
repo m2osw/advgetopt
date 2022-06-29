@@ -180,6 +180,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
                 "[no-project-name]\n"
                 "shortname=n\n"
                 "default='inexistent'\n"
+                "environment_variable_name=NO_PROJECT_NAME\n"
                 "help=Testing that this doesn't get loaded\n"
                 "allowed=command-line,environment-variable,configuration-file\n"
             ;
@@ -290,6 +291,10 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
         CATCH_REQUIRE(opt.get_option("no-project-name") == nullptr);
         CATCH_REQUIRE_FALSE(opt.is_defined("no-project-name"));
 
+        advgetopt::option_info::map_by_name_t const & all_options(opt.get_options());
+        auto const o(all_options.find("no-project-name"));
+        CATCH_REQUIRE(o == all_options.end());
+
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "file_not_loaded");
         CATCH_REQUIRE(opt.get_program_fullname() == "tests/unittests/file_not_loaded");
@@ -369,6 +374,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
                 "shortname=F\n"
                 "help=Request for the geographcal location representing the origin of the files; optionally you can specify the format\n"
                 "validator=integer\n"
+                "environment_variable_name=FROM\n"
                 "allowed=command-line,environment-variable,configuration-file\n"
 
                 "[output]\n"
@@ -376,6 +382,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
                 "default=a.out\n"
                 "help=output file\n"
                 "allowed=environment-variable\n"
+                "environment_variable_name=OUTPUT\n"
                 "required\n"
 
                 "[license]\n"
@@ -404,6 +411,8 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
         advgetopt::getopt opt(valid_options_from_file, sub_argc, sub_argv);
 
         // check that the result is valid
+        advgetopt::option_info::map_by_name_t const & options(opt.get_options());
+        CATCH_REQUIRE(options.size() == 8);
 
         // an invalid parameter, MUST NOT EXIST
         CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
@@ -414,11 +423,36 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
         CATCH_REQUIRE(opt.get_default("verbose").empty());
         CATCH_REQUIRE(opt.size("verbose") == 1);
 
+        {
+            auto const o(options.find("verbose"));
+            CATCH_REQUIRE(o != options.end());
+            CATCH_REQUIRE(o->second->get_short_name() == U'v');
+            CATCH_REQUIRE(o->second->get_help() == "a verbose like option, select it or not.");
+            CATCH_REQUIRE(o->second->has_flag(advgetopt::GETOPT_FLAG_COMMAND_LINE));
+            CATCH_REQUIRE(o->second->has_flag(advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE));
+            CATCH_REQUIRE(o->second->has_flag(advgetopt::GETOPT_FLAG_CONFIGURATION_FILE));
+        }
+
         // "--more"
         CATCH_REQUIRE(opt.is_defined("more"));
         CATCH_REQUIRE(opt.get_string("more") == "purple");
         CATCH_REQUIRE(opt.get_default("more") == "More Stuff");
         CATCH_REQUIRE(opt.size("more") == 1);
+
+        {
+            auto const o(options.find("more"));
+            CATCH_REQUIRE(o != options.end());
+            CATCH_REQUIRE(o->second->get_short_name() == U'm');
+            CATCH_REQUIRE(o->second->get_help() == "Allow for more stuff to be added");
+            CATCH_REQUIRE(o->second->has_default());
+            CATCH_REQUIRE(o->second->get_default() == "More Stuff");
+            CATCH_REQUIRE(o->second->get_validator()->name() == "regex");
+            CATCH_REQUIRE(o->second->has_flag(advgetopt::GETOPT_FLAG_REQUIRED));
+            CATCH_REQUIRE(o->second->has_flag(advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR));
+            CATCH_REQUIRE(o->second->has_flag(advgetopt::GETOPT_FLAG_COMMAND_LINE));
+            CATCH_REQUIRE(o->second->has_flag(advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE));
+            CATCH_REQUIRE(o->second->has_flag(advgetopt::GETOPT_FLAG_CONFIGURATION_FILE));
+        }
 
         // "--size <value>"
         CATCH_REQUIRE(opt.is_defined("size"));
@@ -427,6 +461,19 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
         CATCH_REQUIRE(opt.get_default("size") == "31");
         CATCH_REQUIRE(opt.size("size") == 1);
         CATCH_REQUIRE(opt.get_long("size") == 519);
+
+        {
+            auto const o(options.find("size"));
+            CATCH_REQUIRE(o != options.end());
+            CATCH_REQUIRE(o->second->get_short_name() == U's');
+            CATCH_REQUIRE(o->second->get_help() == "Specify the size");
+            CATCH_REQUIRE(o->second->has_default());
+            CATCH_REQUIRE(o->second->get_default() == "31");
+            CATCH_REQUIRE(o->second->get_validator()->name() == "regex");
+            CATCH_REQUIRE(o->second->has_flag(advgetopt::GETOPT_FLAG_REQUIRED));
+            CATCH_REQUIRE(o->second->has_flag(advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE));
+            CATCH_REQUIRE(o->second->has_flag(advgetopt::GETOPT_FLAG_CONFIGURATION_FILE));
+        }
 
         // "--files"
         CATCH_REQUIRE(opt.is_defined("files"));
@@ -437,6 +484,19 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
         CATCH_REQUIRE(opt.get_default("files").empty());
         CATCH_REQUIRE(opt.size("files") == 3);
 
+        {
+            auto const o(options.find("files"));
+            CATCH_REQUIRE(o != options.end());
+            CATCH_REQUIRE(o->second->get_short_name() == U'f');
+            CATCH_REQUIRE(o->second->get_help() == "List of file names");
+            CATCH_REQUIRE_FALSE(o->second->has_default());
+            CATCH_REQUIRE(o->second->get_validator()->name() == "regex");
+            CATCH_REQUIRE(o->second->has_flag(advgetopt::GETOPT_FLAG_COMMAND_LINE));
+            CATCH_REQUIRE(o->second->has_flag(advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE));
+            CATCH_REQUIRE(o->second->has_flag(advgetopt::GETOPT_FLAG_MULTIPLE));
+            CATCH_REQUIRE(o->second->has_flag(advgetopt::GETOPT_FLAG_REQUIRED));
+        }
+
         // "--from"
         CATCH_REQUIRE(opt.is_defined("from"));
         CATCH_REQUIRE(opt.size("from") == 1);
@@ -446,6 +506,19 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         CATCH_REQUIRE(opt.get_default("from").empty());
 
+        {
+            auto const o(options.find("from"));
+            CATCH_REQUIRE(o != options.end());
+            CATCH_REQUIRE(o->second->get_short_name() == U'F');
+            CATCH_REQUIRE(o->second->get_help() == "Request for the geographcal location representing the origin of the files; optionally you can specify the format");
+            CATCH_REQUIRE_FALSE(o->second->has_default());
+            CATCH_REQUIRE(o->second->get_validator()->name() == "integer");
+            CATCH_REQUIRE(o->second->get_environment_variable_name() == "FROM");
+            CATCH_REQUIRE(o->second->has_flag(advgetopt::GETOPT_FLAG_COMMAND_LINE));
+            CATCH_REQUIRE(o->second->has_flag(advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE));
+            CATCH_REQUIRE(o->second->has_flag(advgetopt::GETOPT_FLAG_CONFIGURATION_FILE));
+        }
+
         // "--output"
         CATCH_REQUIRE(opt.is_defined("output"));
         CATCH_REQUIRE(opt.get_string("output") == "destination.txt"); // same as index = 0
@@ -453,11 +526,49 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
         CATCH_REQUIRE(opt.get_default("output") == "a.out");
         CATCH_REQUIRE(opt.size("output") == 1);
 
-        // "--from"
+        {
+            auto const o(options.find("output"));
+            CATCH_REQUIRE(o != options.end());
+            CATCH_REQUIRE(o->second->get_short_name() == U'o');
+            CATCH_REQUIRE(o->second->get_help() == "output file");
+            CATCH_REQUIRE(o->second->has_default());
+            CATCH_REQUIRE(o->second->get_default() == "a.out");
+            CATCH_REQUIRE(o->second->get_validator() == nullptr);
+            CATCH_REQUIRE(o->second->get_environment_variable_name() == "OUTPUT");
+            CATCH_REQUIRE(o->second->has_flag(advgetopt::GETOPT_FLAG_REQUIRED));
+            CATCH_REQUIRE(o->second->has_flag(advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE));
+        }
+
+        // "--license" / "--licence"
         CATCH_REQUIRE(opt.is_defined("license"));
+        CATCH_REQUIRE(opt.is_defined("licence"));
         CATCH_REQUIRE(opt.get_string("license") == "");
+        CATCH_REQUIRE(opt.get_string("licence") == "");
         CATCH_REQUIRE(opt.get_default("license").empty());
+        CATCH_REQUIRE(opt.get_default("licence").empty());
         CATCH_REQUIRE(opt.size("license") == 1);
+        CATCH_REQUIRE(opt.size("licence") == 1);
+
+        {
+            auto const os(options.find("license"));
+            CATCH_REQUIRE(os != options.end());
+            CATCH_REQUIRE(os->second->get_short_name() == U'l');
+            CATCH_REQUIRE(os->second->get_help() == "show this test license");
+            CATCH_REQUIRE_FALSE(os->second->has_default());
+            CATCH_REQUIRE(os->second->get_validator() == nullptr);
+            CATCH_REQUIRE(os->second->has_flag(advgetopt::GETOPT_FLAG_FLAG));
+            CATCH_REQUIRE(os->second->has_flag(advgetopt::GETOPT_FLAG_COMMAND_LINE));
+
+            auto const oc(options.find("licence"));
+            CATCH_REQUIRE(oc != options.end());
+            CATCH_REQUIRE(oc->second->get_short_name() == U'\0');
+            CATCH_REQUIRE(oc->second->get_help() == "license");     // this is the name of the alias option
+            CATCH_REQUIRE(oc->second->get_alias_destination() == os->second);
+            CATCH_REQUIRE_FALSE(oc->second->has_default());
+            CATCH_REQUIRE(os->second->get_validator() == nullptr);
+            CATCH_REQUIRE(oc->second->has_flag(advgetopt::GETOPT_FLAG_FLAG));
+            CATCH_REQUIRE(oc->second->has_flag(advgetopt::GETOPT_FLAG_COMMAND_LINE));
+        }
 
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "valid_options_files");
