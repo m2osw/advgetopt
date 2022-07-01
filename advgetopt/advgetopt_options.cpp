@@ -164,7 +164,7 @@ void getopt::add_option(option_info::pointer_t opt, bool ignore_duplicates)
         {
             return;
         }
-        throw getopt_logic_error(
+        throw getopt_defined_twice(
                   std::string("option named \"")
                 + opt->get_name()
                 + "\" found twice.");
@@ -180,7 +180,7 @@ void getopt::add_option(option_info::pointer_t opt, bool ignore_duplicates)
         }
         else
         {
-            throw getopt_logic_error(
+            throw getopt_defined_twice(
                       "option with short name \""
                     + short_name_to_string(short_name)
                     + "\" found twice.");
@@ -313,6 +313,7 @@ void getopt::parse_options_from_file(
     {
         operators |= SECTION_OPERATOR_ONE_SECTION;
     }
+
     conf_file_setup conf_setup(filename
                              , line_continuation_t::line_continuation_unix
                              , ASSIGNMENT_OPERATOR_EQUAL
@@ -336,13 +337,17 @@ void getopt::parse_options_from_file(
         || names.size() > static_cast<std::size_t>(max_sections))
         {
             if(min_sections == 1
-            && max_sections == 1)
+            && max_sections == 1)  // LCOV_EXCL_LINE
             {
-                cppthread::log << cppthread::log_level_t::error
-                    << "the name of a settings definition must include one namespace; \""
-                    << section_names
-                    << "\" is not considered valid."
-                    << cppthread::end;
+                // right now this case cannot happen because we set the
+                // SECTION_OPERATOR_ONE_SECTION flag so errors are caught
+                // directly inside the conf_file::get_conf_file() call
+                //
+                cppthread::log << cppthread::log_level_t::error                             // LCOV_EXCL_LINE
+                    << "the name of a settings definition must include one namespace; \""   // LCOV_EXCL_LINE
+                    << section_names                                                        // LCOV_EXCL_LINE
+                    << "\" is not considered valid."                                        // LCOV_EXCL_LINE
+                    << cppthread::end;                                                      // LCOV_EXCL_LINE
             }
             else
             {

@@ -841,9 +841,9 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         char ** argv = const_cast<char **>(cargv);
 
         CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(environment_options, argc, argv)
-                , advgetopt::getopt_logic_error
+                , advgetopt::getopt_defined_twice
                 , Catch::Matchers::ExceptionMessage(
-                          "getopt_logic_error: option named \"licence\" found twice."));
+                          "getopt_exception: option named \"licence\" found twice."));
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Duplicated Options (short name)")
@@ -884,9 +884,9 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
         char ** argv = const_cast<char **>(cargv);
 
         CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(environment_options, argc, argv)
-                , advgetopt::getopt_logic_error
+                , advgetopt::getopt_defined_twice
                 , Catch::Matchers::ExceptionMessage(
-                          "getopt_logic_error: option with short name \"l\" found twice."));
+                          "getopt_exception: option with short name \"l\" found twice."));
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Duplicated Default Options")

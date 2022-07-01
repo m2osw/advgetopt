@@ -301,6 +301,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Check the parsing of a valid options.ini file")
+    {
         std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
         tmpdir += "/shared/advgetopt";
         std::stringstream ss;
@@ -662,6 +663,391 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
             opt.parse_environment_variable();
             SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         }
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Verify that options with 2 or more namespaces fail")
+    {
+        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
+        tmpdir += "/shared/advgetopt-double-namespace";
+        std::stringstream ss;
+        ss << "mkdir -p " << tmpdir;
+        if(system(ss.str().c_str()) != 0)
+        {
+            std::cerr << "fatal error: creating sub-temporary directory \"" << tmpdir << "\" failed.\n";
+            exit(1);
+        }
+        std::string const options_filename(tmpdir + "/unittest.ini");
+
+        advgetopt::option const valid_options_from_file_list[] =
+        {
+            advgetopt::define_option(
+                  advgetopt::Name("verbose")
+                , advgetopt::ShortName('v')
+                , advgetopt::Flags(advgetopt::standalone_all_flags<>())
+                , advgetopt::Help("a verbose like option, select it or not.")
+            ),
+            advgetopt::end_options()
+        };
+
+        advgetopt::options_environment valid_options_from_file;
+        valid_options_from_file.f_project_name = "unittest";
+        valid_options_from_file.f_options = valid_options_from_file_list;
+        valid_options_from_file.f_options_files_directory = tmpdir.c_str();
+        valid_options_from_file.f_environment_variable_name = "ADVGETOPT_TEST_OPTIONS";
+        valid_options_from_file.f_help_header = "Usage: test valid options from file";
+
+        snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS"
+                            , "--verbose"
+                             " --more purple"
+                             " -f left.txt center.txt right.txt"
+                             " --size 519"
+                             " --from"
+                             " --output destination.txt");
+
+        {
+            std::ofstream options_file;
+            options_file.open(options_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(options_file.good());
+            options_file <<
+                "# Auto-generated\n"
+                "\n"
+                "[more]\n"
+                "shortname=m\n"
+                "default='More Stuff'\n"
+                "help=Allow for more stuff to be added.\n"
+                "validator=regex(\"purple|yellow|blue|red|green|orange|brown\")\n"
+                "allowed=command-line,environment-variable,configuration-file\n"
+                "show-usage-on-error\n"
+                "required\n"
+                "\n"
+                "[size]\n"
+                "shortname=s\n"
+                "help=Specify the size.\n"
+                "validator=/[0-9]+/\n"
+                "allowed=environment-variable,configuration-file\n"
+                "default::integer=31\n"
+                "default::string=\"31\"\n"
+                "required\n"
+                "\n"
+                "[files]\n"
+                "shortname=f\n"
+                "help=List of file names.\n"
+                "validator=/.*\\.txt/i\n"
+                "allowed=command-line,environment-variable\n"
+                "multiple\n"
+                "required\n"
+                "\n"
+                "[from]\n"
+                "shortname=F\n"
+                "help=Request for the geographcal location representing the origin of the files; optionally you can specify the format.\n"
+                "validator=integer\n"
+                "environment_variable_name=FROM\n"
+                "allowed=command-line,environment-variable,configuration-file\n"
+                "\n"
+                "[output]\n"
+                "shortname=o\n"
+                "default=a.out\n"
+                "help=output file\n"
+                "allowed=environment-variable\n"
+                "environment_variable_name=OUTPUT\n"
+                "required\n"
+                "flag::multiple\n"
+                "\n"
+                "[license]\n"
+                "shortname=l\n"
+                "help=Show this test license.\n"
+                "allowed=command-line\n"
+                "no-arguments\n"
+                "\n"
+                "[licence]\n"
+                "alias=license\n"
+                "allowed=command-line\n"
+                "no-arguments\n"
+                "\n"
+            ;
+        }
+
+        char const * sub_cargv[] =
+        {
+            "tests/unittests/valid_options_files",
+            "--verbose",
+            "--licence",
+            nullptr
+        };
+        int const sub_argc(sizeof(sub_cargv) / sizeof(sub_cargv[0]) - 1);
+        char ** sub_argv = const_cast<char **>(sub_cargv);
+
+        // this is a good test already, but "unfortunately" the errors
+        // happen in the wrong place because only .ini sections are
+        // allowed; so instead we have a second part to the test attempting
+        // to the load the data _manually_ to hit the errors of the load
+        // function
+        //
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: parameter \"size::default::integer\" on line 17 in configuration file \"/home/snapwebsites/snapcpp/BUILD/Debug/contrib/advgetopt/tmp/shared/advgetopt-double-namespace/unittest.ini\" includes a character not acceptable for a section or parameter name (controls, space, quotes, and \";#/=:?+\\\").");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: parameter \"size::default::string\" on line 18 in configuration file \"/home/snapwebsites/snapcpp/BUILD/Debug/contrib/advgetopt/tmp/shared/advgetopt-double-namespace/unittest.ini\" includes a character not acceptable for a section or parameter name (controls, space, quotes, and \";#/=:?+\\\").");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: parameter \"output::flag::multiple\" on line 43 in configuration file \"/home/snapwebsites/snapcpp/BUILD/Debug/contrib/advgetopt/tmp/shared/advgetopt-double-namespace/unittest.ini\" includes a character not acceptable for a section or parameter name (controls, space, quotes, and \";#/=:?+\\\").");
+        CATCH_REQUIRE_THROWS_MATCHES(
+                      advgetopt::getopt(valid_options_from_file, sub_argc, sub_argv)
+                    , advgetopt::getopt_exit
+                    , Catch::Matchers::ExceptionMessage(
+                              "getopt_exception: errors were found on your command line, environment variable, or configuration file."));
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Verify parse_options_from_file overflow")
+    {
+        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
+        tmpdir += "/shared/advgetopt-namespace-overflow";
+        std::stringstream ss;
+        ss << "mkdir -p " << tmpdir;
+        if(system(ss.str().c_str()) != 0)
+        {
+            std::cerr << "fatal error: creating sub-temporary directory \"" << tmpdir << "\" failed.\n";
+            exit(1);
+        }
+        std::string const options_filename(tmpdir + "/unittest.ini");
+
+        advgetopt::options_environment valid_options_from_file;
+        valid_options_from_file.f_project_name = "unittest";
+        valid_options_from_file.f_help_header = "Usage: test valid fluid-settings options from file";
+
+        {
+            std::ofstream options_file;
+            options_file.open(options_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(options_file.good());
+            options_file <<
+                "# Auto-generated\n"
+                "\n"
+                "[color::more]\n"
+                "default='More Stuff'\n"
+                "help=Allow for more stuff to be added.\n"
+                "validator=regex(\"purple|yellow|blue|red|green|orange|brown\")\n"
+                "allowed=command-line,environment-variable,configuration-file\n"
+                "show-usage-on-error\n"
+                "required\n"
+                "\n"
+                "[color::size]\n"
+                "help=Specify the size.\n"
+                "validator=/[0-9]+/\n"
+                "allowed=environment-variable,configuration-file\n"
+                "default=31\n"
+                "required\n"
+                "\n"
+                "[color::files]\n"
+                "help=List of file names.\n"
+                "validator=/.*\\.txt/i\n"
+                "allowed=command-line,environment-variable\n"
+                "multiple\n"
+                "required\n"
+                "\n"
+                "[dimensions::from]\n"
+                "help=Request for the geographcal location representing the origin of the files; optionally you can specify the format.\n"
+                "validator=integer\n"
+                "environment_variable_name=FROM\n"
+                "allowed=command-line,environment-variable,configuration-file\n"
+                "\n"
+                "[dimensions::output]\n"
+                "default=a.out\n"
+                "help=output file\n"
+                "allowed=environment-variable\n"
+                "environment_variable_name=OUTPUT\n"
+                "required\n"
+                "multiple\n"
+                "\n"
+                "[us::legal::department::license]\n"
+                "help=Show this test license.\n"
+                "allowed=command-line\n"
+                "no-arguments\n"
+                "\n"
+                "[us::legal::department::licence]\n"
+                "alias=license\n"
+                "allowed=command-line\n"
+                "no-arguments\n"
+                "\n"
+            ;
+        }
+
+        advgetopt::getopt::pointer_t opts(std::make_shared<advgetopt::getopt>(valid_options_from_file));
+
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: the name of a settings definition must include between 2 and 3 namespaces; \"us::legal::department::licence\" is not considered valid.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: the name of a settings definition must include between 2 and 3 namespaces; \"us::legal::department::license\" is not considered valid.");
+        opts->parse_options_from_file(
+                  options_filename
+                , 2
+                , 3);
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
+
+        advgetopt::option_info::map_by_name_t const & options(opts->get_options());
+        CATCH_REQUIRE(options.size() == 5);
+
+        {
+            auto const o(options.find("color::more"));
+            CATCH_REQUIRE(o != options.end());
+            CATCH_REQUIRE(o->second->get_help() == "Allow for more stuff to be added.");
+        }
+
+        {
+            auto const o(options.find("color::size"));
+            CATCH_REQUIRE(o != options.end());
+            CATCH_REQUIRE(o->second->get_help() == "Specify the size.");
+        }
+
+        {
+            auto const o(options.find("color::files"));
+            CATCH_REQUIRE(o != options.end());
+            CATCH_REQUIRE(o->second->get_help() == "List of file names.");
+        }
+
+        {
+            auto const o(options.find("dimensions::from"));
+            CATCH_REQUIRE(o != options.end());
+            CATCH_REQUIRE(o->second->get_help() == "Request for the geographcal location representing the origin of the files; optionally you can specify the format.");
+        }
+
+        {
+            auto const o(options.find("dimensions::output"));
+            CATCH_REQUIRE(o != options.end());
+            CATCH_REQUIRE(o->second->get_help() == "output file");
+        }
+
+        {
+            auto const o(options.find("us::legal::department::license"));
+            CATCH_REQUIRE(o == options.end());
+        }
+
+        {
+            auto const o(options.find("us::legal::department::licence"));
+            CATCH_REQUIRE(o == options.end());
+        }
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("Verify that the parse_options_from_file supports more than one section name (used by fluid-settings)")
+    {
+        std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
+        tmpdir += "/shared/advgetopt-fluid-namespaces";
+        std::stringstream ss;
+        ss << "mkdir -p " << tmpdir;
+        if(system(ss.str().c_str()) != 0)
+        {
+            std::cerr << "fatal error: creating sub-temporary directory \"" << tmpdir << "\" failed.\n";
+            exit(1);
+        }
+        std::string const options_filename(tmpdir + "/unittest.ini");
+
+        advgetopt::options_environment valid_options_from_file;
+        valid_options_from_file.f_project_name = "unittest";
+        valid_options_from_file.f_help_header = "Usage: test valid fluid-settings options from file";
+
+        {
+            std::ofstream options_file;
+            options_file.open(options_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(options_file.good());
+            options_file <<
+                "# Auto-generated\n"
+                "\n"
+                "[color::more]\n"
+                "default='More Stuff'\n"
+                "help=Allow for more stuff to be added.\n"
+                "validator=regex(\"purple|yellow|blue|red|green|orange|brown\")\n"
+                "allowed=command-line,environment-variable,configuration-file\n"
+                "show-usage-on-error\n"
+                "required\n"
+                "\n"
+                "[color::size]\n"
+                "help=Specify the size.\n"
+                "validator=/[0-9]+/\n"
+                "allowed=environment-variable,configuration-file\n"
+                "default=31\n"
+                "required\n"
+                "\n"
+                "[color::files]\n"
+                "help=List of file names.\n"
+                "validator=/.*\\.txt/i\n"
+                "allowed=command-line,environment-variable\n"
+                "multiple\n"
+                "required\n"
+                "\n"
+                "[dimensions::from]\n"
+                "help=Request for the geographcal location representing the origin of the files; optionally you can specify the format.\n"
+                "validator=integer\n"
+                "environment_variable_name=FROM\n"
+                "allowed=command-line,environment-variable,configuration-file\n"
+                "\n"
+                "[dimensions::output]\n"
+                "default=a.out\n"
+                "help=output file\n"
+                "allowed=environment-variable\n"
+                "environment_variable_name=OUTPUT\n"
+                "required\n"
+                "multiple\n"
+                "\n"
+                "[legal::department::license]\n"
+                "help=Show this test license.\n"
+                "allowed=command-line\n"
+                "no-arguments\n"
+                "\n"
+                "[legal::department::licence]\n"
+                "alias=license\n"
+                "allowed=command-line\n"
+                "no-arguments\n"
+                "\n"
+            ;
+        }
+
+        advgetopt::getopt::pointer_t opts(std::make_shared<advgetopt::getopt>(valid_options_from_file));
+        opts->parse_options_from_file(
+                  options_filename
+                , 2
+                , std::numeric_limits<int>::max());
+
+        advgetopt::option_info::map_by_name_t const & options(opts->get_options());
+        CATCH_REQUIRE(options.size() == 7);
+
+        {
+            auto const o(options.find("color::more"));
+            CATCH_REQUIRE(o != options.end());
+            CATCH_REQUIRE(o->second->get_help() == "Allow for more stuff to be added.");
+        }
+
+        {
+            auto const o(options.find("color::size"));
+            CATCH_REQUIRE(o != options.end());
+            CATCH_REQUIRE(o->second->get_help() == "Specify the size.");
+        }
+
+        {
+            auto const o(options.find("color::files"));
+            CATCH_REQUIRE(o != options.end());
+            CATCH_REQUIRE(o->second->get_help() == "List of file names.");
+        }
+
+        {
+            auto const o(options.find("dimensions::from"));
+            CATCH_REQUIRE(o != options.end());
+            CATCH_REQUIRE(o->second->get_help() == "Request for the geographcal location representing the origin of the files; optionally you can specify the format.");
+        }
+
+        {
+            auto const o(options.find("dimensions::output"));
+            CATCH_REQUIRE(o != options.end());
+            CATCH_REQUIRE(o->second->get_help() == "output file");
+        }
+
+        {
+            auto const o(options.find("legal::department::license"));
+            CATCH_REQUIRE(o != options.end());
+            CATCH_REQUIRE(o->second->get_help() == "Show this test license.");
+        }
+
+        {
+            auto const o(options.find("legal::department::licence"));
+            CATCH_REQUIRE(o != options.end());
+            CATCH_REQUIRE(o->second->get_help() == "license");
+        }
+    }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("Check with validators in the definition")
@@ -1073,7 +1459,8 @@ CATCH_TEST_CASE("invalid_options_files", "[options][invalid][files]")
         int const sub_argc(sizeof(sub_cargv) / sizeof(sub_cargv[0]) - 1);
         char ** sub_argv = const_cast<char **>(sub_cargv);
 
-        CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(options_environment, sub_argc, sub_argv)
+        CATCH_REQUIRE_THROWS_MATCHES(
+                      std::make_shared<advgetopt::getopt>(options_environment, sub_argc, sub_argv)
                     , advgetopt::getopt_logic_error
                     , Catch::Matchers::ExceptionMessage(
                               "getopt_logic_error: option \"badname\" has an invalid short name in \""
