@@ -70,7 +70,7 @@ public:
         : getopt_exception(msg)
         , f_code(code)
     {
-        set_parameter("code", std::to_string(code));
+        set_parameter("exit_code", std::to_string(code));
     }
 
     int code() const
