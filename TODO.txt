@@ -3,6 +3,10 @@
   subtle changes to some exceptions and such.
 * Further test that he variables support works (in the getopt_info and such.)
 
+* Add a test to verify that '\n' is correctly handled on small strings
+  (we had the case in our fluid-settings / GUI --help where the string would
+  wrap just a little and the wrap part + Environment variable was less than
+  what would fit one line...)
 
 * Confirm that all the configuration functionality from snapwebsites is available
 * Look into a way to support TOML, it's like ".ini" with a few extensions

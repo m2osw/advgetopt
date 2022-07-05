@@ -204,7 +204,7 @@ group_description const * getopt::find_group(flag_t group) const
  *
  * \return The assembled command line arguments.
  */
-std::string getopt::usage( flag_t show ) const
+std::string getopt::usage(flag_t show) const
 {
     std::stringstream ss;
 
@@ -848,9 +848,10 @@ std::string getopt::format_usage_string(
  *
  * \return The broken up line as required.
  */
-std::string getopt::breakup_line(std::string line
-                               , size_t const option_width
-                               , size_t const line_width)
+std::string getopt::breakup_line(
+      std::string line
+    , size_t const option_width
+    , size_t const line_width)
 {
     std::stringstream ss;
 
@@ -858,15 +859,19 @@ std::string getopt::breakup_line(std::string line
 
     // TODO: once we have C++17, avoid substr() using std::string_view instead
     //
-    while(line.size() > width)
+    for(;;)
     {
         std::string l;
         std::string::size_type const nl(line.find('\n'));
         if(nl != std::string::npos
-        && nl < width)      
+        && nl < width)
         {
             l = line.substr(0, nl);
             line = line.substr(nl + 1);
+        }
+        else if(line.size() <= width)
+        {
+            break;
         }
         else if(std::isspace(line[width]))
         {
