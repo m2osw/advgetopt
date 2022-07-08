@@ -169,7 +169,7 @@ class conf_file
 {
 public:
     typedef std::shared_ptr<conf_file>              pointer_t;
-    typedef std::set<std::string>                   sections_t;
+    typedef string_set_t                            sections_t;
     typedef std::map<std::string, parameter_value>  parameters_t;
     typedef std::function<void(
                   pointer_t conf_file

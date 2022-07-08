@@ -62,6 +62,7 @@ class validator
 {
 public:
     typedef std::shared_ptr<validator>      pointer_t;
+    typedef std::vector<pointer_t>          vector_t;
 
     virtual                     ~validator();
 

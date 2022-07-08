@@ -164,7 +164,8 @@ CATCH_TEST_CASE("unknown_validator", "[validator][valid][validation]")
 
 CATCH_TEST_CASE("integer_validator", "[validator][valid][validation]")
 {
-    CATCH_START_SECTION("Verify the integer validator")
+    CATCH_START_SECTION("integer_validator: Verify the integer validator")
+    {
         advgetopt::validator::pointer_t integer_validator(advgetopt::validator::create("integer", advgetopt::string_list_t()));
 
         CATCH_REQUIRE(integer_validator != nullptr);
@@ -217,9 +218,11 @@ CATCH_TEST_CASE("integer_validator", "[validator][valid][validation]")
         CATCH_REQUIRE_FALSE(integer_validator->validate("92233720368547758091"));
         CATCH_REQUIRE_FALSE(integer_validator->validate("+92233720368547758092"));
         CATCH_REQUIRE_FALSE(integer_validator->validate("-92233720368547758093"));
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify the integer ranges")
+    CATCH_START_SECTION("integer_validator: Verify the integer ranges")
+    {
         bool had_standalone(false);
         for(int count(0); count < 20 || !had_standalone; ++count)
         {
@@ -359,9 +362,11 @@ CATCH_TEST_CASE("integer_validator", "[validator][valid][validation]")
                 CATCH_REQUIRE_FALSE(integer_validator->validate(after));
             }
         }
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify the integer standalone list")
+    CATCH_START_SECTION("integer_validator: Verify the integer standalone list")
+    {
         for(int count(0); count < 20; ++count)
         {
             int valid(rand() % 10 + 5);
@@ -424,6 +429,40 @@ CATCH_TEST_CASE("integer_validator", "[validator][valid][validation]")
                 CATCH_REQUIRE_FALSE(integer_validator->validate(std::to_string(value)));
             }
         }
+    }
+    CATCH_END_SECTION()
+}
+
+
+
+
+CATCH_TEST_CASE("multi_validators", "[validator][valid][validation]")
+{
+    CATCH_START_SECTION("multi_validators: Verify an integer along a few keywords")
+    {
+        advgetopt::validator::pointer_t list_validator(advgetopt::validator::create("keywords(off,min,max) | integer(1...100)"));
+
+        CATCH_REQUIRE(list_validator != nullptr);
+        CATCH_REQUIRE(list_validator->name() == "list");
+
+        CATCH_REQUIRE(list_validator->validate("off"));
+        CATCH_REQUIRE(list_validator->validate("min"));
+        CATCH_REQUIRE(list_validator->validate("max"));
+
+        for(int idx(-10); idx <= 110; ++idx)
+        {
+            std::string const v(std::to_string(idx));
+
+            if(idx < 1 || idx > 100)
+            {
+                CATCH_REQUIRE_FALSE(list_validator->validate(v));
+            }
+            else
+            {
+                CATCH_REQUIRE(list_validator->validate(v));
+            }
+        }
+    }
     CATCH_END_SECTION()
 }
 
@@ -1022,17 +1061,13 @@ CATCH_TEST_CASE("invalid_validator_create", "[validator][invalid][validation]")
 {
     CATCH_START_SECTION("Verify missing ')' in string based create")
     {
-        CATCH_REQUIRE_THROWS_MATCHES(
-                  advgetopt::validator::create("integer(1...7")
-                , advgetopt::getopt_logic_error
-                , Catch::Matchers::ExceptionMessage(
-                          "getopt_logic_error: invalid validator parameter definition: \"integer(1...7\", the ')' is missing."));
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: validator(): parameter list must end with ')'.");
+        advgetopt::validator::create("integer(1...7, 11...15");
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
-        CATCH_REQUIRE_THROWS_MATCHES(
-                  advgetopt::validator::create("regex([a-z]+")
-                , advgetopt::getopt_logic_error
-                , Catch::Matchers::ExceptionMessage(
-                          "getopt_logic_error: invalid validator parameter definition: \"regex([a-z]+\", the ')' is missing."));
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: validator(): parameter list must end with ')'.");
+        advgetopt::validator::create("regex([a-z]+");
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
     }
     CATCH_END_SECTION()
 }

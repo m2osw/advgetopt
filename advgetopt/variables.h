@@ -26,11 +26,15 @@
  * This class handles the variable data store and replacement in strings.
  */
 
+// self
+//
+#include    <advgetopt/utils.h>
+
+
 // C++
 //
 #include    <map>
 #include    <memory>
-#include    <set>
 #include    <string>
 
 
@@ -59,7 +63,7 @@ public:
     static std::string      canonicalize_variable_name(std::string const & name);
 
 private:
-    typedef std::set<std::string>               variable_names_t;
+    typedef string_set_t    variable_names_t;
 
     std::string             recursive_process_value(
                                   std::string const & value

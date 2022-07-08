@@ -27,6 +27,7 @@
 
 // C++
 //
+#include    <set>
 #include    <string>
 #include    <vector>
 
@@ -38,6 +39,7 @@ namespace advgetopt
 
 
 typedef std::vector<std::string>                string_list_t;
+typedef std::set<std::string>                   string_set_t;
 
 constexpr int const DEFAULT_PRIORITY = 50;
 

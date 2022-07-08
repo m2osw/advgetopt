@@ -586,7 +586,7 @@ CATCH_TEST_CASE("option_info_alias", "[option_info][valid][alias]")
 
 CATCH_TEST_CASE("option_info_multiple_separators", "[option_info][valid][separators][multiple]")
 {
-    CATCH_START_SECTION("Check multiple separators")
+    CATCH_START_SECTION("option_info_multiple_separators: Check multiple separators")
         advgetopt::option_info separators("names", 'n');
 
         separators.add_flag(advgetopt::GETOPT_FLAG_MULTIPLE);
@@ -1432,13 +1432,11 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
         CATCH_REQUIRE(separators.size() == 0);
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("invalid_option_info: Check multiple separators")
+    CATCH_START_SECTION("invalid_option_info: Check invalid parameter (missing ')')")
         advgetopt::option_info auto_validate("validator", 'C');
-        CATCH_REQUIRE_THROWS_MATCHES(
-                  auto_validate.set_validator("regex('^[a-z]+$/'")
-                , advgetopt::getopt_logic_error
-                , Catch::Matchers::ExceptionMessage(
-                    "getopt_logic_error: invalid validator parameter definition: \"regex('^[a-z]+$/'\", the ')' is missing."));
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: validator(): parameter list must end with ')'.");
+        auto_validate.set_validator("regex('^[a-z]+$/'");
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
     CATCH_END_SECTION()
 }
 

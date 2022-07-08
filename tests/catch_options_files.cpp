@@ -46,7 +46,8 @@
 
 CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
 {
-    CATCH_START_SECTION("Check the default path with a nullptr (not a very good test, though)")
+    CATCH_START_SECTION("valid_options_files: Check the default path with a nullptr (not a very good test, though)")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -89,9 +90,11 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "no_file_to_load");
         CATCH_REQUIRE(opt.get_program_fullname() == "tests/unittests/no_file_to_load");
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Check the default path with an empty string (not a very good test, though)")
+    CATCH_START_SECTION("valid_options_files: Check the default path with an empty string (not a very good test, though)")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -135,9 +138,11 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "no_file_to_load");
         CATCH_REQUIRE(opt.get_program_fullname() == "tests/unittests/no_file_to_load");
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Check the parsing of a valid options.ini file")
+    CATCH_START_SECTION("valid_options_files: Check the parsing of a valid options.ini file (one option)")
+    {
         // create a file and make sure it's not read if the project name
         // is empty
         //
@@ -215,9 +220,11 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "file_not_loaded");
         CATCH_REQUIRE(opt.get_program_fullname() == "tests/unittests/file_not_loaded");
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Project name is an empty string")
+    CATCH_START_SECTION("valid_options_files: Project name is an empty string")
+    {
         // create a file and make sure it's not read if the project name
         // is empty
         //
@@ -298,9 +305,10 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "file_not_loaded");
         CATCH_REQUIRE(opt.get_program_fullname() == "tests/unittests/file_not_loaded");
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Check the parsing of a valid options.ini file")
+    CATCH_START_SECTION("valid_options_files: Check the parsing of a valid options.ini file (many options)")
     {
         std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
         tmpdir += "/shared/advgetopt";
@@ -666,7 +674,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify that options with 2 or more namespaces fail")
+    CATCH_START_SECTION("valid_options_files: Verify that options with 2 or more namespaces fail")
     {
         std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
         tmpdir += "/shared/advgetopt-double-namespace";
@@ -796,7 +804,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify parse_options_from_file overflow")
+    CATCH_START_SECTION("valid_options_files: Verify parse_options_from_file overflow")
     {
         std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
         tmpdir += "/shared/advgetopt-namespace-overflow";
@@ -924,7 +932,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify that the parse_options_from_file supports more than one section name (used by fluid-settings)")
+    CATCH_START_SECTION("valid_options_files: Verify that the parse_options_from_file supports more than one section name (used by fluid-settings)")
     {
         std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
         tmpdir += "/shared/advgetopt-fluid-namespaces";
@@ -1050,7 +1058,8 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Check with validators in the definition")
+    CATCH_START_SECTION("valid_options_files: Check with validators in the definition")
+    {
         std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
         tmpdir += "/shared/advgetopt-validators-in-table";
         std::stringstream ss;
@@ -1312,13 +1321,15 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"black\" given to parameter --more is not considered valid.");
         opt.parse_arguments(sub_argc3, sub_argv3, advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
+    }
     CATCH_END_SECTION()
 }
 
 
 CATCH_TEST_CASE("invalid_options_files", "[options][invalid][files]")
 {
-    CATCH_START_SECTION("2+ section names")
+    CATCH_START_SECTION("invalid_options_files: 2+ section names")
+    {
         std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
         tmpdir += "/shared/advgetopt";
         std::stringstream ss;
@@ -1403,9 +1414,11 @@ CATCH_TEST_CASE("invalid_options_files", "[options][invalid][files]")
 
         CATCH_REQUIRE(opt->size("invalid::name::shortname") == 0);
         CATCH_REQUIRE(opt->size("shortname") == 0);
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("short name too long")
+    CATCH_START_SECTION("invalid_options_files: short name too long")
+    {
         std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
         tmpdir += "/shared/advgetopt";
         std::stringstream ss;
@@ -1466,9 +1479,11 @@ CATCH_TEST_CASE("invalid_options_files", "[options][invalid][files]")
                               "getopt_logic_error: option \"badname\" has an invalid short name in \""
                             + options_filename
                             + "\", it can't be more than one character."));
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("missing ')' in validator specification")
+    CATCH_START_SECTION("invalid_options_files: missing ')' in validator specification")
+    {
         std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
         tmpdir += "/shared/advgetopt";
         std::stringstream ss;
@@ -1523,13 +1538,22 @@ CATCH_TEST_CASE("invalid_options_files", "[options][invalid][files]")
         int const sub_argc(sizeof(sub_cargv) / sizeof(sub_cargv[0]) - 1);
         char ** sub_argv = const_cast<char **>(sub_cargv);
 
-        CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(options_environment, sub_argc, sub_argv)
-                    , advgetopt::getopt_logic_error
-                    , Catch::Matchers::ExceptionMessage(
-                              "getopt_logic_error: invalid validator parameter definition: \"regex(\"missing ')'\"\", the ')' is missing."));
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: validator(): parameter list must end with ')'.");
+        //CATCH_REQUIRE(std::make_shared<advgetopt::getopt>(options_environment, sub_argc, sub_argv) != nullptr);
+
+        CATCH_REQUIRE_THROWS_MATCHES(
+                  std::make_shared<advgetopt::getopt>(options_environment, sub_argc, sub_argv)
+                , advgetopt::getopt_exception
+                , Catch::Matchers::ExceptionMessage(
+                    "getopt_exception: errors were found on your command line,"
+                    " environment variable, or configuration file."));
+
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("alias with help")
+    CATCH_START_SECTION("invalid_options_files: alias with help")
+    {
         std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
         tmpdir += "/shared/advgetopt";
         std::stringstream ss;
@@ -1591,9 +1615,11 @@ CATCH_TEST_CASE("invalid_options_files", "[options][invalid][files]")
                               "getopt_logic_error: option \"licence\" is an alias and as such it can't include a help=... parameter in \""
                             + options_filename
                             + "\"."));
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("no-name alias")
+    CATCH_START_SECTION("invalid_options_files: no-name alias")
+    {
         std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
         tmpdir += "/shared/advgetopt";
         std::stringstream ss;
@@ -1651,9 +1677,11 @@ CATCH_TEST_CASE("invalid_options_files", "[options][invalid][files]")
         CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(options_environment, sub_argc, sub_argv)
                     , advgetopt::getopt_logic_error
                     , Catch::Matchers::ExceptionMessage("getopt_logic_error: the default value of your alias cannot be an empty string for \"foo\"."));
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("no-name alias v2")
+    CATCH_START_SECTION("invalid_options_files: no-name alias v2")
+    {
         std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
         tmpdir += "/shared/advgetopt";
         std::stringstream ss;
@@ -1711,9 +1739,11 @@ CATCH_TEST_CASE("invalid_options_files", "[options][invalid][files]")
         CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(options_environment, sub_argc, sub_argv)
                     , advgetopt::getopt_logic_error
                     , Catch::Matchers::ExceptionMessage("getopt_logic_error: the default value of your alias cannot be an empty string for \"foo\"."));
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("non-existant alias")
+    CATCH_START_SECTION("invalid_options_files: non-existant alias")
+    {
         std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
         tmpdir += "/shared/advgetopt";
         std::stringstream ss;
@@ -1771,14 +1801,9 @@ CATCH_TEST_CASE("invalid_options_files", "[options][invalid][files]")
         CATCH_REQUIRE_THROWS_MATCHES(std::make_shared<advgetopt::getopt>(options_environment, sub_argc, sub_argv)
                     , advgetopt::getopt_logic_error
                     , Catch::Matchers::ExceptionMessage("getopt_logic_error: no option named \"bar\" to satisfy the alias of \"foo\"."));
+    }
     CATCH_END_SECTION()
 }
-
-
-
-
-
-
 
 
 

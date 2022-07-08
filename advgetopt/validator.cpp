@@ -32,6 +32,7 @@
 #include    "advgetopt/validator.h"
 
 #include    "advgetopt/exception.h"
+#include    "advgetopt/validator_list.h"
 
 
 // cppthread
@@ -41,7 +42,8 @@
 
 // snapdev
 //
-#include    <snapdev/not_used.h>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/join_strings.h>
 
 
 // boost
@@ -70,6 +72,404 @@ namespace
 
 
 std::map<std::string, validator_factory const *>      g_validator_factories;
+
+
+enum class token_t
+{
+    TOK_EOF,
+
+    TOK_STRING,
+    TOK_IDENTIFIER,
+    TOK_REGEX,
+
+    TOK_OPEN_PARENTHESIS,
+    TOK_CLOSE_PARENTHESIS,
+    TOK_COMMA,
+    TOK_OR,
+
+    TOK_INVALID,
+};
+
+
+class token
+{
+public:
+    token(token_t tok, std::string const & value = std::string())
+        : f_token(tok)
+        , f_value(value)
+    {
+    }
+
+    token_t tok() const
+    {
+        return f_token;
+    }
+
+    std::string const & value() const
+    {
+        return f_value;
+    }
+
+private:
+    token_t         f_token = token_t::TOK_EOF;
+    std::string     f_value = std::string();
+};
+
+class lexer
+{
+public:
+    lexer(char const * in)
+        : f_in(in)
+    {
+    }
+
+    token next_token()
+    {
+        for(;;)
+        {
+            int c(getc());
+            switch(c)
+            {
+            case '\0':
+                return token(token_t::TOK_EOF);
+
+            case '(':
+                return token(token_t::TOK_OPEN_PARENTHESIS);
+
+            case ')':
+                return token(token_t::TOK_CLOSE_PARENTHESIS);
+
+            case ',':
+                return token(token_t::TOK_COMMA);
+
+            case '|':
+                c = getc();
+                if(c != '|')    // allow for || like in C
+                {
+                    ungetc(c);
+                }
+                return token(token_t::TOK_OR);
+
+            case '"':
+            case '\'':
+                {
+                    int const quote(c);
+                    std::string s;
+                    for(;;)
+                    {
+                        c = getc();
+                        if(c == quote)
+                        {
+                            break;
+                        }
+                        s += static_cast<char>(c);
+                    }
+                    return token(token_t::TOK_STRING, s);
+                }
+
+            case '/':
+                {
+                    std::string r;
+                    for(;;)
+                    {
+                        r += static_cast<char>(c);
+                        c = getc();
+                        if(c == '/')
+                        {
+                            r += static_cast<char>(c);
+                            break;
+                        }
+                        if(c < ' ' && c != '\t')
+                        {
+                            return token(token_t::TOK_INVALID);
+                        }
+                        if(c == '\\')
+                        {
+                            // we keep the backslash, it's important when
+                            // further parsing happens
+                            //
+                            r += c;
+
+                            c = getc();
+                            if(c < ' ' && c != '\t')
+                            {
+                                return token(token_t::TOK_INVALID);
+                            }
+                        }
+                    }
+                    // also allow for flags after the closing '/'
+                    //
+                    // at this time we only support 'i' but here we allow any
+                    // letter for forward compatibility
+                    //
+                    for(;;)
+                    {
+                        c = getc();
+                        if(c == '\0')
+                        {
+                            break;
+                        }
+                        if(c < 'a' || c > 'z')
+                        {
+                            ungetc(c);
+                            break;
+                        }
+                        r += c;
+                    }
+                    return token(token_t::TOK_REGEX, r);
+                }
+
+            case ' ':
+                // ignore spaces
+                break;
+
+            default:
+                {
+                    std::string id;
+                    for(;;)
+                    {
+                        switch(c)
+                        {
+                        case '(':
+                        case ')':
+                        case ',':
+                        case '|':
+                        case ' ':
+                            ungetc(c);
+                            [[fallthrough]];
+                        case '\0':
+                            if(id.empty())
+                            {
+                                // this can happen if the parameter is empty
+                                // (i.e. "blah( )")
+                                goto skip_identifier;
+                            }
+                            return token(token_t::TOK_IDENTIFIER, id);
+
+                        default:
+                            if(c < ' ' || c > '~')
+                            {
+                                return token(token_t::TOK_INVALID);
+                            }
+                            break;
+
+                        }
+                        id += static_cast<char>(c);
+                        c = getc();
+                    }
+                }
+skip_identifier:
+                break;
+
+            }
+        }
+        snapdev::NOT_REACHED();
+    }
+
+    std::string remains() const
+    {
+        if(*f_in == '\0')
+        {
+            return std::string("...EOS");
+        }
+
+        return f_in;
+    }
+
+private:
+    int getc()
+    {
+        if(f_c != '\0')
+        {
+            int const c(f_c);
+            f_c = '\0';
+            return c;
+        }
+
+        if(*f_in == '\0')
+        {
+            return '\0';
+        }
+        else
+        {
+            int const c(*f_in);
+            ++f_in;
+            return c;
+        }
+    }
+
+    void ungetc(int c)
+    {
+        if(f_c != '\0')
+        {
+            throw getopt_logic_error("ungetc() already called once, getc() must be called in between now");
+        }
+        f_c = c;
+    }
+
+    char const *    f_in = nullptr;
+    int             f_c = '\0';
+};
+
+
+class validator_with_params
+{
+public:
+    typedef std::vector<validator_with_params>   vector_t;
+
+    validator_with_params(std::string const & name)
+        : f_name(name)
+    {
+    }
+
+    std::string const & get_name() const
+    {
+        return f_name;
+    }
+
+    void add_param(std::string const & param)
+    {
+        f_params.push_back(param);
+    }
+
+    string_list_t const & get_params() const
+    {
+        return f_params;
+    }
+
+private:
+    std::string     f_name = std::string();
+    string_list_t   f_params = string_list_t();
+};
+
+
+class parser
+{
+public:
+    parser(lexer & l)
+        : f_lexer(l)
+    {
+    }
+
+    bool parse()
+    {
+        token t(f_lexer.next_token());
+        if(t.tok() == token_t::TOK_EOF)
+        {
+            // empty list
+            //
+            return true;
+        }
+
+        // TODO: show location on an error
+        //
+        for(;;)
+        {
+            switch(t.tok())
+            {
+            case token_t::TOK_REGEX:
+                {
+                    validator_with_params v("regex");
+                    v.add_param(t.value());
+                    f_validators.push_back(v);
+
+                    t = f_lexer.next_token();
+                }
+                break;
+
+            case token_t::TOK_IDENTIFIER:
+                {
+                    validator_with_params v(t.value());
+
+                    t = f_lexer.next_token();
+                    if(t.tok() == token_t::TOK_OPEN_PARENTHESIS)
+                    {
+                        t = f_lexer.next_token();
+                        if(t.tok() != token_t::TOK_CLOSE_PARENTHESIS)
+                        {
+                            for(;;)
+                            {
+                                if(t.tok() != token_t::TOK_IDENTIFIER
+                                && t.tok() != token_t::TOK_STRING)
+                                {
+                                    cppthread::log << cppthread::log_level_t::error
+                                                   << "validator(): expected an identifier or a string inside the () of a parameter."
+                                                   << cppthread::end;
+                                    return false;
+                                }
+                                v.add_param(t.value());
+
+                                t = f_lexer.next_token();
+                                if(t.tok() == token_t::TOK_CLOSE_PARENTHESIS)
+                                {
+                                    break;
+                                }
+
+                                if(t.tok() == token_t::TOK_EOF)
+                                {
+                                    cppthread::log << cppthread::log_level_t::error
+                                                   << "validator(): parameter list must end with ')'."
+                                                   << cppthread::end;
+                                    return false;
+                                }
+
+                                if(t.tok() != token_t::TOK_COMMA)
+                                {
+                                    cppthread::log << cppthread::log_level_t::error
+                                                   << "validator(): parameter must be separated by ','."
+                                                   << cppthread::end;
+                                    return false;
+                                }
+                                t = f_lexer.next_token();
+                            }
+                        }
+                        t = f_lexer.next_token();
+                    }
+
+                    f_validators.push_back(v);
+                }
+                break;
+
+            default:
+                cppthread::log << cppthread::log_level_t::error
+                               << "validator(): unexpected token in validator definition;"
+                                  " expected an identifier. Remaining input: \""
+                               << f_lexer.remains()
+                               << "\"."
+                               << cppthread::end;
+                return false;
+
+            }
+
+            if(t.tok() == token_t::TOK_EOF)
+            {
+                return true;
+            }
+
+            if(t.tok() != token_t::TOK_OR)
+            {
+                cppthread::log << cppthread::log_level_t::error
+                               << "validator(): validator definitions must be separated by '|'."
+                               << cppthread::end;
+                return false;
+            }
+
+            t = f_lexer.next_token();
+        }
+        snapdev::NOT_REACHED();
+    }
+
+    validator_with_params::vector_t const & get_validators() const
+    {
+        return f_validators;
+    }
+
+private:
+    lexer &         f_lexer;
+    validator_with_params::vector_t
+                    f_validators = validator_with_params::vector_t();
+};
+
 
 
 } // no name namespace
@@ -179,35 +579,61 @@ validator::pointer_t validator::create(std::string const & name_and_params)
         return validator::pointer_t();
     }
 
-    if(name_and_params.length() >= 2
-    && name_and_params[0] == '/')
+    // the name and parameters can be written as a function call, we have
+    // a special case for regex which do not require the function call
+    //
+    //   validator_list: name_and_params
+    //                 | name_and_params ',' validator_list
+    //
+    //   name_and_params: name '(' params ')'
+    //                  | '/' ... '/'              /* regex special case */
+    //
+    //   name: [a-zA-Z_][a-zA-Z_0-9]*
+    //
+    //   params: (thing - [,()'" ])
+    //         | '\'' (thing - '\'') '\''
+    //         | '"' (thing - '"') '"'
+    //
+    //   thing: [ -~]*
+    //        | '\\' [ -~]
+    //
+
+    lexer l(name_and_params.c_str());
+    parser p(l);
+    if(!p.parse())
     {
-        // for the regex we have a special case
-        //
-        string_list_t data{name_and_params};
-        return create("regex", data);
+        return validator::pointer_t();
     }
-    else
+
+    validator_with_params::vector_t const & validators(p.get_validators());
+
+    if(validators.size() == 0)
     {
-        std::string::size_type const params(name_and_params.find('('));
-        std::string name(name_and_params);
-        string_list_t data;
-        if(params != std::string::npos)
-        {
-            if(name_and_params.back() != ')')
-            {
-                throw getopt_logic_error(
-                      "invalid validator parameter definition: \""
+        throw getopt_logic_error(
+                      "it looks like an error occurred parsing the validator string \""
                     + name_and_params
-                    + "\", the ')' is missing.");
-            }
-            name = name_and_params.substr(0, params);
-            split_string(name_and_params.substr(params + 1, name_and_params.length() - params - 2)
-                       , data
-                       , {","});
-        }
-        return create(name, data);
+                    + "\" and yet the parser returned true.");
     }
+
+    if(validators.size() == 1)
+    {
+        return create(validators[0].get_name(), validators[0].get_params());
+    }
+
+    // we need a list validator to handle this case
+    //
+    validator::pointer_t lst(create("list", string_list_t()));
+    validator_list::pointer_t list(std::dynamic_pointer_cast<validator_list>(lst));
+    if(list == nullptr)
+    {
+        throw getopt_logic_error("we just created a list and the dynamic cast failed.");    // LCOV_EXCL_LINE
+    }
+    for(auto const & v : validators)
+    {
+        list->add_validator(create(v.get_name(), v.get_params()));
+    }
+
+    return list;
 }
 
 
