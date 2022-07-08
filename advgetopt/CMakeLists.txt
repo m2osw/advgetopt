@@ -59,6 +59,7 @@ add_library( ${PROJECT_NAME} SHARED
     validator.cpp
     validator_double.cpp
     validator_duration.cpp
+    validator_email.cpp
     validator_integer.cpp
     validator_regex.cpp
     validator_size.cpp
@@ -72,6 +73,7 @@ target_include_directories(${PROJECT_NAME}
         ${BOOST_INCLUDE_DIRS}
         ${CPPTHREAD_INCLUDE_DIRS}
         ${LIBEXCEPT_INCLUDE_DIRS}
+        ${LIBTLD_INCLUDE_DIRS}
         ${LIBUTF8_INCLUDE_DIRS}
         ${SNAPDEV_INCLUDE_DIRS}
 )
@@ -80,6 +82,7 @@ target_include_directories(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     ${CPPTHREAD_LIBRARIES}
     ${LIBEXCEPT_LIBRARIES}
+    ${LIBTLD_LIBRARIES}
     ${LIBUTF8_LIBRARIES}
     pthread
 )
