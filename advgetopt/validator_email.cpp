@@ -33,6 +33,11 @@
 #include    <cppthread/log.h>
 
 
+// libtld
+//
+#include    <libtld/tld.h>
+
+
 // last include
 //
 #include    <snapdev/poison.h>

@@ -34,11 +34,6 @@
 #include    <advgetopt/validator.h>
 
 
-// libtld
-//
-#include    <libtld/tld.h>
-
-
 
 namespace advgetopt
 {
