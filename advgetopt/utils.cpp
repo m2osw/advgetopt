@@ -187,7 +187,7 @@ std::string quote(std::string s, char q)
     {
         if(c == q)
         {
-            c += '\\';
+            result += '\\';
         }
         result += c;
     }
