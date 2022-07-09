@@ -115,7 +115,6 @@ validator_email::validator_email(string_list_t const & param_list)
                            << param_list[0]
                            << "\"."
                            << cppthread::end;
-            return;
         }
     }
 }
@@ -135,7 +134,7 @@ std::string validator_email::name() const
 
 /** \brief Check the value to make sure emails are considered valid.
  *
- * This function is used to verify the value for a valid 
+ * This function is used to verify the value for a valid email.
  *
  * \param[in] value  The value to be validated.
  *

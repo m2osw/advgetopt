@@ -111,10 +111,10 @@ std::string validator_keywords::name() const
 }
 
 
-/** \brief Check the value against a regular expression.
+/** \brief Check the value against a list of keywords.
  *
  * This function is used to match the value of an argument against a
- * regular expression. It returns true when it does match.
+ * list of keywords. It returns true when it does match.
  *
  * \param[in] value  The value to be validated.
  *

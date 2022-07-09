@@ -169,6 +169,34 @@ std::string unquote(std::string const & s, std::string const & pairs)
 }
 
 
+/** \brief The converse of unquote.
+ *
+ * This function adds quotes around a string.
+ *
+ * \param[in] s  The string to be quoted.
+ * \param[in] q  The quotes to use to quote this string.
+ *
+ * \return The input string quoted with \p quote.
+ */
+std::string quote(std::string s, char q)
+{
+    std::string result;
+
+    result += q;
+    for(auto const c : s)
+    {
+        if(c == q)
+        {
+            c += '\\';
+        }
+        result += c;
+    }
+    result += q;
+
+    return result;
+}
+
+
 /** \brief Split a string in sub-strings separated by \p separators.
  *
  * This function searches for any of the \p separators in \p str and
