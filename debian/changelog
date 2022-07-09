@@ -9,6 +9,8 @@ advgetopt (2.0.38.0~bionic) bionic; urgency=high
   * Applied some fixes to the variables implementation so errors work.
   * Fixed the search of the atomic-names tool when building coverage.
   * Also generate a fatal error if we can't find the tool at all.
+  * Added the keywords & list validators to make it possible to verify things
+    such as "off,min,max" or an integer.
 
  -- Alexis Wilke <alexis@m2osw.com>  Thu, 26 May 2022 21:42:41 -0700
 

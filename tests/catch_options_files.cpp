@@ -1538,7 +1538,7 @@ CATCH_TEST_CASE("invalid_options_files", "[options][invalid][files]")
         int const sub_argc(sizeof(sub_cargv) / sizeof(sub_cargv[0]) - 1);
         char ** sub_argv = const_cast<char **>(sub_cargv);
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: validator(): parameter list must end with ')'.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: validator(): parameter list must end with ')'. Remaining input: \"...EOS\"");
         //CATCH_REQUIRE(std::make_shared<advgetopt::getopt>(options_environment, sub_argc, sub_argv) != nullptr);
 
         CATCH_REQUIRE_THROWS_MATCHES(

@@ -181,6 +181,11 @@ public:
                         }
                         if(c < ' ' && c != '\t')
                         {
+                            cppthread::log << cppthread::log_level_t::error
+                                           << "validator(): unexpected character for a regular expression ("
+                                           << static_cast<int>(c)
+                                           << ")."
+                                           << cppthread::end;
                             return token(token_t::TOK_INVALID);
                         }
                         if(c == '\\')
@@ -193,6 +198,11 @@ public:
                             c = getc();
                             if(c < ' ' && c != '\t')
                             {
+                                cppthread::log << cppthread::log_level_t::error
+                                               << "validator(): unexpected escaped character for a regular expression ("
+                                               << static_cast<int>(c)
+                                               << ")."
+                                               << cppthread::end;
                                 return token(token_t::TOK_INVALID);
                             }
                         }
@@ -212,6 +222,16 @@ public:
                         if(c < 'a' || c > 'z')
                         {
                             ungetc(c);
+                            if(c != ','
+                            && c != ')')
+                            {
+                                cppthread::log << cppthread::log_level_t::error
+                                               << "validator(): unexpected flag character for a regular expression ("
+                                               << static_cast<int>(c)
+                                               << ")."
+                                               << cppthread::end;
+                                return token(token_t::TOK_INVALID);
+                            }
                             break;
                         }
                         r += c;
@@ -238,17 +258,16 @@ public:
                             ungetc(c);
                             [[fallthrough]];
                         case '\0':
-                            if(id.empty())
-                            {
-                                // this can happen if the parameter is empty
-                                // (i.e. "blah( )")
-                                goto skip_identifier;
-                            }
                             return token(token_t::TOK_IDENTIFIER, id);
 
                         default:
                             if(c < ' ' || c > '~')
                             {
+                                cppthread::log << cppthread::log_level_t::error
+                                               << "validator(): unexpected character for an identifier ("
+                                               << static_cast<int>(c)
+                                               << ")."
+                                               << cppthread::end;
                                 return token(token_t::TOK_INVALID);
                             }
                             break;
@@ -258,7 +277,6 @@ public:
                         c = getc();
                     }
                 }
-skip_identifier:
                 break;
 
             }
@@ -302,7 +320,7 @@ private:
     {
         if(f_c != '\0')
         {
-            throw getopt_logic_error("ungetc() already called once, getc() must be called in between now");
+            throw getopt_logic_error("ungetc() already called once, getc() must be called in between now"); // LCOV_EXCL_LINE
         }
         f_c = c;
     }
@@ -389,11 +407,18 @@ public:
                         {
                             for(;;)
                             {
+                                if(t.tok() == token_t::TOK_INVALID)
+                                {
+                                    return false;
+                                }
                                 if(t.tok() != token_t::TOK_IDENTIFIER
-                                && t.tok() != token_t::TOK_STRING)
+                                && t.tok() != token_t::TOK_STRING
+                                && t.tok() != token_t::TOK_REGEX)
                                 {
                                     cppthread::log << cppthread::log_level_t::error
-                                                   << "validator(): expected an identifier or a string inside the () of a parameter."
+                                                   << "validator(): expected a regex, an identifier or a string inside the () of a parameter. Remaining input: \""
+                                                   << f_lexer.remains()
+                                                   << "\""
                                                    << cppthread::end;
                                     return false;
                                 }
@@ -408,19 +433,31 @@ public:
                                 if(t.tok() == token_t::TOK_EOF)
                                 {
                                     cppthread::log << cppthread::log_level_t::error
-                                                   << "validator(): parameter list must end with ')'."
+                                                   << "validator(): parameter list must end with ')'. Remaining input: \""
+                                                   << f_lexer.remains()
+                                                   << "\""
                                                    << cppthread::end;
                                     return false;
                                 }
 
                                 if(t.tok() != token_t::TOK_COMMA)
                                 {
+                                    if(t.tok() == token_t::TOK_INVALID)
+                                    {
+                                        return false;
+                                    }
                                     cppthread::log << cppthread::log_level_t::error
-                                                   << "validator(): parameter must be separated by ','."
+                                                   << "validator(): parameters must be separated by ','. Remaining input: \""
+                                                   << f_lexer.remains()
+                                                   << "\""
                                                    << cppthread::end;
                                     return false;
                                 }
-                                t = f_lexer.next_token();
+                                do
+                                {
+                                    t = f_lexer.next_token();
+                                }
+                                while(t.tok() == token_t::TOK_COMMA);
                             }
                         }
                         t = f_lexer.next_token();
@@ -431,12 +468,15 @@ public:
                 break;
 
             default:
-                cppthread::log << cppthread::log_level_t::error
-                               << "validator(): unexpected token in validator definition;"
-                                  " expected an identifier. Remaining input: \""
-                               << f_lexer.remains()
-                               << "\"."
-                               << cppthread::end;
+                if(t.tok() != token_t::TOK_INVALID)
+                {
+                    cppthread::log << cppthread::log_level_t::error
+                                   << "validator(): unexpected token in validator definition;"
+                                      " expected an identifier. Remaining input: \""
+                                   << f_lexer.remains()
+                                   << "\"."
+                                   << cppthread::end;
+                }
                 return false;
 
             }
@@ -448,9 +488,14 @@ public:
 
             if(t.tok() != token_t::TOK_OR)
             {
-                cppthread::log << cppthread::log_level_t::error
-                               << "validator(): validator definitions must be separated by '|'."
-                               << cppthread::end;
+                if(t.tok() != token_t::TOK_INVALID)
+                {
+                    cppthread::log << cppthread::log_level_t::error
+                                   << "validator(): validator definitions must be separated by '|'. Remaining input: \""
+                                   << f_lexer.remains()
+                                   << "\""
+                                   << cppthread::end;
+                }
                 return false;
             }
 
@@ -609,10 +654,7 @@ validator::pointer_t validator::create(std::string const & name_and_params)
 
     if(validators.size() == 0)
     {
-        throw getopt_logic_error(
-                      "it looks like an error occurred parsing the validator string \""
-                    + name_and_params
-                    + "\" and yet the parser returned true.");
+        return validator::pointer_t();
     }
 
     if(validators.size() == 1)

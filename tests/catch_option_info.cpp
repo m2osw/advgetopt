@@ -1434,7 +1434,7 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
 
     CATCH_START_SECTION("invalid_option_info: Check invalid parameter (missing ')')")
         advgetopt::option_info auto_validate("validator", 'C');
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: validator(): parameter list must end with ')'.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: validator(): parameter list must end with ')'. Remaining input: \"...EOS\"");
         auto_validate.set_validator("regex('^[a-z]+$/'");
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
     CATCH_END_SECTION()
