@@ -52,7 +52,7 @@ CATCH_TEST_CASE("option_string", "[getopt][string]")
 {
     CATCH_START_SECTION("empty string returns an empty empty")
     {
-        CATCH_REQUIRE(advgetopt::getopt::escape_shell_argument(std::string()) == std::string("\"\""));
+        CATCH_REQUIRE(advgetopt::escape_shell_argument(std::string()) == std::string("\"\""));
     }
     CATCH_END_SECTION()
 
@@ -63,26 +63,26 @@ CATCH_TEST_CASE("option_string", "[getopt][string]")
         {
             std::string t;
             t += g_simple_characters[i];
-            CATCH_REQUIRE(advgetopt::getopt::escape_shell_argument(t) == t);
+            CATCH_REQUIRE(advgetopt::escape_shell_argument(t) == t);
         }
     }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("string in single quotes")
     {
-        CATCH_REQUIRE(advgetopt::getopt::escape_shell_argument("'between quotes'") == std::string("''\\''between quotes'\\'''"));
+        CATCH_REQUIRE(advgetopt::escape_shell_argument("'between quotes'") == std::string("''\\''between quotes'\\'''"));
     }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("string with apostrophe")
     {
-        CATCH_REQUIRE(advgetopt::getopt::escape_shell_argument("c'est un test") == std::string("'c'\\''est un test'"));
+        CATCH_REQUIRE(advgetopt::escape_shell_argument("c'est un test") == std::string("'c'\\''est un test'"));
     }
     CATCH_END_SECTION()
 
     CATCH_START_SECTION("string with special characters")
     {
-        CATCH_REQUIRE(advgetopt::getopt::escape_shell_argument("space colon: and semi-colon;") == std::string("'space colon: and semi-colon;'"));
+        CATCH_REQUIRE(advgetopt::escape_shell_argument("space colon: and semi-colon;") == std::string("'space colon: and semi-colon;'"));
     }
     CATCH_END_SECTION()
 }

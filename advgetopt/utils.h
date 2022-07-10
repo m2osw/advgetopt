@@ -59,6 +59,19 @@ std::string         default_group_name(std::string const & filename
 std::string         handle_user_directory(std::string const & filename);
 bool                is_true(std::string s);
 bool                is_false(std::string s);
+std::string         breakup_line(std::string line
+                               , size_t const option_width
+                               , size_t const line_width);
+std::string         format_usage_string(std::string const & argument
+                                      , std::string const & help
+                                      , size_t const option_width
+                                      , size_t const line_width);
+std::size_t         get_screen_width();
+std::size_t         get_screen_height();
+std::string         sanitizer_details();
+std::string         escape_shell_argument(std::string const & arg);
+void                less(std::basic_ostream<char> & out
+                       , std::string const & data);
 
 
 

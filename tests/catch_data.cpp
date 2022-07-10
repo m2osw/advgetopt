@@ -1435,83 +1435,83 @@ CATCH_TEST_CASE("system_flags_help", "[arguments][valid][getopt][system_flags]")
         advgetopt::flag_t const result(opt.process_system_options(ss));
         CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_HELP);
         CATCH_REQUIRE_LONG_STRING(ss.str(),
-advgetopt::getopt::breakup_line(
+advgetopt::breakup_line(
               "Usage: test system commands"
             , 0
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--build-date"
             , "print out the time and date when arguments was built and exit."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--compiler-version"
             , "print the version of the compiler used to compile the advgetopt library."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--configuration-filenames"
             , "print out the list of configuration files checked out by this"
               " tool."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--copyright or -C"
             , "print out the copyright of arguments and exit."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--environment-variable-name"
             , "print out the name of the environment variable supported by"
               " arguments (if any.)"
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--has-sanitizer"
             , "print whether the advgetopt was compiled with the sanitizer extension."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--help or -h"
             , "print out this help screen and exit."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--license or -L"
             , "print out the license of arguments and exit."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--long-help or -?"
             , "show all the help from all the available options."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--path-to-option-definitions"
             , "print out the path to the option definitions."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--print-option <arg>"
             , "print the value of the named option after loading all the command line options."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--show-option-sources"
             , "parse all the options and then print out the source of each"
               " value and each override."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--size or -s <arg> (default is \"33\")"
             , "define the size."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--version or -V"
             , "print out the version of arguments and exit."
             , 30
-            , advgetopt::getopt::get_line_width())
+            , advgetopt::get_screen_width())
 + "\n"
   "Copyright matters\n"
   "\n"
@@ -1615,93 +1615,93 @@ advgetopt::getopt::breakup_line(
         advgetopt::flag_t const result(opt.process_system_options(ss));
         CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_HELP);
         CATCH_REQUIRE_LONG_STRING(ss.str(),
-advgetopt::getopt::breakup_line(
+advgetopt::breakup_line(
               "Usage: test system commands"
             , 0
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--build-date"
             , "print out the time and date when arguments was built and exit."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--compiler-version"
             , "print the version of the compiler used to compile the advgetopt library."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--configuration-filenames"
             , "print out the list of configuration files checked out by this"
               " tool."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--copyright or -C"
             , "print out the copyright of arguments and exit."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--environment-variable-name"
             , "print out the name of the environment variable supported by"
               " arguments (if any.)"
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--has-sanitizer"
             , "print whether the advgetopt was compiled with the sanitizer extension."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--help or -h"
             , "print out this help screen and exit."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--license or -L"
             , "print out the license of arguments and exit."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--long-help or -?"
             , "show all the help from all the available options."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--obscure or -o <arg>"
             , "obscure command, hidden by default."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--path-to-option-definitions"
             , "print out the path to the option definitions."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--print-option <arg>"
             , "print the value of the named option after loading all the command line options."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--secret or -S <arg>"
             , "even more secret command, hidden by default."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--show-option-sources"
             , "parse all the options and then print out the source of each"
               " value and each override."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--size or -s <arg> (default is \"33\")"
             , "define the size."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--version or -V"
             , "print out the version of arguments and exit."
             , 30
-            , advgetopt::getopt::get_line_width())
+            , advgetopt::get_screen_width())
 + "\n"
   "Copyright matters\n"
   "\n"
@@ -1898,95 +1898,95 @@ advgetopt::getopt::breakup_line(
         advgetopt::flag_t const result(opt.process_system_options(ss));
         CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_HELP);
         CATCH_REQUIRE_LONG_STRING(ss.str(),
-advgetopt::getopt::breakup_line(
+advgetopt::breakup_line(
               "Usage: test system commands"
             , 0
-            , advgetopt::getopt::get_line_width())
+            , advgetopt::get_screen_width())
 + "\n"
   "Commands:\n"
-+ advgetopt::getopt::format_usage_string(
++ advgetopt::format_usage_string(
               "--build-date"
             , "print out the time and date when arguments was built and exit."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--commands-help"
             , "show help from the \"commands\" group of options."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--compiler-version"
             , "print the version of the compiler used to compile the advgetopt library."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--configuration-filenames"
             , "print out the list of configuration files checked out by this"
               " tool."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--copyright or -C"
             , "print out the copyright of arguments and exit."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--environment-variable-name"
             , "print out the name of the environment variable supported by"
               " arguments (if any.)"
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--has-sanitizer"
             , "print whether the advgetopt was compiled with the sanitizer extension."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--help or -h"
             , "print out this help screen and exit."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--license or -L"
             , "print out the license of arguments and exit."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--obscure or -o <arg>"
             , "obscure command, hidden by default."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--option-help"
             , "show help from the \"option\" group of options."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--path-to-option-definitions"
             , "print out the path to the option definitions."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--print-option <arg>"
             , "print the value of the named option after loading all the command line options."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--show-option-sources"
             , "parse all the options and then print out the source of each"
               " value and each override."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--size or -s <arg> (default is \"33\")"
             , "define the size."
             , 30
-            , advgetopt::getopt::get_line_width())
-+ advgetopt::getopt::format_usage_string(
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
               "--version or -V"
             , "print out the version of arguments and exit."
             , 30
-            , advgetopt::getopt::get_line_width())
+            , advgetopt::get_screen_width())
 + "\n"
   "Copyright matters\n"
   "\n"
@@ -4281,11 +4281,11 @@ CATCH_TEST_CASE("check_sanitizer", "[arguments][valid][getopt]")
                     "The thread sanitizer is compiled in.\n"
 #endif
             );
-        CATCH_REQUIRE(advgetopt::getopt::sanitizer_details() == expected);
+        CATCH_REQUIRE(advgetopt::sanitizer_details() == expected);
 #else
         // when running in Debug or Release
         //
-        CATCH_REQUIRE(advgetopt::getopt::sanitizer_details() == "The address and thread sanitizers are not compiled in.\n");
+        CATCH_REQUIRE(advgetopt::sanitizer_details() == "The address and thread sanitizers are not compiled in.\n");
 #endif
     }
     CATCH_END_SECTION()

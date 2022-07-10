@@ -48,62 +48,10 @@ namespace advgetopt
 namespace
 {
 
-constexpr char const g_single_quote = '\'';
 constexpr char const g_space = ' ';
-constexpr char const * g_empty_string = "\"\"";
-constexpr char const * g_escaped_single_quotes = "'\\''";
-constexpr char const * g_simple_characters = "+-./0123456789=ABCEFGHIJKLMNOPQRSTUVWXYZabcefghijklmnopqrstuvwxyz_";
+
 
 } // no name namespace
-
-
-/** \brief Escape special characters from a shell argument.
- *
- * This function goes through the supplied argument. If it includes one
- * or more character other than `[-+0-9A-Za-z_]`, then it gets \em escaped.
- * This means we add single quotes at the start and end, and escape any
- * single quote within the argument.
- *
- * So the function may return the input string as is.
- *
- * \param[in] arg  The argument to escape.
- *
- * \return The escaped argument.
- */
-std::string getopt::escape_shell_argument(std::string const & arg)
-{
-    if(arg.empty())
-    {
-        return std::string(g_empty_string);
-    }
-
-    std::string::size_type const pos(arg.find_first_not_of(g_simple_characters));
-    if(pos == std::string::npos)
-    {
-        return arg;
-    }
-
-    std::string result;
-
-    result += g_single_quote;
-    std::string::size_type p1(0);
-    while(p1 < arg.length())
-    {
-        std::string::size_type const p2(arg.find('\'', p1));
-        if(p2 == std::string::npos)
-        {
-            result += arg.substr(p1);
-            break;
-        }
-        result += arg.substr(p1, p2 - p1);
-        result += g_escaped_single_quotes;
-        p1 = p2 + 1;                            // skip the '
-    }
-    result += g_single_quote;
-
-    return result;
-}
-
 
 /** \brief Transform all the defined options back in a string.
  *

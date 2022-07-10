@@ -179,18 +179,6 @@ public:
                             find_group(flag_t group) const;
     std::string             usage(flag_t show = GETOPT_FLAG_SHOW_MOST) const;
     std::string             process_help_string(char const * help) const;
-    static std::string      breakup_line(
-                                      std::string line
-                                    , size_t const option_width
-                                    , size_t const line_width);
-    static std::string      format_usage_string(
-                                      std::string const & argument
-                                    , std::string const & help
-                                    , size_t const option_width
-                                    , size_t const line_width);
-    static size_t           get_line_width();
-    static std::string      sanitizer_details();
-    static std::string      escape_shell_argument(std::string const & arg);
 
     variables::pointer_t    get_variables() const;
 

@@ -35,6 +35,7 @@
 // snapdev
 //
 #include    <snapdev/glob_to_list.h>
+#include    <snapdev/isatty.h>
 #include    <snapdev/not_used.h>
 #include    <snapdev/trim_string.h>
 
@@ -47,12 +48,19 @@
 
 // C++
 //
+#include    <cstring>
+#include    <iomanip>
 #include    <set>
+#include    <sstream>
 
 
 // C
 //
-#include    <string.h>
+#include    <sys/ioctl.h>
+#include    <sys/stat.h>
+#include    <unistd.h>
+
+
 
 
 // last include
@@ -81,6 +89,13 @@ namespace
  * a safe manner.
  */
 cppthread::mutex *      g_mutex;
+
+
+
+constexpr char const    g_single_quote = '\'';
+constexpr char const *  g_empty_string = "\"\"";
+constexpr char const *  g_escaped_single_quotes = "'\\''";
+constexpr char const *  g_simple_characters = "+-./0123456789=ABCEFGHIJKLMNOPQRSTUVWXYZabcefghijklmnopqrstuvwxyz_";
 
 
 
@@ -612,6 +627,373 @@ bool is_true(std::string s)
 bool is_false(std::string s)
 {
     return s == "false" || s == "off" || s == "no" || s == "0";
+}
+
+
+/** \brief Retrieve the width of one line in your console.
+ *
+ * This function retrieves the width of the console in number of characters.
+ *
+ * If the process is not connected to a TTY, then the function returns 80.
+ *
+ * If the width is less than 40, the function returns 40.
+ *
+ * \return The width of the console screen.
+ */
+size_t get_screen_width()
+{
+    std::int64_t cols(80);
+
+    if(isatty(STDOUT_FILENO))
+    {
+        // when running coverage, the output is redirected for logging purposes
+        // which means that isatty() returns false -- so at this time I just
+        // exclude those since they are unreachable from my standard Unit Tests
+        //
+        winsize w;                                                          // LCOV_EXCL_LINE
+        if(ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) != -1)                      // LCOV_EXCL_LINE
+        {
+            cols = std::max(static_cast<unsigned short>(40), w.ws_col);     // LCOV_EXCL_LINE
+        }
+    }
+
+    return cols;
+}
+
+
+/** \brief Breakup a string on multiple lines.
+ *
+ * This function breaks up the specified \p line of text in one or more
+ * strings to fit your output.
+ *
+ * The \p line_width represents the maximum number of characters that get
+ * printed in a row.
+ *
+ * The \p option_width parameter is the number of characters in the left
+ * margin. When dealing with a very long argument, this width is 3 characters.
+ * When dealing with the help itself, it is expected to be around 30.
+ *
+ * \note
+ * This function always makes sure that the resulting string ends with
+ * a newline character unless the input \p line string is empty.
+ *
+ * \param[in] line  The line to breakup.
+ * \param[in] option_width  The number of characters in the left margin.
+ * \param[in] line_width  The total number of characters in the output.
+ *
+ * \return The broken up line as required.
+ */
+std::string breakup_line(
+      std::string line
+    , size_t const option_width
+    , size_t const line_width)
+{
+    std::stringstream ss;
+
+    size_t const width(line_width - option_width);
+
+    // TODO: once we have C++17, avoid substr() using std::string_view instead
+    //
+    for(;;)
+    {
+        std::string l;
+        std::string::size_type const nl(line.find('\n'));
+        if(nl != std::string::npos
+        && nl < width)
+        {
+            l = line.substr(0, nl);
+            line = line.substr(nl + 1);
+        }
+        else if(line.size() <= width)
+        {
+            break;
+        }
+        else if(std::isspace(line[width]))
+        {
+            // special case when the space is right at the edge
+            //
+            l = line.substr(0, width);
+            size_t pos(width);
+            do
+            {
+                ++pos;
+            }
+            while(std::isspace(line[pos]));
+            line = line.substr(pos);
+        }
+        else
+        {
+            // search for the last space before the edge of the screen
+            //
+            std::string::size_type pos(line.find_last_of(' ', width));
+            if(pos == std::string::npos)
+            {
+                // no space found, cut right at the edge...
+                // (this should be really rare)
+                //
+                l = line.substr(0, width);
+                line = line.substr(width);
+            }
+            else
+            {
+                // we found a space, write everything up to that space
+                //
+                l = line.substr(0, pos);
+
+                // remove additional spaces from the start of the next line
+                do  // LCOV_EXCL_LINE
+                {
+                    ++pos;
+                }
+                while(std::isspace(line[pos]));
+                line = line.substr(pos);
+            }
+        }
+
+        ss << l
+           << std::endl;
+
+        // more to print? if so we need the indentation
+        //
+        if(!line.empty()
+        && option_width > 0)
+        {
+            ss << std::setw(option_width) << " ";
+        }
+    }
+
+    // some leftover?
+    //
+    if(!line.empty())
+    {
+        ss << line << std::endl;
+    }
+
+    return ss.str();
+}
+
+
+/** \brief Format a help string to make it fit on a given width.
+ *
+ * This function properly wraps a set of help strings so they fit in
+ * your console. The width has to be given by you at the moment.
+ *
+ * The function takes two strings, the argument with it's options
+ * and the actual help string for that argument. If the argument
+ * is short enough, it will appear on the first line with the
+ * first line of help. If not, then one whole line is reserved
+ * just for the argument and the help starts on the next line.
+ *
+ * \param[in] argument  The option name with -- and arguments.
+ * \param[in] help  The help string for this argument.
+ * \param[in] option_width  Number of characters reserved for the option.
+ * \param[in] line_width  The maximum number of characters to display in width.
+ *
+ * \return A help string formatted for display.
+ */
+std::string format_usage_string(
+                      std::string const & argument
+                    , std::string const & help
+                    , size_t const option_width
+                    , size_t const line_width)
+{
+    std::stringstream ss;
+
+    ss << "   ";
+
+    if(argument.size() < option_width - 3)
+    {
+        // enough space on a single line
+        //
+        ss << argument
+           << std::setw(option_width - 3 - argument.size())
+           << " ";
+    }
+    else if(argument.size() >= line_width - 4)
+    {
+        // argument too long for even one line on the screen!?
+        // call the function to break it up with indentation of 3
+        //
+        ss << breakup_line(argument, 3, line_width);
+
+        if(!help.empty()
+        && option_width > 0)
+        {
+            ss << std::setw(option_width) << " ";
+        }
+    }
+    else
+    {
+        // argument too long for the help to follow immediately
+        //
+        ss << argument
+           << std::endl
+           << std::setw(option_width)
+           << " ";
+    }
+
+    ss << breakup_line(help, option_width, line_width);
+
+    return ss.str();
+}
+
+
+/** \brief Escape special characters from a shell argument.
+ *
+ * This function goes through the supplied argument. If it includes one
+ * or more character other than `[-+0-9A-Za-z_]`, then it gets \em escaped.
+ * This means we add single quotes at the start and end, and escape any
+ * single quote within the argument.
+ *
+ * So the function may return the input string as is.
+ *
+ * \param[in] arg  The argument to escape.
+ *
+ * \return The escaped argument.
+ */
+std::string escape_shell_argument(std::string const & arg)
+{
+    if(arg.empty())
+    {
+        return std::string(g_empty_string);
+    }
+
+    std::string::size_type const pos(arg.find_first_not_of(g_simple_characters));
+    if(pos == std::string::npos)
+    {
+        return arg;
+    }
+
+    std::string result;
+
+    result += g_single_quote;
+    std::string::size_type p1(0);
+    while(p1 < arg.length())
+    {
+        std::string::size_type const p2(arg.find('\'', p1));
+        if(p2 == std::string::npos)
+        {
+            result += arg.substr(p1);
+            break;
+        }
+        result += arg.substr(p1, p2 - p1);
+        result += g_escaped_single_quotes;
+        p1 = p2 + 1;                            // skip the '
+    }
+    result += g_single_quote;
+
+    return result;
+}
+
+
+/** \brief Generate a string describing whether we're using the sanitizer.
+ *
+ * This function determines whether this library was compiled with the
+ * sanitizer extension. If so, then it will return detail about which
+ * feature was compiled in.
+ *
+ * If no sanitizer options were compiled in, then it returns a
+ * message saying so.
+ *
+ * \return A string with details about the sanitizer.
+ */
+std::string sanitizer_details()
+{
+    std::string result;
+#if defined(__SANITIZE_ADDRESS__) || defined(__SANITIZE_THREAD__)
+#if defined(__SANITIZE_ADDRESS__)
+    result += "The address sanitizer is compiled in.\n";
+#endif
+#if defined(__SANITIZE_THREAD__)
+    result += "The thread sanitizer is compiled in.\n";
+#endif
+#else
+    result += "The address and thread sanitizers are not compiled in.\n";
+#endif
+    return result;
+}
+
+
+/** \brief Retrieve the height of your console.
+ *
+ * This function retrieves the height of the console in number of characters.
+ * This is also called the number of rows.
+ *
+ * If the process is not connected to a TTY, then the function returns 25.
+ *
+ * If the height is less than 2, the function returns 2.
+ *
+ * \note
+ * The get_screen_width() and get_screen_height() should be combined.
+ *
+ * \return The width of the console screen.
+ */
+size_t get_screen_height()
+{
+    std::int64_t rows(25);
+
+    if(isatty(STDOUT_FILENO))
+    {
+        // when running coverage, the output is redirected for logging purposes
+        // which means that isatty() returns false -- so at this time I just
+        // exclude those since they are unreachable from my standard Unit Tests
+        //
+        winsize w;                                                          // LCOV_EXCL_LINE
+        if(ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) != -1)                      // LCOV_EXCL_LINE
+        {
+            rows = std::max(static_cast<unsigned short>(2), w.ws_row);      // LCOV_EXCL_LINE
+        }
+    }
+
+    return rows;
+}
+
+
+/** \brief Print out a string to the console or use less.
+ *
+ * If the \p data string to be output is too large for the screen (too
+ * many lines; we assume the width was already "fixed") then use less
+ * to show the data. If less is not available, use more. If neither
+ * is available, fall back to printing everything at once.
+ *
+ * \param[in,out] out  The output stream where the data has to be written.
+ * \param[in] data  The data to be written to stream.
+ */
+void less(std::basic_ostream<char> & out, std::string const & data)
+{
+    if(snapdev::isatty(out))
+    {
+        auto const lines(std::count(data.begin(), data.end(), '\n'));
+        size_t const height(get_screen_height());
+        if(lines > static_cast<decltype(lines)>(height))
+        {
+            struct stat s;
+            if(stat("/bin/less", &s) == 0)
+            {
+                FILE * f(popen("/bin/less", "w"));
+                if(f != nullptr)
+                {
+                    fwrite(data.c_str(), sizeof(char), data.length(), f);
+                    pclose(f);
+                    return;
+                }
+            }
+            else if(stat("/bin/more", &s) == 0)
+            {
+                FILE * f(popen("/bin/more", "w"));
+                if(f != nullptr)
+                {
+                    fwrite(data.c_str(), sizeof(char), data.length(), f);
+                    pclose(f);
+                    return;
+                }
+            }
+        }
+    }
+
+    // fallback, just print everything to the console as is
+    //
+    out << data << std::endl;
 }
 
 
