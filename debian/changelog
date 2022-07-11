@@ -1,3 +1,9 @@
+advgetopt (2.0.38.1~bionic) bionic; urgency=high
+
+  * Applied fix to a static_cast so it compiles in release.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 11 Jul 2022 10:02:59 -0700
+
 advgetopt (2.0.38.0~bionic) bionic; urgency=high
 
   * Fixed two bugs in the environment variable check function.
