@@ -965,7 +965,7 @@ void less(std::basic_ostream<char> & out, std::string const & data)
     {
         auto const lines(std::count(data.begin(), data.end(), '\n'));
         size_t const height(get_screen_height());
-        if(lines > static_cast<decltype(lines)>(height))
+        if(lines > static_cast<std::remove_const_t<decltype(lines)>>(height))
         {
             struct stat s;
             if(stat("/bin/less", &s) == 0)
