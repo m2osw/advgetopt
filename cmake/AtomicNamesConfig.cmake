@@ -93,9 +93,13 @@ function(AtomicNames ATOMIC_NAMES)
                     "--output-path"
                         "${CMAKE_CURRENT_BINARY_DIR}"
                     "${CMAKE_CURRENT_SOURCE_DIR}/${ATOMIC_NAMES}"
+                    "--verbose"
 
         COMMAND
             echo "--- atomic names is okay? ---"
+
+        COMMAND
+            ls "${CMAKE_CURRENT_BINARY_DIR}"
 
         WORKING_DIRECTORY
             ${PROJECT_SOURCE_DIR}

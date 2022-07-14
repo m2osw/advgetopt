@@ -215,6 +215,7 @@ atomic_names::atomic_names(int argc, char * argv[])
     : f_opt(g_options_environment, argc, argv)
 {
     f_verbose = f_opt.is_defined("verbose");
+std::cerr << "atomic names was initialized\n";
 }
 
 
@@ -222,24 +223,28 @@ int atomic_names::run()
 {
     int r(0);
 
+std::cerr << "get filenames...\n";
     r = get_filenames();
     if(r != 0)
     {
         return r;
     }
 
+std::cerr << "load input...\n";
     r = load_input();
     if(r != 0)
     {
         return r;
     }
 
+std::cerr << "generate files...\n";
     r = generate_files();
     if(r != 0)
     {
         return r;
     }
 
+std::cerr << "ran with success...\n";
     return 0;
 }
 
@@ -632,8 +637,11 @@ int atomic_names::generate_files()
 
 int main(int argc, char * argv[])
 {
+std::cerr << "atomic names main() entered...\n";
     libexcept::init_report_signal();
+std::cerr << "report signal turned on...\n";
     libexcept::verify_inherited_files();
+std::cerr << "verified file inheritance...\n";
 
     try
     {
