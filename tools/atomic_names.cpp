@@ -55,6 +55,7 @@
 //
 #include    <libexcept/exception.h>
 #include    <libexcept/file_inheritance.h>
+#include    <libexcept/report_signal.h>
 
 
 // advgetopt
@@ -631,6 +632,7 @@ int atomic_names::generate_files()
 
 int main(int argc, char * argv[])
 {
+    libexcept::init_report_signal();
     libexcept::verify_inherited_files();
 
     try

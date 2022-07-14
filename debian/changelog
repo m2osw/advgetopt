@@ -1,3 +1,9 @@
+advgetopt (2.0.39.0~bionic) bionic; urgency=high
+
+  * Use a signal handler to capture crashes and print stack in atomic-names.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 13 Jul 2022 21:57:28 -0700
+
 advgetopt (2.0.38.1~bionic) bionic; urgency=high
 
   * Applied fix to a static_cast so it compiles in release.
