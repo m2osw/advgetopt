@@ -1,3 +1,10 @@
+advgetopt (2.0.39.2~bionic) bionic; urgency=high
+
+  * Try running the software with gdb to see if we can get some info about
+    the crash. If it happens before main()...
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 14 Jul 2022 15:06:44 -0700
+
 advgetopt (2.0.39.1~bionic) bionic; urgency=high
 
   * Added debug code inline since I don't see the signal handler message.
