@@ -71,7 +71,9 @@ namespace
 {
 
 
-std::map<std::string, validator_factory const *>      g_validator_factories;
+typedef std::map<std::string, validator_factory const *>    factory_map_t;
+
+factory_map_t * g_validator_factories;
 
 
 enum class token_t
@@ -573,22 +575,31 @@ validator::~validator()
 
 void validator::register_validator(validator_factory const & factory)
 {
-    auto it(g_validator_factories.find(factory.get_name()));
-    if(it != g_validator_factories.end())
+    if(g_validator_factories == nullptr)
+    {
+        g_validator_factories = new factory_map_t();
+    }
+    auto it(g_validator_factories->find(factory.get_name()));
+    if(it != g_validator_factories->end())
     {
         throw getopt_logic_error(
                   "you have two or more validator factories named \""
                 + factory.get_name()
                 + "\".");
     }
-    g_validator_factories[factory.get_name()] = &factory;
+    (*g_validator_factories)[factory.get_name()] = &factory;
 }
 
 
 validator::pointer_t validator::create(std::string const & name, string_list_t const & data)
 {
-    auto it(g_validator_factories.find(name));
-    if(it == g_validator_factories.end())
+    if(g_validator_factories == nullptr)
+    {
+        return validator::pointer_t();
+    }
+
+    auto it(g_validator_factories->find(name));
+    if(it == g_validator_factories->end())
     {
         return validator::pointer_t();
     }
