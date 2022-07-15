@@ -1,3 +1,9 @@
+advgetopt (2.0.40.0~bionic) bionic; urgency=high
+
+  * Removed the debugs. The g_validator_factories was the culprit.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 14 Jul 2022 21:17:18 -0700
+
 advgetopt (2.0.39.3~bionic) bionic; urgency=high
 
   * Changed the g_validator_factories in a pointer so we allocate before using.
