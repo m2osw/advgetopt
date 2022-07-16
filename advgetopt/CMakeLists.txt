@@ -62,6 +62,7 @@ add_library( ${PROJECT_NAME} SHARED
     validator_email.cpp
     validator_integer.cpp
     validator_keywords.cpp
+    validator_length.cpp
     validator_list.cpp
     validator_regex.cpp
     validator_size.cpp

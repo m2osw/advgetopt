@@ -8,3 +8,8 @@
 
 * Confirm that all the configuration functionality from snapwebsites is available
 
+* I had an idea which would be to make the validators plugins. One potential
+  advantage is that since we don't use them much, they could be loaded on an
+  as-needed basis. At the same time, it makes their implementation more
+  complicated.
+

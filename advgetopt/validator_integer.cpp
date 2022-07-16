@@ -40,11 +40,6 @@
 #include    <cppthread/log.h>
 
 
-// snapdev
-//
-#include    <snapdev/not_used.h>
-
-
 // boost
 //
 #include    <boost/algorithm/string/trim.hpp>
@@ -83,7 +78,6 @@ public:
 
     virtual std::shared_ptr<validator> create(string_list_t const & data) const override
     {
-        snapdev::NOT_USED(data); // ignore `data`
         return std::make_shared<validator_integer>(data);
     }
 };

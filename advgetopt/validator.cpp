@@ -595,7 +595,7 @@ validator::pointer_t validator::create(std::string const & name, string_list_t c
 {
     if(g_validator_factories == nullptr)
     {
-        return validator::pointer_t();
+        return validator::pointer_t();  // LCOV_EXCL_LINE
     }
 
     auto it(g_validator_factories->find(name));

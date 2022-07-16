@@ -494,6 +494,197 @@ CATCH_TEST_CASE("integer_validator", "[validator][valid][validation]")
 
 
 
+CATCH_TEST_CASE("length_validator", "[validator][valid][validation]")
+{
+    CATCH_START_SECTION("length_validator: Verify the length validator")
+    {
+        advgetopt::validator::pointer_t length_validator(advgetopt::validator::create("length", advgetopt::string_list_t()));
+
+        CATCH_REQUIRE(length_validator != nullptr);
+        CATCH_REQUIRE(length_validator->name() == "length");
+
+        CATCH_REQUIRE(length_validator->validate("Anything works in this case"));
+        CATCH_REQUIRE(length_validator->validate("since the length won't be checked"));
+        CATCH_REQUIRE(length_validator->validate(""));
+        CATCH_REQUIRE(length_validator->validate("even an empty string"));
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("length_validator: Verify the length ranges")
+    {
+        bool had_standalone(false);
+        for(int count(0); count < 20 || !had_standalone; ++count)
+        {
+            std::uint64_t min(rand() % 25 + 5);
+            std::uint64_t max(rand() % 25 + 5);
+            if(min > max)
+            {
+                std::swap(min, max);
+            }
+
+            std::string const & smin(std::to_string(min));
+            std::string const & smax(std::to_string(max));
+
+            std::string range("...");
+            for(int three(0); three < 3; ++three)
+            {
+                if(rand() % 5 == 0)
+                {
+                    range = ' ' + range;
+                }
+                if(rand() % 5 == 0)
+                {
+                    range = range + ' ';
+                }
+            }
+            range = smin + range + smax;
+            for(int three(0); three < 3; ++three)
+            {
+                if(rand() % 5 == 0)
+                {
+                    range = ' ' + range;
+                }
+                if(rand() % 5 == 0)
+                {
+                    range = range + ' ';
+                }
+            }
+
+            std::uint64_t standalone(0);
+            bool const standalone_included(rand() % 4 == 0);
+            if(standalone_included)
+            {
+                had_standalone = true;
+                do
+                {
+                    standalone = rand() % 35;
+                }
+                while(standalone >= min && standalone <= max);
+
+                std::string sep(",");
+                if(rand() % 3 == 0)
+                {
+                    sep = ' ' + sep;
+                }
+                if(rand() % 3 == 0)
+                {
+                    sep = sep + ' ';
+                }
+                if(rand() % 2 == 0)
+                {
+                    range = std::to_string(standalone) + "," + range;
+                }
+                else
+                {
+                    range = range + "," + std::to_string(standalone);
+                }
+            }
+            advgetopt::string_list_t range_list;
+            advgetopt::split_string(range
+                       , range_list
+                       , {","});
+            advgetopt::validator::pointer_t length_validator(advgetopt::validator::create("length", range_list));
+
+            CATCH_REQUIRE(length_validator != nullptr);
+            CATCH_REQUIRE(length_validator->name() == "length");
+
+            for(std::size_t idx(0); idx < std::max(max, standalone) + 5; ++idx)
+            {
+                std::string value;
+                for(std::size_t n(0); n < idx; ++n)
+                {
+                    value += rand() % 26 + 'a';
+                }
+
+                if((standalone_included && value.length() == standalone)
+                || (value.length() >= min && value.length() <= max))
+                {
+                    CATCH_REQUIRE(length_validator->validate(value));
+                }
+                else
+                {
+                    CATCH_REQUIRE_FALSE(length_validator->validate(value));
+                }
+            }
+        }
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("length_validator: Verify the length standalone list")
+    {
+        for(int count(0); count < 20; ++count)
+        {
+            int valid(rand() % 10 + 5);
+            std::vector<std::uint64_t> string_lengths;
+            string_lengths.reserve(valid);
+            std::string standalone_lengths;
+            for(int idx(0); idx < valid; ++idx)
+            {
+                std::int64_t const length(rand() % 25 + 5);
+                string_lengths.push_back(length);
+                std::string const & slength(std::to_string(length));
+                if(rand() % 5 == 0)
+                {
+                    standalone_lengths += ' ';
+                }
+                if(idx != 0)
+                {
+                    standalone_lengths += ',';
+                }
+                if(rand() % 5 == 0)
+                {
+                    standalone_lengths += ' ';
+                }
+                standalone_lengths += slength;
+            }
+            if(rand() % 5 == 0)
+            {
+                standalone_lengths += ' ';
+            }
+            advgetopt::string_list_t range_list;
+            advgetopt::split_string(standalone_lengths
+                       , range_list
+                       , {","});
+
+            advgetopt::validator::pointer_t length_validator(advgetopt::validator::create("length", range_list));
+
+            CATCH_REQUIRE(length_validator != nullptr);
+            CATCH_REQUIRE(length_validator->name() == "length");
+
+            for(std::size_t idx(0); idx < string_lengths.size(); ++idx)
+            {
+                std::string value;
+                for(std::uint64_t n(0); n < string_lengths[idx]; ++n)
+                {
+                    value += rand() % 26 + 'a';
+                }
+                CATCH_REQUIRE(length_validator->validate(value));
+            }
+
+            std::size_t const longest(*std::max_element(string_lengths.begin(), string_lengths.end()));
+            for(std::size_t idx(0); idx <= longest + 5; ++idx)
+            {
+                if(std::find(string_lengths.begin(), string_lengths.end(), idx) != string_lengths.end())
+                {
+                    continue;
+                }
+
+                std::string value;
+                for(std::size_t n(0); n < idx; ++n)
+                {
+                    value += rand() % 26 + 'a';
+                }
+
+                CATCH_REQUIRE_FALSE(length_validator->validate(value));
+            }
+        }
+    }
+    CATCH_END_SECTION()
+}
+
+
+
+
 CATCH_TEST_CASE("multi_validators", "[validator][valid][validation]")
 {
     CATCH_START_SECTION("multi_validators: Verify an integer along a few keywords")
@@ -1177,6 +1368,27 @@ CATCH_TEST_CASE("invalid_validator_create", "[validator][invalid][validation]")
         validator = advgetopt::validator::create("keywords(missing, name) integer(33)");
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         CATCH_REQUIRE(validator == nullptr);
+    }
+    CATCH_END_SECTION()
+}
+
+CATCH_TEST_CASE("invalid_length_validator", "[validator][invalid][validation]")
+{
+    CATCH_START_SECTION("invalid_length_validator: Verify invalid length ranges")
+    {
+        advgetopt::string_list_t range{
+            "abc",
+            "abc...6",
+            "3...def",
+            "10...1"};
+
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: abc is not a valid standalone value for your ranges; it must only be digits, optionally preceeded by a sign (+ or -) and not overflow an int64_t value.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: abc is not a valid value for your range's start; it must only be digits, optionally preceeded by a sign (+ or -) and not overflow an int64_t value.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: def is not a valid value for your range's end; it must only be digits, optionally preceeded by a sign (+ or -) and not overflow an int64_t value.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: 10 has to be smaller or equal to 1; you have an invalid range.");
+
+        advgetopt::validator::pointer_t length_validator(advgetopt::validator::create("length", range));
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
     }
     CATCH_END_SECTION()
 }

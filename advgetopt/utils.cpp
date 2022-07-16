@@ -188,25 +188,36 @@ std::string unquote(std::string const & s, std::string const & pairs)
  *
  * This function adds quotes around a string.
  *
+ * If you do not define the \p close quotation (i.e. it remains set to the
+ * NUL character '\0'), then the \p open quotation gets reused as the closing
+ * quotation.
+ *
  * \param[in] s  The string to be quoted.
- * \param[in] q  The quotes to use to quote this string.
+ * \param[in] open  The opening quote to quote this string.
+ * \param[in] close  The closing quote to quote this string.
  *
  * \return The input string quoted with \p quote.
  */
-std::string quote(std::string s, char q)
+std::string quote(std::string const & s, char open, char close)
 {
     std::string result;
 
-    result += q;
+    if(close == '\0')
+    {
+        close = open;
+    }
+
+    result += open;
     for(auto const c : s)
     {
-        if(c == q)
+        if(c == open
+        || c == close)
         {
             result += '\\';
         }
         result += c;
     }
-    result += q;
+    result += close;
 
     return result;
 }
@@ -646,15 +657,17 @@ size_t get_screen_width()
 
     if(isatty(STDOUT_FILENO))
     {
+// LCOV_EXCL_START
         // when running coverage, the output is redirected for logging purposes
         // which means that isatty() returns false -- so at this time I just
         // exclude those since they are unreachable from my standard Unit Tests
         //
-        winsize w;                                                          // LCOV_EXCL_LINE
-        if(ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) != -1)                      // LCOV_EXCL_LINE
+        winsize w;
+        if(ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) != -1)
         {
-            cols = std::max(static_cast<unsigned short>(40), w.ws_col);     // LCOV_EXCL_LINE
+            cols = std::max(static_cast<unsigned short>(40), w.ws_col);
         }
+// LCOV_EXCL_STOP
     }
 
     return cols;
@@ -928,6 +941,7 @@ std::string sanitizer_details()
  *
  * \return The width of the console screen.
  */
+// LCOV_EXCL_START
 size_t get_screen_height()
 {
     std::int64_t rows(25);
@@ -938,15 +952,16 @@ size_t get_screen_height()
         // which means that isatty() returns false -- so at this time I just
         // exclude those since they are unreachable from my standard Unit Tests
         //
-        winsize w;                                                          // LCOV_EXCL_LINE
-        if(ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) != -1)                      // LCOV_EXCL_LINE
+        winsize w;
+        if(ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) != -1)
         {
-            rows = std::max(static_cast<unsigned short>(2), w.ws_row);      // LCOV_EXCL_LINE
+            rows = std::max(static_cast<unsigned short>(2), w.ws_row);
         }
     }
 
     return rows;
 }
+// LCOV_EXCL_STOP
 
 
 /** \brief Print out a string to the console or use less.
@@ -963,6 +978,7 @@ void less(std::basic_ostream<char> & out, std::string const & data)
 {
     if(snapdev::isatty(out))
     {
+// LCOV_EXCL_START
         auto const lines(std::count(data.begin(), data.end(), '\n'));
         size_t const height(get_screen_height());
         if(lines > static_cast<std::remove_const_t<decltype(lines)>>(height))
@@ -989,6 +1005,7 @@ void less(std::basic_ostream<char> & out, std::string const & data)
                 }
             }
         }
+// LCOV_EXCL_STOP
     }
 
     // fallback, just print everything to the console as is
