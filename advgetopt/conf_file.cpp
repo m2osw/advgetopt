@@ -64,6 +64,7 @@
 //
 #include    <algorithm>
 #include    <fstream>
+#include    <iomanip>
 
 
 // C
@@ -1537,13 +1538,17 @@ bool conf_file::set_parameter(
             case '+':       // forbid all assignment operators (for later)
             case '\\':      // forbid backslashes
                 cppthread::log << cppthread::log_level_t::error
-                               << "parameter \""
+                               << "section \""
+                               << sn
+                               << "\" from parameter \""
                                << full_name
                                << "\" on line "
                                << f_line
                                << " in configuration file \""
                                << f_setup.get_filename()
-                               << "\" includes a character not acceptable for a section or parameter name (controls, space, quotes, and \";#/=:?+\\\")."
+                               << "\" includes a character (\\"
+                               << std::oct << std::setfill('0') << std::setw(3) << static_cast<int>(*f)
+                               << ") not acceptable for a section or parameter name (controls, space, quotes, and \";#/=:?+\\\")."
                                << cppthread::end;
                 return false;
 
