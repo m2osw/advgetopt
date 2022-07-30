@@ -140,6 +140,7 @@ string_list_t getopt::get_configuration_filenames(
                 if(is_defined("config-dir"))
                 {
                     size_t const max(size("config-dir"));
+                    directories.reserve(max);
                     for(size_t idx(0); idx < max; ++idx)
                     {
                         directories.push_back(get_string("config-dir", idx));

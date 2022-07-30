@@ -1547,7 +1547,7 @@ bool conf_file::set_parameter(
                                << " in configuration file \""
                                << f_setup.get_filename()
                                << "\" includes a character (\\"
-                               << std::oct << std::setfill('0') << std::setw(3) << static_cast<int>(*f)
+                               << std::oct << std::setfill('0') << std::setw(3) << static_cast<int>(*f) << std::dec
                                << ") not acceptable for a section or parameter name (controls, space, quotes, and \";#/=:?+\\\")."
                                << cppthread::end;
                 return false;

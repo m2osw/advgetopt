@@ -38,6 +38,7 @@
 // C++
 //
 #include    <fstream>
+#include    <iomanip>
 
 
 // C
@@ -3066,9 +3067,9 @@ CATCH_TEST_CASE("invalid_sections", "[config][getopt][invalid]")
 
         std::unique_ptr<char, decltype(&::free)> fn(realpath(SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(), nullptr), &::free);
         SNAP_CATCH2_NAMESPACE::push_expected_log(
-                  "error: parameter \"a::b\" on line 3 in configuration file \""
+                  "error: section \"a::b\" from parameter \"a::b\" on line 3 in configuration file \""
                 + std::string(fn.get())
-                + "\" includes a character not acceptable for a section or"
+                + "\" includes a character (\\072) not acceptable for a section or"
                   " parameter name (controls, space, quotes, and \";#/=:?+\\\").");
         advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
@@ -3176,12 +3177,18 @@ CATCH_TEST_CASE("invalid_sections", "[config][getopt][invalid]")
                 CATCH_REQUIRE(setup.get_section_operator() == (advgetopt::SECTION_OPERATOR_NONE));
 
                 std::unique_ptr<char, decltype(&::free)> fn(realpath(SNAP_CATCH2_NAMESPACE::g_config_filename.c_str(), nullptr), &::free);
+                std::stringstream octal_char;
+                octal_char << std::oct << std::setw(3) << std::setfill('0') << static_cast<int>(c);
                 SNAP_CATCH2_NAMESPACE::push_expected_log(
-                          "error: parameter \""
+                          "error: section \""
+                        + bad_char
+                        + "\" from parameter \""
                         + bad_char
                         + "\" on line 2 in configuration file \""
                         + fn.get()
-                        + "\" includes a character not acceptable for a section or"
+                        + "\" includes a character (\\"
+                        + octal_char.str()
+                        + ") not acceptable for a section or"
                           " parameter name (controls, space, quotes, and \";#/=:?+\\\").");
                 advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
 
