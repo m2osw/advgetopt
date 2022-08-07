@@ -125,10 +125,13 @@ public:
     section_operator_t          get_section_operator() const;
     std::string                 get_config_url() const;
     name_separator_t            get_name_separator() const;
+    void                        set_section_to_ignore(std::string const & section_name);
+    std::string const &         get_section_to_ignore() const;
 
 private:
     std::string                 f_original_filename = std::string();
     std::string                 f_filename = std::string();
+    std::string                 f_section_to_ignore = std::string();
     line_continuation_t         f_line_continuation = line_continuation_t::line_continuation_unix;
     assignment_operator_t       f_assignment_operator = ASSIGNMENT_OPERATOR_EQUAL;
     comment_t                   f_comment = COMMENT_INI | COMMENT_SHELL;

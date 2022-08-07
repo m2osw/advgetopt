@@ -355,6 +355,11 @@ std::string getopt::usage(flag_t show) const
                 }
             }
 
+            if(opt.second->has_flag(GETOPT_FLAG_DYNAMIC_CONFIGURATION))
+            {
+                argument << "*";
+            }
+
             if(opt.second->has_default())
             {
                 argument << " (default is \""
@@ -488,9 +493,9 @@ std::string getopt::process_help_string(char const * help) const
                     if(f_options_environment.f_configuration_directories != nullptr)
                     {
                         bool first(true);
-                        for(char const * const * directories(f_options_environment.f_configuration_directories)
-                          ; *directories != nullptr
-                          ; ++directories)
+                        for(char const * const * directories(f_options_environment.f_configuration_directories);
+                            *directories != nullptr;
+                            ++directories)
                         {
                             if(first)
                             {
@@ -529,9 +534,9 @@ std::string getopt::process_help_string(char const * help) const
                     if(f_options_environment.f_configuration_files != nullptr)
                     {
                         bool first(true);
-                        for(char const * const * filenames(f_options_environment.f_configuration_files)
-                          ; *filenames != nullptr
-                          ; ++filenames)
+                        for(char const * const * filenames(f_options_environment.f_configuration_files);
+                            *filenames != nullptr;
+                            ++filenames)
                         {
                             if(first)
                             {
@@ -656,19 +661,7 @@ std::string getopt::process_help_string(char const * help) const
             case 'i':
                 // in the advgetopt_options.cpp, we clearly add a final "/"
                 // so we want to add it here too, to be consistent
-                {
-                    std::string directory("/usr/share/advgetopt/options/");
-                    if(f_options_environment.f_options_files_directory != nullptr
-                    && *f_options_environment.f_options_files_directory != '\0')
-                    {
-                        directory = f_options_environment.f_options_files_directory;
-                        if(directory.back() != '/')
-                        {
-                            directory += '/';
-                        }
-                    }
-                    result += directory;
-                }
+                result += get_options_filename();
                 help += 2;
                 break;
 

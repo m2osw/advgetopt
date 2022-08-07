@@ -221,6 +221,33 @@ std::string getopt::get_group_name() const
 }
 
 
+/** \brief Retrieve the group or project name.
+ *
+ * There are a few places where we want to use the group or project name.
+ * This function checks the group first. If not defined, then the project
+ * name is returned.
+ *
+ * This is used to determine the path to configuration files.
+ *
+ * \return The name of the group, the project or an empty string.
+ */
+std::string getopt::get_group_or_project_name() const
+{
+    if(f_options_environment.f_group_name != nullptr
+    && *f_options_environment.f_group_name != '\0')
+    {
+        return f_options_environment.f_group_name;
+    }
+
+    if(f_options_environment.f_project_name != nullptr
+    && *f_options_environment.f_project_name != '\0')
+    {
+        return f_options_environment.f_project_name;
+    }
+
+    return std::string();
+}
+
 
 
 } // namespace advgetopt

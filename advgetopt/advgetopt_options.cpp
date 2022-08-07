@@ -46,6 +46,7 @@
 
 // snapdev
 //
+#include    <snapdev/join_strings.h>
 #include    <snapdev/tokenize_string.h>
 
 
@@ -210,6 +211,57 @@ void getopt::add_option(option_info::pointer_t opt, bool ignore_duplicates)
 }
 
 
+/** \brief Get the path and filename to options.
+ *
+ * The programmer can define a path to options that the tool will load.
+ * By default, that path is expected to be `/usr/share/advgetopt`.
+ *
+ * In order to allow debugging as a programmer, we also support changing
+ * the source through an environment variable named
+ * `ADVGETOPT_OPTIONS_FILES_DIRECTORY`. This variable is checked
+ * first and any other path is ignored if it is defined and not just an
+ * empty string.
+ *
+ * \note
+ * If somehow you did not define a group or a project name, then the
+ * function will return an empty string. Otherwise, this path always
+ * exists.
+ *
+ * \return The path or an empty string.
+ */
+std::string getopt::get_options_filename() const
+{
+    std::string const filename(get_group_or_project_name());
+    if(filename.empty())
+    {
+        return std::string();
+    }
+
+    std::string path;
+    char const * const options_files_directory(getenv("ADVGETOPT_OPTIONS_FILES_DIRECTORY"));
+    if(options_files_directory != nullptr
+    && *options_files_directory != '\0')
+    {
+        path = options_files_directory;
+    }
+    else if(f_options_environment.f_options_files_directory != nullptr
+         && f_options_environment.f_options_files_directory[0] != '\0')
+    {
+        path = f_options_environment.f_options_files_directory;
+    }
+    else
+    {
+        path = "/usr/share/advgetopt/options/";
+    }
+    if(path.back() != '/')
+    {
+        path += '/';
+    }
+
+    return path + filename + ".ini";
+}
+
+
 /** \brief Check for a file with option definitions.
  *
  * This function tries to read the default option file for this process.
@@ -225,31 +277,7 @@ void getopt::add_option(option_info::pointer_t opt, bool ignore_duplicates)
  */
 void getopt::parse_options_from_file()
 {
-    std::string filename;
-
-    if(f_options_environment.f_project_name == nullptr
-    || f_options_environment.f_project_name[0] == '\0')
-    {
-        return;
-    }
-
-    if(f_options_environment.f_options_files_directory == nullptr
-    || f_options_environment.f_options_files_directory[0] == '\0')
-    {
-        filename = "/usr/share/advgetopt/options/";
-    }
-    else
-    {
-        filename = f_options_environment.f_options_files_directory;
-        if(filename.back() != '/')
-        {
-            filename += '/';
-        }
-    }
-    filename += f_options_environment.f_project_name;
-    filename += ".ini";
-
-    parse_options_from_file(filename, 1, 1);
+    parse_options_from_file(get_options_filename(), 1, 1);
 }
 
 
@@ -307,6 +335,11 @@ void getopt::parse_options_from_file(
         , int max_sections
         , bool ignore_duplicates)
 {
+    if(filename.empty())
+    {
+        return;
+    }
+
     section_operator_t operators(SECTION_OPERATOR_INI_FILE);
     if(min_sections == 1
     && max_sections == 1)
@@ -314,25 +347,41 @@ void getopt::parse_options_from_file(
         operators |= SECTION_OPERATOR_ONE_SECTION;
     }
 
-    conf_file_setup conf_setup(filename
-                             , line_continuation_t::line_continuation_unix
-                             , ASSIGNMENT_OPERATOR_EQUAL
-                             , COMMENT_INI | COMMENT_SHELL
-                             , operators);
+    conf_file_setup conf_setup(
+              filename
+            , line_continuation_t::line_continuation_unix
+            , ASSIGNMENT_OPERATOR_EQUAL
+            , COMMENT_INI | COMMENT_SHELL
+            , operators);
     if(!conf_setup.is_valid())
     {
         return;  // LCOV_EXCL_LINE
     }
 
+    // if the file includes a section named after the group or project
+    // we can remove it completely (this helps with sharing fluid settings)
+    //
+    std::string const section_to_ignore(get_group_or_project_name());
+    conf_setup.set_section_to_ignore(section_to_ignore);
+
     conf_file::pointer_t conf(conf_file::get_conf_file(conf_setup));
     conf_file::sections_t const & sections(conf->get_sections());
     for(auto & section_names : sections)
     {
-        std::list<std::string> names;
-        snapdev::tokenize_string(
-              names
-            , section_names
-            , "::");
+        string_list_t names;
+        split_string(section_names, names, {"::"});
+        std::string option_name;
+        if(names.size() > 1
+        && *names.begin() == section_to_ignore)
+        {
+            names.erase(names.begin());
+            option_name = snapdev::join_strings(names, "::");
+        }
+        else
+        {
+            option_name = section_names;
+        }
+
         if(names.size() < static_cast<std::size_t>(min_sections)
         || names.size() > static_cast<std::size_t>(max_sections))
         {
@@ -364,7 +413,7 @@ void getopt::parse_options_from_file(
             continue;
         }
 
-        std::string const parameter_name(section_names);
+        std::string const parameter_name(option_name);
         std::string const short_name(unquote(conf->get_parameter(parameter_name + "::shortname")));
         if(short_name.length() > 1)
         {
@@ -435,6 +484,44 @@ void getopt::parse_options_from_file(
                 {
                     opt->add_flag(GETOPT_FLAG_CONFIGURATION_FILE);
                 }
+                else if(a == "dynamic-configuration")
+                {
+                    opt->add_flag(GETOPT_FLAG_DYNAMIC_CONFIGURATION);
+                }
+            }
+        }
+
+        std::string const group_name(parameter_name + "::group");
+        if(conf->has_parameter(group_name))
+        {
+            std::string const group(conf->get_parameter(group_name));
+            if(group == "commands")
+            {
+                opt->add_flag(GETOPT_FLAG_GROUP_COMMANDS);
+            }
+            else if(group == "options")
+            {
+                opt->add_flag(GETOPT_FLAG_GROUP_OPTIONS);
+            }
+            else if(group == "three")
+            {
+                opt->add_flag(GETOPT_FLAG_GROUP_THREE);
+            }
+            else if(group == "four")
+            {
+                opt->add_flag(GETOPT_FLAG_GROUP_FOUR);
+            }
+            else if(group == "five")
+            {
+                opt->add_flag(GETOPT_FLAG_GROUP_FIVE);
+            }
+            else if(group == "six")
+            {
+                opt->add_flag(GETOPT_FLAG_GROUP_SIX);
+            }
+            else if(group == "seven")
+            {
+                opt->add_flag(GETOPT_FLAG_GROUP_SEVEN);
             }
         }
 

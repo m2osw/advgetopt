@@ -591,6 +591,37 @@ name_separator_t conf_file_setup::get_name_separator() const
 }
 
 
+/** \brief Set a section name to ignore.
+ *
+ * If the number of sections is exactly 2 when only 1 should be used, then
+ * the first name is checked against this name. If equal, it gets removed.
+ *
+ * This is done so fluid-settings files can be loaded and we do not have
+ * to duplicate the data (since that's bad practice).
+ *
+ * \param[in] section_name  The name of the section to ignore.
+ */
+void conf_file_setup::set_section_to_ignore(std::string const & section_name)
+{
+    f_section_to_ignore = section_name;
+}
+
+
+/** \brief Retrieve the name to be ignore.
+ *
+ * This function returns a reference to the name of the section to ignore.
+ *
+ * For additional information, see the set_section_to_ignore() function.
+ *
+ * \return The name of the section to ignore.
+ */
+std::string const & conf_file_setup::get_section_to_ignore() const
+{
+    return f_section_to_ignore;
+}
+
+
+
 
 
 
@@ -1116,7 +1147,7 @@ bool conf_file::exists() const
  * marked as invalid when a configuration file does not exist and
  * you should not end up creation a conf_file object when that
  * happens. However, it is expected when you want to make some
- * changes to a few parameters and save them back to file (i.e. 
+ * changes to a few parameters and save them back to file (i.e.
  * the very first time there will be no file under the writable
  * configuration folder.)
  *
@@ -1471,14 +1502,22 @@ bool conf_file::set_parameter(
     if((f_setup.get_section_operator() & SECTION_OPERATOR_ONE_SECTION) != 0
     && section_list.size() > 1)
     {
-        cppthread::log << cppthread::log_level_t::error
-                       << "option name \""
-                       << name
-                       << "\" cannot be added to section \""
-                       << section_name
-                       << "\" because this configuration only accepts one section level."
-                       << cppthread::end;
-        return false;
+        if(section_list.size() == 2
+        && section_list[0] == f_setup.get_section_to_ignore())
+        {
+            section_list.erase(section_list.begin());
+        }
+        if(section_list.size() > 1)
+        {
+            cppthread::log << cppthread::log_level_t::error
+                           << "option name \""
+                           << name
+                           << "\" cannot be added to section \""
+                           << section_name
+                           << "\" because this configuration only accepts one section level."
+                           << cppthread::end;
+            return false;
+        }
     }
 
     section_list.push_back(param_name);

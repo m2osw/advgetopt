@@ -80,137 +80,15 @@ namespace advgetopt
  * \return The list of configuration filenames.
  */
 string_list_t getopt::get_configuration_filenames(
-          bool exists
-        , bool writable
-        , int argc
-        , char * argv[]) const
+      bool exists
+    , bool writable
+    , int argc
+    , char * argv[]) const
 {
     string_list_t result;
 
-    if(f_options_environment.f_configuration_files != nullptr)
-    {
-        // load options from configuration files specified as is by caller
-        //
-        for(char const * const * configuration_files(f_options_environment.f_configuration_files)
-          ; *configuration_files != nullptr
-          ; ++configuration_files)
-        {
-            char const * filename(*configuration_files);
-            if(*filename != '\0')
-            {
-                std::string const user_filename(handle_user_directory(filename));
-                if(user_filename == filename)
-                {
-                    if(!writable)
-                    {
-                        result.push_back(user_filename);
-                    }
-
-                    string_list_t const with_project_name(insert_group_name(
-                                  user_filename
-                                , f_options_environment.f_group_name
-                                , f_options_environment.f_project_name));
-                    if(!with_project_name.empty())
-                    {
-                        result.insert(
-                                  result.end()
-                                , with_project_name.begin()
-                                , with_project_name.end());
-                    }
-                }
-                else
-                {
-                    result.push_back(user_filename);
-                }
-            }
-        }
-    }
-
-    if(f_options_environment.f_configuration_filename != nullptr)
-    {
-        string_list_t directories;
-        if(has_flag(GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS))
-        {
-            if(f_parsed)
-            {
-                // WARNING: at this point the command line and environment
-                //          variable may not be parsed in full if at all
-                //
-                //if(has_flag(SYSTEM_OPTION_CONFIGURATION_FILENAMES))
-                if(is_defined("config-dir"))
-                {
-                    size_t const max(size("config-dir"));
-                    directories.reserve(max);
-                    for(size_t idx(0); idx < max; ++idx)
-                    {
-                        directories.push_back(get_string("config-dir", idx));
-                    }
-                }
-            }
-            else
-            {
-                // we've got to do some manual parsing (argh!)
-                //
-                directories = find_config_dir(argc, argv);
-                if(directories.empty())
-                {
-                    string_list_t args(split_environment(f_environment_variable));
-
-                    std::vector<char *> sub_argv;
-                    sub_argv.resize(args.size() + 2);
-                    sub_argv[0] = const_cast<char *>(f_program_fullname.c_str());
-                    for(size_t idx(0); idx < args.size(); ++idx)
-                    {
-                        sub_argv[idx + 1] = const_cast<char *>(args[idx].c_str());
-                    }
-                    sub_argv[args.size() + 1] = nullptr;
-                    
-                    directories = find_config_dir(sub_argv.size() - 1, sub_argv.data());
-                }
-            }
-        }
-
-        if(f_options_environment.f_configuration_directories != nullptr)
-        {
-            for(char const * const * configuration_directories(f_options_environment.f_configuration_directories)
-              ; *configuration_directories != nullptr
-              ; ++configuration_directories)
-            {
-                directories.push_back(*configuration_directories);
-            }
-        }
-
-        std::string const filename(f_options_environment.f_configuration_filename);
-
-        for(auto directory : directories)
-        {
-            if(!directory.empty())
-            {
-                std::string const full_filename(directory + ("/" + filename));
-                std::string const user_filename(handle_user_directory(full_filename));
-                if(user_filename == full_filename)
-                {
-                    if(!writable)
-                    {
-                        result.push_back(user_filename);
-                    }
-
-                    string_list_t const with_project_name(insert_group_name(user_filename, f_options_environment.f_group_name, f_options_environment.f_project_name));
-                    if(!with_project_name.empty())
-                    {
-                        result.insert(
-                                  result.end()
-                                , with_project_name.begin()
-                                , with_project_name.end());
-                    }
-                }
-                else
-                {
-                    result.push_back(user_filename);
-                }
-            }
-        }
-    }
+    get_managed_configuration_filenames(result, writable, argc, argv);
+    get_direct_configuration_filenames(result, writable);
 
     if(!exists)
     {
@@ -226,7 +104,232 @@ string_list_t getopt::get_configuration_filenames(
             existing_files.push_back(r);
         }
     }
+
     return existing_files;
+}
+
+
+/** \brief Add one configuration filename to our list.
+ *
+ * This function adds the specified \p add name to the \p names list unless
+ * already present in the list.
+ *
+ * Several of the functions computing configuration filenames can end up
+ * attempting to add the same filename multiple times. This function
+ * prevents the duplication. This also means the order may be slightly
+ * different than expected (i.e. the filenames don't get reordered when
+ * a duplicate is found).
+ *
+ * \param[in,out] names  The list of configuration names.
+ * \param[in] add  The new configuration filename to add.
+ */
+void getopt::add_configuration_filename(string_list_t & names, std::string const & add)
+{
+    if(std::find(names.begin(), names.end(), add) == names.end())
+    {
+        names.push_back(add);
+    }
+}
+
+
+/** \brief Generate the list of managed configuration filenames.
+ *
+ * As the programmer, you can define a configuration filename and a set
+ * of directory names. This function uses that information to generate
+ * a list of full configuration filenames that is then used to load
+ * those configurations.
+ *
+ * If a filename is defined, but no directories, the this function
+ * defines three default paths like so:
+ *
+ * \li `/usr/share/advgetopt/options/\<name>`
+ * \li `/usr/share/\<name>/options`
+ * \li `/etc/\<name>`
+ *
+ * \param[in,out] names  The list of names are added to this list.
+ * \param[in] writable  Whether the destination has to be writable.
+ * \param[in] argc  The number of arguments in argv.
+ * \param[in] argv  The command line arguments.
+ */
+void getopt::get_managed_configuration_filenames(
+      string_list_t & names
+    , bool writable
+    , int argc
+    , char * argv[]) const
+{
+    if(f_options_environment.f_configuration_filename == nullptr
+    || *f_options_environment.f_configuration_filename == '\0')
+    {
+        return;
+    }
+
+    string_list_t directories;
+    if(has_flag(GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS))
+    {
+        if(f_parsed)
+        {
+            // WARNING: at this point the command line and environment
+            //          variable may not be parsed in full if at all
+            //
+            //if(has_flag(SYSTEM_OPTION_CONFIGURATION_FILENAMES))
+            if(is_defined("config-dir"))
+            {
+                size_t const max(size("config-dir"));
+                directories.reserve(max);
+                for(size_t idx(0); idx < max; ++idx)
+                {
+                    directories.push_back(get_string("config-dir", idx));
+                }
+            }
+        }
+        else
+        {
+            // we've got to do some manual parsing (argh!)
+            //
+            directories = find_config_dir(argc, argv);
+            if(directories.empty())
+            {
+                string_list_t args(split_environment(f_environment_variable));
+
+                std::vector<char *> sub_argv;
+                sub_argv.resize(args.size() + 2);
+                sub_argv[0] = const_cast<char *>(f_program_fullname.c_str());
+                for(size_t idx(0); idx < args.size(); ++idx)
+                {
+                    sub_argv[idx + 1] = const_cast<char *>(args[idx].c_str());
+                }
+                sub_argv[args.size() + 1] = nullptr;
+
+                directories = find_config_dir(sub_argv.size() - 1, sub_argv.data());
+            }
+        }
+    }
+
+    if(f_options_environment.f_configuration_directories != nullptr)
+    {
+        for(char const * const * configuration_directories(f_options_environment.f_configuration_directories);
+            *configuration_directories != nullptr;
+            ++configuration_directories)
+        {
+            directories.push_back(*configuration_directories);
+        }
+    }
+
+    if(directories.empty())
+    {
+        std::string const name(get_group_or_project_name());
+
+        if(!name.empty())
+        {
+            std::string directory_name("/usr/share/advgetopt/options/");
+            directory_name += name;
+            directories.push_back(directory_name);
+
+            directory_name = "/usr/share/";
+            directory_name += name;
+            directory_name += "/options";
+            directories.push_back(directory_name);
+
+            directory_name = "/etc/";
+            directory_name += name;
+            directories.push_back(directory_name);
+        }
+    }
+
+    std::string const filename(f_options_environment.f_configuration_filename);
+
+    for(auto directory : directories)
+    {
+        if(!directory.empty())
+        {
+            std::string const full_filename(directory + ("/" + filename));
+            std::string const user_filename(handle_user_directory(full_filename));
+            if(user_filename == full_filename)
+            {
+                if(!writable)
+                {
+                    add_configuration_filename(names, user_filename);
+                }
+
+                string_list_t const with_project_name(insert_group_name(user_filename, f_options_environment.f_group_name, f_options_environment.f_project_name));
+                if(!with_project_name.empty())
+                {
+                    for(auto const & n : with_project_name)
+                    {
+                        add_configuration_filename(names, n);
+                    }
+                }
+            }
+            else
+            {
+                add_configuration_filename(names, user_filename);
+            }
+        }
+    }
+}
+
+
+/** \brief Define the list of direct configuration filenames.
+ *
+ * We generate two lists of configurations: a managed list and a direct
+ * configuration list. The managed list is created with the
+ * get_managed_configuration_filenames(). The direct list is created with
+ * this function and the list of filenames defined in the
+ * f_configuration_files list of paths.
+ *
+ * In this case, the paths defined in that list are directly used. No
+ * additional directory are added, except for the sub-directory to allow
+ * for administrator files to be edited (i.e. `\<name>.d/??-filename.conf`).
+ *
+ * \param[in,out] names  The list of configuration filenames.
+ * \param[in] writable  Whether only writable filenames get added.
+ */
+void getopt::get_direct_configuration_filenames(
+      string_list_t & names
+    , bool writable) const
+{
+    if(f_options_environment.f_configuration_files == nullptr)
+    {
+        return;
+    }
+
+    // load options from configuration files specified as is by caller
+    //
+    for(char const * const * configuration_files(f_options_environment.f_configuration_files);
+        *configuration_files != nullptr;
+        ++configuration_files)
+    {
+        char const * filename(*configuration_files);
+        if(*filename == '\0')
+        {
+            continue;
+        }
+
+        std::string const user_filename(handle_user_directory(filename));
+        if(user_filename == filename)
+        {
+            if(!writable)
+            {
+                add_configuration_filename(names, user_filename);
+            }
+
+            string_list_t const with_project_name(insert_group_name(
+                          user_filename
+                        , f_options_environment.f_group_name
+                        , f_options_environment.f_project_name));
+            if(!with_project_name.empty())
+            {
+                for(auto const & n : with_project_name)
+                {
+                    add_configuration_filename(names, n);
+                }
+            }
+        }
+        else
+        {
+            add_configuration_filename(names, user_filename);
+        }
+    }
 }
 
 
