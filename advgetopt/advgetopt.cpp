@@ -1485,12 +1485,17 @@ void getopt::add_options(
 }
 
 
-/** \brief Add an option with a value string.
+/** \brief Add an option with a value defined in a string.
  *
  * This function accepts a string as the value. If the option accepts
  * multiple values, then the function makes use of the set_multiple_value()
  * function of the option_info class. This will break the option up in
- * multiple value if possible.
+ * multiple values if possible.
+ *
+ * \note
+ * The function doesn't verify that the \p opt parameter is indeed an
+ * option defined in this getopt object. It is your responsibility to
+ * not mix options from different getopt.
  *
  * \param[in] opt  The option receiving a value.
  * \param[in] value  The value to assign this option.

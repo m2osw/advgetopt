@@ -126,6 +126,11 @@ public:
                                     , char * argv[]
                                     , option_source_t source = option_source_t::SOURCE_DIRECT
                                     , bool only_environment_variable = false);
+    void                    add_option_from_string(
+                                      option_info::pointer_t opt
+                                    , std::string const & value
+                                    , std::string const & filename
+                                    , option_source_t source = option_source_t::SOURCE_DIRECT);
 
     flag_t                  process_system_options(std::basic_ostream<char> & out);
 
@@ -207,11 +212,6 @@ private:
                                     , int & i
                                     , int argc
                                     , char ** argv
-                                    , option_source_t source = option_source_t::SOURCE_DIRECT);
-    void                    add_option_from_string(
-                                      option_info::pointer_t opt
-                                    , std::string const & value
-                                    , std::string const & filename
                                     , option_source_t source = option_source_t::SOURCE_DIRECT);
 
     std::string                         f_program_fullname = std::string();
