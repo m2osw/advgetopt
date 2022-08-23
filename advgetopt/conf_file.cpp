@@ -2232,7 +2232,7 @@ bool conf_file::is_comment(char const * s) const
  * \param[in] var  The variables object where the parameters are saved as
  * variables.
  *
- * \return -1 if the secontion doesn't exist, the number of parameters
+ * \return -1 if the section doesn't exist, the number of parameters
  * converted otherwise
  */
 int conf_file::section_to_variables(
@@ -2257,7 +2257,7 @@ int conf_file::section_to_variables(
     for(auto const & param : get_parameters())
     {
         if(param.first.length() > starts_with.length()
-        && param.first.substr(0, starts_with.length()) == starts_with)
+        && strncmp(param.first.c_str(), starts_with.c_str(), starts_with.length()) == 0)
         {
             var->set_variable(param.first.substr(starts_with.length()), param.second);
             ++found;

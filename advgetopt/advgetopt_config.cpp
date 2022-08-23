@@ -29,6 +29,7 @@
 #include    "advgetopt/advgetopt.h"
 
 #include    "advgetopt/conf_file.h"
+#include    "advgetopt/exception.h"
 
 
 // cppthread
@@ -251,7 +252,10 @@ void getopt::get_managed_configuration_filenames(
                     add_configuration_filename(names, user_filename);
                 }
 
-                string_list_t const with_project_name(insert_group_name(user_filename, f_options_environment.f_group_name, f_options_environment.f_project_name));
+                string_list_t const with_project_name(insert_group_name(
+                                      user_filename
+                                    , f_options_environment.f_group_name
+                                    , f_options_environment.f_project_name));
                 if(!with_project_name.empty())
                 {
                     for(auto const & n : with_project_name)
@@ -293,7 +297,7 @@ void getopt::get_direct_configuration_filenames(
         return;
     }
 
-    // load options from configuration files specified as is by caller
+    // load options from configuration files specified as is by the programmer
     //
     for(char const * const * configuration_files(f_options_environment.f_configuration_files);
         *configuration_files != nullptr;
@@ -314,9 +318,9 @@ void getopt::get_direct_configuration_filenames(
             }
 
             string_list_t const with_project_name(insert_group_name(
-                          user_filename
-                        , f_options_environment.f_group_name
-                        , f_options_environment.f_project_name));
+                                  user_filename
+                                , f_options_environment.f_group_name
+                                , f_options_environment.f_project_name));
             if(!with_project_name.empty())
             {
                 for(auto const & n : with_project_name)
@@ -330,6 +334,178 @@ void getopt::get_direct_configuration_filenames(
             add_configuration_filename(names, user_filename);
         }
     }
+}
+
+
+/** \brief Determine the best suited file for updates.
+ *
+ * This function determines the best suited filename where an administrator
+ * is expected to save his changes. For some tools, there may be many
+ * choices. This function looks for the last entry since that last entry
+ * will allow the administrator to override anything defined prior to
+ * this last entry.
+ *
+ * The search first uses the direct configuration filenames if these are
+ * defined. It uses the last directory which does not start with a tilde
+ * (i.e. no user file).
+ *
+ * If the direct configuration is not defined in that process, we next
+ * test with the managed configuration filenames. We again look for the
+ * last path and that along the last configuration filename.
+ *
+ * If all of that fails, we build a name from "/etc/" the project name,
+ * and use the project name plus ".conf" for the filename:
+ *
+ * \code
+ *     "/etc/" + project_name + "/" + project_name + ".conf"
+ * \endcode
+ *
+ * then pass that file to the default_group_name() function. The result
+ * is what gets returned.
+ *
+ * \return The file the administrator is expected to edit to make changes
+ * to the configuration of the given project.
+ */
+std::string getopt::get_output_filename() const
+{
+    if(f_options_environment.f_configuration_files != nullptr)
+    {
+        // check the programmer defined paths as is
+        //
+        char const * found(nullptr);
+        for(char const * const * configuration_files(f_options_environment.f_configuration_files);
+            *configuration_files != nullptr;
+            ++configuration_files)
+        {
+            char const * filename(*configuration_files);
+            if(*filename == '\0')
+            {
+                // ignore empty filenames
+                //
+                continue;
+            }
+
+            if(filename[0] == '~'
+            && (filename[1] == '/' || filename[1] == '\0'))
+            {
+                // ignore user directory entries
+                //
+                continue;
+            }
+
+            // we want the last one, so we are not done once we found one...
+            //
+            found = filename;
+        }
+
+        if(found != nullptr)
+        {
+            return default_group_name(
+                  found
+                , f_options_environment.f_group_name
+                , f_options_environment.f_project_name);
+        }
+    }
+
+    if(f_options_environment.f_configuration_filename != nullptr
+    && *f_options_environment.f_configuration_filename != '\0')
+    {
+        // check the directories either defined by the programmer or if
+        // none defined by the programmer, as defined by advgetopt which
+        // in this case simply means "/etc/"; we ignore the possible
+        // use of the --config-dir because in that case the administrator
+        // knows where to save his file
+        //
+        std::string const name(get_group_or_project_name());
+
+        std::string directory;
+        if(f_options_environment.f_configuration_directories != nullptr)
+        {
+            for(char const * const * configuration_directories(f_options_environment.f_configuration_directories);
+                *configuration_directories != nullptr;
+                ++configuration_directories)
+            {
+                char const * dir(*configuration_directories);
+                if(dir[0] == '\0')
+                {
+                    continue;
+                }
+
+                if(dir[0] == '~'
+                && (dir[1] == '/' || dir[1] == '\0'))
+                {
+                    continue;
+                }
+
+                // we want to keep the last entry unless it starts with ~/...
+                //
+                directory = dir;
+            }
+        }
+
+        if(directory.empty())
+        {
+            // no programmer defined directory, use a system defined one
+            // instead
+            //
+            directory = "/etc/" + name;
+        }
+
+        if(directory.back() != '/')
+        {
+            directory += '/';
+        }
+
+        std::string const filename(directory + f_options_environment.f_configuration_filename);
+
+        return default_group_name(
+              filename
+            , f_options_environment.f_group_name
+            , f_options_environment.f_project_name);
+    }
+
+    // the programmer did not define anything, it is likely that no files
+    // will be loaded but we still generate a default name
+    //
+    std::string filename("/etc/");
+    if(f_options_environment.f_group_name != nullptr
+    && *f_options_environment.f_group_name != '\0')
+    {
+        filename += f_options_environment.f_group_name;
+    }
+    else if(f_options_environment.f_project_name != nullptr
+         && *f_options_environment.f_project_name != '\0')
+    {
+        filename += f_options_environment.f_project_name;
+    }
+    else
+    {
+        // really nothing can be done in this case... we have no name
+        // to generate a valid path/configuration filename
+        //
+        return std::string();
+    }
+
+    filename += '/';
+
+    if(f_options_environment.f_project_name != nullptr
+    && *f_options_environment.f_project_name != '\0')
+    {
+        filename += f_options_environment.f_project_name;
+    }
+    else if(f_options_environment.f_group_name != nullptr
+         && *f_options_environment.f_group_name != '\0')
+    {
+        filename += f_options_environment.f_group_name;
+    }
+    else
+    {
+        throw getopt_logic_error("we just checked both of those names and at least one was valid.");       // LCOV_EXCL_LINE
+    }
+
+    filename += ".conf";
+
+    return filename;
 }
 
 
@@ -474,8 +650,6 @@ void getopt::process_configuration_file(std::string const & filename)
     }
     conf_file::pointer_t conf(conf_file::get_conf_file(conf_setup));
 
-    conf_file::sections_t sections(conf->get_sections());
-
     // is there a variable section?
     //
     if(f_options_environment.f_section_variables_name != nullptr)
@@ -485,6 +659,7 @@ void getopt::process_configuration_file(std::string const & filename)
                     , f_variables);
     }
 
+    conf_file::sections_t sections(conf->get_sections());
     if(!sections.empty())
     {
         std::string const name(CONFIGURATION_SECTIONS);
@@ -494,8 +669,7 @@ void getopt::process_configuration_file(std::string const & filename)
             configuration_sections = std::make_shared<option_info>(name);
             configuration_sections->add_flag(
                           GETOPT_FLAG_MULTIPLE
-                        | GETOPT_FLAG_CONFIGURATION_FILE
-                        );
+                        | GETOPT_FLAG_CONFIGURATION_FILE);
             f_options_by_name[configuration_sections->get_name()] = configuration_sections;
         }
         else if(!configuration_sections->has_flag(GETOPT_FLAG_MULTIPLE))

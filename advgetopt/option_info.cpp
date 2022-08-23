@@ -925,7 +925,7 @@ bool option_info::validates(int idx)
     if(static_cast<size_t>(idx) >= f_value.size())
     {
         throw getopt_undefined(                                         // LCOV_EXCL_LINE
-                      "option_info::get_value(): no value at index "    // LCOV_EXCL_LINE
+                      "option_info::validates(): no value at index "    // LCOV_EXCL_LINE
                     + std::to_string(idx)                               // LCOV_EXCL_LINE
                     + " (idx >= "                                       // LCOV_EXCL_LINE
                     + std::to_string(f_value.size())                    // LCOV_EXCL_LINE

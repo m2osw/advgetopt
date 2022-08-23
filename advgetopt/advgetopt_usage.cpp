@@ -682,14 +682,8 @@ std::string getopt::process_help_string(char const * help) const
                 break;
 
             case 'o':
-                {
-                    string_list_t const list(get_configuration_filenames(false, true));
-                    if(!list.empty())
-                    {
-                        result += list.back();
-                    }
-                    help += 2;
-                }
+                result += get_output_filename();
+                help += 2;
                 break;
 
             case 'p':

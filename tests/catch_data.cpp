@@ -3045,16 +3045,16 @@ CATCH_TEST_CASE("system_flags_configuration_filenames", "[arguments][valid][geto
         std::string const home(getenv("HOME"));
         CATCH_REQUIRE(ss.str() ==
 "Configuration filenames:\n"
-" . .config/file.mdi\n"
-" . .config/unittest.d/50-file.mdi\n"
-" . /etc/snapwebsites/server.conf\n"
-" . /etc/snapwebsites/unittest.d/50-server.conf\n"
-" . " + home + "/.config/advgetopt/snap.conf\n"
 " . .config/snapdb.conf\n"
 " . .config/unittest.d/50-snapdb.conf\n"
 " . /etc/secret/snapdb.conf\n"
 " . /etc/secret/unittest.d/50-snapdb.conf\n"
 " . " + home + "/.config/snapwebsites/snapdb.conf\n"
+" . .config/file.mdi\n"
+" . .config/unittest.d/50-file.mdi\n"
+" . /etc/snapwebsites/server.conf\n"
+" . /etc/snapwebsites/unittest.d/50-server.conf\n"
+" . " + home + "/.config/advgetopt/snap.conf\n"
 );
     }
     CATCH_END_SECTION()
@@ -3164,11 +3164,6 @@ CATCH_TEST_CASE("system_flags_configuration_filenames", "[arguments][valid][geto
         std::string const home(getenv("HOME"));
         CATCH_REQUIRE(ss.str() ==
 "Configuration filenames:\n"
-" . .config/file.mdi\n"
-" . .config/unittest.d/50-file.mdi\n"
-" . /etc/snapwebsites/server.conf\n"
-" . /etc/snapwebsites/unittest.d/50-server.conf\n"
-" . " + home + "/.config/advgetopt/snap.conf\n"
 " . /var/lib/advgetopt/snapdb.conf\n"
 " . /var/lib/advgetopt/unittest.d/50-snapdb.conf\n"
 " . /opt/config/snapdb.conf\n"
@@ -3178,6 +3173,11 @@ CATCH_TEST_CASE("system_flags_configuration_filenames", "[arguments][valid][geto
 " . /etc/secret/snapdb.conf\n"
 " . /etc/secret/unittest.d/50-snapdb.conf\n"
 " . " + home + "/.config/snapwebsites/snapdb.conf\n"
+" . .config/file.mdi\n"
+" . .config/unittest.d/50-file.mdi\n"
+" . /etc/snapwebsites/server.conf\n"
+" . /etc/snapwebsites/unittest.d/50-server.conf\n"
+" . " + home + "/.config/advgetopt/snap.conf\n"
 );
     }
     CATCH_END_SECTION()

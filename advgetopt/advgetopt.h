@@ -181,6 +181,7 @@ public:
                                     , bool writable
                                     , int argc = 0
                                     , char * argv[] = nullptr) const;
+    std::string             get_output_filename() const;
 
     group_description const *
                             find_group(flag_t group) const;

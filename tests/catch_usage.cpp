@@ -154,6 +154,9 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
 
         const char * const configuration_files[] =
         {
+            // TODO: this is wrong, the programmer is expected to include
+            //       a path to his direct configuration filenames
+            //
             "advgetopt.conf",
             "advgetopt.ini",
             "advgetopt.xml",
@@ -208,7 +211,7 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
                                 "   . All Configuration Files = [%*f]\n"
                                 "   . All Existing Configuration Files = [%g]\n"
                                 "   . All Possible Configuration Files = [%*g]\n"
-                                "   . Option File Directory = [%i]\n"
+                                "   . Option Filename = [%i]\n"
                                 "   . License = [%l]\n"
                                 "   . Section Variable Name = [%m]\n"
                                 "   . Output File [%o]\n"
@@ -274,19 +277,21 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
 "   . All Configuration Files = [advgetopt.conf, advgetopt.ini, advgetopt.xml, "
 "advgetopt.yaml]\n"
 "   . All Existing Configuration Files = []\n"
-"   . All Possible Configuration Files = [advgetopt.conf, "
-"grouptest.d/50-advgetopt.conf, advgetopt.ini, grouptest.d/50-advgetopt.ini, "
-"advgetopt.xml, grouptest.d/50-advgetopt.xml, advgetopt.yaml, "
-"grouptest.d/50-advgetopt.yaml, /etc/sys/advgetopt/advgetopt.conf, "
+"   . All Possible Configuration Files = ["
+"/etc/sys/advgetopt/advgetopt.conf, "
 "/etc/sys/advgetopt/grouptest.d/50-advgetopt.conf, /etc/advgetopt/advgetopt.conf, "
 "/etc/advgetopt/grouptest.d/50-advgetopt.conf, "
 "/etc/advgetopt/advgetopt.d/advgetopt.conf, "
 "/etc/advgetopt/advgetopt.d/grouptest.d/50-advgetopt.conf, "
-+ tmpdir + "/.config/advgetopt/advgetopt.conf]\n"
-"   . Option File Directory = [/etc/advgetopt/]\n"
++ tmpdir + "/.config/advgetopt/advgetopt.conf, "
+"advgetopt.conf, "
+"grouptest.d/50-advgetopt.conf, advgetopt.ini, grouptest.d/50-advgetopt.ini, "
+"advgetopt.xml, grouptest.d/50-advgetopt.xml, advgetopt.yaml, "
+"grouptest.d/50-advgetopt.yaml]\n"
+"   . Option Filename = [/etc/advgetopt/grouptest.ini]\n"
 "   . License = [MIT]\n"
 "   . Section Variable Name = [configvars]\n"
-"   . Output File [" + tmpdir + "/.config/advgetopt/advgetopt.conf]\n"
+"   . Output File [grouptest.d/50-advgetopt.yaml]\n"
 "   . Program Name = [unittest_advgetopt]\n"
 "   . Program Fullname = [tests/unittests/unittest_advgetopt]\n"
 "   . Group Name = [grouptest]\n"
@@ -576,6 +581,9 @@ advgetopt::breakup_line(
 
         const char * const configuration_files[] =
         {
+            // TODO: these are wrong, the developer defined names need to
+            //       include a path
+            //
             "advgetopt.conf",
             "advgetopt.ini",
             "advgetopt.xml",
@@ -614,7 +622,7 @@ advgetopt::breakup_line(
                                 "   . All Configuration Files = [%*f]\n"
                                 "   . All Existing Configuration Files = [%g]\n"
                                 "   . All Possible Configuration Files = [%*g]\n"
-                                "   . Option File Directory = [%i]\n"
+                                "   . Option Filename = [%i]\n"
                                 "   . License = [%l]\n"
                                 "   . Section Variable Name = [%m]\n"
                                 "   . Output File [%o]\n"
@@ -659,19 +667,21 @@ advgetopt::breakup_line(
 "   . All Configuration Files = [advgetopt.conf, advgetopt.ini, advgetopt.xml, "
 "advgetopt.yaml]\n"
 "   . All Existing Configuration Files = []\n"
-"   . All Possible Configuration Files = [advgetopt.conf, "
-"unittest.d/50-advgetopt.conf, advgetopt.ini, unittest.d/50-advgetopt.ini, "
-"advgetopt.xml, unittest.d/50-advgetopt.xml, advgetopt.yaml, "
-"unittest.d/50-advgetopt.yaml, /etc/sys/advgetopt/advgetopt.conf, "
+"   . All Possible Configuration Files = ["
+"/etc/sys/advgetopt/advgetopt.conf, "
 "/etc/sys/advgetopt/unittest.d/50-advgetopt.conf, /etc/advgetopt/advgetopt.conf, "
 "/etc/advgetopt/unittest.d/50-advgetopt.conf, "
 "/etc/advgetopt/advgetopt.d/advgetopt.conf, "
 "/etc/advgetopt/advgetopt.d/unittest.d/50-advgetopt.conf, "
-+ tmpdir + "/.config/advgetopt/advgetopt.conf]\n"
-"   . Option File Directory = [/usr/share/advgetopt/]\n"
++ tmpdir + "/.config/advgetopt/advgetopt.conf, "
+"advgetopt.conf, "
+"unittest.d/50-advgetopt.conf, advgetopt.ini, unittest.d/50-advgetopt.ini, "
+"advgetopt.xml, unittest.d/50-advgetopt.xml, advgetopt.yaml, "
+"unittest.d/50-advgetopt.yaml]\n"
+"   . Option Filename = [/usr/share/advgetopt/unittest.ini]\n"
 "   . License = [MIT]\n"
 "   . Section Variable Name = []\n"
-"   . Output File [" + tmpdir + "/.config/advgetopt/advgetopt.conf]\n"
+"   . Output File [unittest.d/50-advgetopt.yaml]\n"
 "   . Program Name = [unittest_advgetopt]\n"
 "   . Program Fullname = [tests/unittests/unittest_advgetopt]\n"
 "   . Build Time = [23:02:36]\n"
@@ -3389,7 +3399,13 @@ advgetopt::breakup_line(
 
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
 advgetopt::breakup_line(
-          "Usage: test usage: system.conf, unittest.d/50-system.conf,"
+          "Usage: test usage:"
+          " /usr/share/advgetopt/options/unittest/advgetopt.conf,"
+          " /usr/share/advgetopt/options/unittest/unittest.d/50-advgetopt.conf,"
+          " /usr/share/unittest/options/advgetopt.conf,"
+          " /usr/share/unittest/options/unittest.d/50-advgetopt.conf,"
+          " /etc/unittest/advgetopt.conf, /etc/unittest/unittest.d/50-advgetopt.conf,"
+          " system.conf, unittest.d/50-system.conf,"
           " advgetopt.conf, unittest.d/50-advgetopt.conf, advgetopt.ini,"
           " unittest.d/50-advgetopt.ini, user.config,"
           " unittest.d/50-user.config"
@@ -3398,6 +3414,11 @@ advgetopt::breakup_line(
 + advgetopt::format_usage_string(
           "--verbose"
         , "inform you of what we're currently working on:"
+          " /usr/share/advgetopt/options/unittest/advgetopt.conf,"
+          " /usr/share/advgetopt/options/unittest/unittest.d/50-advgetopt.conf,"
+          " /usr/share/unittest/options/advgetopt.conf,"
+          " /usr/share/unittest/options/unittest.d/50-advgetopt.conf,"
+          " /etc/unittest/advgetopt.conf, /etc/unittest/unittest.d/50-advgetopt.conf,"
           " system.conf, unittest.d/50-system.conf,"
           " advgetopt.conf, unittest.d/50-advgetopt.conf,"
           " advgetopt.ini, unittest.d/50-advgetopt.ini,"
@@ -3405,7 +3426,13 @@ advgetopt::breakup_line(
         , 30
         , advgetopt::get_screen_width()) + "\n"
 + advgetopt::breakup_line(
-          "Percent Configuration Files: system.conf, unittest.d/50-system.conf,"
+          "Percent Configuration Files:"
+          " /usr/share/advgetopt/options/unittest/advgetopt.conf,"
+          " /usr/share/advgetopt/options/unittest/unittest.d/50-advgetopt.conf,"
+          " /usr/share/unittest/options/advgetopt.conf,"
+          " /usr/share/unittest/options/unittest.d/50-advgetopt.conf,"
+          " /etc/unittest/advgetopt.conf, /etc/unittest/unittest.d/50-advgetopt.conf,"
+          " system.conf, unittest.d/50-system.conf,"
           " advgetopt.conf, unittest.d/50-advgetopt.conf, advgetopt.ini,"
           " unittest.d/50-advgetopt.ini, user.config, unittest.d/50-user.config"
         , 0
@@ -3502,10 +3529,34 @@ advgetopt::breakup_line(
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: \n"
-"   --verbose                  inform you of what we're currently working on: .\n"
-"\n"
-"Percent Configuration Files: \n"
+advgetopt::breakup_line(
+          "Usage: test usage:"
+          " /usr/share/advgetopt/options/unittest/advgetopt.conf,"
+          " /usr/share/advgetopt/options/unittest/unittest.d/50-advgetopt.conf,"
+          " /usr/share/unittest/options/advgetopt.conf,"
+          " /usr/share/unittest/options/unittest.d/50-advgetopt.conf,"
+          " /etc/unittest/advgetopt.conf, /etc/unittest/unittest.d/50-advgetopt.conf"
+        , 0
+        , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
+          "--verbose"
+        , "inform you of what we're currently working on:"
+          " /usr/share/advgetopt/options/unittest/advgetopt.conf,"
+          " /usr/share/advgetopt/options/unittest/unittest.d/50-advgetopt.conf,"
+          " /usr/share/unittest/options/advgetopt.conf,"
+          " /usr/share/unittest/options/unittest.d/50-advgetopt.conf,"
+          " /etc/unittest/advgetopt.conf, /etc/unittest/unittest.d/50-advgetopt.conf."
+        , 30
+        , advgetopt::get_screen_width()) + "\n"
++ advgetopt::breakup_line(
+          "Percent Configuration Files:"
+          " /usr/share/advgetopt/options/unittest/advgetopt.conf,"
+          " /usr/share/advgetopt/options/unittest/unittest.d/50-advgetopt.conf,"
+          " /usr/share/unittest/options/advgetopt.conf,"
+          " /usr/share/unittest/options/unittest.d/50-advgetopt.conf,"
+          " /etc/unittest/advgetopt.conf, /etc/unittest/unittest.d/50-advgetopt.conf\n"
+        , 0
+        , advgetopt::get_screen_width())
                 );
     }
     CATCH_END_SECTION()
@@ -3608,10 +3659,34 @@ advgetopt::breakup_line(
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: \n"
-"   --verbose                  inform you of what we're currently working on: .\n"
-"\n"
-"Percent Configuration Files: \n"
+advgetopt::breakup_line(
+          "Usage: test usage:"
+          " /usr/share/advgetopt/options/unittest/advgetopt.conf,"
+          " /usr/share/advgetopt/options/unittest/unittest.d/50-advgetopt.conf,"
+          " /usr/share/unittest/options/advgetopt.conf,"
+          " /usr/share/unittest/options/unittest.d/50-advgetopt.conf,"
+          " /etc/unittest/advgetopt.conf, /etc/unittest/unittest.d/50-advgetopt.conf"
+        , 0
+        , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
+          "--verbose"
+        , "inform you of what we're currently working on:"
+          " /usr/share/advgetopt/options/unittest/advgetopt.conf,"
+          " /usr/share/advgetopt/options/unittest/unittest.d/50-advgetopt.conf,"
+          " /usr/share/unittest/options/advgetopt.conf,"
+          " /usr/share/unittest/options/unittest.d/50-advgetopt.conf,"
+          " /etc/unittest/advgetopt.conf, /etc/unittest/unittest.d/50-advgetopt.conf."
+        , 30
+        , advgetopt::get_screen_width()) + "\n"
++ advgetopt::breakup_line(
+          "Percent Configuration Files:"
+          " /usr/share/advgetopt/options/unittest/advgetopt.conf,"
+          " /usr/share/advgetopt/options/unittest/unittest.d/50-advgetopt.conf,"
+          " /usr/share/unittest/options/advgetopt.conf,"
+          " /usr/share/unittest/options/unittest.d/50-advgetopt.conf,"
+          " /etc/unittest/advgetopt.conf, /etc/unittest/unittest.d/50-advgetopt.conf"
+        , 0
+        , advgetopt::get_screen_width())
                 );
     }
     CATCH_END_SECTION()
@@ -3670,14 +3745,14 @@ CATCH_TEST_CASE("help_string_option_file_directory", "[getopt][usage][config]")
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
 
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-              "Usage: test usage: /opt/advgetopt/config/\n"
+              "Usage: test usage: /opt/advgetopt/config/unittest.ini\n"
 + advgetopt::format_usage_string(
               "--verbose", "inform you of what we're currently working on: "
-              "/opt/advgetopt/config/."
+              "/opt/advgetopt/config/unittest.ini."
         , 30
         , advgetopt::get_screen_width()) + "\n"
 + advgetopt::breakup_line(
-              "Percent Configuration Files: /opt/advgetopt/config/"
+              "Percent Configuration Files: /opt/advgetopt/config/unittest.ini"
         , 0
         , advgetopt::get_screen_width())
                 );
@@ -3730,13 +3805,13 @@ CATCH_TEST_CASE("help_string_option_file_directory", "[getopt][usage][config]")
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-advgetopt::breakup_line("Usage: test usage: /usr/share/advgetopt/options/", 0, advgetopt::get_screen_width())
+advgetopt::breakup_line("Usage: test usage: /usr/share/advgetopt/options/unittest.ini", 0, advgetopt::get_screen_width())
 + advgetopt::format_usage_string(
               "--verbose"
-            , "inform you of what we're currently working on: /usr/share/advgetopt/options/."
+            , "inform you of what we're currently working on: /usr/share/advgetopt/options/unittest.ini."
             , 30
             , advgetopt::get_screen_width()) + "\n"
-+ advgetopt::breakup_line("Percent Configuration Files: /usr/share/advgetopt/options/", 0, advgetopt::get_screen_width())
++ advgetopt::breakup_line("Percent Configuration Files: /usr/share/advgetopt/options/unittest.ini", 0, advgetopt::get_screen_width())
                 );
     }
     CATCH_END_SECTION()
@@ -3787,13 +3862,13 @@ advgetopt::breakup_line("Usage: test usage: /usr/share/advgetopt/options/", 0, a
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-advgetopt::breakup_line("Usage: test usage: /usr/share/advgetopt/options/", 0, advgetopt::get_screen_width())
+advgetopt::breakup_line("Usage: test usage: /usr/share/advgetopt/options/unittest.ini", 0, advgetopt::get_screen_width())
 + advgetopt::format_usage_string(
                   "--verbose"
-                , "inform you of what we're currently working on: /usr/share/advgetopt/options/."
+                , "inform you of what we're currently working on: /usr/share/advgetopt/options/unittest.ini."
                 , 30
                 , advgetopt::get_screen_width()) + "\n"
-+ advgetopt::breakup_line("Percent Configuration Files: /usr/share/advgetopt/options/", 0, advgetopt::get_screen_width())
++ advgetopt::breakup_line("Percent Configuration Files: /usr/share/advgetopt/options/unittest.ini", 0, advgetopt::get_screen_width())
                 );
     }
     CATCH_END_SECTION()
@@ -4059,10 +4134,20 @@ advgetopt::breakup_line("Usage: test usage: unittest.d/50-user.config", 0, advge
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: \n"
-"   --verbose                  inform you of what we're currently working on: .\n"
-"\n"
-"Percent Configuration Files: \n"
+advgetopt::breakup_line(
+          "Usage: test usage: /etc/unittest/unittest.d/50-advgetopt.conf\n"
+        , 0
+        , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
+          "--verbose"
+        , "inform you of what we're currently working on:"
+          " /etc/unittest/unittest.d/50-advgetopt.conf."
+        , 30
+        , advgetopt::get_screen_width()) + "\n"
++ advgetopt::breakup_line(
+          "Percent Configuration Files: /etc/unittest/unittest.d/50-advgetopt.conf\n"
+        , 0
+        , advgetopt::get_screen_width())
                 );
     }
     CATCH_END_SECTION()
@@ -4112,10 +4197,21 @@ advgetopt::breakup_line("Usage: test usage: unittest.d/50-user.config", 0, advge
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: \n"
-"   --verbose                  inform you of what we're currently working on: .\n"
-"\n"
-"Percent Configuration Files: \n"
+advgetopt::breakup_line(
+          "Usage: test usage: /etc/unittest/unittest.d/50-advgetopt.conf\n"
+        , 0
+        , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
+          "--verbose"
+        , "inform you of what we're currently working on:"
+          " /etc/unittest/unittest.d/50-advgetopt.conf.\n"
+        , 30
+        , advgetopt::get_screen_width()) + "\n"
++ advgetopt::breakup_line(
+          "Percent Configuration Files:"
+          " /etc/unittest/unittest.d/50-advgetopt.conf\n"
+        , 0
+        , advgetopt::get_screen_width())
                 );
     }
     CATCH_END_SECTION()

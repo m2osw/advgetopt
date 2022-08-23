@@ -407,7 +407,10 @@ string_list_t insert_group_name(
     std::string::size_type const pos(filename.find_last_of('/'));
     if(pos == 0)
     {
-        throw getopt_root_filename("filename \"" + filename + "\" last slash (/) is at the start, which is not allowed.");
+        throw getopt_root_filename(
+                  "filename \""
+                + filename
+                + "\" last slash (/) is at the start, which is not allowed.");
     }
     if(pos != std::string::npos
     && pos > 0)
