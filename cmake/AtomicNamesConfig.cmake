@@ -107,7 +107,7 @@ function(AtomicNames ATOMIC_NAMES)
         MAIN_DEPENDENCY
             ${ATOMIC_NAMES}
 
-        # Here "atomic-names" is not enoug, a full path would be required
+        # Here "atomic-names" is not enough, a full path would be required
         # but since we have the `find_program + REQUIRED` earlier, we're good
         #DEPENDS
         #    "atomic-names"
