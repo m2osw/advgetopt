@@ -2232,13 +2232,18 @@ bool conf_file::is_comment(char const * s) const
  * \param[in] var  The variables object where the parameters are saved as
  * variables.
  *
- * \return -1 if the section doesn't exist, the number of parameters
- * converted otherwise
+ * \return -1 if the section doesn't exist or \p var is a null pointer, the
+ * number of parameters converted otherwise
  */
 int conf_file::section_to_variables(
       std::string const & section_name
     , variables::pointer_t var)
 {
+    if(var == nullptr)
+    {
+        return -1;
+    }
+
     // verify/canonicalize the section variable name
     //
     auto section(f_sections.find(section_name));
