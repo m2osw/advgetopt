@@ -39,6 +39,11 @@
 #include    <advgetopt/validator.h>
 
 
+// C++
+//
+#include    <limits>
+
+
 
 namespace advgetopt
 {
