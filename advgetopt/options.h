@@ -37,11 +37,6 @@
 #include    <snapdev/not_used.h>
 
 
-// C++
-//
-#include    <cstdint>
-
-
 
 namespace advgetopt
 {
