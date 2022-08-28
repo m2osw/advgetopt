@@ -223,6 +223,87 @@ std::string quote(std::string const & s, char open, char close)
 }
 
 
+/** \brief Convert the `_` found in a string to `-` instead.
+ *
+ * Options are saved with `-` instead of `_` so all the standard compare
+ * functions can be used to find options. This function converts a string
+ * so all of the `_` charaters get transformed to `-` characters.
+ *
+ * Why do we support both?
+ *
+ * It is customary to use the `-` in long command line option names.
+ * For example `--long-form` uses a `-`. (One exception is ffmpeg which
+ * uses `_` in their long command line option names).
+ *
+ * However, the advgetopt library also reads Unix like configuration files
+ * and parameters in those files are generally expected to use underscores
+ * (`_`) in their names. For example `email_address = contact@example.com`.
+ *
+ * To make it simpler, the advgetopt library accepts both characters and
+ * decides to view them as being equal. So you can use both forms in both
+ * situations. The following are equivalent:
+ *
+ * \code
+ *     my-command --long-form
+ *     my-command --long_form
+ * \endcode
+ *
+ * This function is used to convert a string to the advgetopt format which
+ * is to keep only `-` in the names. So if it finds a `_`, it gets
+ * transformed.
+ *
+ * \param[in] s  The string to transform.
+ *
+ * \return A copy with all `_` transformed to `-`.
+ */
+std::string option_with_dashes(std::string const & s)
+{
+    std::string result;
+    result.reserve(s.length());
+    for(auto const & c : s)
+    {
+        if(c == '_')
+        {
+            result += '-';
+        }
+        else
+        {
+            result += c;
+        }
+    }
+    return result;
+}
+
+
+/** \brief Converts an option back to using underscores.
+ *
+ * When generating some error messages, we like to show underscores if the
+ * variable comes from a configuration file. In this case we use this function
+ * to convert the dashes back to underscores and print that in the message.
+ *
+ * \param[in] s  The string to be converted.
+ *
+ * \return A copy of the string with `-` converted to `_`.
+ */
+std::string option_with_underscores(std::string const & s)
+{
+    std::string result;
+    result.reserve(s.length());
+    for(auto const & c : s)
+    {
+        if(c == '-')
+        {
+            result += '_';
+        }
+        else
+        {
+            result += c;
+        }
+    }
+    return result;
+}
+
+
 /** \brief Split a string in sub-strings separated by \p separators.
  *
  * This function searches for any of the \p separators in \p str and

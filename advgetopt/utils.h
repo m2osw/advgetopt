@@ -46,6 +46,8 @@ constexpr int const DEFAULT_PRIORITY = 50;
 
 std::string         unquote(std::string const & s, std::string const & pairs = "\"\"''");
 std::string         quote(std::string const & s, char open = '"', char close = '\0');
+std::string         option_with_dashes(std::string const & s);
+std::string         option_with_underscores(std::string const & s);
 void                split_string(std::string const & str
                                , string_list_t & result
                                , string_list_t const & separators);

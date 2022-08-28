@@ -1,6 +1,15 @@
 
 * Further test that he variables support works (in the getopt_info and such.)
 
+* A section name in a file is totally ignored if no parameters are added.
+  In some cases, we may want to know that the user created such a section.
+  (i.e. that happens in the iplock definitions for the ipload.)
+
+      [section::header]
+
+      [section::early_content]
+      after = header
+
 * Add a test to verify that '\n' is correctly handled on small strings
   (we had the case in our fluid-settings / GUI --help where the string would
   wrap just a little and the wrap part + Environment variable was less than

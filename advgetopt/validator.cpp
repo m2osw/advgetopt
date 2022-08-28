@@ -46,11 +46,6 @@
 #include    <snapdev/join_strings.h>
 
 
-// boost
-//
-#include    <boost/algorithm/string/trim.hpp>
-
-
 // C++
 //
 #include    <map>

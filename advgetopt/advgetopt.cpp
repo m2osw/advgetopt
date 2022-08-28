@@ -98,9 +98,9 @@
 #include    <libutf8/iterator.h>
 
 
-// boost
+// C
 //
-#include    <boost/algorithm/string/replace.hpp>
+#include    <string.h>
 
 
 // last include
@@ -1344,7 +1344,7 @@ option_info::pointer_t getopt::get_option(std::string const & name, bool exact_o
         throw getopt_invalid_parameter("get_option() `name` argument cannot be empty.");
     }
 
-    std::string const n(boost::replace_all_copy(name, "_", "-"));
+    std::string const n(option_with_dashes(name));
 
     // we need this special case when looking for the default option
     // because the name may not be "--" in the option table
@@ -1550,7 +1550,7 @@ void getopt::add_option_from_string(
                        << "option "
                        << (filename.empty()
                                ? "--" + opt->get_name()
-                               : "\"" + boost::replace_all_copy(opt->get_name(), "-", "_") + "\"")
+                               : "\"" + option_with_underscores(opt->get_name()) + "\"")
                        << " cannot be given value \""
                        << value
                        << "\""
@@ -1572,7 +1572,7 @@ void getopt::add_option_from_string(
                        << "option "
                        << (filename.empty()
                                ? "--" + opt->get_name()
-                               : "\"" + boost::replace_all_copy(opt->get_name(), "-", "_") + "\"")
+                               : "\"" + option_with_underscores(opt->get_name()) + "\"")
                        << " must be given a value"
                        << (filename.empty()
                            ? std::string()

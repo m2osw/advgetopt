@@ -36,15 +36,17 @@
 //
 #include    <cppthread/log.h>
 
-// boost
+
+// C
 //
-#include    <boost/algorithm/string/join.hpp>
-#include    <boost/algorithm/string/replace.hpp>
+#include    <string.h>
+#include    <unistd.h>
 
 
 // last include
 //
 #include    <snapdev/poison.h>
+
 
 
 namespace advgetopt
@@ -702,7 +704,7 @@ void getopt::process_configuration_file(std::string const & filename)
             {
                 cppthread::log << cppthread::log_level_t::error
                                << "unknown option \""
-                               << boost::replace_all_copy(param.first, "-", "_")
+                               << option_with_underscores(param.first)
                                << "\" found in configuration file \""
                                << filename
                                << "\" on line "
@@ -737,7 +739,7 @@ void getopt::process_configuration_file(std::string const & filename)
                 //
                 cppthread::log << cppthread::log_level_t::error
                                << "option \""
-                               << boost::replace_all_copy(param.first, "-", "_")
+                               << option_with_underscores(param.first)
                                << "\" is not supported in configuration files (found in \""
                                << filename
                                << "\")."

@@ -53,11 +53,6 @@
 #include    <libutf8/iterator.h>
 
 
-// boost
-//
-#include    <boost/algorithm/string/replace.hpp>
-
-
 // last include
 //
 #include    <snapdev/poison.h>
@@ -227,7 +222,7 @@ std::string short_name_to_string(short_name_t short_name)
  * \param[in] short_name  The short name of this option (one character.)
  */
 option_info::option_info(std::string const & name, short_name_t short_name)
-    : f_name(boost::replace_all_copy(name, "_", "-"))
+    : f_name(option_with_dashes(name))
     , f_short_name(short_name)
 {
     if(f_name.empty())
