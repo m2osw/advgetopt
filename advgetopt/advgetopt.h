@@ -130,6 +130,7 @@ public:
                                       option_info::pointer_t opt
                                     , std::string const & value
                                     , std::string const & filename
+                                    , string_list_t const & option_keys
                                     , option_source_t source = option_source_t::SOURCE_DIRECT);
 
     flag_t                  process_system_options(std::basic_ostream<char> & out);
@@ -213,7 +214,9 @@ private:
                                     , int & i
                                     , int argc
                                     , char ** argv
+                                    , string_list_t const & option_keys
                                     , option_source_t source = option_source_t::SOURCE_DIRECT);
+    static string_list_t    parse_option_map(std::string const & raw_key);
 
     std::string                         f_program_fullname = std::string();
     std::string                         f_program_name = std::string();

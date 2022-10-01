@@ -570,23 +570,29 @@ void option_info::set_flags(flag_t flags)
  *
  * This function adds the given flag from the set of flags being set.
  *
+ * \note
+ * Multiple flags can be defined in \p flag.
+ *
  * \param[in] flag  The flag(s) to set.
  */
 void option_info::add_flag(flag_t flag)
 {
-    f_flags |= flag;
+    set_flags(f_flags | flag);
 }
 
 
 /** \brief Make sure a given flag is not set.
  *
- * This function removes the given flag from the set of flags being set.
+ * This function removes the given flag from the set of flags currently set.
+ *
+ * \note
+ * Multiple flags can be defined in \p flag.
  *
  * \param[in] flag  The flag(s) to clear.
  */
 void option_info::remove_flag(flag_t flag)
 {
-    f_flags &= ~flag;
+    set_flags(f_flags & ~flag);
 }
 
 
@@ -1160,19 +1166,24 @@ bool option_info::has_value(std::string const & value) const
  * not support that feature.
  *
  * \param[in] value  The value to add to this option.
+ * \param[in] option_keys  The set of keys found at the end of the option name.
  * \param[in] source  Where the value comes from.
  *
  * \return true when the value was accepted (no error occurred).
  *
  * \sa set_value()
  */
-bool option_info::add_value(std::string const & value, option_source_t source)
+bool option_info::add_value(
+      std::string const & value
+    , string_list_t const & option_keys
+    , option_source_t source)
 {
     return set_value(
               has_flag(GETOPT_FLAG_MULTIPLE)
                     ? f_value.size()
                     : 0
             , value
+            , option_keys
             , source);
 }
 
@@ -1208,7 +1219,11 @@ bool option_info::add_value(std::string const & value, option_source_t source)
  * \sa lock()
  * \sa unlock()
  */
-bool option_info::set_value(int idx, std::string const & value, option_source_t source)
+bool option_info::set_value(
+      int idx
+    , std::string const & value
+    , string_list_t const & option_keys
+    , option_source_t source)
 {
     if(source == option_source_t::SOURCE_UNDEFINED)
     {
@@ -1234,7 +1249,8 @@ bool option_info::set_value(int idx, std::string const & value, option_source_t 
         return false;
     }
 
-    if(has_flag(GETOPT_FLAG_MULTIPLE))
+    bool const multiple(has_flag(GETOPT_FLAG_MULTIPLE));
+    if(multiple)
     {
         if(static_cast<size_t>(idx) > f_value.size())
         {
@@ -1260,26 +1276,83 @@ bool option_info::set_value(int idx, std::string const & value, option_source_t 
     }
 
     f_source = source;
-    if(static_cast<size_t>(idx) == f_value.size())
-    {
-        f_value.push_back(value);
-    }
-    else
-    {
-        if(f_value[idx] == value)
-        {
-            // no change, we can return as is
-            //
-            return true;
-        }
-        f_value[idx] = value;
-    }
     f_integer.clear();
     f_double.clear();
 
-    bool const r(validates(idx));
+    bool r(true);
+    if(option_keys.empty())
+    {
+        if(static_cast<size_t>(idx) == f_value.size())
+        {
+            f_value.push_back(value);
+        }
+        else
+        {
+            if(f_value[idx] == value)
+            {
+                // no change, we can return as is
+                //
+                // note: we know that the value is valid here since the
+                //       validates() function removes invalid values from
+                //       the f_value array
+                //
+                return true;
+            }
+            f_value[idx] = value;
+        }
 
-    value_changed(idx);
+        if(validates(idx))
+        {
+            value_changed(idx);
+        }
+        else
+        {
+            r = false;
+        }
+    }
+    else
+    {
+        bool changed(false);
+        bool const append(multiple && idx >= static_cast<int>(f_value.size()));
+        for(auto const & k : option_keys)
+        {
+            bool new_value(true);
+            std::string const v(k + value);
+            idx = append ? -1 : find_value_index_by_key(k);
+            if(idx == -1)
+            {
+                f_value.push_back(v);
+                changed = true;
+            }
+            else
+            {
+                if(f_value[idx] == v)
+                {
+                    new_value = false;
+                }
+                else
+                {
+                    changed = true;
+                    f_value[idx] = v;
+                }
+            }
+            if(new_value)
+            {
+                if(validates(idx))
+                {
+                    value_changed(idx);
+                }
+                else
+                {
+                    r = false;
+                }
+            }
+        }
+        if(!changed)
+        {
+            return true;
+        }
+    }
 
     return r;
 }
@@ -1303,15 +1376,23 @@ bool option_info::set_value(int idx, std::string const & value, option_source_t 
  *
  * The result includes "foo" and "bar" and no empty strings.
  *
+ * The value can be quoted in which case it can include any of the
+ * separators.
+ *
+ * \code
+ *     "foo, bar",'bar, foo'
+ * \endcode
+ *
+ * The result includes "foo, bar" and "bar, foo" (without the quotes
+ * which get removed in the process).
+ *
  * \note
  * The function has the side effect of clearing any existing parameters
  * first. So only the newly defined parameters in \p value will be set
  * in the option once the function returns.
  *
- * \todo
- * Add support for quoted values
- *
  * \param[in] value  The multi-value to save in this option.
+ * \param[in] option_keys  The keys to which the values are applied.
  * \param[in] source  Where the value comes from.
  *
  * \return true if all the values in \p value were considered valid.
@@ -1319,8 +1400,20 @@ bool option_info::set_value(int idx, std::string const & value, option_source_t 
  * \sa add_value()
  * \sa set_value()
  */
-bool option_info::set_multiple_values(std::string const & value, option_source_t source)
+bool option_info::set_multiple_values(
+      std::string const & value
+    , string_list_t const & option_keys
+    , option_source_t source)
 {
+    if(!has_flag(GETOPT_FLAG_ARRAY)
+    && option_keys.size() != 0)
+    {
+        throw getopt_logic_error(
+                 "option_info::set_multiple_value(): parameter --"
+               + f_name
+               + " does not support array keys.");
+    }
+
     if(source == option_source_t::SOURCE_UNDEFINED)
     {
         throw getopt_logic_error(
@@ -1339,6 +1432,21 @@ bool option_info::set_multiple_values(std::string const & value, option_source_t
                  "option_info::set_multiple_value(): parameter --"
                + f_name
                + " expects zero or one parameter. The set_multiple_value() function should not be called with parameters that only accept one value.");
+    }
+
+    if(!option_keys.empty())
+    {
+        string_list_t keyed_result;
+        for(auto const & k : option_keys)
+        {
+            for(auto & r : result)
+            {
+                // note: the keys are expected to already include the ending ':'
+                //
+                keyed_result.push_back(k + r);
+            }
+        }
+        result.swap(keyed_result);
     }
 
     f_source = source;
@@ -1573,6 +1681,64 @@ std::string option_info::get_value(int idx, bool raw) const
     {
         return f_value[idx];
     }
+}
+
+
+/** \brief Get the index at which a value with the given key is defined.
+ *
+ * This function searches a value with the specified \p key and return
+ * the index where it was found.
+ *
+ * If the function does not find a value starting with \p key, then it
+ * returns -1.
+ *
+ * The function can be called with the start \p idx set to a value other
+ * than zero in which case the search starts at that index. It is valid
+ * to call the function with \p idx larger or equal to the number of
+ * values defined.
+ *
+ * \exception getopt_logic_error
+ * If the \p idx parameter is negative, this exception is raised.
+ *
+ * \exception getopt_undefined
+ * If no values were defined, this exception is raised. To avoid receiving
+ * the exception, make sure to first test with is_defined(). Note that if
+ * the requested key is not found, the function simply returns an empty
+ * string opposed to raising an exception.
+ *
+ * \param[in] key  The key to search for.
+ * \param[in] idx  Start from this index.
+ *
+ * \return The index at which that value is defined or -1 when not found.
+ */
+int option_info::find_value_index_by_key(std::string key, int idx) const
+{
+    if(idx < 0)
+    {
+        throw getopt_logic_error("idx cannot be negative in find_value_index_by_key()");
+    }
+    if(f_value.empty())
+    {
+        throw getopt_undefined(
+                      "option_info::find_value_index_by_key(): --"
+                    + f_name
+                    + " has no values defined.");
+    }
+
+    if(key.back() != ':')
+    {
+        key += ':';
+    }
+    int const max(f_value.size());
+    for(; idx < max; ++idx)
+    {
+        if(f_value[idx].rfind(key, 0) == 0)
+        {
+            return idx;
+        }
+    }
+
+    return -1;
 }
 
 

@@ -93,7 +93,7 @@ CATCH_TEST_CASE("options_sources", "[options][sources][valid]")
 
         advgetopt::option_info::pointer_t copyright(opt.get_option("copyright"));
         CATCH_REQUIRE(copyright != nullptr);
-        copyright->set_value(0, "1", advgetopt::option_source_t::SOURCE_DYNAMIC);
+        copyright->set_value(0, "1", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_DYNAMIC);
         copyright->reset();
 
         advgetopt::option_info::pointer_t version(opt.get_option("version"));

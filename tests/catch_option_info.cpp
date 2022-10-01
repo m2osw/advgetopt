@@ -398,16 +398,16 @@ CATCH_TEST_CASE("option_info_validator", "[option_info][valid][validator]")
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         CATCH_REQUIRE(auto_validate.get_validator() == integer_validator);
 
-        auto_validate.set_value(0, "6", advgetopt::option_source_t::SOURCE_DYNAMIC);
+        auto_validate.set_value(0, "6", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_DYNAMIC);
         CATCH_REQUIRE(auto_validate.source() == advgetopt::option_source_t::SOURCE_DYNAMIC);
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"3\" given to parameter --validator is not considered valid.");
-        auto_validate.set_value(0, "3", advgetopt::option_source_t::SOURCE_CONFIGURATION);
+        auto_validate.set_value(0, "3", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_CONFIGURATION);
         CATCH_REQUIRE(auto_validate.source() == advgetopt::option_source_t::SOURCE_UNDEFINED);    // it doesn't take... it gets cleared though
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"11\" given to parameter --validator is not considered valid.");
-        auto_validate.set_value(0, "11", advgetopt::option_source_t::SOURCE_ENVIRONMENT_VARIABLE);
+        auto_validate.set_value(0, "11", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_ENVIRONMENT_VARIABLE);
         CATCH_REQUIRE(auto_validate.source() == advgetopt::option_source_t::SOURCE_UNDEFINED);    // it doesn't take... it gets cleared though
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
     }
@@ -424,7 +424,7 @@ CATCH_TEST_CASE("option_info_validator", "[option_info][valid][validator]")
 
         CATCH_REQUIRE(auto_validate.get_validator() == nullptr);
 
-        auto_validate.set_value(0, "-15", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        auto_validate.set_value(0, "-15", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(auto_validate.size() == 1);
         CATCH_REQUIRE(auto_validate.get_value(0) == "-15");
         CATCH_REQUIRE(auto_validate.get_long(0) == -15);
@@ -440,7 +440,7 @@ CATCH_TEST_CASE("option_info_validator", "[option_info][valid][validator]")
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"3\" given to parameter --validator is not considered valid.");
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"11\" given to parameter --validator is not considered valid.");
-        CATCH_REQUIRE_FALSE(auto_validate.set_multiple_values("6,3,18,11", advgetopt::option_source_t::SOURCE_COMMAND_LINE));
+        CATCH_REQUIRE_FALSE(auto_validate.set_multiple_values("6,3,18,11", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE));
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         CATCH_REQUIRE(auto_validate.size() == 2);
         CATCH_REQUIRE(auto_validate.get_value(0) == "6");
@@ -451,7 +451,7 @@ CATCH_TEST_CASE("option_info_validator", "[option_info][valid][validator]")
         auto_validate.set_validator(nullptr);
         CATCH_REQUIRE(auto_validate.get_validator() == nullptr);
 
-        CATCH_REQUIRE(auto_validate.set_multiple_values("6,3,18,11", advgetopt::option_source_t::SOURCE_COMMAND_LINE));
+        CATCH_REQUIRE(auto_validate.set_multiple_values("6,3,18,11", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE));
         CATCH_REQUIRE(auto_validate.size() == 4);
         CATCH_REQUIRE(auto_validate.get_value(0) == "6");
         CATCH_REQUIRE(auto_validate.get_long(0) == 6);
@@ -475,7 +475,7 @@ CATCH_TEST_CASE("option_info_validator", "[option_info][valid][validator]")
 
         CATCH_REQUIRE(auto_validate.get_validator() == nullptr);
 
-        auto_validate.set_value(0, "35", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        auto_validate.set_value(0, "35", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(auto_validate.size() == 1);
         CATCH_REQUIRE(auto_validate.get_value(0) == "35");
         CATCH_REQUIRE(auto_validate.get_long(0) == 35);
@@ -494,7 +494,7 @@ CATCH_TEST_CASE("option_info_validator", "[option_info][valid][validator]")
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"3\" given to parameter --validator is not considered valid.");
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"11\" given to parameter --validator is not considered valid.");
-        CATCH_REQUIRE_FALSE(auto_validate.set_multiple_values("6,3,18,11", advgetopt::option_source_t::SOURCE_COMMAND_LINE));
+        CATCH_REQUIRE_FALSE(auto_validate.set_multiple_values("6,3,18,11", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE));
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         CATCH_REQUIRE(auto_validate.size() == 2);
         CATCH_REQUIRE(auto_validate.get_value(0) == "6");
@@ -505,7 +505,7 @@ CATCH_TEST_CASE("option_info_validator", "[option_info][valid][validator]")
         auto_validate.set_validator(std::string());
         CATCH_REQUIRE(auto_validate.get_validator() == nullptr);
 
-        CATCH_REQUIRE(auto_validate.set_multiple_values("6,3,18,11", advgetopt::option_source_t::SOURCE_COMMAND_LINE));
+        CATCH_REQUIRE(auto_validate.set_multiple_values("6,3,18,11", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE));
         CATCH_REQUIRE(auto_validate.size() == 4);
         CATCH_REQUIRE(auto_validate.get_value(0) == "6");
         CATCH_REQUIRE(auto_validate.get_long(0) == 6);
@@ -529,7 +529,7 @@ CATCH_TEST_CASE("option_info_validator", "[option_info][valid][validator]")
 
         CATCH_REQUIRE(auto_validate.get_validator() == nullptr);
 
-        auto_validate.set_value(0, "abc", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        auto_validate.set_value(0, "abc", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(auto_validate.size() == 1);
         CATCH_REQUIRE(auto_validate.get_value(0) == "abc");
 
@@ -545,7 +545,7 @@ CATCH_TEST_CASE("option_info_validator", "[option_info][valid][validator]")
 
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"33\" given to parameter --validator is not considered valid.");
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"45\" given to parameter --validator is not considered valid.");
-        CATCH_REQUIRE_FALSE(auto_validate.set_multiple_values("abc,qqq,33,zac,pop,45", advgetopt::option_source_t::SOURCE_COMMAND_LINE));
+        CATCH_REQUIRE_FALSE(auto_validate.set_multiple_values("abc,qqq,33,zac,pop,45", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE));
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         CATCH_REQUIRE(auto_validate.size() == 4);
         CATCH_REQUIRE(auto_validate.get_value(0) == "abc");
@@ -556,7 +556,7 @@ CATCH_TEST_CASE("option_info_validator", "[option_info][valid][validator]")
         auto_validate.set_validator(std::string());
         CATCH_REQUIRE(auto_validate.get_validator() == nullptr);
 
-        CATCH_REQUIRE(auto_validate.set_multiple_values("abc,-56,zoc", advgetopt::option_source_t::SOURCE_COMMAND_LINE));
+        CATCH_REQUIRE(auto_validate.set_multiple_values("abc,-56,zoc", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE));
         CATCH_REQUIRE(auto_validate.size() == 3);
         CATCH_REQUIRE(auto_validate.get_value(0) == "abc");
         CATCH_REQUIRE(auto_validate.get_value(1) == "-56");
@@ -596,7 +596,7 @@ CATCH_TEST_CASE("option_info_multiple_separators", "[option_info][valid][separat
         separators.set_multiple_separators(nullptr);
         CATCH_REQUIRE(separators.get_multiple_separators().empty());
 
-        CATCH_REQUIRE(separators.set_multiple_values("n1,n2;n3 n4 ^ n5", advgetopt::option_source_t::SOURCE_COMMAND_LINE));
+        CATCH_REQUIRE(separators.set_multiple_values("n1,n2;n3 n4 ^ n5", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE));
         CATCH_REQUIRE(separators.size() == 1);
         CATCH_REQUIRE(separators.get_value(0) == "n1,n2;n3 n4 ^ n5");
 
@@ -604,7 +604,7 @@ CATCH_TEST_CASE("option_info_multiple_separators", "[option_info][valid][separat
         separators.set_multiple_separators(empty_list);
         CATCH_REQUIRE(separators.get_multiple_separators().empty());
 
-        CATCH_REQUIRE(separators.set_multiple_values("n1,n2;n3 n4 ^ n5", advgetopt::option_source_t::SOURCE_COMMAND_LINE));
+        CATCH_REQUIRE(separators.set_multiple_values("n1,n2;n3 n4 ^ n5", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE));
         CATCH_REQUIRE(separators.size() == 1);
         CATCH_REQUIRE(separators.get_value(0) == "n1,n2;n3 n4 ^ n5");
 
@@ -614,7 +614,7 @@ CATCH_TEST_CASE("option_info_multiple_separators", "[option_info][valid][separat
         separators.set_multiple_separators(empty_separator_list);
         CATCH_REQUIRE(separators.get_multiple_separators().empty());
 
-        CATCH_REQUIRE(separators.set_multiple_values("n1,n2;n3 n4 ^ n5", advgetopt::option_source_t::SOURCE_COMMAND_LINE));
+        CATCH_REQUIRE(separators.set_multiple_values("n1,n2;n3 n4 ^ n5", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE));
         CATCH_REQUIRE(separators.size() == 1);
         CATCH_REQUIRE(separators.get_value(0) == "n1,n2;n3 n4 ^ n5");
 
@@ -628,7 +628,7 @@ CATCH_TEST_CASE("option_info_multiple_separators", "[option_info][valid][separat
         separators.set_multiple_separators(separator_list);
         CATCH_REQUIRE(separators.get_multiple_separators().size() == 4);
 
-        CATCH_REQUIRE(separators.set_multiple_values("n1,n2;n3 n4 ^ n5", advgetopt::option_source_t::SOURCE_COMMAND_LINE));
+        CATCH_REQUIRE(separators.set_multiple_values("n1,n2;n3 n4 ^ n5", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE));
         CATCH_REQUIRE(separators.size() == 5);
         CATCH_REQUIRE(separators.get_value(0) == "n1");
         CATCH_REQUIRE(separators.get_value(1) == "n2");
@@ -639,7 +639,7 @@ CATCH_TEST_CASE("option_info_multiple_separators", "[option_info][valid][separat
         separators.set_multiple_separators(empty_separator_list);
         CATCH_REQUIRE(separators.get_multiple_separators().empty());
 
-        CATCH_REQUIRE(separators.set_multiple_values("n1,n2;n3 n4 ^ n5", advgetopt::option_source_t::SOURCE_COMMAND_LINE));
+        CATCH_REQUIRE(separators.set_multiple_values("n1,n2;n3 n4 ^ n5", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE));
         CATCH_REQUIRE(separators.size() == 1);
         CATCH_REQUIRE(separators.get_value(0) == "n1,n2;n3 n4 ^ n5");
 
@@ -652,7 +652,7 @@ CATCH_TEST_CASE("option_info_multiple_separators", "[option_info][valid][separat
         separators.set_multiple_separators(list);
         CATCH_REQUIRE(separators.get_multiple_separators().size() == 4);
 
-        CATCH_REQUIRE(separators.set_multiple_values("n1,n2;n3 n4 ^ n5", advgetopt::option_source_t::SOURCE_COMMAND_LINE));
+        CATCH_REQUIRE(separators.set_multiple_values("n1,n2;n3 n4 ^ n5", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE));
         CATCH_REQUIRE(separators.size() == 5);
         CATCH_REQUIRE(separators.get_value(0) == "n1");
         CATCH_REQUIRE(separators.get_value(1) == "n2");
@@ -663,7 +663,7 @@ CATCH_TEST_CASE("option_info_multiple_separators", "[option_info][valid][separat
         separators.set_multiple_separators(empty_list);
         CATCH_REQUIRE(separators.get_multiple_separators().empty());
 
-        CATCH_REQUIRE(separators.set_multiple_values("n1,n2;n3 n4 ^ n5", advgetopt::option_source_t::SOURCE_COMMAND_LINE));
+        CATCH_REQUIRE(separators.set_multiple_values("n1,n2;n3 n4 ^ n5", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE));
         CATCH_REQUIRE(separators.size() == 1);
         CATCH_REQUIRE(separators.get_value(0) == "n1,n2;n3 n4 ^ n5");
     CATCH_END_SECTION()
@@ -678,23 +678,23 @@ CATCH_TEST_CASE("option_info_add_value", "[option_info][valid][add][multiple]")
 
         CATCH_REQUIRE(one_value.size() == 0);
 
-        one_value.add_value("value one", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        one_value.add_value("value one", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(one_value.size() == 1);
         CATCH_REQUIRE(one_value.get_value(0) == "value one");
 
-        one_value.add_value("value two", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        one_value.add_value("value two", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(one_value.size() == 1);
         CATCH_REQUIRE(one_value.get_value(0) == "value two");
 
         one_value.add_flag(advgetopt::GETOPT_FLAG_LOCK);
 
-        one_value.add_value("value three", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        one_value.add_value("value three", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(one_value.size() == 1);
         CATCH_REQUIRE(one_value.get_value(0) == "value two");
 
         one_value.remove_flag(advgetopt::GETOPT_FLAG_LOCK);
 
-        one_value.add_value("value four", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        one_value.add_value("value four", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(one_value.size() == 1);
         CATCH_REQUIRE(one_value.get_value(0) == "value four");
 
@@ -704,7 +704,7 @@ CATCH_TEST_CASE("option_info_add_value", "[option_info][valid][add][multiple]")
         // to verify that the f_integer was reset we kind of very much
         // have to re-add a value
         //
-        one_value.set_value(0, "value one", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        one_value.set_value(0, "value one", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(one_value.size() == 1);
         CATCH_REQUIRE(one_value.get_value(0) == "value one");
     CATCH_END_SECTION()
@@ -714,26 +714,26 @@ CATCH_TEST_CASE("option_info_add_value", "[option_info][valid][add][multiple]")
 
         CATCH_REQUIRE(one_value.size() == 0);
 
-        one_value.add_value("123", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        one_value.add_value("123", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(one_value.size() == 1);
         CATCH_REQUIRE(one_value.get_value(0) == "123");
         CATCH_REQUIRE(one_value.get_long(0) == 123);
 
-        one_value.add_value("456", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        one_value.add_value("456", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(one_value.size() == 1);
         CATCH_REQUIRE(one_value.get_value(0) == "456");
         CATCH_REQUIRE(one_value.get_long(0) == 456);
 
         one_value.add_flag(advgetopt::GETOPT_FLAG_LOCK);
 
-        one_value.add_value("789", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        one_value.add_value("789", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(one_value.size() == 1);
         CATCH_REQUIRE(one_value.get_value(0) == "456");
         CATCH_REQUIRE(one_value.get_long(0) == 456);
 
         one_value.remove_flag(advgetopt::GETOPT_FLAG_LOCK);
 
-        one_value.add_value("505", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        one_value.add_value("505", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(one_value.size() == 1);
         CATCH_REQUIRE(one_value.get_value(0) == "505");
         CATCH_REQUIRE(one_value.get_long(0) == 505);
@@ -744,7 +744,7 @@ CATCH_TEST_CASE("option_info_add_value", "[option_info][valid][add][multiple]")
         // to verify that the f_integer was reset we kind of very much
         // have to re-add a value
         //
-        one_value.set_value(0, "123", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        one_value.set_value(0, "123", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(one_value.size() == 1);
         CATCH_REQUIRE(one_value.get_value(0) == "123");
         CATCH_REQUIRE(one_value.get_long(0) == 123);
@@ -757,25 +757,25 @@ CATCH_TEST_CASE("option_info_add_value", "[option_info][valid][add][multiple]")
 
         multi_value.add_flag(advgetopt::GETOPT_FLAG_MULTIPLE);
 
-        multi_value.add_value("value one", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        multi_value.add_value("value one", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(multi_value.size() == 1);
         CATCH_REQUIRE(multi_value.get_value(0) == "value one");
 
-        multi_value.add_value("value two", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        multi_value.add_value("value two", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(multi_value.size() == 2);
         CATCH_REQUIRE(multi_value.get_value(0) == "value one");
         CATCH_REQUIRE(multi_value.get_value(1) == "value two");
 
         multi_value.add_flag(advgetopt::GETOPT_FLAG_LOCK);
 
-        multi_value.add_value("value three", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        multi_value.add_value("value three", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(multi_value.size() == 2);
         CATCH_REQUIRE(multi_value.get_value(0) == "value one");
         CATCH_REQUIRE(multi_value.get_value(1) == "value two");
 
         multi_value.remove_flag(advgetopt::GETOPT_FLAG_LOCK);
 
-        multi_value.add_value("value four", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        multi_value.add_value("value four", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(multi_value.size() == 3);
         CATCH_REQUIRE(multi_value.get_value(0) == "value one");
         CATCH_REQUIRE(multi_value.get_value(1) == "value two");
@@ -787,7 +787,7 @@ CATCH_TEST_CASE("option_info_add_value", "[option_info][valid][add][multiple]")
         // to verify that the f_integer was reset we kind of very much
         // have to re-add a value
         //
-        multi_value.set_value(0, "value one", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        multi_value.set_value(0, "value one", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(multi_value.size() == 1);
         CATCH_REQUIRE(multi_value.get_value(0) == "value one");
     CATCH_END_SECTION()
@@ -799,12 +799,12 @@ CATCH_TEST_CASE("option_info_add_value", "[option_info][valid][add][multiple]")
 
         multi_value.add_flag(advgetopt::GETOPT_FLAG_MULTIPLE);
 
-        multi_value.add_value("123", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        multi_value.add_value("123", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(multi_value.size() == 1);
         CATCH_REQUIRE(multi_value.get_value(0) == "123");
         CATCH_REQUIRE(multi_value.get_long(0) == 123);
 
-        multi_value.add_value("456", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        multi_value.add_value("456", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(multi_value.size() == 2);
         CATCH_REQUIRE(multi_value.get_value(0) == "123");
         CATCH_REQUIRE(multi_value.get_long(0) == 123);
@@ -813,7 +813,7 @@ CATCH_TEST_CASE("option_info_add_value", "[option_info][valid][add][multiple]")
 
         multi_value.add_flag(advgetopt::GETOPT_FLAG_LOCK);
 
-        multi_value.add_value("789", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        multi_value.add_value("789", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(multi_value.size() == 2);
         CATCH_REQUIRE(multi_value.get_value(0) == "123");
         CATCH_REQUIRE(multi_value.get_long(0) == 123);
@@ -822,7 +822,7 @@ CATCH_TEST_CASE("option_info_add_value", "[option_info][valid][add][multiple]")
 
         multi_value.remove_flag(advgetopt::GETOPT_FLAG_LOCK);
 
-        multi_value.add_value("505", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        multi_value.add_value("505", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(multi_value.size() == 3);
         CATCH_REQUIRE(multi_value.get_value(0) == "123");
         CATCH_REQUIRE(multi_value.get_long(0) == 123);
@@ -837,7 +837,7 @@ CATCH_TEST_CASE("option_info_add_value", "[option_info][valid][add][multiple]")
         // to verify that the f_integer was reset we kind of very much
         // have to re-add a value
         //
-        multi_value.set_value(0, "123", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        multi_value.set_value(0, "123", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(multi_value.size() == 1);
         CATCH_REQUIRE(multi_value.get_value(0) == "123");
         CATCH_REQUIRE(multi_value.get_long(0) == 123);
@@ -853,23 +853,23 @@ CATCH_TEST_CASE("option_info_set_value", "[option_info][valid][set][multiple]")
 
         CATCH_REQUIRE(one_value.size() == 0);
 
-        one_value.set_value(0, "value one", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        one_value.set_value(0, "value one", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(one_value.size() == 1);
         CATCH_REQUIRE(one_value.get_value(0) == "value one");
 
-        one_value.set_value(0, "value two", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        one_value.set_value(0, "value two", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(one_value.size() == 1);
         CATCH_REQUIRE(one_value.get_value(0) == "value two");
 
         one_value.lock();
 
-        one_value.set_value(0, "value three", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        one_value.set_value(0, "value three", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(one_value.size() == 1);
         CATCH_REQUIRE(one_value.get_value(0) == "value two");
 
         one_value.unlock();
 
-        one_value.set_value(0, "value four", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        one_value.set_value(0, "value four", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(one_value.size() == 1);
         CATCH_REQUIRE(one_value.get_value(0) == "value four");
 
@@ -879,7 +879,7 @@ CATCH_TEST_CASE("option_info_set_value", "[option_info][valid][set][multiple]")
         // to verify that the f_integer was reset we kind of very much
         // have to re-add a value
         //
-        one_value.set_value(0, "value one", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        one_value.set_value(0, "value one", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(one_value.size() == 1);
         CATCH_REQUIRE(one_value.get_value(0) == "value one");
     CATCH_END_SECTION()
@@ -889,26 +889,26 @@ CATCH_TEST_CASE("option_info_set_value", "[option_info][valid][set][multiple]")
 
         CATCH_REQUIRE(one_value.size() == 0);
 
-        one_value.set_value(0, "123", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        one_value.set_value(0, "123", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(one_value.size() == 1);
         CATCH_REQUIRE(one_value.get_value(0) == "123");
         CATCH_REQUIRE(one_value.get_long(0) == 123);
 
-        one_value.set_value(0, "456", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        one_value.set_value(0, "456", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(one_value.size() == 1);
         CATCH_REQUIRE(one_value.get_value(0) == "456");
         CATCH_REQUIRE(one_value.get_long(0) == 456);
 
         one_value.lock();
 
-        one_value.set_value(0, "789", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        one_value.set_value(0, "789", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(one_value.size() == 1);
         CATCH_REQUIRE(one_value.get_value(0) == "456");
         CATCH_REQUIRE(one_value.get_long(0) == 456);
 
         one_value.unlock();
 
-        one_value.set_value(0, "505", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        one_value.set_value(0, "505", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(one_value.size() == 1);
         CATCH_REQUIRE(one_value.get_value(0) == "505");
         CATCH_REQUIRE(one_value.get_long(0) == 505);
@@ -919,7 +919,7 @@ CATCH_TEST_CASE("option_info_set_value", "[option_info][valid][set][multiple]")
         // to verify that the f_integer was reset we kind of very much
         // have to re-add a value
         //
-        one_value.set_value(0, "123", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        one_value.set_value(0, "123", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(one_value.size() == 1);
         CATCH_REQUIRE(one_value.get_value(0) == "123");
         CATCH_REQUIRE(one_value.get_long(0) == 123);
@@ -934,25 +934,25 @@ CATCH_TEST_CASE("option_info_set_value", "[option_info][valid][set][multiple]")
 
         multi_value.add_flag(advgetopt::GETOPT_FLAG_MULTIPLE);
 
-        multi_value.set_value(0, "value one", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        multi_value.set_value(0, "value one", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(multi_value.size() == 1);
         CATCH_REQUIRE(multi_value.get_value(0) == "value one");
 
-        multi_value.set_value(1, "value two", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        multi_value.set_value(1, "value two", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(multi_value.size() == 2);
         CATCH_REQUIRE(multi_value.get_value(0) == "value one");
         CATCH_REQUIRE(multi_value.get_value(1) == "value two");
 
         multi_value.lock(false);
 
-        multi_value.set_value(2, "value three", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        multi_value.set_value(2, "value three", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(multi_value.size() == 2);
         CATCH_REQUIRE(multi_value.get_value(0) == "value one");
         CATCH_REQUIRE(multi_value.get_value(1) == "value two");
 
         multi_value.unlock();
 
-        multi_value.set_value(2, "value four", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        multi_value.set_value(2, "value four", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(multi_value.size() == 3);
         CATCH_REQUIRE(multi_value.get_value(0) == "value one");
         CATCH_REQUIRE(multi_value.get_value(1) == "value two");
@@ -964,7 +964,7 @@ CATCH_TEST_CASE("option_info_set_value", "[option_info][valid][set][multiple]")
         // to verify that the f_integer was reset we kind of very much
         // have to re-add a value
         //
-        multi_value.set_value(0, "value one", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        multi_value.set_value(0, "value one", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(multi_value.size() == 1);
         CATCH_REQUIRE(multi_value.get_value(0) == "value one");
     CATCH_END_SECTION()
@@ -978,12 +978,12 @@ CATCH_TEST_CASE("option_info_set_value", "[option_info][valid][set][multiple]")
 
         multi_value.lock(false);
 
-        multi_value.set_value(0, "123", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        multi_value.set_value(0, "123", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(multi_value.size() == 1);
         CATCH_REQUIRE(multi_value.get_value(0) == "123");
         CATCH_REQUIRE(multi_value.get_long(0) == 123);
 
-        multi_value.set_value(1, "456", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        multi_value.set_value(1, "456", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(multi_value.size() == 2);
         CATCH_REQUIRE(multi_value.get_value(0) == "123");
         CATCH_REQUIRE(multi_value.get_long(0) == 123);
@@ -992,7 +992,7 @@ CATCH_TEST_CASE("option_info_set_value", "[option_info][valid][set][multiple]")
 
         multi_value.lock(false);
 
-        multi_value.set_value(2, "789", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        multi_value.set_value(2, "789", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(multi_value.size() == 2);
         CATCH_REQUIRE(multi_value.get_value(0) == "123");
         CATCH_REQUIRE(multi_value.get_long(0) == 123);
@@ -1001,7 +1001,7 @@ CATCH_TEST_CASE("option_info_set_value", "[option_info][valid][set][multiple]")
 
         multi_value.unlock();
 
-        multi_value.set_value(2, "505", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        multi_value.set_value(2, "505", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(multi_value.size() == 3);
         CATCH_REQUIRE(multi_value.get_value(0) == "123");
         CATCH_REQUIRE(multi_value.get_long(0) == 123);
@@ -1016,7 +1016,7 @@ CATCH_TEST_CASE("option_info_set_value", "[option_info][valid][set][multiple]")
         // to verify that the f_integer was reset we kind of very much
         // have to re-add a value
         //
-        multi_value.set_value(0, "123", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        multi_value.set_value(0, "123", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(multi_value.size() == 1);
         CATCH_REQUIRE(multi_value.get_value(0) == "123");
         CATCH_REQUIRE(multi_value.get_long(0) == 123);
@@ -1220,7 +1220,7 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
     CATCH_START_SECTION("invalid_option_info: Set value with undefined source")
         advgetopt::option_info verbose("verbose", 'v');
         CATCH_REQUIRE_THROWS_MATCHES(
-                  verbose.set_value(0, "true", advgetopt::option_source_t::SOURCE_UNDEFINED)
+                  verbose.set_value(0, "true", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_UNDEFINED)
                 , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
                           "getopt_logic_error: option_info::set_value(): called with SOURCE_UNDEFINED (5)."));
@@ -1229,7 +1229,7 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
     CATCH_START_SECTION("invalid_option_info: Set multiple values with undefined source")
         advgetopt::option_info verbose("verbose", 'v');
         CATCH_REQUIRE_THROWS_MATCHES(
-                  verbose.set_multiple_values("a,b,c", advgetopt::option_source_t::SOURCE_UNDEFINED)
+                  verbose.set_multiple_values("a,b,c", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_UNDEFINED)
                 , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
                           "getopt_logic_error: option_info::set_multiple_values(): called with SOURCE_UNDEFINED (5)."));
@@ -1287,13 +1287,13 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
 
         CATCH_REQUIRE(multi_value.size() == 0);
 
-        multi_value.set_value(0, "value one", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        multi_value.set_value(0, "value one", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(multi_value.size() == 1);
         CATCH_REQUIRE(multi_value.get_value(0) == "value one");
         CATCH_REQUIRE(multi_value.source() == advgetopt::option_source_t::SOURCE_COMMAND_LINE);
 
         CATCH_REQUIRE_THROWS_MATCHES(
-                  multi_value.set_value(2, "value two", advgetopt::option_source_t::SOURCE_COMMAND_LINE)
+                  multi_value.set_value(2, "value two", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE)
                 , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
                     "getopt_logic_error: option_info::set_value(): no value at index 2 and it is not the last available index + 1 (idx > 1) so you can't set this value (try add_value() maybe?)."));
@@ -1309,13 +1309,13 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
 
         CATCH_REQUIRE(multi_value.size() == 0);
 
-        multi_value.set_value(0, "123", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        multi_value.set_value(0, "123", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(multi_value.size() == 1);
         CATCH_REQUIRE(multi_value.get_value(0) == "123");
         CATCH_REQUIRE(multi_value.get_long(0) == 123);
 
         CATCH_REQUIRE_THROWS_MATCHES(
-                  multi_value.set_value(2, "456", advgetopt::option_source_t::SOURCE_COMMAND_LINE)
+                  multi_value.set_value(2, "456", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE)
                 , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
                     "getopt_logic_error: option_info::set_value(): no value at index 2 and it is not the last available index + 1 (idx > 1) so you can't set this value (try add_value() maybe?)."));
@@ -1330,12 +1330,12 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
 
         CATCH_REQUIRE(one_value.size() == 0);
 
-        one_value.set_value(0, "value one", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        one_value.set_value(0, "value one", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(one_value.size() == 1);
         CATCH_REQUIRE(one_value.get_value(0) == "value one");
 
         CATCH_REQUIRE_THROWS_MATCHES(
-                  one_value.set_value(1, "value two", advgetopt::option_source_t::SOURCE_COMMAND_LINE)
+                  one_value.set_value(1, "value two", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE)
                 , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
                     "getopt_logic_error: option_info::set_value(): single value option \"--names\" does not accepts index 1 which is not 0."));
@@ -1349,13 +1349,13 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
 
         CATCH_REQUIRE(one_value.size() == 0);
 
-        one_value.set_value(0, "123", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        one_value.set_value(0, "123", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(one_value.size() == 1);
         CATCH_REQUIRE(one_value.get_value(0) == "123");
         CATCH_REQUIRE(one_value.get_long(0) == 123);
 
         CATCH_REQUIRE_THROWS_MATCHES(
-                  one_value.set_value(1, "456", advgetopt::option_source_t::SOURCE_COMMAND_LINE)
+                  one_value.set_value(1, "456", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE)
                 , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
                     "getopt_logic_error: option_info::set_value(): single value option \"--names\" does not accepts index 1 which is not 0."));
@@ -1372,7 +1372,7 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
 
         // really too large
         //
-        size.set_value(0, "100000000000000000000", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        size.set_value(0, "100000000000000000000", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(size.size() == 1);
         CATCH_REQUIRE(size.get_value(0) == "100000000000000000000");
 
@@ -1382,7 +1382,7 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
 
         // too large by 1
         //
-        size.set_value(0, "9223372036854775808", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        size.set_value(0, "9223372036854775808", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(size.size() == 1);
         CATCH_REQUIRE(size.get_value(0) == "9223372036854775808");
 
@@ -1392,7 +1392,7 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
 
         // too small by 1
         //
-        size.set_value(0, "-9223372036854775809", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        size.set_value(0, "-9223372036854775809", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(size.size() == 1);
         CATCH_REQUIRE(size.get_value(0) == "-9223372036854775809");
 
@@ -1402,7 +1402,7 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
 
         // not a valid number
         //
-        size.set_value(0, "97 potatoes", advgetopt::option_source_t::SOURCE_COMMAND_LINE);
+        size.set_value(0, "97 potatoes", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         CATCH_REQUIRE(size.size() == 1);
         CATCH_REQUIRE(size.get_value(0) == "97 potatoes");
 
@@ -1423,7 +1423,7 @@ CATCH_TEST_CASE("invalid_option_info", "[option_info][invalid]")
         separators.set_multiple_separators(list);
 
         CATCH_REQUIRE_THROWS_MATCHES(
-                  separators.set_multiple_values("n1,n2;n3 n4 ^ n5", advgetopt::option_source_t::SOURCE_COMMAND_LINE)
+                  separators.set_multiple_values("n1,n2;n3 n4 ^ n5", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE)
                 , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
                     "getopt_logic_error: option_info::set_multiple_value(): parameter --names expects zero or one parameter."

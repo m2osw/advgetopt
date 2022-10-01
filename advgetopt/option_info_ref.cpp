@@ -252,7 +252,7 @@ option_info_ref & option_info_ref::operator = (char value)
     {
         v += value;
     }
-    f_opt->set_value(0, v, option_source_t::SOURCE_DIRECT);
+    f_opt->set_value(0, v); // source considered DIRECT
     return *this;
 }
 
@@ -275,7 +275,7 @@ option_info_ref & option_info_ref::operator = (char32_t value)
     {
         v = libutf8::to_u8string(value);
     }
-    f_opt->set_value(0, v, option_source_t::SOURCE_DIRECT);
+    f_opt->set_value(0, v); // source considered DIRECT
     return *this;
 }
 
@@ -293,11 +293,11 @@ option_info_ref & option_info_ref::operator = (char const * value)
 {
     if(value == nullptr)
     {
-        f_opt->set_value(0, std::string(), option_source_t::SOURCE_DIRECT);
+        f_opt->set_value(0, std::string()); // source considered DIRECT
     }
     else
     {
-        f_opt->set_value(0, value, option_source_t::SOURCE_DIRECT);
+        f_opt->set_value(0, value); // source considered DIRECT
     }
     return *this;
 }
@@ -314,7 +314,7 @@ option_info_ref & option_info_ref::operator = (char const * value)
  */
 option_info_ref & option_info_ref::operator = (std::string const & value)
 {
-    f_opt->set_value(0, value, option_source_t::SOURCE_DIRECT);
+    f_opt->set_value(0, value); // source considered DIRECT
     return *this;
 }
 
@@ -330,7 +330,7 @@ option_info_ref & option_info_ref::operator = (std::string const & value)
  */
 option_info_ref & option_info_ref::operator = (option_info_ref const & value)
 {
-    f_opt->set_value(0, value, option_source_t::SOURCE_DIRECT);
+    f_opt->set_value(0, value); // source considered DIRECT
     return *this;
 }
 
@@ -355,7 +355,7 @@ option_info_ref & option_info_ref::operator += (char value)
     {
         v += value;
     }
-    f_opt->set_value(0, static_cast<std::string>(*this) + v, option_source_t::SOURCE_DIRECT);
+    f_opt->set_value(0, static_cast<std::string>(*this) + v); // source considered DIRECT
     return *this;
 }
 
@@ -376,7 +376,7 @@ option_info_ref & option_info_ref::operator += (char32_t value)
     {
         v += libutf8::to_u8string(value);
     }
-    f_opt->set_value(0, static_cast<std::string>(*this) + v, option_source_t::SOURCE_DIRECT);
+    f_opt->set_value(0, static_cast<std::string>(*this) + v); // source considered DIRECT
     return *this;
 }
 
@@ -397,7 +397,7 @@ option_info_ref & option_info_ref::operator += (char const * value)
     {
         v = value;
     }
-    f_opt->set_value(0, static_cast<std::string>(*this) + v, option_source_t::SOURCE_DIRECT);
+    f_opt->set_value(0, static_cast<std::string>(*this) + v); // source considered DIRECT
     return *this;
 }
 
@@ -413,7 +413,7 @@ option_info_ref & option_info_ref::operator += (char const * value)
  */
 option_info_ref & option_info_ref::operator += (std::string const & value)
 {
-    f_opt->set_value(0, static_cast<std::string>(*this) + value, option_source_t::SOURCE_DIRECT);
+    f_opt->set_value(0, static_cast<std::string>(*this) + value); // source considered DIRECT
     return *this;
 }
 
@@ -429,10 +429,9 @@ option_info_ref & option_info_ref::operator += (std::string const & value)
  */
 option_info_ref & option_info_ref::operator += (option_info_ref const & value)
 {
-    f_opt->set_value(
+    f_opt->set_value( // source considered DIRECT
               0
-            , static_cast<std::string>(*this) + static_cast<std::string>(value)
-            , option_source_t::SOURCE_DIRECT);
+            , static_cast<std::string>(*this) + static_cast<std::string>(value));
     return *this;
 }
 

@@ -130,9 +130,10 @@ public:
     void                        set_variables(variables::pointer_t vars);
     variables::pointer_t        get_variables() const;
     bool                        has_value(std::string const & value) const;
-    bool                        add_value(std::string const & value, option_source_t source = option_source_t::SOURCE_DIRECT);
-    bool                        set_value(int idx, std::string const & value, option_source_t source = option_source_t::SOURCE_DIRECT);
-    bool                        set_multiple_values(std::string const & value, option_source_t source = option_source_t::SOURCE_DIRECT);
+    int                         find_value_index_by_key(std::string key, int idx = 0) const;
+    bool                        add_value(std::string const & value, string_list_t const & option_keys = string_list_t(), option_source_t source = option_source_t::SOURCE_DIRECT);
+    bool                        set_value(int idx, std::string const & value, string_list_t const & option_keys = string_list_t(), option_source_t source = option_source_t::SOURCE_DIRECT);
+    bool                        set_multiple_values(std::string const & value, string_list_t const & option_keys = string_list_t(), option_source_t source = option_source_t::SOURCE_DIRECT);
     bool                        is_defined() const;
     option_source_t             source() const;
     static void                 set_trace_sources(bool trace);

@@ -20,19 +20,22 @@ variables, and configuration files.
 
 # Understood Options
 
-The command line options. that your application understands, are created
-in a static array. By this we mean that it gets created at compile time
-and the array is just there at runtime. (This does not prevent you from
-creating dynamic command line options, but I do not know of very many
-software that have command line options changing over time, do you?)
+By default, the command line options understood by your application are
+found in a static array. That array is verified and compiled by the C++
+compiler. It then gets transferred in a vector at runtime. That vector
+can be completed by command line options found in configuration files.
+You can also dynamically add command line options, although there is
+rarely a need for such (i.e. the `--help` option is one exception handled
+by the library where addition help options are added for each group you
+define).
 
 The array is built with one entry per option. If you have options that
 make use of different names but have exactly the same result, then you
-will need multiple entries in your array. The additional entries can
-then make use of the `GETOPT_FLAG_ALIAS` and reference the first entry.
+create multiple entries in your array and mark the additional entries
+as `GETOPT_FLAG_ALIAS` and reference the first entry.
 
-Options can be used on the command line, in your environment variable,
-or in a configuration file. You can select exactly which option is going
+Options can be used on the command line, in environment variables,
+or in configuration files. You can select exactly which option is going
 to apply to what is found on the command line, in the configuration file,
 or the environment variables using the following flags:
 
@@ -41,8 +44,8 @@ or the environment variables using the following flags:
     GETOPT_FLAG_CONFIGURATION_FILE
 
 Further, you probably do not want all the options to be shown whenever
-an error is detected. For this reason there is a flag to tell that
-this or that option has to be shown on an error:
+an error is detected. For this reason there is a flag to tell the library
+which options has to be shown on an error:
 
     GETOPT_FLAG_SHOW_USAGE_ON_ERROR
 
@@ -53,14 +56,60 @@ The `getopt` class accepts the `argc`/`argv` parameters directly from your
 `main()` function. Of course, you can also build another array and use the
 `getopt` class at any time.
 
+Here is an example from iplock. This is how the ipload tool gets initialized.
+As we can see, we pass an array of statically defined options. Then we
+dynamically add options from the snaplogger. At that point the library is
+ready to parse the options so we call the `finish_parsing()` function.
+Since we do not know what the logger added, we give it a chance to process
+its command line options (i.e. change the output file, severity level, etc.)
+Finally we can test our own options such as the `"verbose"` and `"quiet"`
+options as shown at the end of this example.
+
+    ipload::ipload(int argc, char * argv[])
+        : f_opts(g_options_environment)
+    {
+        snaplogger::add_logger_options(f_opts);
+        f_opts.finish_parsing(argc, argv);
+        if(!snaplogger::process_logger_options(
+                      f_opts
+                    , "/etc/iplock/logger"
+                    , std::cout
+                    , !isatty(fileno(stdin))))
+        {
+            // exit on any error
+            //
+            throw advgetopt::getopt_exit("logger options generated an error.", 1);
+        }
+
+        f_verbose = f_opts.is_defined("verbose");
+        f_quiet = f_opts.is_defined("quiet");
+	// ...snip...
+    }
+
+
 
 # Configuration Files
 
-You can pass a vector of paths with filenames. If the vector is
-empty then no configuration files are checked. Otherwise the filenames
-are expected to be full paths, even though it is not required to be.
+You can define paths and filenames for the library to search for
+configuration files. If no paths or filenames are defined then no
+configuration files are loaded.
 
-Configuration files support empty lines and lines that start with
+The search is complicated. To simplify the administrator's work, we
+offer the special option:
+
+    my-tool --configuration-filenames
+
+which will list the name of each configuration file that gets loaded.
+Note that includes files found in sub-directories that have a name such
+as:
+
+    /etc/project/project.d/XX-project.conf
+
+The `XX` is a two digit number from 00 to 99. This allows all kinds of
+overrides by any of the packages installed on your system. The special
+number 50 is reserved for administrators.
+
+By default, configuration files support empty lines and lines that start with
 a hash that are viewed as comments. Spaces can appear before the hash.
 
 The other entries have to be of the form:
@@ -68,7 +117,7 @@ The other entries have to be of the form:
     option_name=value
 
 Note that in the configuration file, no `-` or `--` can appear in
-front of the option name.
+front of the option name. Also the short name of an option is not allowed.
 
 Note that options in your array of options are expected to use `"-"`
 when you want to separate multiple words like in "long-option".
@@ -83,19 +132,19 @@ So in the configuration file it would look like this:
 
 The system is capable of accept other operators and supports variables
 within a configuration file. These features are generally not made
-available at the command line level. The available of these extra
-features are therefore available only in a few tools and services.
-These tools and services will describe the other features they support.
+available at the command line level. These extra features are therefore
+available only in a few tools and services. These tools and services
+describe the other features they support.
 
 The possible features are:
 
 * Accept a space as the separator between the name of a parameter and its
-  value.
+  value (`long_option 123`).
 * Accept a colon (`:`) as the assignment operator, instead of the equal
-  sign.
+  sign (`long_option:123`).
 * Accept variable references in the values, written as `${<name>}`.
 * Accept INI like section declarations `[<name>]`.
-* Accept C-like like section declarations `<name> { ... }`.
+* Accept C-like blocks as section declarations `<name> { ... }`.
 * Accept C++-like scoping `<scope>::<name>=<value>`.
 * Multi-line parameters with backslash, & at the end or the start of the line.
 * Load all files found in a sub-directory (usually named `<project>.d`)
@@ -105,12 +154,12 @@ The possible features are:
 
 ## `edit-config`
 
-This tool can be used to edit simple Unix-like configuration file. You can
+This tool can be used to edit simple Unix-like configuration files. You can
 either retrieve the value of a field or set the value of a field.
 
     edit-config <config>.conf <field-name> [<new-value>]
 
-Say you have file named "/etc/log/settings.conf" with the following
+Say you have a file named "/etc/log/settings.conf" with the following
 parameters:
 
     severity=DEBUG
@@ -133,10 +182,14 @@ replaces the value of `auto_reload` with `true`.
 
 **Note:** make sure to quote the value if it includes special characters.
 
+This tool is already capable of editing many different type of configuration
+files, but watch out, there are still many bugs. Please test your usage
+thouroughly before making it available in production.
+
 
 # Numbers
 
-The options can be marked as optional or required.
+The value for an option can be marked as optional or required.
 
 There is also a way to require the option to be an integer (long). If
 the option can only be a number from 0 to 2^64-1 then this is a good
@@ -157,18 +210,25 @@ to retrieve the option with the `get_long()` function.
     	...
     }
 
-If the the option is not a valid integer then the function automatically
-calls `usage()` which ends with `exit(1)`.
+If the the option is not a valid integer then an exception is raised.
 
 We also offer a `get_double()` and validators. Validators allow for
 other types to be checked:
 
-* Integers
-* Doubles
-* Durations (such as `3m 15m 45s`)
-* Size (such as `<number> Kb`)
-* Regular Expression (any regex)
+* Integer
+* Double
+* Duration (such as `3h 15m 45s`)
+* Email
+* Keyword
+* Length (a set of allowed integer ranges: `3 ... 17, 55 ... 81, 100`)
+* List (a set of validators)
+* Regular Expression
+* Size (such as `37 Kb`)
 
+The List validator is peculiar in that it automatically gets used when
+you define multiple validators in your list of validators. This is
+most used with the Keywords and another validator such as the Integers
+validator.
 
 # Environment Variables
 
@@ -177,9 +237,10 @@ other types to be checked:
 The variables from the environment can be checked for parameters.
 
 The contents of the global environment variable are viewed just as a
-command with options. There are no limits except that only options that
+command line with options. There are no limits except that only options that
 were authorized to appear in the variable can be used in that variable.
-To authorize an option variable, set the following flag:
+
+To authorize an option variable, set the following flag on the option:
 
     GETOPT_FLAG_ENVIRONMENT_VARIABLE
 
@@ -191,22 +252,22 @@ For example, if you support a `--help` option, it most certainly
 would be totally useless in the environment variable.
 
 Using an option that's not acceptable in an environment variable
-will break the command line parsing by generating an error.
+breaks the command line parsing by generating an error.
 
 One reason to support environment variables is to define things
 like a path which has to be specific to each user of your tool:
 
-    MY_PROJECT_CONF="--path /usr/bin"
+    MY_PROJECT_CONF="--path /home/alexis/projects"
 
-Note that the command line option is required with the `-` or `--`
-as expected.
+Note that the variable options are required to use the `-` or `--`
+as expected on the command line.
 
 ## Per Option Environment Variables
 
 If you want to use an environment variable to just hold the value of
 an option, then use the environment variable name in the option.
 
-The value will be checked just like a normal option.
+The value is checked just like a normal option.
 
 This features allows your services to be compatible with systems such
 as Kubernetes, which make use of environment variables instead of
@@ -217,29 +278,45 @@ specific to a system that runs that service (i.e. such as the local IP).
 
 # Project Name
 
-You can define the name of your project in the list of configuration
-files. This is done by adding the `@` character at the start and end
-of the string as in:
+The `options_environment` structure accepts a project name and a group name.
 
-    "@advgetopt@" // project name is "advgetopt"
+By default, the project name (`f_project_name`) is used as the configuration
+filename. You can redefine the filename using the `f_configuration_filename`
+field. Or multiple filenames with full paths (or `~/...`) using the
+`f_configuration_files`.
 
-The name of the project is used to load configuration files by adding
-the name and a `.d` to the path. Say you have a configuration path
-set to `/etc/my-project/file.conf` and you defined a project name
-`sub-name` then the code will look for additional configuration files
-named:
+Finally, you can use the `f_configuration_directories` to change the set
+of directories you want to search for configuration files. In most cases,
+this one uses `/etc/<project-name>`. Some tools allow files to be defined
+under `/usr/share`. These files are not to be edited by administrators.
 
-    /etc/my-project/sub-name.d/XX-file.conf
+The name of the group (`f_group_name`) is used to load modified configuration
+files. If the `f_group_name` is not defined, then the `f_project_name` is
+used instead. `.d` is appeneded to the name to generate a sub-path where
+the project searches for additional configuration files.
 
-where XX is a number from 00 to 99.
+Say your project name is "project" and your group name is "group", the
+advgetopt library searches files that match the name:
 
-At times, the project name is not practical because we want several
-services to make use of the same directory. In that case, we offer a
-group name instead. That allows to either separate the files or instead
-group them under the same sub-directory.
+    /etc/project/group.d/XX-project.conf
+
+where XX is a number from 00 to 99. The number is important since it allows
+us to sort the files and read them in order. This is useful because the last
+time a parameter is set is the value the program receives when it queries
+the library. This means the administrator can override values found in:
+
+    /etc/project/project.conf
+
+by defining a file such as:
+
+    /etc/project/group.d/50-project.conf
+
+Similarly, other projects can install files in the `group.d` directory with
+lower or higher numbers to override the defaults (XX < 50) and possibly make
+sure the administrator does not change a value (XX > 50).
 
 _Note that although it is not currently checked, you probably should
-not include slashes in your project name._
+not include slashes in your project or group name._
 
 
 # Updating Configuration Files (`edit-config`)
@@ -300,6 +377,92 @@ allowing for the editing of DNS configuration files. It is still in
 development as it doesn't yet work properly in all situations, but
 works for what we currently need it for. It may also be useful to you._
 
+
+# Type of Options Supported
+
+As we've seen, the options are supported from different sources. There are
+also several types of options.
+
+## Dash versus Underscore
+
+It is customary to accept multi-word options with dashes when written on
+the command line: `--list-all`.
+
+However, inside a configuration file, it is much more customary to make use
+of underscores: `list_all=true`.
+
+The advgetopt library converts all the underscores found on the option names
+in dashes. Internally, the names are therefore stored as `list-all` but it
+properly matches the `list_all` found in configuration files.
+
+## Long Options
+
+The default is to offer a long option, for example `--verbose`.
+
+Long options are always introduced by two dashes. The name of a long option
+must be at least two characters.
+
+The name of long options can be used in configuration files.
+
+## One Letter
+
+It is possible to use command line options with a single letter. For example,
+the `-v` option is often used to be `--verbose`.
+
+Multiple letters can be used together: `-vije`. This is equivalent to
+specifying each letter on its own: `-v -i -j -e`. Single letters can be
+followed by one or more parameters like long options: `-f filename`.
+
+## Option Keys
+
+Option can be used with a key, meaning that the same option can receive
+_any_ number of values distinguished by a key.
+
+The default syntax is like `--name:key` where `name` is the name of the
+option and `key` is a string representing a key.
+
+This feature is not optimized and it should rarely be useful. It can still
+be great as it allows you to dynamically add any number of values to an
+option without having to define separate option each time. Just make sure
+to keep it sensible (i.e. a `--memory` option could receive keys such as
+`default`, `min`, `max`, `cache`, etc. don't then use a `--memory:filename`
+option to define the input filename which would have nothing to do with
+the `--memory` command line option).
+
+## One Dash (`-`)
+
+The special argument composed of just one dash (`-`) is viewed as a default
+option which, in most cases, will be viewed as an input or output file
+stream indication meaning use `stdin` or `stdout` as the file.
+
+## Two Dashes (`--`)
+
+The special argument `--` is the _argument separator_, which separate a
+set of arguments with a set of default arguments, in general filenames.
+This allos you to have filenames that start with one or two dashes.
+Your tool may use this feature for strings that represent something
+else than filenames.
+
+## Standalone Parameters
+
+The list of options can include a _default option_. Standalone parameters
+(those that cannot be assigned to any option) are added to the default
+option.
+
+For example, in:
+
+    command --verbose filename.txt
+
+The `filename.txt` would be added to the default option (assuming that the
+`--verbose` is defined as a flag, so it does not eat up the argument follow
+argument it).
+
+When a parameter accepts multiple options, only another argument (a word that
+start with `--` or a letter or letters that start with a `-`) stops the
+processing. The **Two Dashes** can also be used to break the multiple option
+argument list and start a list of standalone parameters.
+
+
 # Logger Extension
 
 The [snaplogger project](https://github.com/m2osw/snaplogger) has an
@@ -315,7 +478,7 @@ connection.
 # Hide Warnings
 
 Many tools I use in my console generate warnings (mainly Gnome complaining
-about missing this or that.)
+about missing this or that).
 
 The `hide-warnings` program can start those tools and hide the warnings
 so the console doesn't get filled up by totally useless messages

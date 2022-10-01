@@ -22,3 +22,7 @@
   as-needed basis. At the same time, it makes their implementation more
   complicated.
 
+* Finish up on the ARRAY implementation:
+** Add tests
+
+

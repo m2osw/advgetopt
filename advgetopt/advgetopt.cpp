@@ -88,6 +88,12 @@
 #include    "advgetopt/exception.h"
 
 
+// snapdev
+//
+#include    <snapdev/join_strings.h>
+#include    <snapdev/not_reached.h>
+
+
 // cppthread
 //
 #include    <cppthread/log.h>
@@ -813,6 +819,7 @@ void getopt::parse_environment_variable()
                       opt.second
                     , value
                     , std::string()
+                    , string_list_t()
                     , option_source_t::SOURCE_ENVIRONMENT_VARIABLE);
         }
     }
@@ -1059,7 +1066,7 @@ void getopt::parse_arguments(
                     while(i + 1 < argc)
                     {
                         ++i;
-                        f_default_option->add_value(argv[i], source);
+                        f_default_option->add_value(argv[i], string_list_t(), source);
                     }
                 }
                 else
@@ -1069,7 +1076,7 @@ void getopt::parse_arguments(
                     //
                     std::string option_name(argv[i] + 2);
                     std::string option_value;
-                    std::string::size_type const pos(option_name.find('='));
+                    std::string::size_type pos(option_name.find('='));
                     if(pos != std::string::npos)
                     {
                         if(pos == 0)
@@ -1085,15 +1092,44 @@ void getopt::parse_arguments(
                         option_value = option_name.substr(pos + 1);
                         option_name.resize(pos);
                     }
+                    string_list_t option_keys;
                     option_info::pointer_t opt(get_option(option_name));
                     if(opt == nullptr)
                     {
-                        cppthread::log << cppthread::log_level_t::error
-                                       << "option \"--"
-                                       << option_name
-                                       << "\" is not supported."
-                                       << cppthread::end;
-                        break;
+                        pos = option_name.find_first_of("[:");
+                        if(pos != std::string::npos)
+                        {
+                            option_keys = parse_option_map(option_name.substr(pos));
+                            option_name.resize(pos);
+                            opt = get_option(option_name);
+                        }
+                        if(opt == nullptr)
+                        {
+                            cppthread::log << cppthread::log_level_t::error
+                                           << "option \"--"
+                                           << option_name
+                                           << "\" is not supported."
+                                           << cppthread::end;
+                            break;
+                        }
+                        if(!opt->has_flag(GETOPT_FLAG_ARRAY))
+                        {
+                            cppthread::log << cppthread::log_level_t::error
+                                           << "option \"--"
+                                           << option_name
+                                           << "\" does not support the array or map syntax."
+                                           << cppthread::end;
+                            break;
+                        }
+                        if(option_keys.empty())
+                        {
+                            cppthread::log << cppthread::log_level_t::error
+                                           << "option \"--"
+                                           << option_name
+                                           << "\" has an invalid list of array keys."
+                                           << cppthread::end;
+                            break;
+                        }
                     }
                     if(only_environment_variable)
                     {
@@ -1123,11 +1159,16 @@ void getopt::parse_arguments(
                     {
                         // the user specified a value after an equal sign
                         //
-                        add_option_from_string(opt, option_value, std::string(), source);
+                        add_option_from_string(
+                                  opt
+                                , option_value
+                                , std::string()
+                                , option_keys
+                                , source);
                     }
                     else
                     {
-                        add_options(opt, i, argc, argv, source);
+                        add_options(opt, i, argc, argv, option_keys, source);
                     }
                 }
             }
@@ -1167,7 +1208,7 @@ void getopt::parse_arguments(
 
                     // this is similar to a default option by itself
                     //
-                    f_default_option->add_value(argv[i], source);
+                    f_default_option->add_value(argv[i], string_list_t(), source);
                 }
                 else
                 {
@@ -1215,7 +1256,7 @@ void getopt::parse_arguments(
                                 break;
                             }
                         }
-                        add_options(opt, i, argc, argv, source);
+                        add_options(opt, i, argc, argv, string_list_t(), source);
                     }
                 }
             }
@@ -1253,11 +1294,133 @@ void getopt::parse_arguments(
                     break;
                 }
             }
-            f_default_option->add_value(argv[i], source);
+            f_default_option->add_value(argv[i], string_list_t(), source);
         }
     }
 
     f_parsed = true;
+}
+
+
+/** \brief Parse a map following an option name.
+ *
+ * An option may offer the `ARRAY` capability. This means the option can
+ * be used multiple times with a different key as in:
+ *
+ * \code
+ *     --name:front 123
+ *     --name:back 456
+ * \endcode
+ *
+ * The keys in that case are `front` and `back`. The key will be saved
+ * along the option value and you can later retrieve the corresponding
+ * value using the get_string() with a string representing the key.
+ *
+ * \code
+ *     name_front = f_opts.get_string("front"); // returns 123
+ *     name_back = f_opts.get_string("back");   // returns 456
+ * \endcode
+ *
+ * This function searches for the map key names. The map syntax supports
+ * any number of key names either separated by colons or written between
+ * square brackets:
+ *
+ * \code
+ *     --name[front] 123
+ *     --name[back] 456
+ * \endcode
+ *
+ * are equivalent to the example above.
+ *
+ * The map is not limited to one name. At the moment the keys are not
+ * verified outside of the requirement of not being empty.
+ *
+ * The following shows how to define more than one key:
+ *
+ * \code
+ *     --name[front][back] 123
+ *     --name:front:back 123
+ *     --name[back][front] 123
+ *     --name:back:front 123
+ * \endcode
+ *
+ * In which case both keys are given the same value(s). So you still have
+ * one "front" and one "back" value, only both are set to 123.
+ *
+ * If you want to have keys that include multiple names in themselves,
+ * use the period as in:
+ *
+ * \code
+ *     --name:front.color red
+ *     --name:back.color blue
+ * \endcode
+ *
+ * Internally, the period is a character like any other (and will remain
+ * that way) so the advgetopt library does not know that "front.color"
+ * would represent "color" field in the "front" object.
+ *
+ * \param[in] raw_key  The key as written by the user.
+ *
+ * \return The canonicalized key or an empty string on error.
+ */
+string_list_t getopt::parse_option_map(std::string const & raw_key)
+{
+    string_list_t keys;
+    if(raw_key.empty())
+    {
+        return keys;
+    }
+
+    if(raw_key[0] == '[')
+    {
+        // the array syntax allows for keys to be written between square
+        // brackets instead of separated by colon so [a][b][c] is equivalent
+        // to a:b:c
+        //
+        std::string result;
+        std::string::size_type pos(1);
+        for(;;)
+        {
+            std::string::size_type start(pos);
+            pos = raw_key.find(']', pos);
+            if(pos == std::string::npos)
+            {
+                // this is an error...
+                //
+                return string_list_t();
+            }
+            std::string key(raw_key.substr(start, pos - start));
+            if(!key.empty())
+            {
+                keys.push_back(key);
+            }
+            ++pos;
+            if(pos >= raw_key.length())
+            {
+                break;
+            }
+            if(raw_key[pos] != '[')
+            {
+                // the next key must start with a '['
+                //
+                return string_list_t();
+            }
+            ++pos;
+        }
+    }
+    else
+    {
+        split_string(raw_key, keys, {":"});
+    }
+
+    // remove duplicates also sort the keys (which is not a perfect thing
+    // to do, but it shouldn't hurt except that numbers will not be sorted
+    // properly, i.e. "10" appears before "2").
+    //
+    std::sort(keys.begin(), keys.end());
+    keys.erase(std::unique(keys.begin(), keys.end()), keys.end());
+
+    return keys;
 }
 
 
@@ -1430,6 +1593,7 @@ option_info::pointer_t getopt::get_option(short_name_t short_name, bool exact_op
  * \param[in] i  The current position, starting with the option position
  * \param[in] argc  The number of arguments in the argv array.
  * \param[in] argv  The list of argument strings.
+ * \param[in] key  An array of keys to prepend to each value.
  * \param[in] source  Where the value comes from.
  */
 void getopt::add_options(
@@ -1437,11 +1601,12 @@ void getopt::add_options(
         , int & i
         , int argc
         , char ** argv
+        , string_list_t const & option_keys
         , option_source_t source)
 {
     if(opt->has_flag(GETOPT_FLAG_FLAG))
     {
-        opt->add_value(opt->get_default(), source);
+        opt->add_value(opt->get_default(), option_keys, source);
     }
     else
     {
@@ -1452,14 +1617,14 @@ void getopt::add_options(
                 do
                 {
                     ++i;
-                    opt->add_value(argv[i], source);
+                    opt->add_value(argv[i], option_keys, source);
                 }
                 while(i + 1 < argc && !is_arg(argv[i + 1]));
             }
             else
             {
                 ++i;
-                opt->add_value(argv[i], source);
+                opt->add_value(argv[i], option_keys, source);
             }
         }
         else
@@ -1478,7 +1643,7 @@ void getopt::add_options(
                 // set although no argument was specified (but that's
                 // legal by this argument's definition)
                 //
-                opt->add_value(std::string(), source);
+                opt->add_value(std::string(), option_keys, source);
             }
         }
     }
@@ -1507,6 +1672,7 @@ void getopt::add_option_from_string(
           option_info::pointer_t opt
         , std::string const & value
         , std::string const & filename
+        , string_list_t const & option_keys
         , option_source_t source)
 {
     // is the value defined?
@@ -1519,11 +1685,11 @@ void getopt::add_option_from_string(
             //
             if(opt->has_flag(GETOPT_FLAG_MULTIPLE))
             {
-                opt->set_multiple_values(value, source);
+                opt->set_multiple_values(value, option_keys, source);
             }
             else
             {
-                opt->set_value(0, value, source);
+                opt->set_value(0, value, option_keys, source);
             }
             return;
         }
@@ -1542,7 +1708,7 @@ void getopt::add_option_from_string(
         {
             // for this, pass an empty string to the next layer
             //
-            opt->set_value(0, std::string(), source);
+            opt->set_value(0, std::string(), option_keys, source);
             return;
         }
 
@@ -1586,7 +1752,7 @@ void getopt::add_option_from_string(
 
     // accept an empty value otherwise
     //
-    opt->set_value(0, value, source);
+    opt->set_value(0, value, option_keys, source);
 }
 
 

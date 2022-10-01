@@ -687,7 +687,10 @@ void getopt::process_configuration_file(std::string const & filename)
         {
             if(!configuration_sections->has_value(s))
             {
-                configuration_sections->add_value(s, option_source_t::SOURCE_CONFIGURATION);
+                configuration_sections->add_value(
+                          s
+                        , string_list_t()
+                        , option_source_t::SOURCE_CONFIGURATION);
             }
         }
     }
@@ -754,6 +757,7 @@ void getopt::process_configuration_file(std::string const & filename)
                       opt
                     , param.second
                     , filename
+                    , string_list_t()
                     , option_source_t::SOURCE_CONFIGURATION);
         }
     }
