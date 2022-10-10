@@ -504,7 +504,8 @@ string_list_t insert_group_name(
     else
     {
         pattern = name
-                + (".d/[0-9][0-9]-" + filename);
+                + ".d/[0-9][0-9]-"
+                + filename;
     }
 
     // we use an std::set so the resulting list is sorted

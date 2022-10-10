@@ -29,6 +29,11 @@
 #include    "catch_main.h"
 
 
+// libutf8
+//
+#include    <libutf8/libutf8.h>
+
+
 // snapdev
 //
 #include    <snapdev/safe_setenv.h>
@@ -85,7 +90,7 @@ CATCH_TEST_CASE("configuration_setup", "[config][getopt][valid]")
 {
     CATCH_START_SECTION("Check All Setups")
     {
-        // 5 * 6 * 8 * 8 * 16 = 30720
+        // 5 * 6 * 16 * 8 * 16 = 61440
         for(int count(0); count < 5; ++count)
         {
             int const id(rand());
@@ -229,6 +234,12 @@ CATCH_TEST_CASE("configuration_setup", "[config][getopt][valid]")
                                         if((real_ao & advgetopt::ASSIGNMENT_OPERATOR_SPACE) != 0)
                                         {
                                             auto it(std::find(operators.begin(), operators.end(), "space"));
+                                            CATCH_REQUIRE(it != operators.end());
+                                            operators.erase(it);
+                                        }
+                                        if((real_ao & advgetopt::ASSIGNMENT_OPERATOR_EXTENDED) != 0)
+                                        {
+                                            auto it(std::find(operators.begin(), operators.end(), "extended"));
                                             CATCH_REQUIRE(it != operators.end());
                                             operators.erase(it);
                                         }
@@ -741,7 +752,7 @@ CATCH_TEST_CASE("config_callback_calls", "[config][getopt][valid]")
 
 CATCH_TEST_CASE("config_line_continuation_tests", "[config][getopt][valid]")
 {
-    CATCH_START_SECTION("single_line")
+    CATCH_START_SECTION("single_line (EQUAL)")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("line-continuation", "single-line");
 
@@ -817,13 +828,183 @@ CATCH_TEST_CASE("config_line_continuation_tests", "[config][getopt][valid]")
 
         for(int c(0); c < 0x110000; ++c)
         {
+            if(c >= 0xD800 && c <= 0xDFFFF)
+            {
+                continue;
+            }
+            std::string const u(libutf8::to_u8string(static_cast<char32_t>(c)));
+            char const * s(u.c_str());
             if(c == '=')
             {
-                CATCH_REQUIRE(file->is_assignment_operator(c));
+                CATCH_REQUIRE(file->is_assignment_operator(s, false) == advgetopt::assignment_t::ASSIGNMENT_SET);
+                CATCH_REQUIRE(s == u.c_str());
+                CATCH_REQUIRE(file->is_assignment_operator(s, true) == advgetopt::assignment_t::ASSIGNMENT_SET);
+                CATCH_REQUIRE(s == u.c_str() + 1);
             }
             else
             {
-                CATCH_REQUIRE_FALSE(file->is_assignment_operator(c));
+                CATCH_REQUIRE(file->is_assignment_operator(s, false) == advgetopt::assignment_t::ASSIGNMENT_NONE);
+                CATCH_REQUIRE(s == u.c_str());
+                CATCH_REQUIRE(file->is_assignment_operator(s, true) == advgetopt::assignment_t::ASSIGNMENT_NONE);
+                CATCH_REQUIRE(s == u.c_str());
+            }
+        }
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("single_line (EXTENDED EQUALS)")
+    {
+        SNAP_CATCH2_NAMESPACE::init_tmp_dir("extended-equals", "equal-extensions");
+
+        {
+            std::ofstream config_file;
+            config_file.open(SNAP_CATCH2_NAMESPACE::g_config_filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+            CATCH_REQUIRE(config_file.good());
+            config_file <<
+                "# Auto-generated\n"
+                "equal=set\n"
+                "equal=final\n"
+                "\n"
+                "optional?=keep-first\n"
+                "optional?=ignore-second\n"
+                "\n"
+                "append=first few words\n"
+                "append+=\" and a few last words\"\n"
+                "\n"
+                "new=only\n"
+                "new:=boom\n"
+            ;
+        }
+
+        advgetopt::assignment_operator_t const assignment(
+                  advgetopt::ASSIGNMENT_OPERATOR_EQUAL
+                | advgetopt::ASSIGNMENT_OPERATOR_EXTENDED);
+        advgetopt::conf_file_setup setup(SNAP_CATCH2_NAMESPACE::g_config_filename
+                            , advgetopt::line_continuation_t::line_continuation_single_line
+                            , assignment
+                            , advgetopt::COMMENT_SHELL
+                            , advgetopt::SECTION_OPERATOR_NONE);
+
+        CATCH_REQUIRE(setup.get_original_filename() == SNAP_CATCH2_NAMESPACE::g_config_filename);
+
+        CATCH_REQUIRE(setup.is_valid());
+        CATCH_REQUIRE(setup.get_line_continuation() == advgetopt::line_continuation_t::line_continuation_single_line);
+        CATCH_REQUIRE(setup.get_assignment_operator() == assignment);
+        CATCH_REQUIRE(setup.get_comment() == advgetopt::COMMENT_SHELL);
+        CATCH_REQUIRE(setup.get_section_operator() == advgetopt::SECTION_OPERATOR_NONE);
+
+        // the simplest to test the ?=, +=, and := is to capture the errors
+        // here so we do that...
+        //
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+                  "warning: parameter \"equal\" on line 3 in configuration file \""
+                + setup.get_filename()
+                + "\" was found twice in the same configuration file.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+                  "warning: parameter \"optional\" on line 6 in configuration file \""
+                + setup.get_filename()
+                + "\" was found twice in the same configuration file.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+                  "warning: parameter \"append\" on line 9 in configuration file \""
+                + setup.get_filename()
+                + "\" was found twice in the same configuration file.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+                  "warning: parameter \"new\" on line 12 in configuration file \""
+                + setup.get_filename()
+                + "\" was found twice in the same configuration file.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+                  "error: parameter \"new\" is already defined and it cannot be overridden"
+                  " with the ':=' operator on line 12 from configuration file \""
+                + setup.get_filename()
+                + "\".");
+        advgetopt::conf_file::pointer_t file(advgetopt::conf_file::get_conf_file(setup));
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
+
+        CATCH_REQUIRE(file->get_setup().get_config_url() == setup.get_config_url());
+        CATCH_REQUIRE(file->get_errno() == 0);
+        CATCH_REQUIRE(file->get_sections().empty());
+        CATCH_REQUIRE(file->get_parameters().size() == 4);
+
+        CATCH_REQUIRE(file->has_parameter("equal"));
+        CATCH_REQUIRE(file->has_parameter("optional"));
+        CATCH_REQUIRE(file->has_parameter("append"));
+        CATCH_REQUIRE(file->has_parameter("new"));
+
+        CATCH_REQUIRE(file->get_parameter("equal") == "final");
+        CATCH_REQUIRE(file->get_parameter("optional") == "keep-first");
+        CATCH_REQUIRE(file->get_parameter("append") == "first few words and a few last words");
+        CATCH_REQUIRE(file->get_parameter("new") == "only");
+
+        char const * s = nullptr;
+        for(int c(0); c < 0x110000; ++c)
+        {
+            if(c >= 0xD800 && c <= 0xDFFFF)
+            {
+                continue;
+            }
+            std::string u(libutf8::to_u8string(static_cast<char32_t>(c)));
+            switch(c)
+            {
+            case '=':
+                s = u.c_str();
+                CATCH_REQUIRE(file->is_assignment_operator(s, false) == advgetopt::assignment_t::ASSIGNMENT_SET);
+                CATCH_REQUIRE(s == u.c_str());
+                CATCH_REQUIRE(file->is_assignment_operator(s, true) == advgetopt::assignment_t::ASSIGNMENT_SET);
+                CATCH_REQUIRE(s == u.c_str() + 1);
+                break;
+
+            case '+':
+                s = u.c_str();
+                CATCH_REQUIRE(file->is_assignment_operator(s, false) == advgetopt::assignment_t::ASSIGNMENT_NONE);
+                CATCH_REQUIRE(s == u.c_str());
+                CATCH_REQUIRE(file->is_assignment_operator(s, true) == advgetopt::assignment_t::ASSIGNMENT_NONE);
+                CATCH_REQUIRE(s == u.c_str());
+                u += '=';
+                s = u.c_str();
+                CATCH_REQUIRE(file->is_assignment_operator(s, false) == advgetopt::assignment_t::ASSIGNMENT_APPEND);
+                CATCH_REQUIRE(s == u.c_str());
+                CATCH_REQUIRE(file->is_assignment_operator(s, true) == advgetopt::assignment_t::ASSIGNMENT_APPEND);
+                CATCH_REQUIRE(s == u.c_str() + 2);
+                break;
+
+            case '?':
+                s = u.c_str();
+                CATCH_REQUIRE(file->is_assignment_operator(s, false) == advgetopt::assignment_t::ASSIGNMENT_NONE);
+                CATCH_REQUIRE(s == u.c_str());
+                CATCH_REQUIRE(file->is_assignment_operator(s, true) == advgetopt::assignment_t::ASSIGNMENT_NONE);
+                CATCH_REQUIRE(s == u.c_str());
+                u += '=';
+                s = u.c_str();
+                CATCH_REQUIRE(file->is_assignment_operator(s, false) == advgetopt::assignment_t::ASSIGNMENT_OPTIONAL);
+                CATCH_REQUIRE(s == u.c_str());
+                CATCH_REQUIRE(file->is_assignment_operator(s, true) == advgetopt::assignment_t::ASSIGNMENT_OPTIONAL);
+                CATCH_REQUIRE(s == u.c_str() + 2);
+                break;
+
+            case ':':
+                // note that ':' is a valid assignment, but in this case we
+                // did not authorize it so it will return NONE
+                //
+                s = u.c_str();
+                CATCH_REQUIRE(file->is_assignment_operator(s, false) == advgetopt::assignment_t::ASSIGNMENT_NONE);
+                CATCH_REQUIRE(s == u.c_str());
+                CATCH_REQUIRE(file->is_assignment_operator(s, true) == advgetopt::assignment_t::ASSIGNMENT_NONE);
+                CATCH_REQUIRE(s == u.c_str());
+                u += '=';
+                CATCH_REQUIRE(file->is_assignment_operator(s, false) == advgetopt::assignment_t::ASSIGNMENT_NEW);
+                CATCH_REQUIRE(s == u.c_str());
+                CATCH_REQUIRE(file->is_assignment_operator(s, true) == advgetopt::assignment_t::ASSIGNMENT_NEW);
+                CATCH_REQUIRE(s == u.c_str() + 2);
+                break;
+
+            default:
+                s = u.c_str();
+                CATCH_REQUIRE(file->is_assignment_operator(s, false) == advgetopt::assignment_t::ASSIGNMENT_NONE);
+                CATCH_REQUIRE(s == u.c_str());
+                CATCH_REQUIRE(file->is_assignment_operator(s, true) == advgetopt::assignment_t::ASSIGNMENT_NONE);
+                CATCH_REQUIRE(s == u.c_str());
+                break;
+
             }
         }
     }

@@ -65,13 +65,25 @@ enum class line_continuation_t
 };
 
 
+enum class assignment_t
+{
+    ASSIGNMENT_NONE,
+
+    ASSIGNMENT_SET,
+    ASSIGNMENT_OPTIONAL,
+    ASSIGNMENT_APPEND,
+    ASSIGNMENT_NEW,
+};
+
+
 typedef std::uint_fast16_t      assignment_operator_t;
 
 constexpr assignment_operator_t ASSIGNMENT_OPERATOR_EQUAL       = 0x0001;       // a = b
 constexpr assignment_operator_t ASSIGNMENT_OPERATOR_COLON       = 0x0002;       // a: b
 constexpr assignment_operator_t ASSIGNMENT_OPERATOR_SPACE       = 0x0004;       // a b
+constexpr assignment_operator_t ASSIGNMENT_OPERATOR_EXTENDED    = 0x0008;       // a += b AND a ?= b
 
-constexpr assignment_operator_t ASSIGNMENT_OPERATOR_MASK        = 0x0007;
+constexpr assignment_operator_t ASSIGNMENT_OPERATOR_MASK        = 0x000F;
 
 
 typedef std::uint_fast16_t      comment_t;
@@ -155,15 +167,18 @@ public:
     void                        set_value(std::string const & value);
     void                        set_comment(std::string const & comment);
     void                        set_line(int line);
+    void                        set_assignment_operator(assignment_t a);
 
     std::string const &         get_value() const;
     std::string                 get_comment(bool ensure_newline = false) const;
     int                         get_line() const;
+    assignment_t                get_assignment_operator() const;
 
 private:
     std::string                 f_value = std::string();
     std::string                 f_comment = std::string();
     int                         f_line = 0;
+    assignment_t                f_assignment_operator = assignment_t::ASSIGNMENT_SET;
 };
 
 
@@ -211,12 +226,13 @@ public:
                                       std::string section
                                     , std::string name
                                     , std::string const & value
+                                    , assignment_t op = assignment_t::ASSIGNMENT_NONE
                                     , std::string const & comment = std::string());
     bool                        erase_parameter(std::string name);
     void                        erase_all_parameters();
     bool                        was_modified() const;
 
-    bool                        is_assignment_operator(int c) const;
+    assignment_t                is_assignment_operator(char const * & s, bool skip) const;
     bool                        is_comment(char const * s) const;
 
 private:

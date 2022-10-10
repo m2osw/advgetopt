@@ -2,6 +2,9 @@ advgetopt (2.0.41.0~bionic) bionic; urgency=high
 
   * Added the validator_length validator.
   * Added support for option keys (ARRAY flag).
+  * Added support for the +=, ?=, and := assignment operators.
+  * Added a test to verify the basics with the assignment operators.
+  * Removed the need for boost library from one more file.
 
  -- Alexis Wilke <alexis@m2osw.com>  Fri, 15 Jul 2022 09:02:06 -0700
 

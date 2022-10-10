@@ -41,6 +41,7 @@
 
 // snapdev
 //
+#include    <snapdev/join_strings.h>
 #include    <snapdev/mkdir_p.h>
 #include    <snapdev/safe_variable.h>
 #include    <snapdev/string_replace_many.h>
@@ -55,11 +56,6 @@
 #include    <cppthread/mutex.h>
 
 
-// boost
-//
-#include    <boost/algorithm/string/join.hpp>
-
-
 // C++
 //
 #include    <algorithm>
@@ -69,6 +65,7 @@
 
 // C
 //
+#include    <string.h>
 #include    <sys/stat.h>
 
 
@@ -315,12 +312,9 @@ line_continuation_t conf_file_setup::get_line_continuation() const
  * email and HTTP headers.
  * \li ASSIGNMENT_OPERATOR_SPACE -- the space (` `) character; this is
  * less used, but many Unix configuration files still use this scheme.
- *
- * \todo
- * Add support for additional operators such as:
- * \todo
- * \li `+=` -- append data
- * \li `?=` -- set to this value if not yet set
+ * \li ASSIGNMENT_OPERATOR_EXTENDED -- the `+=` (append) and `?=`
+ * (optional) operators; this is used to add to an existing parameter
+ * and to set a parameter only if not already set.
  *
  * \return The set of accepted assignment operators.
  *
@@ -499,9 +493,13 @@ std::string conf_file_setup::get_config_url() const
             {
                 assignments.push_back("space");
             }
+            if((f_assignment_operator & ASSIGNMENT_OPERATOR_EXTENDED) != 0)
+            {
+                assignments.push_back("extended");
+            }
             if(!assignments.empty())
             {
-                params.push_back("assignment-operator=" + boost::algorithm::join(assignments, ","));
+                params.push_back("assignment-operator=" + snapdev::join_strings(assignments, ","));
             }
         }
 
@@ -530,7 +528,7 @@ std::string conf_file_setup::get_config_url() const
             }
             else
             {
-                params.push_back("comment=" + boost::algorithm::join(comment, ","));
+                params.push_back("comment=" + snapdev::join_strings(comment, ","));
             }
         }
 
@@ -555,11 +553,11 @@ std::string conf_file_setup::get_config_url() const
             }
             if(!section_operator.empty())
             {
-                params.push_back("section-operator=" + boost::algorithm::join(section_operator, ","));
+                params.push_back("section-operator=" + snapdev::join_strings(section_operator, ","));
             }
         }
 
-        std::string const query_string(boost::algorithm::join(params, "&"));
+        std::string const query_string(snapdev::join_strings(params, "&"));
         if(!query_string.empty())
         {
             ss << '?'
@@ -702,6 +700,12 @@ void parameter_value::set_line(int line)
 }
 
 
+void parameter_value::set_assignment_operator(assignment_t a)
+{
+    f_assignment_operator = a;
+}
+
+
 std::string const & parameter_value::get_value() const
 {
     return f_value;
@@ -728,6 +732,12 @@ std::string parameter_value::get_comment(bool ensure_newline) const
 int parameter_value::get_line() const
 {
     return f_line;
+}
+
+
+assignment_t parameter_value::get_assignment_operator() const
+{
+    return f_assignment_operator;
 }
 
 
@@ -1376,12 +1386,13 @@ std::string conf_file::get_parameter(std::string name) const
  *
  * \todo
  * The section/name combo should be dealt with inside this function
- * instead of outside, especially if the are to support all the
+ * instead of outside, especially if we are to support all the
  * namespace operators.
  *
  * \param[in] section  The list of sections or an empty string.
  * \param[in] name  The name of the parameter.
  * \param[in] value  The value of the parameter.
+ * \param[in] a  The operator used to set this parameter.
  * \param[in] comment  The comment appearing before value.
  *
  * \return true if the parameter was modified, false if an error occurs.
@@ -1390,6 +1401,7 @@ bool conf_file::set_parameter(
       std::string section
     , std::string name
     , std::string const & value
+    , assignment_t a
     , std::string const & comment)
 {
     // use the tokenize_string() function because we do not want to support
@@ -1485,7 +1497,7 @@ bool conf_file::set_parameter(
     }
     std::string param_name(s, n - s);
 
-    std::string const section_name(boost::algorithm::join(section_list, "::"));
+    std::string const section_name(snapdev::join_strings(section_list, "::"));
 
     if(f_setup.get_section_operator() == SECTION_OPERATOR_NONE
     && !section_list.empty())
@@ -1521,7 +1533,7 @@ bool conf_file::set_parameter(
     }
 
     section_list.push_back(param_name);
-    std::string const full_name(boost::algorithm::join(section_list, "::"));
+    std::string const full_name(snapdev::join_strings(section_list, "::"));
 
     // verify that each section name only includes characters we accept
     // for a parameter name
@@ -1615,6 +1627,7 @@ bool conf_file::set_parameter(
         f_parameters[full_name] = value;
         f_parameters[full_name].set_comment(comment);
         f_parameters[full_name].set_line(f_line);
+        f_parameters[full_name].set_assignment_operator(a);
     }
     else
     {
@@ -1634,7 +1647,34 @@ bool conf_file::set_parameter(
                            << cppthread::end;
         }
 
-        it->second = value;
+        switch(a)
+        {
+        case assignment_t::ASSIGNMENT_SET:
+        case assignment_t::ASSIGNMENT_NONE:
+            it->second = value;
+            break;
+
+        case assignment_t::ASSIGNMENT_OPTIONAL:
+            // already set, do not overwrite
+            return false;
+
+        case assignment_t::ASSIGNMENT_APPEND:
+            it->second.set_value(it->second.get_value() + value);
+            break;
+
+        case assignment_t::ASSIGNMENT_NEW:
+            cppthread::log << cppthread::log_level_t::error
+                           << "parameter \""
+                           << name
+                           << "\" is already defined and it cannot be overridden with the ':=' operator on line "
+                           << f_line
+                           << " from configuration file \""
+                           << f_setup.get_filename()
+                           << "\"."
+                           << cppthread::end;
+            return false;
+
+        }
 
         action = callback_action_t::updated;
     }
@@ -1977,7 +2017,7 @@ void conf_file::read_configuration()
         }
         char const * str_name(s);
         char const * e(nullptr);
-        while(!is_assignment_operator(*s)
+        while(is_assignment_operator(s, false) == assignment_t::ASSIGNMENT_NONE
            && ((f_setup.get_section_operator() & SECTION_OPERATOR_BLOCK) == 0 || (*s != '{' && *s != '}'))
            && ((f_setup.get_section_operator() & SECTION_OPERATOR_INI_FILE) == 0 || *s != ']')
            && *s != '\0'
@@ -1993,7 +2033,7 @@ void conf_file::read_configuration()
                 ++s;
             }
             if(*s != '\0'
-            && !is_assignment_operator(*s)
+            && is_assignment_operator(s, false) == assignment_t::ASSIGNMENT_NONE
             && (f_setup.get_assignment_operator() & ASSIGNMENT_OPERATOR_SPACE) == 0
             && ((f_setup.get_section_operator() & SECTION_OPERATOR_BLOCK) == 0 || (*s != '{' && *s != '}')))
             {
@@ -2099,10 +2139,7 @@ void conf_file::read_configuration()
         }
         else
         {
-            if(is_assignment_operator(*s))
-            {
-                ++s;
-            }
+            assignment_t const a(is_assignment_operator(s, true));
             while(iswspace(*s))
             {
                 ++s;
@@ -2114,7 +2151,7 @@ void conf_file::read_configuration()
                     break;
                 }
             }
-            size_t const len(e - s);
+            std::size_t const len(e - s);
             std::string const value(snapdev::string_replace_many(
                   std::string(s, len)
                 , {
@@ -2127,6 +2164,7 @@ void conf_file::read_configuration()
                       current_section
                     , name
                     , unquote(value)
+                    , a
                     , last_comment);
             last_comment.clear();
         }
@@ -2155,19 +2193,62 @@ void conf_file::read_configuration()
 
 /** \brief Check whether `c` is an assignment operator.
  *
- * This function checks the \p c parameter to know whether it matches
- * one of the character allowed as an assignment character.
+ * This function checks the characters at \p s to know whether it matches
+ * one of the character(s) allowed as an assignment character.
  *
- * \param[in] c  The character to be checked.
+ * \param[in,out] s  The character(s) to be checked.
+ * \param[in] skip  Whether to position the input pointer \p s after the
+ * assignment character(s).
  *
- * \return true if c is considered to represent an assignment character.
+ * \return true if the character(s) at \p s are considered to represent an
+ * assignment character, false otherwise.
  */
-bool conf_file::is_assignment_operator(int c) const
+assignment_t conf_file::is_assignment_operator(
+      char const * & s
+    , bool skip) const
 {
     assignment_operator_t const assignment_operator(f_setup.get_assignment_operator());
-    return ((assignment_operator & ASSIGNMENT_OPERATOR_EQUAL) != 0 && c == '=')
-        || ((assignment_operator & ASSIGNMENT_OPERATOR_COLON) != 0 && c == ':')
-        || ((assignment_operator & ASSIGNMENT_OPERATOR_SPACE) != 0 && std::iswspace(c));
+    if(*s == '+'
+    || *s == '?'
+    || (*s == ':' && s[1] == '='))
+    {
+        if((assignment_operator & ASSIGNMENT_OPERATOR_EXTENDED) != 0
+        && s[1] == '=')
+        {
+            char op(s[0]);
+            if(skip)
+            {
+                s += 2;
+            }
+            switch(op)
+            {
+            case '+':
+                return assignment_t::ASSIGNMENT_APPEND;
+
+            case '?':
+                return assignment_t::ASSIGNMENT_OPTIONAL;
+
+            case ':':
+                return assignment_t::ASSIGNMENT_NEW;
+
+            default:
+                throw getopt_logic_error("assignment not properly handled in is_assignment_operator()");
+
+            }
+        }
+    }
+    else if(((assignment_operator & ASSIGNMENT_OPERATOR_EQUAL) != 0 && *s == '=')
+         || ((assignment_operator & ASSIGNMENT_OPERATOR_COLON) != 0 && *s == ':')
+         || ((assignment_operator & ASSIGNMENT_OPERATOR_SPACE) != 0 && std::iswspace(*s)))
+    {
+        if(skip)
+        {
+            ++s;
+        }
+        return assignment_t::ASSIGNMENT_SET;
+    }
+
+    return assignment_t::ASSIGNMENT_NONE;
 }
 
 
