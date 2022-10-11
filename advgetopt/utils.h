@@ -53,7 +53,8 @@ void                split_string(std::string const & str
                                , string_list_t const & separators);
 string_list_t       insert_group_name(std::string const & filename
                                     , char const * group_name
-                                    , char const * project_name);
+                                    , char const * project_name
+                                    , bool add_default_on_empty = true);
 std::string         default_group_name(std::string const & filename
                                     , char const * group_name
                                     , char const * project_name

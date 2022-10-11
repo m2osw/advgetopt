@@ -454,6 +454,8 @@ void split_string(std::string const & str
  * \param[in] filename  The filename where the project name gets injected.
  * \param[in] group_name  The name of the group to inject in the filename.
  * \param[in] project_name  The name of the project to inject in the filename.
+ * \param[in] add_default_on_empty  Whether the add the default if no files
+ * exist.
  *
  * \return The list of filenames or an empty list if no group or project name
  *         or filename were specified.
@@ -461,7 +463,8 @@ void split_string(std::string const & str
 string_list_t insert_group_name(
           std::string const & filename
         , char const * group_name
-        , char const * project_name)
+        , char const * project_name
+        , bool add_default_on_empty)
 {
     if(filename.empty())
     {
@@ -520,7 +523,8 @@ string_list_t insert_group_name(
 
     // we add the default name if none other exists
     //
-    if(glob.empty())
+    if(add_default_on_empty
+    && glob.empty())
     {
         glob.insert(default_group_name(
                   filename

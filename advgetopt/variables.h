@@ -44,6 +44,17 @@ namespace advgetopt
 
 
 
+enum class assignment_t
+{
+    ASSIGNMENT_NONE,
+
+    ASSIGNMENT_SET,
+    ASSIGNMENT_OPTIONAL,
+    ASSIGNMENT_APPEND,
+    ASSIGNMENT_NEW,
+};
+
+
 class variables
 {
 public:
@@ -56,7 +67,7 @@ public:
     void                    set_variable(
                                   std::string const & name
                                 , std::string const & value
-                                , bool overwrite = true);
+                                , assignment_t assignment = assignment_t::ASSIGNMENT_SET);
 
     std::string             process_value(std::string const & value) const;
 

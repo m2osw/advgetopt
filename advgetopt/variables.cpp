@@ -34,6 +34,8 @@
 //
 #include    "advgetopt/variables.h"
 
+#include    "advgetopt/exception.h"
+
 
 // C++
 //
@@ -166,33 +168,72 @@ variables::variable_t const & variables::get_variables() const
  * parameters found on the command line or in configuration files.
  *
  * By default, if that variable already existed, then its value gets
- * replaced.
+ * replaced (assignment_t::ASSIGNMENT_SET).
  *
- * You can use this function to define a default as in:
+ * You can use this function to define a default after loading data with:
  *
  * \code
- *     opt->set_variable("foo", "default value", false);
+ * vars->set_variable("foo", "default value", assignment_t::ASSIGNMENT_OPTIONAL);
  * \endcode
  *
  * \note
  * The value of a variable can itself include `${...}` references.
  * When parsing a parameter for variables, such are replaced recursively.
- * See the process_value() for details.
+ * See process_value() for details.
  *
  * \param[in] name  The name of the variable.
  * \param[in] value  The value of the variable.
- * \param[in] overwrite  Whether to overwrite the value if it already exists.
+ * \param[in] assignment  The operator to use to set this variable.
+ *
+ * \sa process_value()
  */
 void variables::set_variable(
       std::string const & name
     , std::string const & value
-    , bool overwrite)
+    , assignment_t assignment)
 {
     std::string const var(canonicalize_variable_name(name));
-    if(overwrite
-    || f_variables.find(var) == f_variables.end())
+    auto it(f_variables.find(var));
+    switch(assignment)
     {
-        f_variables[canonicalize_variable_name(name)] = value;
+    case assignment_t::ASSIGNMENT_OPTIONAL:
+        if(it == f_variables.end())
+        {
+            f_variables[var] = value;
+        }
+        break;
+
+    case assignment_t::ASSIGNMENT_APPEND:
+        if(it == f_variables.end())
+        {
+            f_variables[var] = value;
+        }
+        else
+        {
+            f_variables[var] = it->second + value;
+        }
+        break;
+
+    case assignment_t::ASSIGNMENT_NEW:
+        if(it == f_variables.end())
+        {
+            f_variables[var] = value;
+        }
+        else
+        {
+            throw getopt_defined_twice(
+                  "variable \""
+                + var
+                + "\" is already defined.");
+        }
+        break;
+
+    //case assignment_t::ASSIGNMENT_NONE:
+    //case assignment_t::ASSIGNMENT_SET:
+    default:
+        f_variables[var] = value;
+        break;
+
     }
 }
 

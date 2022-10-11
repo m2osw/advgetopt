@@ -65,17 +65,6 @@ enum class line_continuation_t
 };
 
 
-enum class assignment_t
-{
-    ASSIGNMENT_NONE,
-
-    ASSIGNMENT_SET,
-    ASSIGNMENT_OPTIONAL,
-    ASSIGNMENT_APPEND,
-    ASSIGNMENT_NEW,
-};
-
-
 typedef std::uint_fast16_t      assignment_operator_t;
 
 constexpr assignment_operator_t ASSIGNMENT_OPERATOR_EQUAL       = 0x0001;       // a = b

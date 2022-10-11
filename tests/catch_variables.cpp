@@ -94,7 +94,7 @@ CATCH_TEST_CASE("variables", "[variables][valid]")
         CATCH_REQUIRE(vars.get_variables().size() == 3);
 
         // attempt changing value when already set
-        vars.set_variable("first_variable", "replaced value", false);
+        vars.set_variable("first_variable", "replaced value", advgetopt::assignment_t::ASSIGNMENT_OPTIONAL);
         CATCH_REQUIRE(vars.get_variable("first_variable") == "replaced value");
         CATCH_REQUIRE(vars.get_variables().size() == 3);
 
@@ -128,11 +128,11 @@ CATCH_TEST_CASE("variables", "[variables][valid]")
         processed = vars.process_value("First Var = [${first-variable]");
         CATCH_REQUIRE(processed == "First Var = [${first-variable]");
 
-        vars.set_variable("loopA", "ref ${loopB}", false);
+        vars.set_variable("loopA", "ref ${loopB}", advgetopt::assignment_t::ASSIGNMENT_OPTIONAL);
         CATCH_REQUIRE(vars.get_variable("loopA") == "ref ${loopB}");
         CATCH_REQUIRE(vars.get_variables().size() == 4);
 
-        vars.set_variable("loopB", "ref ${loopA}", false);
+        vars.set_variable("loopB", "ref ${loopA}", advgetopt::assignment_t::ASSIGNMENT_OPTIONAL);
         CATCH_REQUIRE(vars.get_variable("loopB") == "ref ${loopA}");
         CATCH_REQUIRE(vars.get_variables().size() == 5);
 

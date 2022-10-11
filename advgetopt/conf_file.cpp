@@ -634,6 +634,7 @@ parameter_value::parameter_value(parameter_value const & rhs)
     : f_value(rhs.f_value)
     , f_comment(rhs.f_comment)
     , f_line(rhs.f_line)
+    , f_assignment_operator(rhs.f_assignment_operator)
 {
 }
 
@@ -651,6 +652,7 @@ parameter_value & parameter_value::operator = (parameter_value const & rhs)
         f_value = rhs.f_value;
         f_comment = rhs.f_comment;
         f_line = rhs.f_line;
+        f_assignment_operator = rhs.f_assignment_operator;
     }
     return *this;
 }
@@ -2301,7 +2303,7 @@ bool conf_file::is_comment(char const * s) const
 /** \brief Look for a section to convert in a list of variables.
  *
  * This function checks for a section named \p section_name. If it exists,
- * then it gets converted to a set of variables in \p var and gets
+ * then it gets converted to a set of variables in \p vars and gets
  * removed from the conf_file list of sections.
  *
  * \note
@@ -2310,17 +2312,17 @@ bool conf_file::is_comment(char const * s) const
  * default a conf_file is not assigned a variables object.
  *
  * \param[in] section_name  The name of the section to convert to variables.
- * \param[in] var  The variables object where the parameters are saved as
+ * \param[in] vars  The variables object where the parameters are saved as
  * variables.
  *
- * \return -1 if the section doesn't exist or \p var is a null pointer, the
+ * \return -1 if the section doesn't exist or \p vars is a null pointer, the
  * number of parameters converted otherwise
  */
 int conf_file::section_to_variables(
       std::string const & section_name
-    , variables::pointer_t var)
+    , variables::pointer_t vars)
 {
-    if(var == nullptr)
+    if(vars == nullptr)
     {
         return -1;
     }
@@ -2345,7 +2347,10 @@ int conf_file::section_to_variables(
         if(param.first.length() > starts_with.length()
         && strncmp(param.first.c_str(), starts_with.c_str(), starts_with.length()) == 0)
         {
-            var->set_variable(param.first.substr(starts_with.length()), param.second);
+            vars->set_variable(
+                      param.first.substr(starts_with.length())
+                    , param.second
+                    , param.second.get_assignment_operator());
             ++found;
 
             // this is safe because get_parameters() returned
