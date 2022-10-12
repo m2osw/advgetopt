@@ -82,7 +82,9 @@ public:
     typedef std::function<void (option_info const & opt)>   callback_t;
     typedef int                                             callback_id_t;
 
-                                option_info(std::string const & name, short_name_t short_name = NO_SHORT_NAME);
+                                option_info(
+                                      std::string const & name
+                                    , short_name_t short_name = NO_SHORT_NAME);
 
     std::string const &         get_name() const;
     void                        set_short_name(short_name_t short_name);
@@ -120,8 +122,8 @@ public:
     bool                        set_validator(std::nullptr_t);
     validator::pointer_t        get_validator() const;
 
-    void                        set_alias_destination(option_info::pointer_t destination);
-    option_info::pointer_t      get_alias_destination() const;
+    void                        set_alias_destination(pointer_t destination);
+    pointer_t                   get_alias_destination() const;
 
     void                        set_multiple_separators(string_list_t const & separators);
     void                        set_multiple_separators(char const * const * separators);

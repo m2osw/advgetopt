@@ -238,6 +238,16 @@ std::string getopt::usage(flag_t show) const
         group_max = pos;
     }
 
+    std::multimap<advgetopt::option_info::pointer_t, advgetopt::option_info::pointer_t> alias_reverse_references;
+    for(auto const & opt : f_options_by_name)
+    {
+        if(!opt.second->has_flag(GETOPT_FLAG_ALIAS))
+        {
+            continue;
+        }
+        alias_reverse_references.insert(std::make_pair(opt.second->get_alias_destination(), opt.second));
+    }
+
     for(; pos <= group_max; ++pos)
     {
         bool group_name_shown(false);
@@ -329,9 +339,29 @@ std::string getopt::usage(flag_t show) const
             else
             {
                 argument << "--" << opt.second->get_name();
+                auto aliases(alias_reverse_references.lower_bound(opt.second));
+                if(aliases->first == opt.second)
+                {
+                    auto end(alias_reverse_references.upper_bound(opt.second));
+                    for(auto a(aliases); a != end; ++a)
+                    {
+                        argument << " or --" << a->second->get_name();
+                    }
+                }
                 if(opt.second->get_short_name() != NO_SHORT_NAME)
                 {
                     argument << " or -" << short_name_to_string(opt.second->get_short_name());
+                }
+                if(aliases->first == opt.second)
+                {
+                    auto end(alias_reverse_references.upper_bound(opt.second));
+                    for(; aliases != end; ++aliases)
+                    {
+                        if(aliases->second->get_short_name() != NO_SHORT_NAME)
+                        {
+                            argument << " or -" << short_name_to_string(aliases->second->get_short_name());
+                        }
+                    }
                 }
 
                 switch(opt.second->get_flags() & (GETOPT_FLAG_FLAG | GETOPT_FLAG_REQUIRED | GETOPT_FLAG_MULTIPLE))
