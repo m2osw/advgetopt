@@ -314,7 +314,7 @@ advgetopt::breakup_line(
             , 30
             , advgetopt::get_screen_width())
 + advgetopt::format_usage_string(
-              "--string <arg>"
+              "--string or --not-specified-string-without-default <arg>"
             , "string parameter."
             , 30
             , advgetopt::get_screen_width())
@@ -384,7 +384,7 @@ advgetopt::breakup_line(
             , 30
             , advgetopt::get_screen_width())
 + advgetopt::format_usage_string(
-              "--string <arg>"
+              "--string or --not-specified-string-without-default <arg>"
             , "string parameter."
             , 30
             , advgetopt::get_screen_width())
@@ -718,7 +718,7 @@ advgetopt::breakup_line(
             , 30
             , advgetopt::get_screen_width())
 + advgetopt::format_usage_string(
-              "--string <arg>"
+              "--string or --not-specified-string-without-default <arg>"
             , "string parameter."
               "\nEnvironment Variable Name: \"Different_String\""
             , 30
@@ -779,7 +779,7 @@ advgetopt::breakup_line(
             , 30
             , advgetopt::get_screen_width())
 + advgetopt::format_usage_string(
-              "--string <arg>"
+              "--string or --not-specified-string-without-default <arg>"
             , "string parameter."
               "\nEnvironment Variable Name: \"Different_String\""
             , 30
@@ -981,7 +981,7 @@ advgetopt::breakup_line(
             , 30
             , advgetopt::get_screen_width())
 + advgetopt::format_usage_string(
-              "--string <arg>"
+              "--string or --not-specified-string-without-default <arg>"
             , "string parameter."
             , 30
             , advgetopt::get_screen_width())
@@ -1172,7 +1172,7 @@ advgetopt::breakup_line(
             , 30
             , advgetopt::get_screen_width())
 + advgetopt::format_usage_string(
-              "--string <arg>"
+              "--string or --not-specified-string-without-default <arg>"
             , "string parameter."
             , 30
             , advgetopt::get_screen_width())
