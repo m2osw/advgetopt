@@ -286,8 +286,5 @@ private:
 }   // namespace advgetopt
 
 
-std::string operator + (char32_t value, std::string const & rhs);
-std::string operator + (std::string const & lhs, char32_t value);
-
 
 // vim: ts=4 sw=4 et

@@ -1132,25 +1132,4 @@ bool operator >= (std::string const & value, option_info_ref const & rhs)
 
 
 
-std::string operator + (char32_t value, std::string const & rhs)
-{
-    std::string v;
-    if(value != U'\0')
-    {
-        v = libutf8::to_u8string(value);
-    }
-    return v + rhs;
-}
-
-std::string operator + (std::string const & lhs, char32_t value)
-{
-    std::string v;
-    if(value != U'\0')
-    {
-        v = libutf8::to_u8string(value);
-    }
-    return lhs + v;
-}
-
-
 // vim: ts=4 sw=4 et
