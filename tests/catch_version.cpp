@@ -17,7 +17,7 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-// advgetopt lib
+// advgetopt
 //
 #include    <advgetopt/version.h>
 
@@ -35,7 +35,7 @@
 
 CATCH_TEST_CASE("version", "[version][valid]")
 {
-    CATCH_START_SECTION("Verify the test version")
+    CATCH_START_SECTION("Verify the library version")
         CATCH_REQUIRE(advgetopt::get_major_version() == LIBADVGETOPT_VERSION_MAJOR);
         CATCH_REQUIRE(advgetopt::get_release_version() == LIBADVGETOPT_VERSION_MINOR);
         CATCH_REQUIRE(advgetopt::get_patch_version() == LIBADVGETOPT_VERSION_PATCH);
