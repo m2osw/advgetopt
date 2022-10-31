@@ -5,6 +5,16 @@ advgetopt (2.0.41.0~bionic) bionic; urgency=high
   * Added support for the +=, ?=, and := assignment operators.
   * Added a test to verify the basics with the assignment operators.
   * Removed the need for boost library from one more file.
+  * Removed the operator+ of char32_t/string (see libutf8).
+  * Show aliases in the usage output (i.e. --help screen).
+  * Made the function converting from to '-'/'_' available as an util.
+  * Fixed a crash on a nullptr variable pointer.
+  * Fixed the generation of filenames and added a clear priority scheme.
+  * Made add_option_from_string() public (for fluid-settings).
+  * Made get_options_filename() public.
+  * Support the "dynamic-configuration" flag in "allow=...".
+  * Added a "...::group" parameter to group options defined in a file.
+  * Added the "length" validator.
 
  -- Alexis Wilke <alexis@m2osw.com>  Fri, 15 Jul 2022 09:02:06 -0700
 
