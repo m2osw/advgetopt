@@ -62,26 +62,56 @@ namespace advgetopt
  */
 void getopt::parse_options_from_group_names()
 {
-    // add the --long-help if at least one option uses the GROUP1 or GROUP2
+    // add the --long-help if at least one option uses the GROUP1, GROUP2,
+    // or SYSTEM
     //
+    // add the --system-help if at least one option uses SYSTEM
+    //
+    bool add_long_help(false);
+    bool add_system_help(false);
+
     for(auto it(f_options_by_name.begin())
       ; it != f_options_by_name.end()
       ; ++it)
     {
-        if(it->second->has_flag(GETOPT_FLAG_SHOW_GROUP1 | GETOPT_FLAG_SHOW_GROUP2))
+        if(it->second->has_flag(GETOPT_FLAG_SHOW_GROUP1 | GETOPT_FLAG_SHOW_GROUP2 | GETOPT_FLAG_SHOW_SYSTEM))
         {
-            option_info::pointer_t opt(std::make_shared<option_info>("long-help"));
-            opt->add_flag(GETOPT_FLAG_COMMAND_LINE
-                        | GETOPT_FLAG_FLAG
-                        | GETOPT_FLAG_GROUP_COMMANDS);
-            opt->set_help("show all the help from all the available options.");
-            f_options_by_name["long-help"] = opt;
-            if(f_options_by_short_name.find(L'?') == f_options_by_short_name.end())
-            {
-                opt->set_short_name(L'?');
-                f_options_by_short_name[L'?'] = opt;
-            }
-            break;
+            add_long_help = true;
+        }
+
+        if(it->second->has_flag(GETOPT_FLAG_SHOW_SYSTEM))
+        {
+            add_system_help = true;
+        }
+    }
+
+    if(add_long_help)
+    {
+        option_info::pointer_t opt(std::make_shared<option_info>("long-help"));
+        opt->add_flag(GETOPT_FLAG_COMMAND_LINE
+                    | GETOPT_FLAG_FLAG
+                    | GETOPT_FLAG_GROUP_COMMANDS);
+        opt->set_help("show all the help from all the available options.");
+        f_options_by_name["long-help"] = opt;
+        if(f_options_by_short_name.find(L'?') == f_options_by_short_name.end())
+        {
+            opt->set_short_name(L'?');
+            f_options_by_short_name[L'?'] = opt;
+        }
+    }
+
+    if(add_system_help)
+    {
+        option_info::pointer_t opt(std::make_shared<option_info>("system-help"));
+        opt->add_flag(GETOPT_FLAG_COMMAND_LINE
+                    | GETOPT_FLAG_FLAG
+                    | GETOPT_FLAG_GROUP_COMMANDS);
+        opt->set_help("show commands and options added by libraries.");
+        f_options_by_name["system-help"] = opt;
+        if(f_options_by_short_name.find(L'S') == f_options_by_short_name.end())
+        {
+            opt->set_short_name(L'S');
+            f_options_by_short_name[L'S'] = opt;
         }
     }
 
@@ -215,7 +245,8 @@ std::string getopt::usage(flag_t show) const
     show &= GETOPT_FLAG_SHOW_USAGE_ON_ERROR
           | GETOPT_FLAG_SHOW_ALL
           | GETOPT_FLAG_SHOW_GROUP1
-          | GETOPT_FLAG_SHOW_GROUP2;
+          | GETOPT_FLAG_SHOW_GROUP2
+          | GETOPT_FLAG_SHOW_SYSTEM;
 
     size_t const line_width(get_screen_width());
     ss << breakup_line(process_help_string(f_options_environment.f_help_header), 0, line_width);
@@ -289,7 +320,9 @@ std::string getopt::usage(flag_t show) const
                         continue;
                     }
                 }
-                else if(opt.second->has_flag(GETOPT_FLAG_SHOW_GROUP1 | GETOPT_FLAG_SHOW_GROUP2))
+                else if(opt.second->has_flag(GETOPT_FLAG_SHOW_GROUP1
+                                           | GETOPT_FLAG_SHOW_GROUP2
+                                           | GETOPT_FLAG_SHOW_SYSTEM))
                 {
                     // do not show specialized groups
                     //

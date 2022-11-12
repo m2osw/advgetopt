@@ -61,6 +61,7 @@ static constexpr flag_t     GETOPT_FLAG_SHOW_USAGE_ON_ERROR   = static_cast<flag
 static constexpr flag_t     GETOPT_FLAG_SHOW_ALL              = static_cast<flag_t>(0x00002000);  // show in usage() when --long-help is used
 static constexpr flag_t     GETOPT_FLAG_SHOW_GROUP1           = static_cast<flag_t>(0x00004000);  // show in usage() when --<group1>-help is used (app dependent)
 static constexpr flag_t     GETOPT_FLAG_SHOW_GROUP2           = static_cast<flag_t>(0x00008000);  // show in usage() when --<group2>-help is used (app dependent)
+static constexpr flag_t     GETOPT_FLAG_SHOW_SYSTEM           = static_cast<flag_t>(0x00010000);  // show in usage() when --system-help is used (options added by advgetopt, snaplogger, communicatord, etc.)
 
 static constexpr flag_t     GETOPT_FLAG_GROUP_MASK            = static_cast<flag_t>(0x00700000);
 static constexpr flag_t     GETOPT_FLAG_GROUP_MINIMUM         = static_cast<flag_t>(0);

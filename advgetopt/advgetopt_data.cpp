@@ -708,6 +708,13 @@ flag_t getopt::process_system_options(std::basic_ostream<char> & out)
         }
     }
 
+    // --system-help
+    if(is_defined("system-help"))
+    {
+        less(out, usage(GETOPT_FLAG_SHOW_SYSTEM));
+        result |= SYSTEM_OPTION_HELP;
+    }
+
     // --copyright
     if(is_defined("copyright"))
     {

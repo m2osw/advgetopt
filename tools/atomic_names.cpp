@@ -45,6 +45,13 @@
  */
 
 
+// advgetopt
+//
+#include    <advgetopt/advgetopt.h>
+#include    <advgetopt/conf_file.h>
+#include    <advgetopt/exception.h>
+
+
 // cppthread
 //
 #include    <cppthread/thread.h>
@@ -56,12 +63,6 @@
 #include    <libexcept/exception.h>
 #include    <libexcept/file_inheritance.h>
 #include    <libexcept/report_signal.h>
-
-
-// advgetopt
-//
-#include    <advgetopt/advgetopt.h>
-#include    <advgetopt/conf_file.h>
 
 
 // snapdev
@@ -165,7 +166,9 @@ advgetopt::options_environment const g_options_environment =
     .f_help_footer = "Try `man atomic-names` for more info.\n%c",
     .f_version = CPPTHREAD_VERSION_STRING,
     .f_license = "GPL v2 or newer",
-    .f_copyright = "Copyright (c) 2022-" BOOST_PP_STRINGIZE(UTC_BUILD_YEAR) "  Made to Order Software Corporation",
+    .f_copyright = "Copyright (c) 2022-"
+                   BOOST_PP_STRINGIZE(UTC_BUILD_YEAR)
+                   "  Made to Order Software Corporation",
     .f_build_date = UTC_BUILD_DATE,
     .f_build_time = UTC_BUILD_TIME,
     .f_groups = g_group_descriptions
@@ -639,6 +642,10 @@ int main(int argc, char * argv[])
     {
         atomic_names n(argc, argv);
         return n.run();
+    }
+    catch(advgetopt::getopt_exit const & e)
+    {
+        return e.code();
     }
     catch(libexcept::exception_t const & e)
     {

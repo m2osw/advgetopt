@@ -10,6 +10,11 @@
       [section::early_content]
       after = header
 
+* The time when the parse_options_from_group_names() gets called is wrong
+  in case we do not have the system parameters from advgetopt it won't
+  add the long help command line options even if another system (snaplogger,
+  communicatord) adds its own system flags.
+
 * Add a test to verify that '\n' is correctly handled on small strings
   (we had the case in our fluid-settings / GUI --help where the string would
   wrap just a little and the wrap part + Environment variable was less than
