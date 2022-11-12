@@ -37,11 +37,7 @@
 // snapdev
 //
 #include    <snapdev/not_used.h>
-
-
-// boost
-//
-#include    <boost/algorithm/string/trim.hpp>
+#include    <snapdev/trim_string.h>
 
 
 // last include
@@ -113,6 +109,10 @@ validator_double_factory       g_validator_double_factory;
  * the exact same way. A value which matches any of the ranges is considered
  * valid.
  *
+ * The start and end values of a range are optional. If not specified, the
+ * start value is set to the minimum double value. If the not specified,
+ * the end value is set to the maximum double value.
+ *
  * Example:
  *
  * \code
@@ -121,6 +121,12 @@ validator_double_factory       g_validator_double_factory;
  *
  * This example allows all values between -10.01 and +10.05 inclusive and also
  * allows the value 0.0005661.
+ *
+ * \code
+ *     "0.0..."
+ * \endcode
+ *
+ * This example allows all positive values and zero.
  *
  * \param[in] ranges  The ranges used to limit the double.
  */
@@ -146,30 +152,34 @@ validator_double::validator_double(string_list_t const & range_list)
         }
         else
         {
-            std::string min_value(r.substr(0, pos));
-            boost::trim(min_value);
-            if(!convert_string(min_value, range.f_minimum))
+            std::string const min_value(snapdev::trim_string(r.substr(0, pos)));
+            if(!min_value.empty())
             {
-                cppthread::log << cppthread::log_level_t::error
-                               << min_value
-                               << " is not a valid value for your range's start;"
-                                  " it must be a valid floating point,"
-                                  " optionally preceeded by a sign (+ or -)."
-                               << cppthread::end;
-                continue;
+                if(!convert_string(min_value, range.f_minimum))
+                {
+                    cppthread::log << cppthread::log_level_t::error
+                                   << min_value
+                                   << " is not a valid value for your range's start;"
+                                      " it must be a valid floating point,"
+                                      " optionally preceeded by a sign (+ or -)."
+                                   << cppthread::end;
+                    continue;
+                }
             }
 
-            std::string max_value(r.substr(pos + 3));
-            boost::trim(max_value);
-            if(!convert_string(max_value, range.f_maximum))
+            std::string const max_value(snapdev::trim_string(r.substr(pos + 3)));
+            if(!max_value.empty())
             {
-                cppthread::log << cppthread::log_level_t::error
-                               << max_value
-                               << " is not a valid value for your range's end;"
-                                  " it must be a valid floating point,"
-                                  " optionally preceeded by a sign (+ or -)."
-                               << cppthread::end;
-                continue;
+                if(!convert_string(max_value, range.f_maximum))
+                {
+                    cppthread::log << cppthread::log_level_t::error
+                                   << max_value
+                                   << " is not a valid value for your range's end;"
+                                      " it must be a valid floating point,"
+                                      " optionally preceeded by a sign (+ or -)."
+                                   << cppthread::end;
+                    continue;
+                }
             }
 
             if(range.f_minimum > range.f_maximum)

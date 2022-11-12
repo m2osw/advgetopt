@@ -1,3 +1,10 @@
+advgetopt (2.0.42.0~bionic) bionic; urgency=high
+
+  * Allow for empty values in the ranges representing min/max.
+  * Use snapdev::trim_string() instead of the boost version.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 11 Nov 2022 21:06:04 -0800
+
 advgetopt (2.0.41.0~bionic) bionic; urgency=high
 
   * Added the validator_length validator.

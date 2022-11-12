@@ -42,9 +42,9 @@
 #include    <libutf8/libutf8.h>
 
 
-// boost
+// snapdev
 //
-#include    <boost/algorithm/string/trim.hpp>
+#include    <snapdev/trim_string.h>
 
 
 // last include
@@ -116,30 +116,34 @@ validator_length::validator_length(string_list_t const & length_list)
         }
         else
         {
-            std::string min_value(r.substr(0, pos));
-            boost::trim(min_value);
-            if(!validator_integer::convert_string(min_value, range.f_minimum))
+            std::string const min_value(snapdev::trim_string(r.substr(0, pos)));
+            if(!min_value.empty())
             {
-                cppthread::log << cppthread::log_level_t::error
-                               << min_value
-                               << " is not a valid value for your range's start;"
-                                  " it must only be digits, optionally preceeded by a sign (+ or -)"
-                                  " and not overflow an int64_t value."
-                               << cppthread::end;
-                continue;
+                if(!validator_integer::convert_string(min_value, range.f_minimum))
+                {
+                    cppthread::log << cppthread::log_level_t::error
+                                   << min_value
+                                   << " is not a valid value for your range's start;"
+                                      " it must only be digits, optionally preceeded by a sign (+ or -)"
+                                      " and not overflow an int64_t value."
+                                   << cppthread::end;
+                    continue;
+                }
             }
 
-            std::string max_value(r.substr(pos + 3));
-            boost::trim(max_value);
-            if(!validator_integer::convert_string(max_value, range.f_maximum))
+            std::string const max_value(snapdev::trim_string(r.substr(pos + 3)));
+            if(!max_value.empty())
             {
-                cppthread::log << cppthread::log_level_t::error
-                               << max_value
-                               << " is not a valid value for your range's end;"
-                                  " it must only be digits, optionally preceeded by a sign (+ or -)"
-                                  " and not overflow an int64_t value."
-                               << cppthread::end;
-                continue;
+                if(!validator_integer::convert_string(max_value, range.f_maximum))
+                {
+                    cppthread::log << cppthread::log_level_t::error
+                                   << max_value
+                                   << " is not a valid value for your range's end;"
+                                      " it must only be digits, optionally preceeded by a sign (+ or -)"
+                                      " and not overflow an int64_t value."
+                                   << cppthread::end;
+                    continue;
+                }
             }
 
             if(range.f_minimum > range.f_maximum)
