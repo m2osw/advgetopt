@@ -1,3 +1,12 @@
+advgetopt (2.0.44.0~bionic) bionic; urgency=high
+
+  * Added the missing option_keys param documentation.
+  * Added option to support any configuration setup for standard config files.
+  * Implemented operator support in advgetopt_config. This requires the setup
+    with the EXTENDED variable support (hence the additional of config_setup).
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 12 Nov 2022 15:56:47 -0800
+
 advgetopt (2.0.43.0~bionic) bionic; urgency=high
 
   * Added a "show system" flag so we can hide system options by default.

@@ -190,21 +190,43 @@ conf_file_setup::conf_file_setup(
     , f_section_operator(section_operator)
     , f_name_separator(name_separator)
 {
-    if(filename.empty())
+    initialize();
+}
+
+
+conf_file_setup::conf_file_setup(
+          std::string const & filename
+        , conf_file_setup const & original)
+    : f_original_filename(filename)
+    , f_line_continuation(original.f_line_continuation)
+    , f_assignment_operator(original.f_assignment_operator == 0
+                ? ASSIGNMENT_OPERATOR_EQUAL
+                : original.f_assignment_operator)
+    , f_comment(original.f_comment)
+    , f_section_operator(original.f_section_operator)
+    , f_name_separator(original.f_name_separator)
+{
+    initialize();
+}
+
+
+void conf_file_setup::initialize()
+{
+    if(f_original_filename.empty())
     {
         throw getopt_invalid("trying to load a configuration file using an empty filename.");
     }
 
     // canonicalization so we can properly cache files
     //
-    std::unique_ptr<char, decltype(&::free)> fn(realpath(filename.c_str(), nullptr), &::free);
+    std::unique_ptr<char, decltype(&::free)> fn(realpath(f_original_filename.c_str(), nullptr), &::free);
     if(fn != nullptr)
     {
         f_filename = fn.get();
     }
     else
     {
-        f_filename = filename;
+        f_filename = f_original_filename;
     }
 }
 

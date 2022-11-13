@@ -642,15 +642,25 @@ void getopt::process_configuration_file(std::string const & filename)
 {
     option_info::set_configuration_filename(filename);
 
-    conf_file_setup conf_setup(filename);
-    if(!conf_setup.is_valid())
+    conf_file_setup::pointer_t conf_setup;
+    if(f_options_environment.f_config_setup == nullptr)
+    {
+        conf_setup = std::make_shared<conf_file_setup>(filename);
+    }
+    else
+    {
+        conf_setup = std::make_shared<conf_file_setup>(
+                          filename
+                        , *f_options_environment.f_config_setup);
+    }
+    if(!conf_setup->is_valid())
     {
         // a non-existant file is considered valid now so this should never
         // happen; later we may use the flag if we find errors in the file
         //
         return; // LCOV_EXCL_LINE
     }
-    conf_file::pointer_t conf(conf_file::get_conf_file(conf_setup));
+    conf_file::pointer_t conf(conf_file::get_conf_file(*conf_setup));
 
     // is there a variable section?
     //
@@ -751,15 +761,60 @@ void getopt::process_configuration_file(std::string const & filename)
             }
         }
 
-        if(opt != nullptr)
+        std::string value(param.second.get_value());
+        switch(param.second.get_assignment_operator())
         {
-            add_option_from_string(
-                      opt
-                    , param.second
-                    , filename
-                    , string_list_t()
-                    , option_source_t::SOURCE_CONFIGURATION);
+        case advgetopt::assignment_t::ASSIGNMENT_SET:
+        case advgetopt::assignment_t::ASSIGNMENT_NONE:
+            // nothing special in this case, just overwrite if already defined
+            //
+            break;
+
+        case advgetopt::assignment_t::ASSIGNMENT_OPTIONAL:
+            if(opt->is_defined())
+            {
+                // already set, do not overwrite
+                //
+                continue;
+            }
+            break;
+
+        case advgetopt::assignment_t::ASSIGNMENT_APPEND:
+            if(opt->is_defined()
+            && !opt->has_flag(GETOPT_FLAG_MULTIPLE))
+            {
+                // append the new value
+                //
+                value = opt->get_value() + value;
+            }
+            break;
+
+        case advgetopt::assignment_t::ASSIGNMENT_NEW:
+            if(opt->is_defined())
+            {
+                // prevent re-assignment
+                //
+                cppthread::log << cppthread::log_level_t::error
+                               << "option \""
+                               << option_with_underscores(param.first)
+                               << "\" found in configuration file \""
+                               << filename
+                               << "\" on line "
+                               << param.second.get_line()
+                               << " uses the := operator but the value is already defined."
+                               << cppthread::end;
+                continue;
+            }
+            break;
+
         }
+
+        add_option_from_string(
+                  opt
+                , value
+                , filename
+                , string_list_t()
+                , option_source_t::SOURCE_CONFIGURATION);
     }
 
     f_parsed = true;

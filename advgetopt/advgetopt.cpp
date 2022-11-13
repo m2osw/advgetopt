@@ -1613,7 +1613,7 @@ option_info::pointer_t getopt::get_option(short_name_t short_name, bool exact_op
  * \param[in] i  The current position, starting with the option position
  * \param[in] argc  The number of arguments in the argv array.
  * \param[in] argv  The list of argument strings.
- * \param[in] key  An array of keys to prepend to each value.
+ * \param[in] option_keys  An array of keys to prepend to each value.
  * \param[in] source  Where the value comes from.
  */
 void getopt::add_options(
@@ -1686,6 +1686,7 @@ void getopt::add_options(
  * \param[in] value  The value to assign this option.
  * \param[in] filename  The name of a configuration file if the option was
  *                      read from such.
+ * \param[in] option_keys  An array of keys to prepend to each value.
  * \param[in] source  Where the value comes from.
  */
 void getopt::add_option_from_string(

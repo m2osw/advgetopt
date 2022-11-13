@@ -109,6 +109,8 @@ constexpr name_separator_t      NAME_SEPARATOR_DASHES           = 0x0002;       
 class conf_file_setup
 {
 public:
+    typedef std::shared_ptr<conf_file_setup>    pointer_t;
+
                                 conf_file_setup(
                                               std::string const & filename
                                             , line_continuation_t line_continuation = line_continuation_t::line_continuation_unix
@@ -116,6 +118,9 @@ public:
                                             , comment_t comment = COMMENT_INI | COMMENT_SHELL
                                             , section_operator_t section_operator = SECTION_OPERATOR_INI_FILE
                                             , name_separator_t name_separator = NAME_SEPARATOR_UNDERSCORES);
+                                conf_file_setup(
+                                              std::string const & filename
+                                            , conf_file_setup const & original);
 
     bool                        is_valid() const;
     std::string const &         get_original_filename() const;
@@ -130,6 +135,8 @@ public:
     std::string const &         get_section_to_ignore() const;
 
 private:
+    void                        initialize();
+
     std::string                 f_original_filename = std::string();
     std::string                 f_filename = std::string();
     std::string                 f_section_to_ignore = std::string();

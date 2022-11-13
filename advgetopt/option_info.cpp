@@ -1210,6 +1210,7 @@ bool option_info::add_value(
  *
  * \param[in] idx  The position of the value to update.
  * \param[in] value  The new value.
+ * \param[in] option_keys  An array of keys to prepend to each value.
  * \param[in] source  Where the value comes from.
  *
  * \return true if the set_value() added the value.

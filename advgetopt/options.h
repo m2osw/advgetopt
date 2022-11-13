@@ -31,6 +31,8 @@
 //
 #include    <advgetopt/option_info.h>
 
+#include    <advgetopt/conf_file.h>
+
 
 // snapdev
 //
@@ -456,6 +458,7 @@ struct options_environment
     char const *                f_build_date = UTC_BUILD_DATE;          // available to parameter %b
     char const *                f_build_time = UTC_BUILD_TIME;          // available to parameter %t
     group_description const *   f_groups = nullptr;                     // nullptr terminated array of group names %s
+    conf_file_setup const *     f_config_setup = nullptr;               // default configuration file setup (except the filename)
 };
 
 
