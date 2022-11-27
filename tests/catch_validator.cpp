@@ -125,6 +125,12 @@ constexpr size_suffix_t const g_size_suffixes[] =
 
     { "YB",   1000, 8 },
     { "YiB",  1024, 8 },
+
+    { "RB",   1000, 9 },
+    { "RiB",  1024, 9 },
+
+    { "QB",   1000, 10 },
+    { "QiB",  1024, 10 },
 };
 
 std::int64_t large_rnd(bool zero_allowed = true)

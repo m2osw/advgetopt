@@ -199,6 +199,8 @@ bool validator_size::validate(std::string const & value) const
  * * "EB" -- 1000^6 bytes
  * * "ZB" -- 1000^7 bytes
  * * "YB" -- 1000^8 bytes
+ * * "RB" -- 1000^9 bytes
+ * * "QB" -- 1000^10 bytes
  * * "KiB" -- 1024^1 bytes
  * * "MiB" -- 1024^2 bytes
  * * "GiB" -- 1024^3 bytes
@@ -207,6 +209,8 @@ bool validator_size::validate(std::string const & value) const
  * * "EiB" -- 1024^6 bytes
  * * "ZiB" -- 1024^7 bytes
  * * "YiB" -- 1024^8 bytes
+ * * "RiB" -- 1024^9 bytes
+ * * "QiB" -- 1024^10 bytes
  *
  * The suffix capitalization is not important since we can always distinguish
  * both types (power of 1000 or 1024). The 'B' represents bytes either way so
@@ -365,6 +369,36 @@ bool validator_size::convert_string(
             else if(suffix == "pib")
             {
                 factor = snapdev::pow(1024_int128, 5);
+            }
+            else
+            {
+                return false;
+            }
+            break;
+
+        case 'q':
+            if(suffix == "qb")
+            {
+                factor = snapdev::pow(base, 10);
+            }
+            else if(suffix == "qib")
+            {
+                factor = snapdev::pow(1024_int128, 10);
+            }
+            else
+            {
+                return false;
+            }
+            break;
+
+        case 'r':
+            if(suffix == "rb")
+            {
+                factor = snapdev::pow(base, 9);
+            }
+            else if(suffix == "rib")
+            {
+                factor = snapdev::pow(1024_int128, 9);
             }
             else
             {

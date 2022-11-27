@@ -1,3 +1,10 @@
+advgetopt (2.0.45.0~bionic) bionic; urgency=high
+
+  * Added two more sizes (ronna & quetta).
+  * Updated the tests so they all work as expected.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 27 Nov 2022 15:39:48 -0800
+
 advgetopt (2.0.44.0~bionic) bionic; urgency=high
 
   * Added the missing option_keys param documentation.
