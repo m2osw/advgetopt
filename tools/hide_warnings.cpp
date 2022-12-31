@@ -352,6 +352,7 @@ int main(int argc, char * argv[], char * envp[])
     child_pid = fork();
     if(child_pid <= 0)
     {
+        int fork_errno(errno);
         close(pipe_out[1]);
         close(pipe_err[1]);
 
@@ -373,8 +374,13 @@ int main(int argc, char * argv[], char * envp[])
                 count = pipe_out[0] == -1 || pipe_err[0] == -1 ? 1 : 2;
                 if(poll(fds + (pipe_out[0] == -1 ? 1 : 0), count, -1) < 0)
                 {
+                    int const err(errno);
                     std::cerr << g_progname
-                              << ":error: select() returned with -1."
+                              << ":error: poll() returned with -1: "
+                              << err
+                              << ", "
+                              << strerror(err)
+                              << "."
                               << std::endl;
                     exit(1);
                 }
@@ -402,7 +408,11 @@ int main(int argc, char * argv[], char * envp[])
         else
         {
             std::cerr << g_progname
-                      << ":error: fork() failed."
+                      << ":error: fork() failed: "
+                      << fork_errno
+                      << ", "
+                      << strerror(fork_errno)
+                      << "."
                       << std::endl;
             exit(1);
         }
@@ -418,7 +428,7 @@ int main(int argc, char * argv[], char * envp[])
     dup2(pipe_out[1], 0);
     dup2(pipe_err[1], 2);
 
-    if(strchr(argv[i], '/') == NULL)
+    if(strchr(argv[i], '/') == nullptr)
     {
         /* the command will often be written as is, without a path
          * so here we first check whether we can find the command
@@ -428,7 +438,7 @@ int main(int argc, char * argv[], char * envp[])
          * valid by default...
          */
         path = getenv("PATH");
-        if(path == NULL)
+        if(path == nullptr)
         {
             path = strdup("/usr/bin");
         }
