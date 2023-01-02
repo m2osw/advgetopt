@@ -1,4 +1,8 @@
 
+* Allow for multiple DEFAULT that accept just one filename. Use a "FIFO"
+  type of list to accept those (TBD: how to properly define the order? we
+  can use the array's order, I would imagine).
+
 * Further test that he variables support works (in the getopt_info and such.)
 
 * A section name in a file is totally ignored if no parameters are added.
