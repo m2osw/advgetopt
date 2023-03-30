@@ -799,7 +799,8 @@ assignment_t parameter_value::get_assignment_operator() const
  * make a change, then process B reloads and sees the change that
  * process A made. Such an implementation will require a proper
  * locking mechanism of the configuration files while modifications
- * are being performed.
+ * are being performed. [Now that we have fluid settings, this is
+ * probably not required at all]
  *
  * \param[in] setup  The settings to be used in this configuration file reader.
  *
