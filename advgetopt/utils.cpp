@@ -441,7 +441,10 @@ void split_string(std::string const & str
  *
  * The resulting path is:
  *
- *     /etc/snapwebsites/adventure.d/advgetopt.conf
+ *     /etc/snapwebsites/adventure.d/##-advgetopt.conf
+ *
+ * where the '##' is a number from 00 to 99. If none of those files exists,
+ * the default (50) is used if \p add_default_on_empty is true.
  *
  * Notice that the function adds a ".d" as well.
  *

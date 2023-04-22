@@ -177,9 +177,9 @@ void getopt::get_managed_configuration_filenames(
             //if(has_flag(SYSTEM_OPTION_CONFIGURATION_FILENAMES))
             if(is_defined("config-dir"))
             {
-                size_t const max(size("config-dir"));
+                std::size_t const max(size("config-dir"));
                 directories.reserve(max);
-                for(size_t idx(0); idx < max; ++idx)
+                for(std::size_t idx(0); idx < max; ++idx)
                 {
                     directories.push_back(get_string("config-dir", idx));
                 }
@@ -197,7 +197,7 @@ void getopt::get_managed_configuration_filenames(
                 std::vector<char *> sub_argv;
                 sub_argv.resize(args.size() + 2);
                 sub_argv[0] = const_cast<char *>(f_program_fullname.c_str());
-                for(size_t idx(0); idx < args.size(); ++idx)
+                for(std::size_t idx(0); idx < args.size(); ++idx)
                 {
                     sub_argv[idx + 1] = const_cast<char *>(args[idx].c_str());
                 }
