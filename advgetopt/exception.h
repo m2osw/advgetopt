@@ -60,6 +60,8 @@ DECLARE_EXCEPTION(getopt_exception, getopt_undefined);
 
 
 
+constexpr int const     CONFIGURATION_EXIT_CODE = 9;
+
 
 // the process is viewed as done, exit now
 class getopt_exit
@@ -79,7 +81,7 @@ public:
     }
 
 private:
-    int             f_code;
+    int             f_code = 1;
 };
 
 
