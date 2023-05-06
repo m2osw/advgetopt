@@ -63,12 +63,12 @@ std::string         handle_user_directory(std::string const & filename);
 bool                is_true(std::string s);
 bool                is_false(std::string s);
 std::string         breakup_line(std::string line
-                               , size_t const option_width
-                               , size_t const line_width);
+                               , std::size_t const option_width
+                               , std::size_t const line_width);
 std::string         format_usage_string(std::string const & argument
                                       , std::string const & help
-                                      , size_t const option_width
-                                      , size_t const line_width);
+                                      , std::size_t const option_width
+                                      , std::size_t const line_width);
 std::size_t         get_screen_width();
 std::size_t         get_screen_height();
 std::string         sanitizer_details();
