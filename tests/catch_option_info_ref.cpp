@@ -207,11 +207,11 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
         CATCH_REQUIRE('+' + reference_ref == "+zeroloud?");
         CATCH_REQUIRE("+zeroloud?" == '+' + reference_ref);
 
-        CATCH_REQUIRE(reference_ref + '\0' == reference_ref);
-        CATCH_REQUIRE(reference_ref + '\0' == "zeroloud?");
-        CATCH_REQUIRE("zeroloud?" == reference_ref + '\0');
-        CATCH_REQUIRE('\0' + reference_ref == "zeroloud?");
-        CATCH_REQUIRE("zeroloud?" == '\0' + reference_ref);
+        //CATCH_REQUIRE(reference_ref + '\0' == reference_ref);
+        CATCH_REQUIRE(reference_ref + '\0' == std::string("zeroloud?") + '\0');
+        CATCH_REQUIRE(std::string("zeroloud?") + '\0' == reference_ref + '\0');
+        CATCH_REQUIRE('\0' + reference_ref == '\0' + std::string("zeroloud?"));
+        CATCH_REQUIRE('\0' + std::string("zeroloud?") == '\0' + reference_ref);
 
         char32_t c(rand() % 0xFFFFF + ' ');
         if(c >= 0xD800 && c < 0xE000)
@@ -227,21 +227,21 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
 
         c = U'\0';
 
-        CATCH_REQUIRE(reference_ref + c == reference_ref);
-        CATCH_REQUIRE(reference_ref + c == "zeroloud?");
-        CATCH_REQUIRE("zeroloud?" == reference_ref + c);
-        CATCH_REQUIRE(c + reference_ref == "zeroloud?");
-        CATCH_REQUIRE("zeroloud?" == c + reference_ref);
+        //CATCH_REQUIRE(reference_ref + c == reference_ref);
+        CATCH_REQUIRE(reference_ref + c == std::string("zeroloud?") + '\0');
+        CATCH_REQUIRE(std::string("zeroloud?") + '\0' == reference_ref + c);
+        CATCH_REQUIRE(c + reference_ref == '\0' + std::string("zeroloud?"));
+        CATCH_REQUIRE('\0' + std::string("zeroloud?") == c + reference_ref);
 
         reference_ref = "reset";
         CATCH_REQUIRE('"' + reference_ref + '"' == "\"reset\"");
-        CATCH_REQUIRE('\0' + reference_ref + '\0' == std::string("reset") + '\0');  // we do not control the second + here...
-        CATCH_REQUIRE(c + reference_ref + c == "reset");
+        CATCH_REQUIRE('\0' + reference_ref + '\0' == '\0' + std::string("reset") + '\0');  // we do not control the second + here...
+        CATCH_REQUIRE(c + reference_ref + c == '\0' + std::string("reset") + '\0');
 
         reference_ref = verbose_ref;
         CATCH_REQUIRE('(' + reference_ref + ')' == "(loud)");
-        CATCH_REQUIRE('\0' + reference_ref + '\0' == std::string("loud") + '\0');  // we do not control the second + here...
-        CATCH_REQUIRE(c + reference_ref + c == "loud");
+        CATCH_REQUIRE('\0' + reference_ref + '\0' == '\0' + std::string("loud") + '\0');  // we do not control the second + here...
+        CATCH_REQUIRE(c + reference_ref + c == '\0' + std::string("loud") + '\0');
 
         std::string const secret("secret");
         reference_ref += ' ';
@@ -252,8 +252,8 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
         CATCH_REQUIRE((left + (reference_ref + right)) == "\xF0\x9D\x88\xB3loud secret\xF0\x9D\x88\xB4");
         CATCH_REQUIRE(((left + reference_ref) + right) == "\xF0\x9D\x88\xB3loud secret\xF0\x9D\x88\xB4");
         CATCH_REQUIRE(c == U'\0');
-        CATCH_REQUIRE((c + (reference_ref + c)) == "loud secret");
-        CATCH_REQUIRE(((c + reference_ref) + c) == "loud secret");
+        CATCH_REQUIRE((c + (reference_ref + c)) == '\0' + std::string("loud secret") + '\0');
+        CATCH_REQUIRE(((c + reference_ref) + c) == '\0' + std::string("loud secret") + '\0');
         CATCH_REQUIRE(reference_ref + new_value == "loud secretzero");
         CATCH_REQUIRE(new_value + reference_ref == "zeroloud secret");
         CATCH_REQUIRE(reference_ref + " more" == "loud secret more");
@@ -432,9 +432,9 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
         CATCH_REQUIRE(std::string("test") >= unknown_ref);
         CATCH_REQUIRE_FALSE(opt.is_defined("unknown"));
 
-        CATCH_REQUIRE(unknown_ref + '\0' == "");
+        CATCH_REQUIRE(unknown_ref + '\0' == std::string() + '\0');
         CATCH_REQUIRE(unknown_ref + '<' == "<");
-        CATCH_REQUIRE(unknown_ref + static_cast<char32_t>(U'\0') == "");
+        CATCH_REQUIRE(unknown_ref + static_cast<char32_t>(U'\0') == std::string() + '\0');
         CATCH_REQUIRE(unknown_ref + static_cast<char32_t>(U'\x2020') == "\xE2\x80\xA0");
         CATCH_REQUIRE(unknown_ref + null_string == "");
         CATCH_REQUIRE(unknown_ref + "abc\xE4\x81\x81" == "abc\xE4\x81\x81");
@@ -443,9 +443,9 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
         CATCH_REQUIRE(unknown_ref + verbose_ref == "loud");
         CATCH_REQUIRE_FALSE(opt.is_defined("unknown"));
 
-        CATCH_REQUIRE('\0' + unknown_ref == "");
+        CATCH_REQUIRE('\0' + unknown_ref == '\0' + std::string());
         CATCH_REQUIRE('<' + unknown_ref == "<");
-        CATCH_REQUIRE(static_cast<char32_t>(U'\0') + unknown_ref == "");
+        CATCH_REQUIRE(static_cast<char32_t>(U'\0') + unknown_ref == '\0' + std::string());
         CATCH_REQUIRE(static_cast<char32_t>(U'\x2020') + unknown_ref == "\xE2\x80\xA0");
         CATCH_REQUIRE(null_string + unknown_ref == "");
         CATCH_REQUIRE("abc\xE4\x81\x81" + unknown_ref == "abc\xE4\x81\x81");
@@ -564,9 +564,9 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
         CATCH_REQUIRE_FALSE(std::string("test") >= unknown_ref);
         CATCH_REQUIRE(opt.is_defined("unknown"));
 
-        CATCH_REQUIRE(unknown_ref + '\0' == "\xE4\xA0\x99");
+        CATCH_REQUIRE(unknown_ref + '\0' == std::string("\xE4\xA0\x99") + '\0');
         CATCH_REQUIRE(unknown_ref + '<' == "\xE4\xA0\x99<");
-        CATCH_REQUIRE(unknown_ref + static_cast<char32_t>(U'\0') == "\xE4\xA0\x99");
+        CATCH_REQUIRE(unknown_ref + static_cast<char32_t>(U'\0') == std::string("\xE4\xA0\x99") + '\0');
         CATCH_REQUIRE(unknown_ref + static_cast<char32_t>(U'\x2020') == "\xE4\xA0\x99\xE2\x80\xA0");
         CATCH_REQUIRE(unknown_ref + null_string == "\xE4\xA0\x99");
         CATCH_REQUIRE(unknown_ref + "abc\xE4\x81\x81" == "\xE4\xA0\x99\x61\x62\x63\xE4\x81\x81");
@@ -575,9 +575,9 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
         CATCH_REQUIRE(unknown_ref + verbose_ref == "\xE4\xA0\x99loud");
         CATCH_REQUIRE(opt.is_defined("unknown"));
 
-        CATCH_REQUIRE('\0' + unknown_ref == "\xE4\xA0\x99");
+        CATCH_REQUIRE('\0' + unknown_ref == '\0' + std::string("\xE4\xA0\x99"));
         CATCH_REQUIRE('<' + unknown_ref == "<\xE4\xA0\x99");
-        CATCH_REQUIRE(static_cast<char32_t>(U'\0') + unknown_ref == "\xE4\xA0\x99");
+        CATCH_REQUIRE(static_cast<char32_t>(U'\0') + unknown_ref == '\0' + std::string("\xE4\xA0\x99"));
         CATCH_REQUIRE(static_cast<char32_t>(U'\x2020') + unknown_ref == "\xE2\x80\xA0\xE4\xA0\x99");
         CATCH_REQUIRE(null_string + unknown_ref == "\xE4\xA0\x99");
         CATCH_REQUIRE("abc\xE4\x81\x81" + unknown_ref == "abc\xE4\x81\x81\xE4\xA0\x99");

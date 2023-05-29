@@ -451,10 +451,6 @@ option_info_ref & option_info_ref::operator += (option_info_ref const & value)
  */
 std::string option_info_ref::operator + (char value) const
 {
-    if(value == '\0')
-    {
-        return *this;
-    }
     return static_cast<std::string>(*this) + value;
 }
 
@@ -470,10 +466,6 @@ std::string option_info_ref::operator + (char value) const
  */
 std::string option_info_ref::operator + (char32_t value) const
 {
-    if(value == U'\0')
-    {
-        return *this;
-    }
     return static_cast<std::string>(*this) + libutf8::to_u8string(value);
 }
 
@@ -540,10 +532,6 @@ std::string option_info_ref::operator + (option_info_ref const & value) const
  */
 std::string operator + (char value, option_info_ref const & rhs)
 {
-    if(value == '\0')
-    {
-        return rhs;
-    }
     return value + static_cast<std::string>(rhs);
 }
 
@@ -560,10 +548,6 @@ std::string operator + (char value, option_info_ref const & rhs)
  */
 std::string operator + (char32_t value, option_info_ref const & rhs)
 {
-    if(value == U'\0')
-    {
-        return rhs;
-    }
     return libutf8::to_u8string(value) + static_cast<std::string>(rhs);
 }
 

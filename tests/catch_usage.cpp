@@ -680,7 +680,7 @@ advgetopt::breakup_line(
 "unittest.d/50-advgetopt.yaml]\n"
 "   . Option Filename = [/usr/share/advgetopt/unittest.ini]\n"
 "   . License = [MIT]\n"
-"   . Section Variable Name = []\n"
+"   . Section Variable Name = [%m]\n"
 "   . Output File [unittest.d/50-advgetopt.yaml]\n"
 "   . Program Name = [unittest_advgetopt]\n"
 "   . Program Fullname = [tests/unittests/unittest_advgetopt]\n"
@@ -693,7 +693,7 @@ advgetopt::breakup_line(
         //
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-advgetopt::breakup_line(
+  advgetopt::breakup_line(
               "Usage: try this one and we get a throw (valid options + usage calls)"
             , 0
             , advgetopt::get_screen_width())
@@ -744,7 +744,7 @@ advgetopt::breakup_line(
         // test a "--help-all" type of option
         //
         CATCH_REQUIRE_LONG_STRING(opt.usage(advgetopt::GETOPT_FLAG_SHOW_ALL),
-advgetopt::breakup_line(
+  advgetopt::breakup_line(
               "Usage: try this one and we get a throw (valid options + usage calls)"
             , 0
             , advgetopt::get_screen_width())
@@ -805,16 +805,16 @@ advgetopt::breakup_line(
         // pretend an error occurred
         //
         CATCH_REQUIRE_LONG_STRING(opt.usage(advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR),
-"Usage: try this one and we get a throw (valid options + usage calls)\n"
-"   --quiet or -q {<arg>}      make it quiet (opposite of verbose).\n"
-"   --validate                 this is used to validate different things.\n"
+  "Usage: try this one and we get a throw (valid options + usage calls)\n"
+  "   --quiet or -q {<arg>}      make it quiet (opposite of verbose).\n"
+  "   --validate                 this is used to validate different things.\n"
 + footer
                         );
 
         // show GROUP1
         //
         CATCH_REQUIRE_LONG_STRING(opt.usage(advgetopt::GETOPT_FLAG_SHOW_GROUP1),
-advgetopt::breakup_line(
+  advgetopt::breakup_line(
               "Usage: try this one and we get a throw (valid options + usage calls)"
             , 0
             , advgetopt::get_screen_width())
@@ -829,7 +829,7 @@ advgetopt::breakup_line(
         // show GROUP2
         //
         CATCH_REQUIRE_LONG_STRING(opt.usage(advgetopt::GETOPT_FLAG_SHOW_GROUP2),
-advgetopt::breakup_line(
+  advgetopt::breakup_line(
               "Usage: try this one and we get a throw (valid options + usage calls)"
             , 0
             , advgetopt::get_screen_width())
@@ -1378,10 +1378,10 @@ advgetopt::breakup_line(
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: \n"
-"   --verbose                  inform you of what we're currently working on: .\n"
+"Usage: test usage: %a\n"
+"   --verbose                  inform you of what we're currently working on: %a.\n"
 "\n"
-"Percent Project Name: \n"
+"Percent Project Name: %a\n"
                 );
     }
     CATCH_END_SECTION()
@@ -1536,10 +1536,10 @@ advgetopt::breakup_line(
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: \n"
-"   --verbose                  inform you of what we're currently working on: .\n"
+"Usage: test usage: %b\n"
+"   --verbose                  inform you of what we're currently working on: %b.\n"
 "\n"
-"Percent Build Date: \n"
+"Percent Build Date: %b\n"
                 );
     }
     CATCH_END_SECTION()
@@ -1715,10 +1715,10 @@ advgetopt::breakup_line(
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: \n"
-"   --verbose                  inform you of what we're currently working on: .\n"
+"Usage: test usage: %c\n"
+"   --verbose                  inform you of what we're currently working on: %c.\n"
 "\n"
-"Percent Copyright: \n"
+"Percent Copyright: %c\n"
                 );
     }
     CATCH_END_SECTION()
@@ -1956,10 +1956,10 @@ advgetopt::breakup_line(
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: \n"
-"   --verbose                  inform you of what we're currently working on: .\n"
+"Usage: test usage: %d\n"
+"   --verbose                  inform you of what we're currently working on: %d.\n"
 "\n"
-"Percent Directories: \n"
+"Percent Directories: %d\n"
                 );
     }
     CATCH_END_SECTION()
@@ -2004,10 +2004,13 @@ advgetopt::breakup_line(
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: \n"
-"   --verbose                  inform you of what we're currently working on: .\n"
-"\n"
-"Percent Directories: \n"
+  "Usage: test usage: %*d\n"
++ advgetopt::format_usage_string(
+              "--verbose"
+            , "inform you of what we're currently working on: %*d.\n"
+            , 30
+            , advgetopt::get_screen_width()) + "\n"
++ "Percent Directories: %*d\n"
                 );
     }
     CATCH_END_SECTION()
@@ -2057,10 +2060,10 @@ advgetopt::breakup_line(
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: \n"
-"   --verbose                  inform you of what we're currently working on: .\n"
+"Usage: test usage: %d\n"
+"   --verbose                  inform you of what we're currently working on: %d.\n"
 "\n"
-"Percent Directories: \n"
+"Percent Directories: %d\n"
                 );
     }
     CATCH_END_SECTION()
@@ -2110,10 +2113,13 @@ advgetopt::breakup_line(
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: \n"
-"   --verbose                  inform you of what we're currently working on: .\n"
-"\n"
-"Percent Directories: \n"
+  "Usage: test usage: %*d\n"
++ advgetopt::format_usage_string(
+              "--verbose"
+            , "inform you of what we're currently working on: %*d.\n"
+            , 30
+            , advgetopt::get_screen_width()) + "\n"
++ "Percent Directories: %*d\n"
                 );
     }
     CATCH_END_SECTION()
@@ -2401,10 +2407,13 @@ advgetopt::breakup_line(
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: \n"
-"   --verbose                  inform you of what we're currently working on: .\n"
-"\n"
-"Percent Environment Variable: \n"
+  "Usage: test usage: %e\n"
++ advgetopt::format_usage_string(
+              "--verbose"
+            , "inform you of what we're currently working on: %e.\n"
+            , 30
+            , advgetopt::get_screen_width()) + "\n"
++ "Percent Environment Variable: %e\n"
                 );
     }
     CATCH_END_SECTION()
@@ -2448,10 +2457,10 @@ advgetopt::breakup_line(
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: \n"
-"   --verbose                  inform you of what we're currently working on: .\n"
+"Usage: test usage: %e\n"
+"   --verbose                  inform you of what we're currently working on: %e.\n"
 "\n"
-"Percent Environment Variable: \n"
+"Percent Environment Variable: %e\n"
                 );
     }
     CATCH_END_SECTION()
@@ -2497,10 +2506,13 @@ advgetopt::breakup_line(
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: \n"
-"   --verbose                  inform you of what we're currently working on: .\n"
-"\n"
-"Percent Environment Variable: \n"
+  "Usage: test usage: %*e\n"
++ advgetopt::format_usage_string(
+              "--verbose"
+            , "inform you of what we're currently working on: %*e.\n"
+            , 30
+            , advgetopt::get_screen_width()) + "\n"
++ "Percent Environment Variable: %*e\n"
                 );
     }
     CATCH_END_SECTION()
@@ -2544,10 +2556,13 @@ advgetopt::breakup_line(
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: \n"
-"   --verbose                  inform you of what we're currently working on: .\n"
-"\n"
-"Percent Environment Variable: \n"
+  "Usage: test usage: %*e\n"
++ advgetopt::format_usage_string(
+              "--verbose"
+            , "inform you of what we're currently working on: %*e.\n"
+            , 30
+            , advgetopt::get_screen_width()) + "\n"
+"Percent Environment Variable: %*e\n"
                 );
     }
     CATCH_END_SECTION()
@@ -2594,10 +2609,10 @@ advgetopt::breakup_line(
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: \n"
-"   --verbose                  inform you of what we're currently working on: .\n"
+"Usage: test usage: %e\n"
+"   --verbose                  inform you of what we're currently working on: %e.\n"
 "\n"
-"Percent Environment Variable: \n"
+"Percent Environment Variable: %e\n"
                 );
     }
     CATCH_END_SECTION()
@@ -2642,10 +2657,10 @@ advgetopt::breakup_line(
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: \n"
-"   --verbose                  inform you of what we're currently working on: .\n"
+"Usage: test usage: %e\n"
+"   --verbose                  inform you of what we're currently working on: %e.\n"
 "\n"
-"Percent Environment Variable: \n"
+"Percent Environment Variable: %e\n"
                 );
     }
     CATCH_END_SECTION()
@@ -2691,10 +2706,13 @@ advgetopt::breakup_line(
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: \n"
-"   --verbose                  inform you of what we're currently working on: .\n"
-"\n"
-"Percent Environment Variable: \n"
+  "Usage: test usage: %*e\n"
++ advgetopt::format_usage_string(
+              "--verbose"
+            , "inform you of what we're currently working on: %*e.\n"
+            , 30
+            , advgetopt::get_screen_width()) + "\n"
++ "Percent Environment Variable: %*e\n"
                 );
     }
     CATCH_END_SECTION()
@@ -2738,10 +2756,13 @@ advgetopt::breakup_line(
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: \n"
-"   --verbose                  inform you of what we're currently working on: .\n"
-"\n"
-"Percent Environment Variable: \n"
+  "Usage: test usage: %*e\n"
++ advgetopt::format_usage_string(
+              "--verbose"
+            , "inform you of what we're currently working on: %*e.\n"
+            , 30
+            , advgetopt::get_screen_width()) + "\n"
++ "Percent Environment Variable: %*e\n"
                 );
     }
     CATCH_END_SECTION()
@@ -2785,18 +2806,18 @@ advgetopt::breakup_line(
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
 
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-advgetopt::breakup_line(
-              "Usage: test usage: "
+  advgetopt::breakup_line(
+              "Usage: test usage: %E"
             , 0
             , advgetopt::get_screen_width())
 + advgetopt::format_usage_string(
               "--verbose"
             , "inform you of what we're currently working on:"
-              " ."
+              " %E."
             , 30
             , advgetopt::get_screen_width()) + "\n"
 + advgetopt::breakup_line(
-              "Percent Environment Variable: "
+              "Percent Environment Variable: %E"
             , 0
             , advgetopt::get_screen_width())
                 );
@@ -2989,10 +3010,10 @@ advgetopt::breakup_line(
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: \n"
-"   --verbose                  inform you of what we're currently working on: .\n"
+"Usage: test usage: %f\n"
+"   --verbose                  inform you of what we're currently working on: %f.\n"
 "\n"
-"Percent Configuration Files: \n"
+"Percent Configuration Files: %f\n"
                 );
     }
     CATCH_END_SECTION()
@@ -3037,10 +3058,13 @@ advgetopt::breakup_line(
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: \n"
-"   --verbose                  inform you of what we're currently working on: .\n"
-"\n"
-"Percent Configuration Files: \n"
+  "Usage: test usage: %*f\n"
++ advgetopt::format_usage_string(
+              "--verbose"
+            , "inform you of what we're currently working on: %*f.\n"
+            , 30
+            , advgetopt::get_screen_width()) + "\n"
++ "Percent Configuration Files: %*f\n"
                 );
     }
     CATCH_END_SECTION()
@@ -3090,10 +3114,10 @@ advgetopt::breakup_line(
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: \n"
-"   --verbose                  inform you of what we're currently working on: .\n"
+"Usage: test usage: %f\n"
+"   --verbose                  inform you of what we're currently working on: %f.\n"
 "\n"
-"Percent Configuration Files: \n"
+"Percent Configuration Files: %f\n"
                 );
     }
     CATCH_END_SECTION()
@@ -3143,10 +3167,11 @@ advgetopt::breakup_line(
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: \n"
-"   --verbose                  inform you of what we're currently working on: .\n"
+"Usage: test usage: %*f\n"
+"   --verbose                  inform you of what we're currently working on:\n"
+"                              %*f.\n"
 "\n"
-"Percent Configuration Files: \n"
+"Percent Configuration Files: %*f\n"
                 );
     }
     CATCH_END_SECTION()
@@ -3971,10 +3996,10 @@ advgetopt::breakup_line("Usage: test usage: MIT-%l", 0, advgetopt::get_screen_wi
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: \n"
-"   --verbose                  inform you of what we're currently working on: .\n"
+"Usage: test usage: %l\n"
+"   --verbose                  inform you of what we're currently working on: %l.\n"
 "\n"
-"Percent License: \n"
+"Percent License: %l\n"
                 );
     }
     CATCH_END_SECTION()
@@ -4466,10 +4491,10 @@ advgetopt::breakup_line("Usage: test usage: 23:02:36 %t", 0, advgetopt::get_scre
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: \n"
-"   --verbose                  inform you of what we're currently working on: .\n"
+"Usage: test usage: %t\n"
+"   --verbose                  inform you of what we're currently working on: %t.\n"
 "\n"
-"Percent Build Time: \n"
+"Percent Build Time: %t\n"
 // TBD -- apparently that works as is?!
 //advgetopt::breakup_line("Usage: test usage: ", 0, advgetopt::get_screen_width())
 //+ advgetopt::format_usage_string(
@@ -4627,10 +4652,10 @@ advgetopt::breakup_line("Usage: test usage: 2.0.1-%v", 0, advgetopt::get_screen_
 
         CATCH_REQUIRE(advgetopt::GETOPT_FLAG_SHOW_MOST == 0);
         CATCH_REQUIRE_LONG_STRING(opt.usage(),
-"Usage: test usage: \n"
-"   --verbose                  inform you of what we're currently working on: .\n"
+"Usage: test usage: %v\n"
+"   --verbose                  inform you of what we're currently working on: %v.\n"
 "\n"
-"Percent Version: \n"
+"Percent Version: %v\n"
                 );
     }
     CATCH_END_SECTION()

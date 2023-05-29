@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2022  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2006-2023  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/project/advgetopt
 // contact@m2osw.com
@@ -785,7 +785,7 @@ CATCH_TEST_CASE("options_sources_environment_variable_and_config_file", "[option
                                | advgetopt::SYSTEM_OPTION_LICENSE
                                | advgetopt::SYSTEM_OPTION_COPYRIGHT
                                | advgetopt::SYSTEM_OPTION_CONFIG_DIR));
-std::cerr << "++++++++++++++++ [" << ss.str() << "]\n";;
+//std::cerr << "++++++++++++++++ [" << ss.str() << "]\n";;
         CATCH_REQUIRE_LONG_STRING(ss.str(),
 "warning: no copyright notice found.\n"
 "GPL 2 or GPL 3\n"

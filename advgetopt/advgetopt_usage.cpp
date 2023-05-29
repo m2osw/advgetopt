@@ -31,16 +31,16 @@
 #include    "advgetopt/exception.h"
 
 
+// snapdev
+//
+#include    <snapdev/join_strings.h>
+#include    <snapdev/tokenize_format.h>
+
+
 // C++
 //
 #include    <iomanip>
 #include    <iostream>
-
-
-// C
-//
-//#include    <unistd.h>
-//#include    <sys/ioctl.h>
 
 
 // last include
@@ -477,6 +477,66 @@ std::string getopt::usage(flag_t show) const
 }
 
 
+class usage_flag_traits
+{
+public:
+    static constexpr snapdev::format_flag_t const       FORMAT_FLAG_EXTENDED    = 0x01; // '*'
+
+    static bool is_flag(char c, snapdev::format_item<char> & f)
+    {
+        switch(c)
+        {
+        case '*':
+            if(f.has_flags(FORMAT_FLAG_EXTENDED))
+            {
+                f.add_error(snapdev::format_error_t::FORMAT_ERROR_DUPLICATE);
+            }
+            f.add_flags(FORMAT_FLAG_EXTENDED);
+            return true;
+
+        default:
+            return false;
+
+        }
+    }
+};
+
+
+class usage_letter_traits
+{
+public:
+    static std::string::size_type is_format(char const * s, snapdev::format_item<char> & f)
+    {
+        switch(s[0])
+        {
+        case 'a':
+        case 'b':
+        case 'c':
+        case 'd':
+        case 'e':
+        case 'E':
+        case 'f':
+        case 'g':
+        case 'i':
+        case 'l':
+        case 'm':
+        case 'o':
+        case 'p':
+        case 's':
+        case 't':
+        case 'v':
+        case 'w':
+            f.format(s[0]);
+            return 1UL;
+
+        }
+
+        f.add_error(snapdev::format_error_t::FORMAT_ERROR_UNKNOWN);
+        return 0;
+    }
+};
+
+
 /** \brief Change the % flags in help strings.
  *
  * This function goes through the help string and replaces the `%\<flag>`
@@ -536,278 +596,196 @@ std::string getopt::process_help_string(char const * help) const
         return std::string();
     }
 
-    std::string result;
+    snapdev::format_item<char>::list_t items(snapdev::tokenize_format<
+              char
+            , usage_letter_traits
+            , usage_flag_traits>(help));
 
-    while(help[0] != '\0')
+    for(auto it(items.begin()); it != items.end(); ++it)
     {
-        if(help[0] == '%')
+        switch(it->format())
         {
-            switch(help[1])
+        case 'a':
+            if(f_options_environment.f_project_name != nullptr)
             {
-            case '%':
-                result += '%';
-                help += 2;
-                break;
-
-            case '*':
-                switch(help[2])
-                {
-                case 'd':
-                    if(f_options_environment.f_configuration_directories != nullptr)
-                    {
-                        bool first(true);
-                        for(char const * const * directories(f_options_environment.f_configuration_directories);
-                            *directories != nullptr;
-                            ++directories)
-                        {
-                            if(first)
-                            {
-                                first = false;
-                            }
-                            else
-                            {
-                                result += ", ";
-                            }
-                            result += *directories;
-                        }
-                    }
-                    help += 3;
-                    break;
-
-                case 'e':
-                    if(f_options_environment.f_environment_variable_name != nullptr
-                    && *f_options_environment.f_environment_variable_name != '\0')
-                    {
-                        result += f_options_environment.f_environment_variable_name;
-                        char const * env(getenv(f_options_environment.f_environment_variable_name));
-                        if(env != nullptr)
-                        {
-                            result += '=';
-                            result += env;
-                        }
-                        else
-                        {
-                            result += " (not set)";
-                        }
-                    }
-                    help += 3;
-                    break;
-
-                case 'f':
-                    if(f_options_environment.f_configuration_files != nullptr)
-                    {
-                        bool first(true);
-                        for(char const * const * filenames(f_options_environment.f_configuration_files);
-                            *filenames != nullptr;
-                            ++filenames)
-                        {
-                            if(first)
-                            {
-                                first = false;
-                            }
-                            else
-                            {
-                                result += ", ";
-                            }
-                            result += *filenames;
-                        }
-                    }
-                    help += 3;
-                    break;
-
-                case 'g':
-                    {
-                        string_list_t list(get_configuration_filenames(false, false));
-                        bool first(true);
-                        for(auto n : list)
-                        {
-                            if(first)
-                            {
-                                first = false;
-                            }
-                            else
-                            {
-                                result += ", ";
-                            }
-                            result += n;
-                        }
-                        help += 3;
-                    }
-                    break;
-
-                case 'p':
-                    result += f_program_fullname;
-                    help += 3;
-                    break;
-
-                }
-                break;
-
-            case 'a':
-                if(f_options_environment.f_project_name != nullptr)
-                {
-                    result += f_options_environment.f_project_name;
-                }
-                help += 2;
-                break;
-
-            case 'b':
-                if(f_options_environment.f_build_date != nullptr)
-                {
-                    result += f_options_environment.f_build_date;
-                }
-                help += 2;
-                break;
-
-            case 'c':
-                if(f_options_environment.f_copyright != nullptr)
-                {
-                    result += f_options_environment.f_copyright;
-                }
-                help += 2;
-                break;
-
-            case 'd':
-                if(f_options_environment.f_configuration_directories != nullptr
-                && *f_options_environment.f_configuration_directories != nullptr)
-                {
-                    result += *f_options_environment.f_configuration_directories;
-                }
-                help += 2;
-                break;
-
-            case 'e':
-                if(f_options_environment.f_environment_variable_name != nullptr)
-                {
-                    result += f_options_environment.f_environment_variable_name;
-                }
-                help += 2;
-                break;
-
-            case 'E':
-                if(f_options_environment.f_environment_variable_intro != nullptr)
-                {
-                    result += f_options_environment.f_environment_variable_intro;
-                }
-                help += 2;
-                break;
-
-            case 'f':
-                if(f_options_environment.f_configuration_files != nullptr
-                && *f_options_environment.f_configuration_files != nullptr)
-                {
-                    result += *f_options_environment.f_configuration_files;
-                }
-                help += 2;
-                break;
-
-            case 'g':
-                {
-                    string_list_t list(get_configuration_filenames(true, false));
-                    bool first(true);
-                    for(auto n : list)
-                    {
-                        if(first)
-                        {
-                            first = false;
-                        }
-                        else
-                        {
-                            result += ", ";
-                        }
-                        result += n;
-                    }
-                    help += 2;
-                }
-                break;
-
-            case 'i':
-                // in the advgetopt_options.cpp, we clearly add a final "/"
-                // so we want to add it here too, to be consistent
-                result += get_options_filename();
-                help += 2;
-                break;
-
-            case 'l':
-                if(f_options_environment.f_license != nullptr)
-                {
-                    result += f_options_environment.f_license;
-                }
-                help += 2;
-                break;
-
-            case 'm':
-                if(f_options_environment.f_section_variables_name != nullptr)
-                {
-                    result += f_options_environment.f_section_variables_name;
-                }
-                help += 2;
-                break;
-
-            case 'o':
-                result += get_output_filename();
-                help += 2;
-                break;
-
-            case 'p':
-                result += f_program_name;
-                help += 2;
-                break;
-
-            case 's':
-                if(f_options_environment.f_group_name != nullptr)
-                {
-                    result += f_options_environment.f_group_name;
-                }
-                help += 2;
-                break;
-
-            case 't':
-                if(f_options_environment.f_build_time != nullptr)
-                {
-                    result += f_options_environment.f_build_time;
-                }
-                help += 2;
-                break;
-
-            case 'v':
-                if(f_options_environment.f_version != nullptr)
-                {
-                    result += f_options_environment.f_version;
-                }
-                help += 2;
-                break;
-
-            case 'w':
-                {
-                    string_list_t const list(get_configuration_filenames(true, true));
-                    bool first(true);
-                    for(auto n : list)
-                    {
-                        if(first)
-                        {
-                            first = false;
-                        }
-                        else
-                        {
-                            result += ", ";
-                        }
-                        result += n;
-                    }
-                    help += 2;
-                }
-                break;
-
+                it->string(f_options_environment.f_project_name);
             }
-        }
-        else
-        {
-            result += help[0];
-            ++help;
+            break;
+
+        case 'b':
+            if(f_options_environment.f_build_date != nullptr)
+            {
+                it->string(f_options_environment.f_build_date);
+            }
+            break;
+
+        case 'c':
+            if(f_options_environment.f_copyright != nullptr)
+            {
+                it->string(f_options_environment.f_copyright);
+            }
+            break;
+
+        case 'd':
+            if(f_options_environment.f_configuration_directories != nullptr
+            && *f_options_environment.f_configuration_directories != nullptr)
+            {
+                if(it->has_flags(usage_flag_traits::FORMAT_FLAG_EXTENDED))
+                {
+                    std::string joined;
+                    for(char const * const * directories(f_options_environment.f_configuration_directories);
+                        *directories != nullptr;
+                        ++directories)
+                    {
+                        if(!joined.empty())
+                        {
+                            joined += ", ";
+                        }
+                        joined += *directories;
+                    }
+                    it->string(joined);
+                }
+                else
+                {
+                    it->string(*f_options_environment.f_configuration_directories);
+                }
+            }
+            break;
+
+        case 'e':
+            if(f_options_environment.f_environment_variable_name != nullptr
+            && *f_options_environment.f_environment_variable_name != '\0')
+            {
+                if(it->has_flags(usage_flag_traits::FORMAT_FLAG_EXTENDED))
+                {
+                    std::string var(f_options_environment.f_environment_variable_name);
+                    char const * env(getenv(f_options_environment.f_environment_variable_name));
+                    if(env != nullptr)
+                    {
+                        var += '=';
+                        var += env;
+                    }
+                    else
+                    {
+                        var += " (not set)";
+                    }
+                    it->string(var);
+                }
+                else
+                {
+                    it->string(f_options_environment.f_environment_variable_name);
+                }
+            }
+            break;
+
+        case 'E':
+            if(f_options_environment.f_environment_variable_intro != nullptr)
+            {
+                it->string(f_options_environment.f_environment_variable_intro);
+            }
+            break;
+
+        case 'f':
+            if(f_options_environment.f_configuration_files != nullptr
+            && *f_options_environment.f_configuration_files != nullptr)
+            {
+                if(it->has_flags(usage_flag_traits::FORMAT_FLAG_EXTENDED))
+                {
+                    std::string joined;
+                    for(char const * const * filenames(f_options_environment.f_configuration_files);
+                        *filenames != nullptr;
+                        ++filenames)
+                    {
+                        if(!joined.empty())
+                        {
+                            joined += ", ";
+                        }
+                        joined += *filenames;
+                    }
+                    it->string(joined);
+                }
+                else
+                {
+                    it->string(*f_options_environment.f_configuration_files);
+                }
+            }
+            break;
+
+        case 'g':
+            {
+                string_list_t const list(get_configuration_filenames(!it->has_flags(usage_flag_traits::FORMAT_FLAG_EXTENDED), false));
+                it->string(snapdev::join_strings(list, ", "));
+            }
+            break;
+
+        case 'i':
+            // in the advgetopt_options.cpp, we clearly add a final "/"
+            // so we want to add it here too, to be consistent
+            it->string(get_options_filename());
+            break;
+
+        case 'l':
+            if(f_options_environment.f_license != nullptr)
+            {
+                it->string(f_options_environment.f_license);
+            }
+            break;
+
+        case 'm':
+            if(f_options_environment.f_section_variables_name != nullptr)
+            {
+                it->string(f_options_environment.f_section_variables_name);
+            }
+            break;
+
+        case 'o':
+            it->string(get_output_filename());
+            break;
+
+        case 'p':
+            if(it->has_flags(usage_flag_traits::FORMAT_FLAG_EXTENDED))
+            {
+                it->string(f_program_fullname);
+            }
+            else
+            {
+                it->string(f_program_name);
+            }
+            break;
+
+        case 's':
+            if(f_options_environment.f_group_name != nullptr)
+            {
+                it->string(f_options_environment.f_group_name);
+            }
+            break;
+
+        case 't':
+            if(f_options_environment.f_build_time != nullptr)
+            {
+                it->string(f_options_environment.f_build_time);
+            }
+            break;
+
+        case 'v':
+            if(f_options_environment.f_version != nullptr)
+            {
+                it->string(f_options_environment.f_version);
+            }
+            break;
+
+        case 'w':
+            {
+                string_list_t const list(get_configuration_filenames(true, true));
+                it->string(snapdev::join_strings(list, ", "));
+            }
+            break;
+
         }
     }
 
-    return result;
+    snapdev::format_item<char> empty_item;
+    return snapdev::join_strings(items, empty_item);
 }
 
 
