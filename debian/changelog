@@ -1,4 +1,4 @@
-advgetopt (2.0.45.0~bionic) bionic; urgency=high
+advgetopt (2.0.45.0~jammy) jammy; urgency=high
 
   * Added two more sizes (ronna & quetta).
   * Updated the tests so they all work as expected.
