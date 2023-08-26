@@ -2,7 +2,7 @@
 .SH NAME
 edit\-config \- Edit a configuration file parameter
 .SH SYNOPSIS
-.B edit-config
+.B edit\-config
 [\fIOPTION\fR]... \fI<filename>\fR \fI<field-name>\fR [\fI<value\>\fR]
 
 .SH DESCRIPTION
@@ -40,18 +40,18 @@ Display the date and time when the tool was last built.
 
 .TP
 \fB\-\-command\-help\fR
-List the commands understood by `ipmgr'.
+List the commands understood by `edit-config'.
 
 .TP
 \fB\-\-compiler\-version\fR
 Output the version information of the C++ compiler used to compile the
 `advgetopt' library. In most cases, this is the same as the compiler used
-to compile the `ipmgr' tool.
+to compile the `edit-config' tool.
 
 .TP
 \fB\-\-configuration\-filenames\fR
-List the filename of each configuration file that the `ipmgr' will read
-to get initialized. (Note that at the moment the ipmgr does not make
+List the filename of each configuration file that the `edit-config' will read
+to get initialized. (Note that at the moment the `edit-config' does not make
 use of a configuration file).
 
 .TP
@@ -60,7 +60,7 @@ Accept the colon character as the assignment operator (name: value).
 
 .TP
 \fB\-C\fR, \fB\-\-copyright\fR
-Print put the copyright notice of the `ipmgr' tool.
+Print put the copyright notice of the `edit-config' tool.
 
 .TP
 \fB\-\-create\-backup\fR [\fI<extension>\fR]
@@ -89,7 +89,7 @@ Print a brief document about the tool usage, then exit.
 
 .TP
 \fB\-L\fR, \fB\-\-license\fR
-Print out the license of `ipmgr' and exit.
+Print out the license of `edit-config' and exit.
 
 .TP
 \fB\-\-must\-exist\fR
@@ -109,7 +109,12 @@ If you do not want the warning, then also use this option.
 
 .TP
 \fB\-\-option\-help\fR
-Print the list of options supported by `ipmgr'.
+Print the list of options supported by `edit-config'.
+
+.TP
+\fB\-\-path\-to\-option\-definitions\fR
+Option definitions can be defined in a .ini file. If it exists, this is the
+path where it can be found.
 
 .TP
 \fB\-\-priority\fR \fIPRIORITY\fR
@@ -117,11 +122,6 @@ Define a priority level from 00 to 99 (leading 0 is not required). This is
 used only if a sub-directory was defined. It is assumed that the priorty
 will be followed by a dash and the filename of the configuration file as
 supported by the advgetopt library.
-
-.TP
-\fB\-\-path\-to\-option\-definitions\fR
-Option definitions can be defined in a .ini file. If it exists, this is the
-path where it can be found.
 
 .TP
 \fB\-\-remove\-comments\fR
@@ -145,6 +145,10 @@ This option can be used to determine where a value is defined, which
 once in a while is particularly useful.
 
 .TP
+\fB\-S\fR, \fB\-\-show\-system\-help\fR
+Print the list of system command line options.
+
+.TP
 \fB\-\-space\fR
 Accept the space character as the assignment operator (name value).
 
@@ -165,7 +169,7 @@ The sub-directory gets created if it does not yet exist.
 
 .TP
 \fB\-V\fR, \fB\-\-version\fR
-print version number, then exit
+Print version number, then exit
 
 .SH COMMENTS
 .PP
@@ -185,9 +189,9 @@ option.
 .SH AUTHOR
 Written by Alexis Wilke <alexis@m2osw.com>.
 .SH "REPORTING BUGS"
-Report bugs to <https://github.com/m2osw/ipmgr/issues>.
+Report bugs to <https://github.com/m2osw/advgetopt/issues>.
 .br
-ipmgr home page: <https://snapwebsites.org/project/ipmgr>.
+advgetopt home page: <https://snapwebsites.org/project/advgetopt>.
 .SH COPYRIGHT
 Copyright \(co 2022-2023  Made to Order Software Corp.  All Rights Reserved
 .br

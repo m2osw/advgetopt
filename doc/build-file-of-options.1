@@ -1,0 +1,149 @@
+.TH BUILD\-FILE\-OF\-OPTIONS 1 "August 2023" "build-file-of-options 1.x" "User Commands"
+.SH NAME
+build\-file\-of\-options \- Build a list of command line options from a .conf file
+.SH SYNOPSIS
+.B build\-file\-of\-options
+[\fIOPTION\fR]... \-\-output \fI<filename>.cpp\fR \fI<filename>.conf\fR
+
+.SH DESCRIPTION
+This command reads a Unix configuration file and parses the comments for
+command line option definitions.
+.PP
+The first comment at the top of the file, up to the first empty line, is
+always discarded.
+.PP
+The following commands must start with a `<name>=<args>' parameter definition
+to be detected as a command line option. The first sentence found after the
+command line parameter (i.e. up to the first period: `.') is taken as the
+help string. The comment can end with a `Default: <value>'.
+
+.SH "NAME"
+A command name cannot include spaces, colons, or equal signs.
+.PP
+If the name includes a `|' character, then the name in split in two. The
+left part is the official command line option. The second part is an alias.
+For example, you could define `licence|license' to support the English and
+French spellings of the word licence.
+
+.SH "SHORT NAME"
+If the option parameter ends with a letter between parenthesis, then it is
+taken as the short name. For example, `--input=filename (i)' defines an
+option named "input" with the short name set to "i".
+
+.B IMPORTANT:
+The short name must be exactly one letter. It can be nearly any Unicode
+character (diacriticals, such as character code 0x0300, are not valid).
+
+.SH "ARGUMENTS"
+The option name must be followed by an equal sign. You can then specify a
+list of possible arguments. It may be as simple as `--output=<filename>'.
+.PP
+The arguments can be made optional by enclosing them between square brackets.
+For example, the `color=[red|green|blue]' means that the `\-\-color' parameter
+can be used by itself and a default color will be used.
+.PP
+Similarly, the arguments can be marked as supporting multiple entries instead
+of just one. This is doable by either putting the parameter between curvly
+braces or by ending the list of arguments with an elipsis: `...'. For example,
+a list of network ports could be defined as `ports={<number from 1 to 65535>}'.
+.PP
+Arguments that are optional and can be repeated must use the elipsis. For
+example, the `height=[<number> ...]' parameter can be specified by itself
+(`\-\-height'), with one number (`\-\-height 123'), or multiple numbers
+(`\-\-height 123 456 789').
+
+.SH "DEFAULT VALUE"
+If your parameter supports a default value, you can specific that value
+using a line after the help that starts with the word `Default:'. Whatever
+appears after that (trimmed), is saved as the default.
+
+.B Note:
+An empty string is not currently supported as a default value.
+
+.SH "COMMAND LINE OPTIONS"
+.TP
+\fB\-\-build\-date\fR
+Print the date when this tool was compiled.
+
+.TP
+\fB\-\-compiler\-version\fR
+Print the version of the C++ compiler used to compile this tool.
+
+.TP
+\fB\-\-configuration\-filenames\fR
+Print the list of files searched to configure this tool.
+
+.TP
+\fB\-C\fR, \fB\-\-copyright\fR
+Print the copyright notice of the `build\-file\-of\-options' tool.
+
+.TP
+\fB\-\-environment\-variable\-name\fR
+Print the name of the environment variable that can be used to pass arguments
+to this tool.
+
+.TP
+\fB\-\-has\-sanitizer\fR
+Print whether the tool was compiled with the sanitizer options.
+
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print a brief document about the tool usage, then exit.
+
+.TP
+\fB\-L\fR, \fB\-\-license\fR
+Print out the license of `build\-file\-of\-options' and exit.
+
+.TP
+\fB\-?\fR, \fB\-\-long\-help\fR
+Print out all the available command line options.
+
+.TP
+\fB\-o\fR, \fB\-\-output\fR \fIFILENAME\fR
+Define the name of the file where the results are saved. \fIFILENAME\fR
+may be set to `-' to output the data to stdout (default if not specified).
+
+.TP
+\fB\-\-path\-to\-option\-definitions\fR
+Option definitions can be defined in a .ini file. If it exists, this is the
+path where it can be found.
+
+.TP
+\fB\-\-print\-option\fR \fINAME\fR
+By default, the command keeps the comments found in the original file.
+This can cause some issues as the output is sorted by known fields.
+If that's the case with the file you are dealing with, use this
+option to remove all the comments and only keep field names and
+value pairs.
+
+.TP
+\fB\-\-show\-option\-sources\fR
+The `advgetopt' library has the ability to trace where each value is
+read from: which file, the command line, the environment variable.
+This option can be used to determine where a value is defined, which
+once in a while is particularly useful.
+
+.TP
+\fB\-S\fR, \fB\-\-show\-system\-help\fR
+Print the list of system command line options.
+
+.TP
+\fB\-V\fR, \fB\-\-version\fR
+Print version number, then exit
+
+.SH AUTHOR
+Written by Alexis Wilke <alexis@m2osw.com>.
+.SH "REPORTING BUGS"
+Report bugs to <https://github.com/m2osw/advgetopt/issues>.
+.br
+advgetopt home page: <https://snapwebsites.org/project/advgetopt>.
+.SH COPYRIGHT
+Copyright \(co 2022-2023  Made to Order Software Corp.  All Rights Reserved
+.br
+License: GPLv3
+.br
+This is free software: you are free to change and redistribute it.
+.br
+There is NO WARRANTY, to the extent permitted by law.
+.SH "SEE ALSO"
+.BR atomic-names(1)

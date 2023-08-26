@@ -5,7 +5,7 @@
   type of list to accept those (TBD: how to properly define the order? we
   can use the array's order, I would imagine).
 
-* Further test that he variables support works (in the getopt_info and such.)
+* Further test that the variable support works (in the getopt_info and such.)
 
 * A section name in a file is totally ignored if no parameters are added.
   In some cases, we may want to know that the user created such a section.
