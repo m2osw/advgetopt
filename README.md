@@ -372,10 +372,11 @@ to the file:
         -e '$ainclude "/etc/bind/ipmgr-options.conf";' \
             /etc/bind/named.conf.local
 
-_Note: the `ipmgr` project also comes with a tool named `dns-options`
-allowing for the editing of DNS configuration files. It is still in
-development as it doesn't yet work properly in all situations, but
-works for what we currently need it for. It may also be useful to you._
+_Note: the [`ipmgr` project](https://github.com/m2osw/ipmgr) also comes with
+a tool named `dns-options` allowing for the editing of DNS configuration
+files. It is still in development as it doesn't yet work properly in all
+situations, but works for what we currently need it for. It may also be
+useful to you._
 
 
 # Type of Options Supported
