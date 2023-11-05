@@ -38,18 +38,12 @@
 // C++
 //
 #include    <fstream>
+#include    <random>
 
 
 // last include
 //
 #include    <snapdev/poison.h>
-
-
-
-int shuffle_rand(int n)
-{
-    return rand() % n;
-}
 
 
 
@@ -589,7 +583,9 @@ CATCH_TEST_CASE("utils_insert_group_name", "[utils][valid]")
         {
             numbers.push_back(i);
         }
-        std::random_shuffle(numbers.begin(), numbers.end(), shuffle_rand);
+        std::random_device rd;
+        std::mt19937 g(rd());
+        std::shuffle(numbers.begin(), numbers.end(), g);
         int const max(rand() % 50 + 10);
         numbers.resize(max);
         std::string path(SNAP_CATCH2_NAMESPACE::g_config_project_filename);
