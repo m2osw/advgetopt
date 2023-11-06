@@ -1733,6 +1733,8 @@ void getopt::add_option_from_string(
             return;
         }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wrestrict"
         cppthread::log << cppthread::log_level_t::error
                        << "option "
                        << (filename.empty()
@@ -1748,6 +1750,7 @@ void getopt::add_option_from_string(
                                + "\"")
                        << ". It only accepts \"true\" or \"false\"."
                        << cppthread::end;
+#pragma GCC diagnostic pop
         return;
     }
 
@@ -1755,6 +1758,8 @@ void getopt::add_option_from_string(
     //
     if(opt->has_flag(GETOPT_FLAG_REQUIRED))
     {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wrestrict"
         cppthread::log << cppthread::log_level_t::error
                        << "option "
                        << (filename.empty()
@@ -1768,6 +1773,7 @@ void getopt::add_option_from_string(
                                + "\"")
                        << "."
                        << cppthread::end;
+#pragma GCC diagnostic pop
         return;
     }
 

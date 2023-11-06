@@ -251,12 +251,15 @@ bool validator_duration::convert_string(
             }
         }
         double n(0.0);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wrestrict"
         if(!validator_double::convert_string(
                   (*number == '.' ? "0" : "") + std::string(number, s - number)
                 , n))
         {
             return false;
         }
+#pragma GCC diagnostic pop
 
         while(isspace(*s))
         {
