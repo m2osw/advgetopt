@@ -1,3 +1,9 @@
+advgetopt (2.0.46.0~jammy) jammy; urgency=high
+
+  * Added missing #include <cstdint>
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 07 Nov 2023 05:15:44 +0000
+
 advgetopt (2.0.45.0~jammy) jammy; urgency=high
 
   * Added two more sizes (ronna & quetta).

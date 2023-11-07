@@ -34,6 +34,11 @@
 #include    <advgetopt/validator.h>
 
 
+// C++
+//
+#include    <cstdint>
+
+
 
 namespace advgetopt
 {

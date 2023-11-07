@@ -41,6 +41,7 @@
 
 // C++
 //
+#include    <cstdint>
 #include    <limits>
 
 
