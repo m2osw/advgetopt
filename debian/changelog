@@ -1,3 +1,9 @@
+advgetopt (2.0.46.1~bionic) bionic; urgency=high
+
+  * Bumped build version to rebuild on Launchpad.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 10 Nov 2023 19:21:40 -0800
+
 advgetopt (2.0.46.0~jammy) jammy; urgency=high
 
   * Added missing #include <cstdint>
