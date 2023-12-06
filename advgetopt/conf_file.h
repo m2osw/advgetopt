@@ -194,6 +194,7 @@ public:
     typedef int                                     callback_id_t;
 
     static pointer_t            get_conf_file(conf_file_setup const & setup);
+    static void                 reset_conf_files();
 
     bool                        save_configuration(
                                       std::string backup_extension = std::string(".bak")

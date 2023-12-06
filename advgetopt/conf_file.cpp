@@ -832,6 +832,26 @@ conf_file::pointer_t conf_file::get_conf_file(conf_file_setup const & setup)
 }
 
 
+/** \brief Forget all the cached configuration files.
+ *
+ * In some rare cases, you may want to get rid of the cached data and
+ * re-read all the configuration data from file. In this case, you should
+ * delete all your conf_file instances, call this function, and then do
+ * the get_conf_file() again.
+ *
+ * This function clears the caches. If you keep existing conf_file objects
+ * around, they may not match newer instances.
+ *
+ * This function is particularly useful when dealing with tests that
+ * verify configuration data.
+ */
+void conf_file::reset_conf_files()
+{
+    cppthread::guard lock(get_global_mutex());
+    g_conf_files.clear();
+}
+
+
 /** \brief Save the configuration file.
  *
  * This function saves the current data from this configuration file to
