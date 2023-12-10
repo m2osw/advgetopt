@@ -1,3 +1,9 @@
+advgetopt (2.0.47.0~jammy) jammy; urgency=high
+
+  * Added a function to reset the configuration file cache.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 10 Dec 2023 15:07:57 -0800
+
 advgetopt (2.0.46.1~bionic) bionic; urgency=high
 
   * Bumped build version to rebuild on Launchpad.
