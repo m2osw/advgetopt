@@ -120,8 +120,8 @@ std::string validator_list::name() const
 /** \brief Check the value against all the validators for one valid one.
  *
  * This function goes through the validators registered with it and if
- * at least one of these validators return true, then the function
- * considered that input value as valid and it returns true.
+ * at least one of these validators returns true, then the function
+ * considers that input value as valid and it returns true.
  *
  * \param[in] value  The value to be validated.
  *
