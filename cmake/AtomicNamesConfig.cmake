@@ -86,20 +86,11 @@ function(AtomicNames ATOMIC_NAMES)
             ${CMAKE_CURRENT_BINARY_DIR}/${ATOMIC_NAMES_BASENAME}.h
 
         COMMAND
-            echo "--- atomic names starting ---"
-
-        COMMAND
             "${ATOMIC_NAMES_PROGRAM}"
                     "--output-path"
                         "${CMAKE_CURRENT_BINARY_DIR}"
                     "${CMAKE_CURRENT_SOURCE_DIR}/${ATOMIC_NAMES}"
                     "--verbose"
-
-        COMMAND
-            echo "--- atomic names is okay? ---"
-
-        COMMAND
-            ls "${CMAKE_CURRENT_BINARY_DIR}"
 
         WORKING_DIRECTORY
             ${PROJECT_SOURCE_DIR}
