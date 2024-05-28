@@ -56,7 +56,7 @@ if(${ATOMIC_NAMES_PROGRAM} STREQUAL "ATOMIC_NAMES_PROGRAM-NOTFOUND")
     message(FATAL_ERROR "atomic-names tool not found")
 endif()
 
-# This function generates three outputs files:
+# This function generates three output files:
 #
 #    <name>.cpp, <name>.h and <name>_private.h
 #
@@ -67,7 +67,7 @@ endif()
 # `get_name()` function has to be used from outside your project.
 # (i.e. those are public names, their value may change under your feet)
 #
-# \param[in] ATOMIC_NAME_FILENAME  The name of input file.
+# \param[in] ATOMIC_NAMES  The name of the input file (usually `names.an`).
 #
 function(AtomicNames ATOMIC_NAMES)
     cmake_parse_arguments(PARSE_ARGV 1 "" "" "" "")
