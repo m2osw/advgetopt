@@ -46,7 +46,7 @@
 
 CATCH_TEST_CASE("variables", "[variables][valid]")
 {
-    CATCH_START_SECTION("Check the variables class")
+    CATCH_START_SECTION("variables: check the variables class")
     {
         advgetopt::variables vars;
 
@@ -94,7 +94,7 @@ CATCH_TEST_CASE("variables", "[variables][valid]")
         CATCH_REQUIRE(vars.get_variables().size() == 3);
 
         // attempt changing value when already set
-        vars.set_variable("first_variable", "replaced value", advgetopt::assignment_t::ASSIGNMENT_OPTIONAL);
+        vars.set_variable("first_variable", "ignored value", advgetopt::assignment_t::ASSIGNMENT_OPTIONAL);
         CATCH_REQUIRE(vars.get_variable("first_variable") == "replaced value");
         CATCH_REQUIRE(vars.get_variables().size() == 3);
 
@@ -141,6 +141,82 @@ CATCH_TEST_CASE("variables", "[variables][valid]")
 
         processed = vars.process_value("Looping like crazy: ${loopB}");
         CATCH_REQUIRE(processed == "Looping like crazy: ref ref <variable \"loopB\" loops>");
+
+        vars.set_variable("cummulative", "start", advgetopt::assignment_t::ASSIGNMENT_NEW);
+        CATCH_REQUIRE(vars.get_variable("cummulative") == "start");
+        CATCH_REQUIRE(vars.get_variables().size() == 6);
+        vars.set_variable("cummulative", "-middle-", advgetopt::assignment_t::ASSIGNMENT_APPEND);
+        CATCH_REQUIRE(vars.get_variable("cummulative") == "start-middle-");
+        CATCH_REQUIRE(vars.get_variables().size() == 6);
+        vars.set_variable("cummulative", "end", advgetopt::assignment_t::ASSIGNMENT_APPEND);
+        CATCH_REQUIRE(vars.get_variable("cummulative") == "start-middle-end");
+        CATCH_REQUIRE(vars.get_variables().size() == 6);
+
+        vars.set_variable("additive", "beg", advgetopt::assignment_t::ASSIGNMENT_APPEND);
+        CATCH_REQUIRE(vars.get_variable("additive") == "beg");
+        CATCH_REQUIRE(vars.get_variables().size() == 7);
+        vars.set_variable("additive", ":mid", advgetopt::assignment_t::ASSIGNMENT_APPEND);
+        CATCH_REQUIRE(vars.get_variable("additive") == "beg:mid");
+        CATCH_REQUIRE(vars.get_variables().size() == 7);
+        vars.set_variable("additive", ":end", advgetopt::assignment_t::ASSIGNMENT_APPEND);
+        CATCH_REQUIRE(vars.get_variable("additive") == "beg:mid:end");
+        CATCH_REQUIRE(vars.get_variables().size() == 7);
+    }
+    CATCH_END_SECTION()
+}
+
+
+CATCH_TEST_CASE("invalid_variable_name", "[variables][invalid]")
+{
+    CATCH_START_SECTION("invalid_variable_name: parsing an empty section name throws")
+        CATCH_REQUIRE_THROWS_MATCHES(
+                  advgetopt::variables::canonicalize_variable_name(":bad_start")
+                , advgetopt::getopt_invalid
+                , Catch::Matchers::ExceptionMessage(
+                      "getopt_exception: found an empty section name in \":bad_start\"."));
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("invalid_variable_name: parsing first section name that start with a digit fails")
+        CATCH_REQUIRE_THROWS_MATCHES(
+                  advgetopt::variables::canonicalize_variable_name("3::bad_start")
+                , advgetopt::getopt_invalid
+                , Catch::Matchers::ExceptionMessage(
+                      "getopt_exception: a variable name or section name in \"3::bad_start\" starts with a digit, which is not allowed."));
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("invalid_variable_name: parsing second section name that start with a digit fails")
+        CATCH_REQUIRE_THROWS_MATCHES(
+                  advgetopt::variables::canonicalize_variable_name("good::3::bad_section")
+                , advgetopt::getopt_invalid
+                , Catch::Matchers::ExceptionMessage(
+                      "getopt_exception: a variable name or section name in \"good::3::bad_section\" starts with a digit, which is not allowed."));
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("invalid_variable_name: parsing variable name that start with a digit fails")
+        CATCH_REQUIRE_THROWS_MATCHES(
+                  advgetopt::variables::canonicalize_variable_name("good::and_bad::9times")
+                , advgetopt::getopt_invalid
+                , Catch::Matchers::ExceptionMessage(
+                      "getopt_exception: a variable name or section name in \"good::and_bad::9times\" starts with a digit, which is not allowed."));
+    CATCH_END_SECTION()
+}
+
+
+CATCH_TEST_CASE("invalid_variable", "[variables][invalid]")
+{
+    CATCH_START_SECTION("invalid_variable: NEW assignment fails if variable exists")
+    {
+        advgetopt::variables vars;
+
+        vars.set_variable("unique", "works", advgetopt::assignment_t::ASSIGNMENT_NEW);
+        CATCH_REQUIRE(vars.get_variable("unique") == "works");
+        CATCH_REQUIRE(vars.get_variables().size() == 1);
+
+        CATCH_REQUIRE_THROWS_MATCHES(
+                  vars.set_variable("unique", "fail", advgetopt::assignment_t::ASSIGNMENT_NEW)
+                , advgetopt::getopt_defined_twice
+                , Catch::Matchers::ExceptionMessage(
+                      "getopt_exception: variable \"unique\" is already defined."));
     }
     CATCH_END_SECTION()
 }

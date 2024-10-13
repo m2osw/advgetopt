@@ -63,7 +63,7 @@
 
 CATCH_TEST_CASE("configuration_spaces", "[config][getopt][valid]")
 {
-    CATCH_START_SECTION("Verify Configuration Spaces")
+    CATCH_START_SECTION("configuration_spaces: verify configuration spaces")
     {
         for(int c(0); c < 0x110000; ++c)
         {
@@ -88,7 +88,7 @@ CATCH_TEST_CASE("configuration_spaces", "[config][getopt][valid]")
 
 CATCH_TEST_CASE("configuration_setup", "[config][getopt][valid]")
 {
-    CATCH_START_SECTION("Check All Setups")
+    CATCH_START_SECTION("configuration_setup: check all setups")
     {
         // 5 * 6 * 16 * 8 * 16 = 61440
         for(int count(0); count < 5; ++count)
@@ -339,7 +339,7 @@ CATCH_TEST_CASE("configuration_setup", "[config][getopt][valid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Check non-existant filename")
+    CATCH_START_SECTION("configuration_setup: check non-existant filename")
     {
         advgetopt::conf_file_setup setup(
                       "/etc/advgetopt/unknown-file.conf"
@@ -366,7 +366,7 @@ CATCH_TEST_CASE("configuration_setup", "[config][getopt][valid]")
 
 CATCH_TEST_CASE("config_reload_tests", "[config][getopt][valid]")
 {
-    CATCH_START_SECTION("Load a file, update it, verify it does not get reloaded")
+    CATCH_START_SECTION("config_reload_tests: load a file, update it, verify it does not get reloaded")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("reload", "load-twice");
 
@@ -472,7 +472,7 @@ CATCH_TEST_CASE("config_reload_tests", "[config][getopt][valid]")
 
 CATCH_TEST_CASE("config_duplicated_variables", "[config][getopt][valid]")
 {
-    CATCH_START_SECTION("file with the same variable defined multiple times")
+    CATCH_START_SECTION("config_duplicated_variables: file with the same variable defined multiple times")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("duplicated-variable", "multiple");
 
@@ -550,7 +550,7 @@ CATCH_TEST_CASE("config_duplicated_variables", "[config][getopt][valid]")
 
 CATCH_TEST_CASE("config_callback_calls", "[config][getopt][valid]")
 {
-    CATCH_START_SECTION("setup a callback and test the set_parameter()/erase() functions")
+    CATCH_START_SECTION("config_callback_calls: setup a callback and test the set_parameter()/erase() functions")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("callback-variable", "callback");
 
@@ -752,7 +752,7 @@ CATCH_TEST_CASE("config_callback_calls", "[config][getopt][valid]")
 
 CATCH_TEST_CASE("config_line_continuation_tests", "[config][getopt][valid]")
 {
-    CATCH_START_SECTION("single_line (EQUAL)")
+    CATCH_START_SECTION("config_line_continuation_tests: single_line (EQUAL)")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("line-continuation", "single-line");
 
@@ -852,7 +852,7 @@ CATCH_TEST_CASE("config_line_continuation_tests", "[config][getopt][valid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("single_line (EXTENDED EQUALS)")
+    CATCH_START_SECTION("config_line_continuation_tests: single_line (EXTENDED EQUALS)")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("extended-equals", "equal-extensions");
 
@@ -1010,7 +1010,7 @@ CATCH_TEST_CASE("config_line_continuation_tests", "[config][getopt][valid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("rfc822")
+    CATCH_START_SECTION("config_line_continuation_tests: rfc822")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("line-continuation", "rfc822");
 
@@ -1084,7 +1084,7 @@ CATCH_TEST_CASE("config_line_continuation_tests", "[config][getopt][valid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("msdos")
+    CATCH_START_SECTION("config_line_continuation_tests: msdos")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("line-continuation", "msdos");
 
@@ -1160,7 +1160,7 @@ CATCH_TEST_CASE("config_line_continuation_tests", "[config][getopt][valid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("unix")
+    CATCH_START_SECTION("config_line_continuation_tests: unix")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("line-continuation", "unix");
 
@@ -1236,7 +1236,7 @@ CATCH_TEST_CASE("config_line_continuation_tests", "[config][getopt][valid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("fortran")
+    CATCH_START_SECTION("config_line_continuation_tests: fortran")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("line-continuation", "fortran");
 
@@ -1312,7 +1312,7 @@ CATCH_TEST_CASE("config_line_continuation_tests", "[config][getopt][valid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("semicolon")
+    CATCH_START_SECTION("config_line_continuation_tests: semicolon")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("line-continuation", "semicolon");
 
@@ -1408,7 +1408,7 @@ CATCH_TEST_CASE("config_line_continuation_tests", "[config][getopt][valid]")
 
 CATCH_TEST_CASE("config_assignment_operator_tests", "[config][getopt][valid]")
 {
-    CATCH_START_SECTION("equal")
+    CATCH_START_SECTION("config_assignment_operator_tests: equal")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("assignment-operator", "equal");
 
@@ -1457,7 +1457,7 @@ CATCH_TEST_CASE("config_assignment_operator_tests", "[config][getopt][valid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("colon")
+    CATCH_START_SECTION("config_assignment_operator_tests: colon")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("assignment-operator", "colon");
 
@@ -1506,7 +1506,7 @@ CATCH_TEST_CASE("config_assignment_operator_tests", "[config][getopt][valid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("space")
+    CATCH_START_SECTION("config_assignment_operator_tests: space")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("assignment-operator", "space");
 
@@ -1555,7 +1555,7 @@ CATCH_TEST_CASE("config_assignment_operator_tests", "[config][getopt][valid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("equal_colon_and_space")
+    CATCH_START_SECTION("config_assignment_operator_tests: equal_colon_and_space")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("assignment-operator", "all");
 
@@ -1615,7 +1615,7 @@ CATCH_TEST_CASE("config_assignment_operator_tests", "[config][getopt][valid]")
 
 CATCH_TEST_CASE("config_comment_tests", "[config][getopt][valid]")
 {
-    CATCH_START_SECTION("ini comment")
+    CATCH_START_SECTION("config_comment_tests: ini comment")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("comment", "ini");
 
@@ -1663,7 +1663,7 @@ CATCH_TEST_CASE("config_comment_tests", "[config][getopt][valid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("shell comment")
+    CATCH_START_SECTION("config_comment_tests: shell comment")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("comment", "shell");
 
@@ -1711,7 +1711,7 @@ CATCH_TEST_CASE("config_comment_tests", "[config][getopt][valid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("C++ comment")
+    CATCH_START_SECTION("config_comment_tests: C++ comment")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("comment", "cpp");
 
@@ -1759,7 +1759,7 @@ CATCH_TEST_CASE("config_comment_tests", "[config][getopt][valid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("All three comments")
+    CATCH_START_SECTION("config_comment_tests: all three comments")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("comment", "all-comments");
 
@@ -1821,7 +1821,7 @@ CATCH_TEST_CASE("config_comment_tests", "[config][getopt][valid]")
 
 CATCH_TEST_CASE("config_section_tests", "[config][getopt][valid]")
 {
-    CATCH_START_SECTION("section operator c (.)")
+    CATCH_START_SECTION("config_section_tests: section operator c (.)")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("section-operator", "section-c");
 
@@ -1887,7 +1887,7 @@ CATCH_TEST_CASE("config_section_tests", "[config][getopt][valid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("section operator c++ (::)")
+    CATCH_START_SECTION("config_section_tests: section operator c++ (::)")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("section-operator", "section-cpp");
 
@@ -1953,7 +1953,7 @@ CATCH_TEST_CASE("config_section_tests", "[config][getopt][valid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("section operator block ({ ... })")
+    CATCH_START_SECTION("config_section_tests: section operator block ({ ... })")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("section-operator", "section-block");
 
@@ -2027,7 +2027,7 @@ CATCH_TEST_CASE("config_section_tests", "[config][getopt][valid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("section operator ini file ([...])")
+    CATCH_START_SECTION("config_section_tests: section operator ini file ([...])")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("section-operator", "section-ini-file");
 
@@ -2102,7 +2102,7 @@ CATCH_TEST_CASE("config_section_tests", "[config][getopt][valid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("section operator ini-file & c++")
+    CATCH_START_SECTION("config_section_tests: section operator ini-file & c++")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("section-operator", "section-double");
 
@@ -2170,7 +2170,7 @@ CATCH_TEST_CASE("config_section_tests", "[config][getopt][valid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("section of variables ([variables])")
+    CATCH_START_SECTION("config_section_tests: section of variables ([variables])")
     {
         // in a config file variables are not auto-managed
         //
@@ -2431,7 +2431,7 @@ CATCH_TEST_CASE("config_section_tests", "[config][getopt][valid]")
 
 CATCH_TEST_CASE("save_config_file", "[config][getopt][valid]")
 {
-    CATCH_START_SECTION("load update save (=)")
+    CATCH_START_SECTION("save_config_file: load update save (=)")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("save-operation", "configuration-equal");
 
@@ -2539,7 +2539,7 @@ CATCH_TEST_CASE("save_config_file", "[config][getopt][valid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("load update save (:)")
+    CATCH_START_SECTION("save_config_file: load update save (:)")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("save-operation", "configuration-colon");
 
@@ -2649,7 +2649,7 @@ CATCH_TEST_CASE("save_config_file", "[config][getopt][valid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("load update save ( )")
+    CATCH_START_SECTION("save_config_file: load update save ( )")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("save-operation", "configuration-space");
 
@@ -2796,7 +2796,7 @@ CATCH_TEST_CASE("save_config_file", "[config][getopt][valid]")
 
 CATCH_TEST_CASE("invalid_configuration_setup", "[config][getopt][invalid]")
 {
-    CATCH_START_SECTION("Empty Filename")
+    CATCH_START_SECTION("invalid_configuration_setup: empty filename")
     {
         CATCH_REQUIRE_THROWS_MATCHES(
               advgetopt::conf_file_setup(
@@ -2811,7 +2811,7 @@ CATCH_TEST_CASE("invalid_configuration_setup", "[config][getopt][invalid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Invalid Line Continuation")
+    CATCH_START_SECTION("invalid_configuration_setup: invalid line continuation")
     {
         for(int count(0); count < 5; ++count)
         {
@@ -2850,7 +2850,7 @@ CATCH_TEST_CASE("invalid_configuration_setup", "[config][getopt][invalid]")
 
 CATCH_TEST_CASE("config_reload_invalid_setup", "[config][getopt][invalid]")
 {
-    CATCH_START_SECTION("Load a file, update it, verify it does not get reloaded")
+    CATCH_START_SECTION("config_reload_invalid_setup: load a file, update it, verify it does not get reloaded")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-reload", "load-twice-wrong-parameters");
 
@@ -2961,7 +2961,7 @@ CATCH_TEST_CASE("config_reload_invalid_setup", "[config][getopt][invalid]")
 
 CATCH_TEST_CASE("missing_configuration_file", "[config][getopt][invalid]")
 {
-    CATCH_START_SECTION("Create a conf_file without the file")
+    CATCH_START_SECTION("missing_configuration_file: create a conf_file without the file")
     {
         for(int count(0); count < 5; ++count)
         {
@@ -3020,7 +3020,7 @@ CATCH_TEST_CASE("missing_configuration_file", "[config][getopt][invalid]")
 
 CATCH_TEST_CASE("invalid_sections", "[config][getopt][invalid]")
 {
-    CATCH_START_SECTION("variable name cannot start with a period when C operator is active")
+    CATCH_START_SECTION("invalid_sections: variable name cannot start with a period when C operator is active")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-section-operator", "period-name");
 
@@ -3085,7 +3085,7 @@ CATCH_TEST_CASE("invalid_sections", "[config][getopt][invalid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("two section operators one after another can cause trouble")
+    CATCH_START_SECTION("invalid_sections: two section operators one after another can cause trouble")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-section-operator", "name-period-cpp-name");
 
@@ -3150,7 +3150,7 @@ CATCH_TEST_CASE("invalid_sections", "[config][getopt][invalid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("section operator cannot appear at the end")
+    CATCH_START_SECTION("invalid_sections: section operator cannot appear at the end")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-section-operator", "name-period-name-cpp");
 
@@ -3215,7 +3215,7 @@ CATCH_TEST_CASE("invalid_sections", "[config][getopt][invalid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("sections not allowed")
+    CATCH_START_SECTION("invalid_sections: sections not allowed")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-section-operator", "section-not-allowed");
 
@@ -3282,7 +3282,7 @@ CATCH_TEST_CASE("invalid_sections", "[config][getopt][invalid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("invalid characters in names")
+    CATCH_START_SECTION("invalid_sections: invalid characters in names")
     {
         std::string const bad_chars(
                     "\x01\x02\x03\x04\x05\x06\x07"
@@ -3394,7 +3394,7 @@ CATCH_TEST_CASE("invalid_sections", "[config][getopt][invalid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("too many sections")
+    CATCH_START_SECTION("invalid_sections: too many sections")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-section-operator", "too-many-sections");
 
@@ -3449,7 +3449,7 @@ CATCH_TEST_CASE("invalid_sections", "[config][getopt][invalid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("all '{' were not closed")
+    CATCH_START_SECTION("invalid_sections: all '{' were not closed")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-section-operator", "unclosed-brackets");
 
@@ -3504,7 +3504,7 @@ CATCH_TEST_CASE("invalid_sections", "[config][getopt][invalid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("data after ']' in INI file")
+    CATCH_START_SECTION("invalid_sections: data after ']' in INI file")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-section-operator", "additional-data");
 
@@ -3566,7 +3566,7 @@ CATCH_TEST_CASE("invalid_sections", "[config][getopt][invalid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("INI file section inside a block is not allowed")
+    CATCH_START_SECTION("invalid_sections: INI file section inside a block is not allowed")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-section-operator", "ini-inside-block");
 
@@ -3639,10 +3639,9 @@ CATCH_TEST_CASE("invalid_sections", "[config][getopt][invalid]")
 }
 
 
-
-CATCH_TEST_CASE("invalid_variable_name", "[config][getopt][invalid]")
+CATCH_TEST_CASE("invalid_field_name", "[config][getopt][invalid]")
 {
-    CATCH_START_SECTION("empty variable name")
+    CATCH_START_SECTION("invalid_field_name: empty field name")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-variable-name", "name-missing");
 
@@ -3910,8 +3909,6 @@ CATCH_TEST_CASE("invalid_variable_name", "[config][getopt][invalid]")
     }
     CATCH_END_SECTION()
 }
-
-
 
 
 

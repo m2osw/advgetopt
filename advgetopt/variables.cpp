@@ -69,8 +69,10 @@ namespace advgetopt
  * and set_variable() functions which will also benefit from this
  * conversion.
  *
- * \todo
- * Check that all section names start with a letter (not a digit).
+ * \exception getopt_invalid
+ * If the variable or one of the section names start with a digit, this
+ * exception is raised. The exception is also raised if we detect an
+ * empty section name (as in "::test" or "double::::scope" or "not..allowed").
  *
  * \param[in] name  The name of the variable.
  */
@@ -78,23 +80,43 @@ std::string variables::canonicalize_variable_name(std::string const & name)
 {
     std::string result;
 
+    bool first(true);
     for(char const * n(name.c_str()); *n != '\0'; ++n)
     {
         if(*n == ':' || *n == '.')
         {
+            if(first)
+            {
+                throw getopt_invalid(
+                      "found an empty section name in \""
+                    + name
+                    + "\".");
+            }
             while(n[1] == ':' || n[1] == '.')
             {
                 ++n;
             }
             result += "::";
-        }
-        else if(*n == '_')
-        {
-            result += '-';
+            first = true;
         }
         else
         {
-            result += *n;
+            if(first && *n >= '0' && *n <= '9')
+            {
+                throw getopt_invalid(
+                      "a variable name or section name in \""
+                    + name
+                    + "\" starts with a digit, which is not allowed.");
+            }
+            first = false;
+            if(*n == '_')
+            {
+                result += '-';
+            }
+            else
+            {
+                result += *n;
+            }
         }
     }
 
@@ -340,7 +362,7 @@ std::string variables::recursive_process_value(
     }
 
     return result;
-}
+} // LCOV_EXCL_LINE
 
 
 
