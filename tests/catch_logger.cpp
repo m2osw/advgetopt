@@ -51,15 +51,18 @@
 
 CATCH_TEST_CASE("logger", "[logger][valid][log]")
 {
-    CATCH_START_SECTION("Verify log levels")
+    CATCH_START_SECTION("logger: verify log levels")
+    {
         CATCH_REQUIRE(to_string(cppthread::log_level_t::debug)   == "debug");
         CATCH_REQUIRE(to_string(cppthread::log_level_t::info)    == "info");
         CATCH_REQUIRE(to_string(cppthread::log_level_t::warning) == "warning");
         CATCH_REQUIRE(to_string(cppthread::log_level_t::error)   == "error");
         CATCH_REQUIRE(to_string(cppthread::log_level_t::fatal)   == "fatal");
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify log string")
+    CATCH_START_SECTION("logger: verify log string")
+    {
         SNAP_CATCH2_NAMESPACE::push_expected_log("debug: Test a regular string.");
         cppthread::log << cppthread::log_level_t::debug
                        << "Test a regular string."
@@ -72,9 +75,11 @@ CATCH_TEST_CASE("logger", "[logger][valid][log]")
                        << msg
                        << cppthread::end;
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify log integers")
+    CATCH_START_SECTION("logger: verify log integers")
+    {
         // gcc sees this one as a char
         {
             std::int8_t v(rand());
@@ -164,14 +169,15 @@ CATCH_TEST_CASE("logger", "[logger][valid][log]")
                            << cppthread::end;
             SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         }
-
+    }
     CATCH_END_SECTION()
 }
 
 
 CATCH_TEST_CASE("logger_without_callback", "[logger][valid][log]")
 {
-    CATCH_START_SECTION("Verify log string")
+    CATCH_START_SECTION("logger_without_callback: verify log string")
+    {
         // cancel the callback for one test
         cppthread::set_log_callback(nullptr);
 
@@ -187,13 +193,15 @@ CATCH_TEST_CASE("logger_without_callback", "[logger][valid][log]")
         // coverage will fail with an error
         //
         CATCH_REQUIRE(true);
+    }
     CATCH_END_SECTION()
 }
 
 
 CATCH_TEST_CASE("invalid_logger", "[logger][invalid][log]")
 {
-    CATCH_START_SECTION("Verify invalid log levels")
+    CATCH_START_SECTION("invalid_logger: verify invalid log levels")
+    {
         for(int i(0); i < 100; ++i)
         {
             cppthread::log_level_t level(cppthread::log_level_t::warning);
@@ -217,6 +225,7 @@ CATCH_TEST_CASE("invalid_logger", "[logger][invalid][log]")
                             + std::to_string(static_cast<int>(level))
                             + ")"));
         }
+    }
     CATCH_END_SECTION()
 }
 

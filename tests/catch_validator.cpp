@@ -48,8 +48,6 @@
 
 
 
-
-
 namespace
 {
 
@@ -155,14 +153,18 @@ std::int64_t large_rnd(bool zero_allowed = true)
 
 CATCH_TEST_CASE("unknown_validator", "[validator][valid][validation]")
 {
-    CATCH_START_SECTION("Undefined validator")
+    CATCH_START_SECTION("unknown_validator: undefined validator")
+    {
         // this is a valid case, it does not throw, it just returns a nullptr
         //
         CATCH_REQUIRE(advgetopt::validator::create("unknown", advgetopt::string_list_t()) == nullptr);
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Empty string")
+    CATCH_START_SECTION("unknown_validator: empty string")
+    {
         CATCH_REQUIRE(advgetopt::validator::create(std::string()) == nullptr);
+    }
     CATCH_END_SECTION()
 }
 
@@ -170,7 +172,7 @@ CATCH_TEST_CASE("unknown_validator", "[validator][valid][validation]")
 
 CATCH_TEST_CASE("email_validator", "[invalid][validation]")
 {
-    CATCH_START_SECTION("email_validator: Verify that email verification works.")
+    CATCH_START_SECTION("email_validator: verify that email verification works.")
     {
         advgetopt::validator::pointer_t email(advgetopt::validator::create("email"));
 
@@ -188,7 +190,7 @@ CATCH_TEST_CASE("email_validator", "[invalid][validation]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("email_validator: Verify that one email verification works (single explicitly).")
+    CATCH_START_SECTION("email_validator: verify that one email verification works (single explicitly).")
     {
         advgetopt::validator::pointer_t email(advgetopt::validator::create("email(single)"));
 
@@ -206,7 +208,7 @@ CATCH_TEST_CASE("email_validator", "[invalid][validation]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("email_validator: Verify that multiple emails verification works.")
+    CATCH_START_SECTION("email_validator: verify that multiple emails verification works.")
     {
         advgetopt::validator::pointer_t email(advgetopt::validator::create("email(multiple)"));
 
@@ -228,7 +230,7 @@ CATCH_TEST_CASE("email_validator", "[invalid][validation]")
 
 CATCH_TEST_CASE("integer_validator", "[validator][valid][validation]")
 {
-    CATCH_START_SECTION("integer_validator: Verify the integer validator")
+    CATCH_START_SECTION("integer_validator: verify the integer validator")
     {
         advgetopt::validator::pointer_t integer_validator(advgetopt::validator::create("integer", advgetopt::string_list_t()));
 
@@ -285,7 +287,7 @@ CATCH_TEST_CASE("integer_validator", "[validator][valid][validation]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("integer_validator: Verify the integer ranges")
+    CATCH_START_SECTION("integer_validator: verify the integer ranges")
     {
         bool had_standalone(false);
         for(int count(0); count < 20 || !had_standalone; ++count)
@@ -429,7 +431,7 @@ CATCH_TEST_CASE("integer_validator", "[validator][valid][validation]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("integer_validator: Verify the integer standalone list")
+    CATCH_START_SECTION("integer_validator: verify the integer standalone list")
     {
         for(int count(0); count < 20; ++count)
         {
@@ -502,7 +504,7 @@ CATCH_TEST_CASE("integer_validator", "[validator][valid][validation]")
 
 CATCH_TEST_CASE("length_validator", "[validator][valid][validation]")
 {
-    CATCH_START_SECTION("length_validator: Verify the length validator")
+    CATCH_START_SECTION("length_validator: verify the length validator")
     {
         advgetopt::validator::pointer_t length_validator(advgetopt::validator::create("length", advgetopt::string_list_t()));
 
@@ -516,7 +518,7 @@ CATCH_TEST_CASE("length_validator", "[validator][valid][validation]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("length_validator: Verify the length ranges")
+    CATCH_START_SECTION("length_validator: verify the length ranges")
     {
         bool had_standalone(false);
         for(int count(0); count < 20 || !had_standalone; ++count)
@@ -616,7 +618,7 @@ CATCH_TEST_CASE("length_validator", "[validator][valid][validation]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("length_validator: Verify the length standalone list")
+    CATCH_START_SECTION("length_validator: verify the length standalone list")
     {
         for(int count(0); count < 20; ++count)
         {
@@ -693,7 +695,7 @@ CATCH_TEST_CASE("length_validator", "[validator][valid][validation]")
 
 CATCH_TEST_CASE("multi_validators", "[validator][valid][validation]")
 {
-    CATCH_START_SECTION("multi_validators: Verify an integer along a few keywords")
+    CATCH_START_SECTION("multi_validators: verify an integer along a few keywords")
     {
         advgetopt::validator::pointer_t list_validator(advgetopt::validator::create("keywords(off,min,max) | integer(1...100)"));
 
@@ -725,7 +727,7 @@ CATCH_TEST_CASE("multi_validators", "[validator][valid][validation]")
 
 CATCH_TEST_CASE("keywords_validator", "[validator][valid][validation]")
 {
-    CATCH_START_SECTION("keywords_validator: Verify simple keywords")
+    CATCH_START_SECTION("keywords_validator: verify simple keywords")
     {
         advgetopt::validator::pointer_t list_validator(advgetopt::validator::create("keywords(angle, corner ,, ceiling)"));
 
@@ -747,7 +749,8 @@ CATCH_TEST_CASE("keywords_validator", "[validator][valid][validation]")
 
 CATCH_TEST_CASE("double_validator", "[validator][valid][validation]")
 {
-    CATCH_START_SECTION("Verify the double validator")
+    CATCH_START_SECTION("double_validator: verify the double validator")
+    {
         advgetopt::validator::pointer_t double_validator(advgetopt::validator::create("double", advgetopt::string_list_t()));
 
         CATCH_REQUIRE(double_validator != nullptr);
@@ -782,9 +785,11 @@ CATCH_TEST_CASE("double_validator", "[validator][valid][validation]")
             std::string const after(v + static_cast<char>(rand() % 26 + 'a'));
             CATCH_REQUIRE_FALSE(double_validator->validate(after));
         }
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify the double ranges")
+    CATCH_START_SECTION("double_validator: verify the double ranges")
+    {
         bool had_standalone(false);
         for(int count(0); count < 20 || !had_standalone; ++count)
         {
@@ -926,9 +931,11 @@ CATCH_TEST_CASE("double_validator", "[validator][valid][validation]")
                 CATCH_REQUIRE_FALSE(double_validator->validate(after));
             }
         }
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify the double standalone list")
+    CATCH_START_SECTION("double_validator: verify the double standalone list")
+    {
         for(int count(0); count < 20; ++count)
         {
             int valid(rand() % 10 + 5);
@@ -991,6 +998,7 @@ CATCH_TEST_CASE("double_validator", "[validator][valid][validation]")
                 CATCH_REQUIRE_FALSE(double_validator->validate(std::to_string(value)));
             }
         }
+    }
     CATCH_END_SECTION()
 }
 
@@ -999,7 +1007,7 @@ CATCH_TEST_CASE("double_validator", "[validator][valid][validation]")
 
 CATCH_TEST_CASE("duration_validator", "[validator][valid][validation]")
 {
-    CATCH_START_SECTION("Verify the duration validator (simple values)")
+    CATCH_START_SECTION("duration_validator: verify the duration validator (simple values)")
     {
         double duration(0.0);
 
@@ -1020,7 +1028,7 @@ CATCH_TEST_CASE("duration_validator", "[validator][valid][validation]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify the duration validator (multiple values)")
+    CATCH_START_SECTION("duration_validator: verify the duration validator (multiple values)")
     {
         double duration(0.0);
         CATCH_REQUIRE(advgetopt::validator_duration::convert_string("1d 3h 2m 15.3s", 0, duration));
@@ -1035,7 +1043,7 @@ CATCH_TEST_CASE("duration_validator", "[validator][valid][validation]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify the duration validator (one value)")
+    CATCH_START_SECTION("duration_validator: verify the duration validator (one value)")
     {
         // this test does not verify that double conversion works since we
         // have a separate test for that specific validator
@@ -1139,7 +1147,7 @@ CATCH_TEST_CASE("size_validator", "[validator][valid][validation]")
 {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
-    CATCH_START_SECTION("Verify the size validator")
+    CATCH_START_SECTION("size_validator: verify the size validator")
     {
         // this test does not verify that double conversion works since we
         // have a separate test for that specific validator
@@ -1222,7 +1230,8 @@ CATCH_TEST_CASE("size_validator", "[validator][valid][validation]")
 
 CATCH_TEST_CASE("regex_validator", "[validator][valid][validation]")
 {
-    CATCH_START_SECTION("regex_validator: Verify the regex validator")
+    CATCH_START_SECTION("regex_validator: verify the regex validator")
+    {
         advgetopt::validator::pointer_t regex_validator(advgetopt::validator::create("regex", {".*@.*\\..*"}));
 
         CATCH_REQUIRE(regex_validator != nullptr);
@@ -1235,9 +1244,11 @@ CATCH_TEST_CASE("regex_validator", "[validator][valid][validation]")
 
         CATCH_REQUIRE_FALSE(regex_validator->validate("contact@m2osw:com"));
         CATCH_REQUIRE_FALSE(regex_validator->validate("contact!m2osw.com"));
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("regex_validator: Verify the regex string (case sensitive)")
+    CATCH_START_SECTION("regex_validator: verify the regex string (case sensitive)")
+    {
         advgetopt::validator::pointer_t regex_validator(advgetopt::validator::create("regex", {"/contact@.*\\..*/"}));
 
         CATCH_REQUIRE(regex_validator != nullptr);
@@ -1250,9 +1261,11 @@ CATCH_TEST_CASE("regex_validator", "[validator][valid][validation]")
 
         CATCH_REQUIRE_FALSE(regex_validator->validate("contact@m2osw:com"));
         CATCH_REQUIRE_FALSE(regex_validator->validate("contact!m2osw.com"));
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("regex_validator: Verify the regex string (case insensitive)")
+    CATCH_START_SECTION("regex_validator: verify the regex string (case insensitive)")
+    {
         advgetopt::validator::pointer_t regex_validator(advgetopt::validator::create("regex", {"/contact@.*\\..*/i"}));
 
         CATCH_REQUIRE(regex_validator != nullptr);
@@ -1265,9 +1278,11 @@ CATCH_TEST_CASE("regex_validator", "[validator][valid][validation]")
 
         CATCH_REQUIRE_FALSE(regex_validator->validate("contact@m2osw:com"));
         CATCH_REQUIRE_FALSE(regex_validator->validate("contact!m2osw.com"));
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("regex_validator: Verify direct regex string (case insensitive)")
+    CATCH_START_SECTION("regex_validator: verify direct regex string (case insensitive)")
+    {
         advgetopt::validator::pointer_t regex_validator(advgetopt::validator::create("/contact@.*\\..*/i"));
 
         CATCH_REQUIRE(regex_validator != nullptr);
@@ -1280,6 +1295,7 @@ CATCH_TEST_CASE("regex_validator", "[validator][valid][validation]")
 
         CATCH_REQUIRE_FALSE(regex_validator->validate("contact@m2osw:com"));
         CATCH_REQUIRE_FALSE(regex_validator->validate("contact!m2osw.com"));
+    }
     CATCH_END_SECTION()
 }
 
@@ -1292,7 +1308,7 @@ CATCH_TEST_CASE("regex_validator", "[validator][valid][validation]")
 
 CATCH_TEST_CASE("invalid_validator_factory", "[validator][invalid][validation]")
 {
-    CATCH_START_SECTION("invalid_validator_factory: Register duplicated factories")
+    CATCH_START_SECTION("invalid_validator_factory: register duplicated factories")
     {
         class duplicate_integer
             : public advgetopt::validator
@@ -1335,7 +1351,7 @@ CATCH_TEST_CASE("invalid_validator_factory", "[validator][invalid][validation]")
 
 CATCH_TEST_CASE("invalid_validator_create", "[validator][invalid][validation]")
 {
-    CATCH_START_SECTION("invalid_validator_create: Verify missing ')' in string based create")
+    CATCH_START_SECTION("invalid_validator_create: verify missing ')' in string based create")
     {
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: validator(): parameter list must end with ')'. Remaining input: \"...EOS\"");
         advgetopt::validator::pointer_t validator(advgetopt::validator::create("integer(1...7, 11...15"));
@@ -1380,7 +1396,7 @@ CATCH_TEST_CASE("invalid_validator_create", "[validator][invalid][validation]")
 
 CATCH_TEST_CASE("invalid_length_validator", "[validator][invalid][validation]")
 {
-    CATCH_START_SECTION("invalid_length_validator: Verify invalid length ranges")
+    CATCH_START_SECTION("invalid_length_validator: verify invalid length ranges")
     {
         advgetopt::string_list_t range{
             "abc",
@@ -1401,7 +1417,7 @@ CATCH_TEST_CASE("invalid_length_validator", "[validator][invalid][validation]")
 
 CATCH_TEST_CASE("invalid_integer_validator", "[validator][invalid][validation]")
 {
-    CATCH_START_SECTION("invalid_integer_validator: Verify invalid integer ranges")
+    CATCH_START_SECTION("invalid_integer_validator: verify invalid integer ranges")
     {
         advgetopt::string_list_t range{
             "abc",
@@ -1422,7 +1438,7 @@ CATCH_TEST_CASE("invalid_integer_validator", "[validator][invalid][validation]")
 
 CATCH_TEST_CASE("invalid_double_validator", "[validator][invalid][validation]")
 {
-    CATCH_START_SECTION("invalid_double_validator: Verify invalid double ranges")
+    CATCH_START_SECTION("invalid_double_validator: verify invalid double ranges")
     {
         advgetopt::string_list_t range{
             "abc",
@@ -1443,7 +1459,7 @@ CATCH_TEST_CASE("invalid_double_validator", "[validator][invalid][validation]")
 
 CATCH_TEST_CASE("invalid_duration_validator", "[invalid][validation]")
 {
-    CATCH_START_SECTION("invalid_duration_validator: Verify invalid duration flags")
+    CATCH_START_SECTION("invalid_duration_validator: verify invalid duration flags")
     {
         advgetopt::string_list_t range{
             "small",
@@ -1478,7 +1494,7 @@ CATCH_TEST_CASE("invalid_duration_validator", "[invalid][validation]")
 
 CATCH_TEST_CASE("invalid_email_validator", "[invalid][validation]")
 {
-    CATCH_START_SECTION("invalid_email_validator: Verify emails with invalid parameters.")
+    CATCH_START_SECTION("invalid_email_validator: verify emails with invalid parameters.")
     {
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: validator_email() supports zero or one parameter.");
         advgetopt::validator::pointer_t keywords(advgetopt::validator::create("email(single, multiple)"));
@@ -1497,7 +1513,7 @@ CATCH_TEST_CASE("invalid_email_validator", "[invalid][validation]")
 
 CATCH_TEST_CASE("invalid_keywords_validator", "[invalid][validation]")
 {
-    CATCH_START_SECTION("invalid_keywords_validator: Verify that keywords without parameters fail.")
+    CATCH_START_SECTION("invalid_keywords_validator: verify that keywords without parameters fail.")
     {
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: validator_keywords() requires at least one parameter.");
         advgetopt::validator::pointer_t keywords(advgetopt::validator::create("keywords"));
@@ -1516,7 +1532,7 @@ CATCH_TEST_CASE("invalid_keywords_validator", "[invalid][validation]")
 
 CATCH_TEST_CASE("invalid_list_validator", "[invalid][validation]")
 {
-    CATCH_START_SECTION("invalid_list_validator: Verify that list validators do not accept parameters.")
+    CATCH_START_SECTION("invalid_list_validator: verify that list validators do not accept parameters.")
     {
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: validator_list() does not support any parameter.");
         advgetopt::validator::pointer_t list(advgetopt::validator::create("list(with, parameters)"));
@@ -1530,7 +1546,7 @@ CATCH_TEST_CASE("invalid_list_validator", "[invalid][validation]")
 
 CATCH_TEST_CASE("invalid_size_validator", "[invalid][validation]")
 {
-    CATCH_START_SECTION("invalid_size_validator: Verify invalid duration flags")
+    CATCH_START_SECTION("invalid_size_validator: verify invalid duration flags")
     {
         advgetopt::string_list_t flags{
             "si",
@@ -1570,7 +1586,7 @@ CATCH_TEST_CASE("invalid_size_validator", "[invalid][validation]")
 
 CATCH_TEST_CASE("invalid_regex_validator", "[validator][invalid][validation]")
 {
-    CATCH_START_SECTION("invalid_regex_validator: Verify invalid regex flags")
+    CATCH_START_SECTION("invalid_regex_validator: verify invalid regex flags")
     {
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: unsupported regex flag f in regular expression \"/contact@.*\\..*/f\".");
         advgetopt::validator::pointer_t regex_validator(advgetopt::validator::create("regex", {"/contact@.*\\..*/f"}));
@@ -1589,7 +1605,7 @@ CATCH_TEST_CASE("invalid_regex_validator", "[validator][invalid][validation]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("invalid_regex_validator: Verify invalid regex character")
+    CATCH_START_SECTION("invalid_regex_validator: verify invalid regex character")
     {
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: validator(): unexpected character for a regular expression (10).");
         advgetopt::validator::pointer_t regex_validator(advgetopt::validator::create("regex(/contact@.*\n..*/)"));
@@ -1613,7 +1629,7 @@ CATCH_TEST_CASE("invalid_regex_validator", "[validator][invalid][validation]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("invalid_regex_validator: Verify invalid regex: missing ending /")
+    CATCH_START_SECTION("invalid_regex_validator: verify invalid regex: missing ending /")
     {
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: unsupported regex flag * in regular expression \"/contact@.*\\..*\".");
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: unsupported regex flag . in regular expression \"/contact@.*\\..*\".");
@@ -1647,7 +1663,7 @@ CATCH_TEST_CASE("invalid_regex_validator", "[validator][invalid][validation]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("invalid_regex_validator: Verify regex refuses more than one parameter")
+    CATCH_START_SECTION("invalid_regex_validator: verify regex refuses more than one parameter")
     {
         SNAP_CATCH2_NAMESPACE::push_expected_log(
                           "error: validator_regex() only supports one parameter;"
@@ -1679,7 +1695,7 @@ CATCH_TEST_CASE("invalid_regex_validator", "[validator][invalid][validation]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("invalid_regex_validator: Verify two regex params")
+    CATCH_START_SECTION("invalid_regex_validator: verify two regex params")
     {
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: validator_regex() only supports one parameter; 2 were supplied; single or double quotation may be required?");
         advgetopt::validator::pointer_t regex_validator(advgetopt::validator::create("regex(/one/a, /two/b)"));
@@ -1698,7 +1714,7 @@ CATCH_TEST_CASE("invalid_regex_validator", "[validator][invalid][validation]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("invalid_regex_validator: Verify two regex params")
+    CATCH_START_SECTION("invalid_regex_validator: verify two regex params")
     {
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: validator(): unexpected character for an identifier (10).");
         advgetopt::validator::pointer_t regex_validator(advgetopt::validator::create("regex('/one/'\n,'/two/b')"));

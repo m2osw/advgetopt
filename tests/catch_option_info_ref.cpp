@@ -47,7 +47,7 @@
 
 CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
 {
-    CATCH_START_SECTION("Option info reference")
+    CATCH_START_SECTION("option_info_ref: option info reference")
     {
         advgetopt::option const options[] =
         {
@@ -281,7 +281,7 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Non-existant reference")
+    CATCH_START_SECTION("option_info_ref: non-existent reference")
     {
         advgetopt::option const options[] =
         {
@@ -588,7 +588,7 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Set non-existant reference + many CATCH_WHEN()")
+    CATCH_START_SECTION("option_info_ref: set non-existent reference + many CATCH_WHEN()")
     {
         advgetopt::option const options[] =
         {
@@ -1320,7 +1320,7 @@ CATCH_TEST_CASE("option_info_ref", "[option_info][valid][reference]")
 
 CATCH_TEST_CASE("option_info_ref_with_valid_default", "[option_info][valid][reference][long][default]")
 {
-    CATCH_START_SECTION("No reference on command line, valid default for get_long()")
+    CATCH_START_SECTION("option_info_ref_with_valid_default: no reference on command line, valid default for get_long()")
     {
         advgetopt::option const options[] =
         {
@@ -1407,7 +1407,7 @@ CATCH_TEST_CASE("option_info_ref_with_valid_default", "[option_info][valid][refe
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("No reference on command line, valid default for get_double()")
+    CATCH_START_SECTION("option_info_ref_with_valid_default: no reference on command line, valid default for get_double()")
     {
         advgetopt::option const options[] =
         {
@@ -1505,7 +1505,7 @@ CATCH_TEST_CASE("option_info_ref_with_valid_default", "[option_info][valid][refe
 
 CATCH_TEST_CASE("option_info_ref_with_invalid_default", "[option_info][invalid][reference][long][default]")
 {
-    CATCH_START_SECTION("No reference on command line, not valid for get_long()")
+    CATCH_START_SECTION("option_info_ref_with_invalid_default: no reference on command line, not valid for get_long()")
     {
         advgetopt::option const options[] =
         {
@@ -1594,7 +1594,7 @@ CATCH_TEST_CASE("option_info_ref_with_invalid_default", "[option_info][invalid][
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("No reference on command line, not valid for get_double()")
+    CATCH_START_SECTION("option_info_ref_with_invalid_default: no reference on command line, not valid for get_double()")
     {
         advgetopt::option const options[] =
         {
@@ -1689,10 +1689,6 @@ CATCH_TEST_CASE("option_info_ref_with_invalid_default", "[option_info][invalid][
     }
     CATCH_END_SECTION()
 }
-
-
-
-
 
 
 

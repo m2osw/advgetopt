@@ -46,7 +46,7 @@
 
 CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
 {
-    CATCH_START_SECTION("valid_options_files: Check the default path with a nullptr (not a very good test, though)")
+    CATCH_START_SECTION("valid_options_files: check the default path with a nullptr (not a very good test, though)")
     {
         advgetopt::option const options[] =
         {
@@ -93,7 +93,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("valid_options_files: Check the default path with an empty string (not a very good test, though)")
+    CATCH_START_SECTION("valid_options_files: check the default path with an empty string (not a very good test, though)")
     {
         advgetopt::option const options[] =
         {
@@ -141,7 +141,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("valid_options_files: Check the parsing of a valid options.ini file (one option)")
+    CATCH_START_SECTION("valid_options_files: check the parsing of a valid options.ini file (one option)")
     {
         // create a file and make sure it's not read if the project name
         // is empty
@@ -223,7 +223,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("valid_options_files: Project name is an empty string")
+    CATCH_START_SECTION("valid_options_files: project name is an empty string")
     {
         // create a file and make sure it's not read if the project name
         // is empty
@@ -308,7 +308,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("valid_options_files: Check the parsing of a valid options.ini file (many options)")
+    CATCH_START_SECTION("valid_options_files: check the parsing of a valid options.ini file (many options)")
     {
         std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
         tmpdir += "/shared/advgetopt";
@@ -674,7 +674,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("valid_options_files: Verify that options with 2 or more namespaces fail")
+    CATCH_START_SECTION("valid_options_files: verify that options with 2 or more namespaces fail")
     {
         std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
         tmpdir += "/shared/advgetopt-double-namespace";
@@ -804,7 +804,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("valid_options_files: Verify parse_options_from_file overflow")
+    CATCH_START_SECTION("valid_options_files: verify parse_options_from_file overflow")
     {
         std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
         tmpdir += "/shared/advgetopt-namespace-overflow";
@@ -932,7 +932,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("valid_options_files: Verify that the parse_options_from_file supports more than one section name (used by fluid-settings)")
+    CATCH_START_SECTION("valid_options_files: verify that the parse_options_from_file supports more than one section name (used by fluid-settings)")
     {
         std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
         tmpdir += "/shared/advgetopt-fluid-namespaces";
@@ -1058,7 +1058,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("valid_options_files: Check with validators in the definition")
+    CATCH_START_SECTION("valid_options_files: check with validators in the definition")
     {
         std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
         tmpdir += "/shared/advgetopt-validators-in-table";
@@ -1667,7 +1667,7 @@ CATCH_TEST_CASE("invalid_options_files", "[options][invalid][files]")
 
         char const * sub_cargv[] =
         {
-            "tests/unittests/non_existant_alias",
+            "tests/unittests/non_existent_alias",
             "--verbose",
             nullptr
         };
@@ -1729,7 +1729,7 @@ CATCH_TEST_CASE("invalid_options_files", "[options][invalid][files]")
 
         char const * sub_cargv[] =
         {
-            "tests/unittests/non_existant_alias",
+            "tests/unittests/non_existent_alias",
             "--verbose",
             nullptr
         };
@@ -1742,7 +1742,7 @@ CATCH_TEST_CASE("invalid_options_files", "[options][invalid][files]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("invalid_options_files: non-existant alias")
+    CATCH_START_SECTION("invalid_options_files: non-existent alias")
     {
         std::string tmpdir(SNAP_CATCH2_NAMESPACE::g_tmp_dir());
         tmpdir += "/shared/advgetopt";
@@ -1753,7 +1753,7 @@ CATCH_TEST_CASE("invalid_options_files", "[options][invalid][files]")
             std::cerr << "fatal error: creating sub-temporary directory \"" << tmpdir << "\" failed.\n";
             exit(1);
         }
-        std::string const options_filename(tmpdir + "/non-existant-alias.ini");
+        std::string const options_filename(tmpdir + "/non-existent-alias.ini");
 
         advgetopt::option const options[] =
         {
@@ -1767,7 +1767,7 @@ CATCH_TEST_CASE("invalid_options_files", "[options][invalid][files]")
         };
 
         advgetopt::options_environment options_environment;
-        options_environment.f_project_name = "non-existant-alias";
+        options_environment.f_project_name = "non-existent-alias";
         options_environment.f_options = options;
         options_environment.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
         options_environment.f_options_files_directory = tmpdir.c_str();
@@ -1791,7 +1791,7 @@ CATCH_TEST_CASE("invalid_options_files", "[options][invalid][files]")
 
         char const * sub_cargv[] =
         {
-            "tests/unittests/non_existant_alias",
+            "tests/unittests/non_existent_alias",
             "--verbose",
             nullptr
         };

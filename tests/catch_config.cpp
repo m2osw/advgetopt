@@ -54,7 +54,8 @@
 
 CATCH_TEST_CASE("configuration_filenames", "[config][getopt][filenames]")
 {
-    CATCH_START_SECTION("Configuration Files")
+    CATCH_START_SECTION("configuration_filenames: configuration Files")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("unittest-any", "any");
 
         advgetopt::options_environment environment_options;
@@ -84,9 +85,11 @@ CATCH_TEST_CASE("configuration_filenames", "[config][getopt][filenames]")
         CATCH_REQUIRE(filenames[3] == ".config/unittest-any.d/50-file.mdi");
         CATCH_REQUIRE(filenames[4] == "/etc/snapwebsites/server.conf");
         CATCH_REQUIRE(filenames[5] == "/etc/snapwebsites/unittest-any.d/50-server.conf");
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Configuration Files (writable)")
+    CATCH_START_SECTION("configuration_filenames: configuration Files (writable)")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("unittest-writable", "writable");
 
         advgetopt::options_environment environment_options;
@@ -113,9 +116,11 @@ CATCH_TEST_CASE("configuration_filenames", "[config][getopt][filenames]")
         CATCH_REQUIRE(filenames[0] == ".config/unittest-writable.d/50-file.mdi");
         CATCH_REQUIRE(filenames[1] == SNAP_CATCH2_NAMESPACE::g_config_project_filename);
         CATCH_REQUIRE(filenames[2] == "/etc/snapwebsites/unittest-writable.d/50-server.conf");
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Configuration File + Directories")
+    CATCH_START_SECTION("configuration_filenames: configuration file + directories")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("unittest-with-directories", "with-dirs", true);
 
         advgetopt::options_environment environment_options;
@@ -146,9 +151,11 @@ CATCH_TEST_CASE("configuration_filenames", "[config][getopt][filenames]")
         CATCH_REQUIRE(filenames[3] == ".config/unittest-with-directories.d/50-snapfirewall.conf");
         CATCH_REQUIRE(filenames[4] == "/etc/snapwebsites/snapfirewall.conf");
         CATCH_REQUIRE(filenames[5] == "/etc/snapwebsites/unittest-with-directories.d/50-snapfirewall.conf");
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Configuration File + Directories + '--config-dir'")
+    CATCH_START_SECTION("configuration_filenames: configuration file + directories + '--config-dir'")
+    {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("unittest-with-directories-and-config-dir", "with-many-dirs", true);
 
         advgetopt::options_environment environment_options;
@@ -195,10 +202,11 @@ CATCH_TEST_CASE("configuration_filenames", "[config][getopt][filenames]")
         CATCH_REQUIRE(filenames[7] == ".config/unittest-with-directories-and-config-dir.d/50-snapmerger.conf");
         CATCH_REQUIRE(filenames[8] == "/etc/advgetopt/snapmerger.conf");
         CATCH_REQUIRE(filenames[9] == "/etc/advgetopt/unittest-with-directories-and-config-dir.d/50-snapmerger.conf");
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Existing Configuration Files")
-
+    CATCH_START_SECTION("configuration_filenames: existing configuration files")
+    {
         CATCH_WHEN("R/W Config must exist--no user defined config")
         {
             SNAP_CATCH2_NAMESPACE::init_tmp_dir("unittest-must-exist", "must-be-here");
@@ -433,6 +441,7 @@ CATCH_TEST_CASE("configuration_filenames", "[config][getopt][filenames]")
             CATCH_REQUIRE(filenames[3] == SNAP_CATCH2_NAMESPACE::g_config_filename + "/snapfirewall.conf");
             CATCH_REQUIRE(filenames[4] == SNAP_CATCH2_NAMESPACE::g_config_filename + "/unittest-user-folder.d/50-snapfirewall.conf");
         }
+    }
     CATCH_END_SECTION()
 }
 
@@ -440,7 +449,7 @@ CATCH_TEST_CASE("configuration_filenames", "[config][getopt][filenames]")
 
 CATCH_TEST_CASE("load_configuration_file", "[config][getopt][filenames]")
 {
-    CATCH_START_SECTION("Load a Configuration File")
+    CATCH_START_SECTION("load_configuration_file: load a configuration file")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("load", "tool");
 
@@ -511,7 +520,7 @@ CATCH_TEST_CASE("load_configuration_file", "[config][getopt][filenames]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Load an Extended Configuration File")
+    CATCH_START_SECTION("load_configuration_file: load an extended configuration file")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("load-extended", "extended");
 
@@ -590,7 +599,7 @@ CATCH_TEST_CASE("load_configuration_file", "[config][getopt][filenames]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Load a Configuration File with Sections")
+    CATCH_START_SECTION("load_configuration_file: load a configuration file with sections")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("load-with-sections", "sections");
 
@@ -712,7 +721,7 @@ CATCH_TEST_CASE("load_configuration_file", "[config][getopt][filenames]")
 
 CATCH_TEST_CASE("load_multiple_configurations", "[config][getopt][filenames]")
 {
-    CATCH_START_SECTION("Configuration Files")
+    CATCH_START_SECTION("load_multiple_configurations: configuration files")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("multiple", "multiplicity");
 
@@ -839,7 +848,7 @@ CATCH_TEST_CASE("load_multiple_configurations", "[config][getopt][filenames]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Configuration Files with Sections")
+    CATCH_START_SECTION("load_multiple_configurations: configuration files with sections")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("multiple-with-sections", "multiplicity-with-sections");
 
@@ -988,7 +997,7 @@ CATCH_TEST_CASE("load_multiple_configurations", "[config][getopt][filenames]")
 
 CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][invalid]")
 {
-    CATCH_START_SECTION("Load with Unexpected Parameter Name (one letter--dynamic allowed)")
+    CATCH_START_SECTION("load_invalid_configuration_file: load with unexpected parameter name (one letter--dynamic allowed)")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("loading-invalid", "invalid-one-letter");
 
@@ -1059,7 +1068,7 @@ CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Load with Unexpected Parameter Name (one letter--no dynamic allowed)")
+    CATCH_START_SECTION("load_invalid_configuration_file: load with unexpected parameter name (one letter--no dynamic allowed)")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("loading-undefined", "undefined-one-letter");
 
@@ -1130,7 +1139,7 @@ CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Load with Unexpected Parameter Name (undefined & no dynamic fields are allowed)")
+    CATCH_START_SECTION("load_invalid_configuration_file: load with unexpected parameter name (undefined & no dynamic fields are allowed)")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("loading-invalid-dynamic", "invalid-dynamic");
 
@@ -1201,7 +1210,7 @@ CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Load with Parameter not Supported in Configuration Files")
+    CATCH_START_SECTION("load_invalid_configuration_file: load with parameter not supported in configuration files")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("loading-invalid-config", "invalid-param-in-config");
 
@@ -1272,7 +1281,7 @@ CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Load a Configuration File with a Flag given a Value other than true or false")
+    CATCH_START_SECTION("load_invalid_configuration_file: load a configuration file with a flag given a value other than true or false")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("load-flag-with-value", "unexpected-value-in-config");
 
@@ -1335,7 +1344,7 @@ CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Load a Configuration File with a Flag given the Value \"true\"")
+    CATCH_START_SECTION("load_invalid_configuration_file: load a configuration file with a flag given the value \"true\"")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("load-flag-with-true", "true-value-in-config");
 
@@ -1393,7 +1402,7 @@ CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Load a Configuration File with a Flag given the Value \"false\"")
+    CATCH_START_SECTION("load_invalid_configuration_file: load a configuration file with a flag given the value \"false\"")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("load-flag-with-false", "false-value-in-config");
 
@@ -1451,7 +1460,7 @@ CATCH_TEST_CASE("load_invalid_configuration_file", "[config][getopt][filenames][
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Load a Configuration File with an Invalid Sections Definition")
+    CATCH_START_SECTION("load_invalid_configuration_file: load a configuration file with an invalid sections definition")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("load-with-invalid-sections", "invalid-sections");
 

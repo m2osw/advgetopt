@@ -41,9 +41,6 @@
 
 
 
-
-
-
 CATCH_TEST_CASE("variables", "[variables][valid]")
 {
     CATCH_START_SECTION("variables: check the variables class")

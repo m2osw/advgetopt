@@ -42,7 +42,8 @@
 
 CATCH_TEST_CASE("options_parser", "[options][valid]")
 {
-    CATCH_START_SECTION("System options only")
+    CATCH_START_SECTION("options_parser: system options only")
+    {
         advgetopt::options_environment environment_options;
         environment_options.f_project_name = "unittest";
         environment_options.f_options = nullptr;
@@ -134,9 +135,11 @@ CATCH_TEST_CASE("options_parser", "[options][valid]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "options-parser");
         CATCH_REQUIRE(opt.get_program_fullname() == "tests/options-parser");
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Duplicated options (ignored by system options)")
+    CATCH_START_SECTION("options_parser: duplicated options (ignored by system options)")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -246,9 +249,11 @@ CATCH_TEST_CASE("options_parser", "[options][valid]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "options-parser");
         CATCH_REQUIRE(opt.get_program_fullname() == "options-parser");
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Default option")
+    CATCH_START_SECTION("options_parser: default option")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -373,9 +378,11 @@ CATCH_TEST_CASE("options_parser", "[options][valid]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "options-parser");
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/options-parser");
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Alias option")
+    CATCH_START_SECTION("options_parser: alias option")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -491,8 +498,10 @@ CATCH_TEST_CASE("options_parser", "[options][valid]")
         CATCH_REQUIRE(opt.size("path-to-option-definitions") == 0);
 
         // other parameters
+        //
         CATCH_REQUIRE(opt.get_program_name() == "options-parser");
         CATCH_REQUIRE(opt.get_program_fullname() == "options-parser");
+    }
     CATCH_END_SECTION()
 }
 
@@ -502,7 +511,7 @@ CATCH_TEST_CASE("options_parser", "[options][valid]")
 
 CATCH_TEST_CASE("define_option_short_name", "[options][valid][config]")
 {
-    CATCH_START_SECTION("Test adding '-<gear>' to '--config-dir'")
+    CATCH_START_SECTION("define_option_short_name: test adding '-<gear>' to '--config-dir'")
     {
         advgetopt::option const options[] =
         {
@@ -594,7 +603,8 @@ CATCH_TEST_CASE("define_option_short_name", "[options][valid][config]")
 //
 CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
 {
-    CATCH_START_SECTION("No options")
+    CATCH_START_SECTION("invalid_options_parser: no options")
+    {
         advgetopt::options_environment environment_options;
         environment_options.f_project_name = "unittest";
         environment_options.f_options = nullptr;
@@ -615,9 +625,11 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
                 , Catch::Matchers::ExceptionMessage(
                           "getopt_logic_error: an empty list of options is not legal, you must"
                           " defined at least one (i.e. --version, --help...)"));
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Options without a name (null pointer)")
+    CATCH_START_SECTION("invalid_options_parser: options without a name (null pointer)")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -665,9 +677,11 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
                 , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
                           "getopt_logic_error: option long name missing or empty."));
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Options without a name (empty string)")
+    CATCH_START_SECTION("invalid_options_parser: options without a name (empty string)")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -714,9 +728,11 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
                 , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
                           "getopt_logic_error: option long name missing or empty."));
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Options with a one letter name")
+    CATCH_START_SECTION("invalid_options_parser: options with a one letter name")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -763,9 +779,11 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
                 , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
                           "getopt_logic_error: a long name option must be at least 2 characters."));
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Default option with a short name")
+    CATCH_START_SECTION("invalid_options_parser: default option with a short name")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -803,9 +821,11 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
                 , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
                           "getopt_logic_error: option_info::option_info(): the default parameter \"--\" cannot include a short name ('f'.)"));
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Duplicated Options (Long Name)")
+    CATCH_START_SECTION("invalid_options_parser: duplicated options (long name)")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -844,9 +864,11 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
                 , advgetopt::getopt_defined_twice
                 , Catch::Matchers::ExceptionMessage(
                           "getopt_exception: option named \"licence\" found twice."));
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Duplicated Options (short name)")
+    CATCH_START_SECTION("invalid_options_parser: duplicated options (short name)")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -887,9 +909,11 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
                 , advgetopt::getopt_defined_twice
                 , Catch::Matchers::ExceptionMessage(
                           "getopt_exception: option with short name \"l\" found twice."));
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Duplicated Default Options")
+    CATCH_START_SECTION("invalid_options_parser: duplicated default options")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -928,9 +952,11 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
                 , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
                           "getopt_logic_error: two default options found."));
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Default Option marked as being a FLAG")
+    CATCH_START_SECTION("invalid_options_parser: default option marked as being a FLAG")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -970,9 +996,11 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
                 , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
                           "getopt_logic_error: a default option must accept parameters, it can't be a GETOPT_FLAG_FLAG."));
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Option with an alias and mismatched flags")
+    CATCH_START_SECTION("invalid_options_parser: option with an alias and mismatched flags")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -1010,6 +1038,7 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
                 , Catch::Matchers::ExceptionMessage(
                           "getopt_logic_error: the flags of alias \"licence\" (0x100041) are different"
                           " than the flags of \"license\" (0x100021)."));
+    }
     CATCH_END_SECTION()
 }
 
@@ -1018,7 +1047,7 @@ CATCH_TEST_CASE("invalid_options_parser", "[options][invalid]")
 
 CATCH_TEST_CASE("invalid_config_dir_short_name", "[arguments][invalid][getopt][config]")
 {
-    CATCH_START_SECTION("Trying to set '-o' as '--config-dir' short name")
+    CATCH_START_SECTION("invalid_config_dir_short_name: trying to set '-o' as '--config-dir' short name")
     {
         advgetopt::option const options[] =
         {
@@ -1049,7 +1078,7 @@ CATCH_TEST_CASE("invalid_config_dir_short_name", "[arguments][invalid][getopt][c
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Trying to set '-c' as '--config-dir' short name, buf configuration filename is nullptr")
+    CATCH_START_SECTION("invalid_config_dir_short_name: trying to set '-c' as '--config-dir' short name, buf configuration filename is nullptr")
     {
         advgetopt::option const options[] =
         {
@@ -1080,7 +1109,7 @@ CATCH_TEST_CASE("invalid_config_dir_short_name", "[arguments][invalid][getopt][c
     }
     CATCH_END_SECTION()
 
-//    CATCH_START_SECTION("Trying to set NO_SHORT_NAME as '--config-dir' short name")
+//    CATCH_START_SECTION("invalid_config_dir_short_name: trying to set NO_SHORT_NAME as '--config-dir' short name")
 //    {
 //        advgetopt::option const options[] =
 //        {
@@ -1111,7 +1140,7 @@ CATCH_TEST_CASE("invalid_config_dir_short_name", "[arguments][invalid][getopt][c
 //    }
 //    CATCH_END_SECTION()
 //
-//    CATCH_START_SECTION("Trying to change short name of '--version'")
+//    CATCH_START_SECTION("invalid_config_dir_short_name: trying to change short name of '--version'")
 //    {
 //        advgetopt::option const options[] =
 //        {
@@ -1142,12 +1171,6 @@ CATCH_TEST_CASE("invalid_config_dir_short_name", "[arguments][invalid][getopt][c
 //    }
 //    CATCH_END_SECTION()
 }
-
-
-
-
-
-
 
 
 

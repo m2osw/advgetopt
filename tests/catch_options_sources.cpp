@@ -52,7 +52,7 @@
 
 CATCH_TEST_CASE("options_sources", "[options][sources][valid]")
 {
-    CATCH_START_SECTION("System options only")
+    CATCH_START_SECTION("options_sources: system options only")
     {
         advgetopt::option const options[] =
         {
@@ -185,7 +185,7 @@ CATCH_TEST_CASE("options_sources", "[options][sources][valid]")
 
 CATCH_TEST_CASE("options_sources_environment_variable_and_config_file", "[options][sources][valid][config][environment_variable]")
 {
-    CATCH_START_SECTION("load options from a config file, environment variable, and command line with --config-dir on the command line")
+    CATCH_START_SECTION("options_sources_environment_variable_and_config_file: load options from a config file, environment variable, and command line with --config-dir on the command line")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("sources", "src");
 
@@ -505,7 +505,7 @@ CATCH_TEST_CASE("options_sources_environment_variable_and_config_file", "[option
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("load options from a config file, environment variable, and command line with --config-dir in the environment variable")
+    CATCH_START_SECTION("options_sources_environment_variable_and_config_file: load options from a config file, environment variable, and command line with --config-dir in the environment variable")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("sources", "hidden");
 
@@ -871,7 +871,6 @@ CATCH_TEST_CASE("options_sources_environment_variable_and_config_file", "[option
     }
     CATCH_END_SECTION()
 }
-
 
 
 

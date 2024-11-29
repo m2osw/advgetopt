@@ -45,18 +45,9 @@
 
 
 
-
-
-
-
-
-
-
-
-
 CATCH_TEST_CASE("flag_argument", "[arguments][valid][getopt]")
 {
-    CATCH_START_SECTION("Verify a simple --verbose argument")
+    CATCH_START_SECTION("flag_argument: verify a simple --verbose argument")
     {
         advgetopt::option const options[] =
         {
@@ -160,7 +151,7 @@ CATCH_TEST_CASE("flag_argument", "[arguments][valid][getopt]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify a simple --verbose argument in a variable")
+    CATCH_START_SECTION("flag_argument: verify a simple --verbose argument in a variable")
     {
         advgetopt::option const options[] =
         {
@@ -268,7 +259,7 @@ CATCH_TEST_CASE("flag_argument", "[arguments][valid][getopt]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify a simple alias argument")
+    CATCH_START_SECTION("flag_argument: verify a simple alias argument")
     {
         advgetopt::option const options[] =
         {
@@ -392,7 +383,7 @@ CATCH_TEST_CASE("flag_argument", "[arguments][valid][getopt]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify a simple alias argument in a variable")
+    CATCH_START_SECTION("flag_argument: verify a simple alias argument in a variable")
     {
         advgetopt::option const options[] =
         {
@@ -520,7 +511,7 @@ CATCH_TEST_CASE("flag_argument", "[arguments][valid][getopt]")
 
 CATCH_TEST_CASE("require_argument", "[arguments][valid][required][getopt]")
 {
-    CATCH_START_SECTION("Verify a simple --out <filename> argument")
+    CATCH_START_SECTION("require_argument: verify a simple --out <filename> argument")
     {
         advgetopt::option const options[] =
         {
@@ -666,7 +657,7 @@ CATCH_TEST_CASE("require_argument", "[arguments][valid][required][getopt]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify a simple alias of --out <filename> argument")
+    CATCH_START_SECTION("require_argument: verify a simple alias of --out <filename> argument")
     {
         advgetopt::option const options[] =
         {
@@ -832,7 +823,7 @@ CATCH_TEST_CASE("require_argument", "[arguments][valid][required][getopt]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify a simple --out <filename> argument in a variable")
+    CATCH_START_SECTION("require_argument: verify a simple --out <filename> argument in a variable")
     {
         advgetopt::option const options[] =
         {
@@ -967,7 +958,7 @@ CATCH_TEST_CASE("require_argument", "[arguments][valid][required][getopt]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify a simple alias of --out <filename> argument in a variable")
+    CATCH_START_SECTION("require_argument: verify a simple alias of --out <filename> argument in a variable")
     {
         advgetopt::option const options[] =
         {
@@ -1091,7 +1082,7 @@ CATCH_TEST_CASE("require_argument", "[arguments][valid][required][getopt]")
 
 CATCH_TEST_CASE("require_arguments", "[arguments][valid][required][multiple][getopt]")
 {
-    CATCH_START_SECTION("Verify a simple --out <filename> ... argument")
+    CATCH_START_SECTION("require_arguments: Verify a simple --out <filename> ... argument")
     {
         advgetopt::option const options[] =
         {
@@ -1194,7 +1185,7 @@ CATCH_TEST_CASE("require_arguments", "[arguments][valid][required][multiple][get
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify a simple alias of --out <filename> ... argument")
+    CATCH_START_SECTION("require_arguments: verify a simple alias of --out <filename> ... argument")
     {
         advgetopt::option const options[] =
         {
@@ -1325,7 +1316,7 @@ CATCH_TEST_CASE("require_arguments", "[arguments][valid][required][multiple][get
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify a simple --out <filename> ... argument in a variable")
+    CATCH_START_SECTION("require_arguments: verify a simple --out <filename> ... argument in a variable")
     {
         advgetopt::option const options[] =
         {
@@ -1429,7 +1420,7 @@ CATCH_TEST_CASE("require_arguments", "[arguments][valid][required][multiple][get
 
 CATCH_TEST_CASE("optional_arguments", "[arguments][valid][multiple][getopt]")
 {
-    CATCH_START_SECTION("Verify a simple --out [<filename> ...] argument")
+    CATCH_START_SECTION("optional_arguments: verify a simple --out [<filename> ...] argument")
     {
         char const * const separators[] =
         {
@@ -1795,7 +1786,7 @@ CATCH_TEST_CASE("optional_arguments", "[arguments][valid][multiple][getopt]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify a simple --out [<filename> ...] argument in a variable")
+    CATCH_START_SECTION("optional_arguments: verify a simple --out [<filename> ...] argument in a variable")
     {
         advgetopt::option const options[] =
         {
@@ -2047,7 +2038,7 @@ CATCH_TEST_CASE("optional_arguments", "[arguments][valid][multiple][getopt]")
 
 CATCH_TEST_CASE("config_dir_argument", "[arguments][valid][getopt][config]")
 {
-    CATCH_START_SECTION("Verify that we do get the --config-dir option when we have a standalone configuration filename")
+    CATCH_START_SECTION("config_dir_argument: verify that we do get the --config-dir option when we have a standalone configuration filename")
     {
         advgetopt::option const options[] =
         {
@@ -2127,7 +2118,7 @@ CATCH_TEST_CASE("config_dir_argument", "[arguments][valid][getopt][config]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify that we do not get the --config-dir option when the standalone configuration filename is nullptr")
+    CATCH_START_SECTION("config_dir_argument: verify that we do not get the --config-dir option when the standalone configuration filename is nullptr")
     {
         advgetopt::option const options[] =
         {
@@ -2204,7 +2195,7 @@ CATCH_TEST_CASE("config_dir_argument", "[arguments][valid][getopt][config]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify that we do not get the --config-dir option when the standalone configuration filename is \"\"")
+    CATCH_START_SECTION("config_dir_argument: verify that we do not get the --config-dir option when the standalone configuration filename is \"\"")
     {
         advgetopt::option const options[] =
         {
@@ -2281,7 +2272,7 @@ CATCH_TEST_CASE("config_dir_argument", "[arguments][valid][getopt][config]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Test adding '-c' to '--config-dir'")
+    CATCH_START_SECTION("config_dir_argument: test adding '-c' to '--config-dir'")
     {
         advgetopt::option const options[] =
         {
@@ -2369,7 +2360,7 @@ CATCH_TEST_CASE("config_dir_argument", "[arguments][valid][getopt][config]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Test our own parsing with '--config-dir' and f_configuration_filename set to nullptr")
+    CATCH_START_SECTION("config_dir_argument: test our own parsing with '--config-dir' and f_configuration_filename set to nullptr")
     {
         advgetopt::option const options[] =
         {
@@ -2452,7 +2443,7 @@ CATCH_TEST_CASE("config_dir_argument", "[arguments][valid][getopt][config]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Test our own parsing with '--config-dir' and f_configuration_filename set to \"\"")
+    CATCH_START_SECTION("config_dir_argument: test our own parsing with '--config-dir' and f_configuration_filename set to \"\"")
     {
         advgetopt::option const options[] =
         {
@@ -2539,7 +2530,7 @@ CATCH_TEST_CASE("config_dir_argument", "[arguments][valid][getopt][config]")
 
 CATCH_TEST_CASE("default_argument", "[arguments][valid][getopt]")
 {
-    CATCH_START_SECTION("Verify a simple [<filename>] argument")
+    CATCH_START_SECTION("default_argument: verify a simple [<filename>] argument")
     {
         advgetopt::option const options[] =
         {
@@ -2828,7 +2819,7 @@ CATCH_TEST_CASE("default_argument", "[arguments][valid][getopt]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify a simple [<filename>] argument in a variable")
+    CATCH_START_SECTION("default_argument: verify a simple [<filename>] argument in a variable")
     {
         advgetopt::option const options[] =
         {
@@ -3211,7 +3202,7 @@ CATCH_TEST_CASE("default_argument", "[arguments][valid][getopt]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify that we can have a non-require argument with an invalid default")
+    CATCH_START_SECTION("default_argument: verify that we can have a non-require argument with an invalid default")
     {
         advgetopt::option const options[] =
         {
@@ -3367,7 +3358,7 @@ CATCH_TEST_CASE("default_argument", "[arguments][valid][getopt]")
 
 CATCH_TEST_CASE("default_arguments", "[arguments][valid][multiple][getopt]")
 {
-    CATCH_START_SECTION("Verify a simple [<filename> ...] argument")
+    CATCH_START_SECTION("default_arguments: verify a simple [<filename> ...] argument")
     {
         advgetopt::option const options[] =
         {
@@ -3541,7 +3532,7 @@ CATCH_TEST_CASE("default_arguments", "[arguments][valid][multiple][getopt]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify a simple [<filename> ...] argument with the default name (a.k.a. \"--\")")
+    CATCH_START_SECTION("default_arguments: verify a simple [<filename> ...] argument with the default name (a.k.a. \"--\")")
     {
         advgetopt::option const options[] =
         {
@@ -3710,7 +3701,7 @@ CATCH_TEST_CASE("default_arguments", "[arguments][valid][multiple][getopt]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify a simple [<filename> ...] argument in a variable")
+    CATCH_START_SECTION("default_arguments: verify a simple [<filename> ...] argument in a variable")
     {
         advgetopt::option const options[] =
         {
@@ -3889,7 +3880,7 @@ CATCH_TEST_CASE("default_arguments", "[arguments][valid][multiple][getopt]")
 
 CATCH_TEST_CASE("manual_arguments", "[arguments][valid][getopt]")
 {
-    CATCH_START_SECTION("Verify a few arguments added manually")
+    CATCH_START_SECTION("manual_arguments: verify a few arguments added manually")
     {
         // create a getopt object
         //
@@ -4242,7 +4233,7 @@ CATCH_TEST_CASE("manual_arguments", "[arguments][valid][getopt]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify a few arguments added manually and system options")
+    CATCH_START_SECTION("manual_arguments: verify a few arguments added manually and system options")
     {
         // create a getopt object with options
         //
@@ -4662,7 +4653,7 @@ CATCH_TEST_CASE("manual_arguments", "[arguments][valid][getopt]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify that not calling link_aliases() causes problems")
+    CATCH_START_SECTION("manual_arguments: verify that not calling link_aliases() causes problems")
     {
         // create a getopt object, we will part the options "manually" later
         //
@@ -4716,7 +4707,7 @@ CATCH_TEST_CASE("manual_arguments", "[arguments][valid][getopt]")
 
 CATCH_TEST_CASE("individual_argument_variable", "[arguments][valid][variable][getopt]")
 {
-    CATCH_START_SECTION("Test that we get the values of individual environment variables without an INTRO_...")
+    CATCH_START_SECTION("individual_argument_variable: test that we get the values of individual environment variables without an INTRO_...")
     {
         // create a getopt object with options
         //
@@ -4927,7 +4918,7 @@ CATCH_TEST_CASE("individual_argument_variable", "[arguments][valid][variable][ge
 
 CATCH_TEST_CASE("auto_process_system_arguments", "[arguments][valid][getopt]")
 {
-    CATCH_START_SECTION("Test auto-processing of system arguments (with many CATCH_WHEN)")
+    CATCH_START_SECTION("auto_process_system_arguments: test auto-processing of system arguments (with many CATCH_WHEN)")
     {
         advgetopt::options_environment options;
         options.f_project_name = "unittest";
@@ -5105,7 +5096,7 @@ CATCH_TEST_CASE("auto_process_system_arguments", "[arguments][valid][getopt]")
 
 CATCH_TEST_CASE("check_print_option", "[arguments][valid][getopt]")
 {
-    CATCH_START_SECTION("Testing --print-option with a defined parameter")
+    CATCH_START_SECTION("check_print_option: testing --print-option with a defined parameter")
     {
         advgetopt::option const options[] =
         {
@@ -5171,7 +5162,7 @@ CATCH_TEST_CASE("check_print_option", "[arguments][valid][getopt]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Testing --print-option with an undefined parameter but a default")
+    CATCH_START_SECTION("check_print_option: testing --print-option with an undefined parameter but a default")
     {
         advgetopt::option const options[] =
         {
@@ -5236,7 +5227,7 @@ CATCH_TEST_CASE("check_print_option", "[arguments][valid][getopt]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Testing --print-option with an undefined parameter and no default")
+    CATCH_START_SECTION("check_print_option: testing --print-option with an undefined parameter and no default")
     {
         advgetopt::option const options[] =
         {
@@ -5304,7 +5295,7 @@ CATCH_TEST_CASE("check_print_option", "[arguments][valid][getopt]")
 
 CATCH_TEST_CASE("invalid_getopt_pointers", "[invalid][getopt][arguments]")
 {
-    CATCH_START_SECTION("Create getopt with argv set to nullptr.")
+    CATCH_START_SECTION("invalid_getopt_pointers: create getopt with argv set to nullptr.")
     {
         advgetopt::options_environment const environment_opt;
 
@@ -5320,7 +5311,7 @@ CATCH_TEST_CASE("invalid_getopt_pointers", "[invalid][getopt][arguments]")
 
 CATCH_TEST_CASE("invalid_getopt_missing_options", "[invalid][getopt][arguments]")
 {
-    CATCH_START_SECTION("Create getopt with no options.")
+    CATCH_START_SECTION("invalid_getopt_missing_options: create getopt with no options.")
     {
         advgetopt::options_environment options_empty;
         options_empty.f_project_name = "unittest";
@@ -5345,7 +5336,7 @@ CATCH_TEST_CASE("invalid_getopt_missing_options", "[invalid][getopt][arguments]"
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Create getopt with an empty list of options.")
+    CATCH_START_SECTION("invalid_getopt_missing_options: create getopt with an empty list of options.")
     {
         const advgetopt::option options_empty_list[] =
         {
@@ -5386,7 +5377,7 @@ CATCH_TEST_CASE("invalid_getopt_missing_options", "[invalid][getopt][arguments]"
 
 CATCH_TEST_CASE("invalid_getopt_missing_required_option", "[invalid][getopt][arguments][alias]")
 {
-    CATCH_START_SECTION("Specify the option without a corresponding parameter.")
+    CATCH_START_SECTION("invalid_getopt_missing_required_option: specify the option without a corresponding parameter.")
     {
         const advgetopt::option options[] =
         {
@@ -5468,7 +5459,7 @@ CATCH_TEST_CASE("invalid_getopt_missing_required_option", "[invalid][getopt][arg
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Specify the option with an equal sign but without a corresponding parameter.")
+    CATCH_START_SECTION("invalid_getopt_missing_required_option: specify the option with an equal sign but without a corresponding parameter.")
     {
         const advgetopt::option options[] =
         {
@@ -5550,7 +5541,7 @@ CATCH_TEST_CASE("invalid_getopt_missing_required_option", "[invalid][getopt][arg
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Specify the option without a corresponding parameter followed by a long argument.")
+    CATCH_START_SECTION("invalid_getopt_missing_required_option: specify the option without a corresponding parameter followed by a long argument.")
     {
         const advgetopt::option options[] =
         {
@@ -5632,7 +5623,7 @@ CATCH_TEST_CASE("invalid_getopt_missing_required_option", "[invalid][getopt][arg
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Specify the option without a corresponding parameter followed by a short argument.")
+    CATCH_START_SECTION("invalid_getopt_missing_required_option: specify the option without a corresponding parameter followed by a short argument.")
     {
         const advgetopt::option options[] =
         {
@@ -5718,7 +5709,7 @@ CATCH_TEST_CASE("invalid_getopt_missing_required_option", "[invalid][getopt][arg
 
 CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
 {
-    CATCH_START_SECTION("Using a standalone 'file.txt' when no default option is allowed.")
+    CATCH_START_SECTION("invalid_default_options: using a standalone 'file.txt' when no default option is allowed.")
     {
         const advgetopt::option options[] =
         {
@@ -5788,7 +5779,7 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Using a standalone 'file.txt' on the command line when only allowed in a variable.")
+    CATCH_START_SECTION("invalid_default_options: using a standalone 'file.txt' on the command line when only allowed in a variable.")
     {
         const advgetopt::option options[] =
         {
@@ -5868,7 +5859,7 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Using a standalone 'file.txt' in a variable when only allowed on the command line.")
+    CATCH_START_SECTION("invalid_default_options: using a standalone 'file.txt' in a variable when only allowed on the command line.")
     {
         const advgetopt::option options[] =
         {
@@ -5948,7 +5939,7 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Using a '--' when no default option is allowed.")
+    CATCH_START_SECTION("invalid_default_options: using a '--' when no default option is allowed.")
     {
         const advgetopt::option options[] =
         {
@@ -6019,7 +6010,7 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Using a '--' when on the command line when only accepted in variables.")
+    CATCH_START_SECTION("invalid_default_options: using a '--' when on the command line when only accepted in variables.")
     {
         const advgetopt::option options[] =
         {
@@ -6100,7 +6091,7 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Using a '--' in the environment variable when only accepted on the command line.")
+    CATCH_START_SECTION("invalid_default_options: using a '--' in the environment variable when only accepted on the command line.")
     {
         const advgetopt::option options[] =
         {
@@ -6181,7 +6172,7 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Using a '-' when no default option is allowed.")
+    CATCH_START_SECTION("invalid_default_options: using a '-' when no default option is allowed.")
     {
         const advgetopt::option options[] =
         {
@@ -6252,7 +6243,7 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Using a '-' when on the command line when only accepted in variables.")
+    CATCH_START_SECTION("invalid_default_options: using a '-' when on the command line when only accepted in variables.")
     {
         const advgetopt::option options[] =
         {
@@ -6333,7 +6324,7 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Using a '-' in the environment variable when only accepted on the command line.")
+    CATCH_START_SECTION("invalid_default_options: using a '-' in the environment variable when only accepted on the command line.")
     {
         const advgetopt::option options[] =
         {
@@ -6418,7 +6409,7 @@ CATCH_TEST_CASE("invalid_default_options", "[invalid][getopt][arguments]")
 
 CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
 {
-    CATCH_START_SECTION("Long option with an equal sign but not name.")
+    CATCH_START_SECTION("invalid_options: long option with an equal sign but not name.")
     {
         const advgetopt::option options[] =
         {
@@ -6481,7 +6472,7 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Unknown long option.")
+    CATCH_START_SECTION("invalid_options: unknown long option.")
     {
         const advgetopt::option options[] =
         {
@@ -6544,7 +6535,7 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Long option not available in environment variable.")
+    CATCH_START_SECTION("invalid_options: long option not available in environment variable.")
     {
         const advgetopt::option options[] =
         {
@@ -6623,7 +6614,7 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Long option not available on command line.")
+    CATCH_START_SECTION("invalid_options: long option not available on command line.")
     {
         const advgetopt::option options[] =
         {
@@ -6703,7 +6694,7 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Unknown short option.")
+    CATCH_START_SECTION("invalid_options: unknown short option.")
     {
         const advgetopt::option options[] =
         {
@@ -6780,7 +6771,7 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Short option not available in environment variable.")
+    CATCH_START_SECTION("invalid_options: short option not available in environment variable.")
     {
         const advgetopt::option options[] =
         {
@@ -6875,7 +6866,7 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Long option not available on command line.")
+    CATCH_START_SECTION("invalid_options: long option not available on command line.")
     {
         const advgetopt::option options[] =
         {
@@ -6977,7 +6968,7 @@ CATCH_TEST_CASE("invalid_options", "[invalid][getopt][arguments]")
 CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
 {
 
-    CATCH_START_SECTION("Check all possible invalid argument")
+    CATCH_START_SECTION("invalid_parameters: check all possible invalid argument")
     {
         // default arguments
         //
@@ -8554,6 +8545,7 @@ CATCH_TEST_CASE("invalid_parameters", "[invalid][getopt][arguments]")
     CATCH_END_SECTION()
 }
 #endif
+
 
 
 // vim: ts=4 sw=4 et

@@ -53,7 +53,8 @@
 
 CATCH_TEST_CASE("string_access", "[arguments][valid][getopt]")
 {
-    CATCH_START_SECTION("Verify a string in a long argument")
+    CATCH_START_SECTION("string_access: verify a string in a long argument")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -113,9 +114,11 @@ CATCH_TEST_CASE("string_access", "[arguments][valid][getopt]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify a string in a short argument")
+    CATCH_START_SECTION("string_access: verify a string in a short argument")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -172,13 +175,15 @@ CATCH_TEST_CASE("string_access", "[arguments][valid][getopt]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
     CATCH_END_SECTION()
 }
 
 
 CATCH_TEST_CASE("long_access", "[arguments][valid][getopt]")
 {
-    CATCH_START_SECTION("Verify an integer (long) value in an argument")
+    CATCH_START_SECTION("long_access: verify an integer (long) value in an argument")
+    {
         long const default_value(rand());
         std::string const default_value_str(std::to_string(default_value));
         char const * const default_val(default_value_str.c_str());
@@ -243,9 +248,11 @@ CATCH_TEST_CASE("long_access", "[arguments][valid][getopt]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify an integer (long) value in a short argument")
+    CATCH_START_SECTION("long_access: verify an integer (long) value in a short argument")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -316,9 +323,11 @@ CATCH_TEST_CASE("long_access", "[arguments][valid][getopt]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify an integer (long) value in no arguments")
+    CATCH_START_SECTION("long_access: verify an integer (long) value in no arguments")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -380,6 +389,7 @@ CATCH_TEST_CASE("long_access", "[arguments][valid][getopt]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
     CATCH_END_SECTION()
 }
 
@@ -387,7 +397,7 @@ CATCH_TEST_CASE("long_access", "[arguments][valid][getopt]")
 
 CATCH_TEST_CASE("double_access", "[arguments][valid][getopt]")
 {
-    CATCH_START_SECTION("double_access: Verify a double value in an argument")
+    CATCH_START_SECTION("double_access: verify a double value in an argument")
     {
         long const default_value(rand());
         std::string const default_value_str(std::to_string(default_value));
@@ -463,7 +473,7 @@ CATCH_TEST_CASE("double_access", "[arguments][valid][getopt]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("double_access: Verify a double value in a short argument")
+    CATCH_START_SECTION("double_access: verify a double value in a short argument")
     {
         advgetopt::option const options[] =
         {
@@ -545,7 +555,7 @@ CATCH_TEST_CASE("double_access", "[arguments][valid][getopt]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("double_access: Verify a double value with no default and nothing on the command line")
+    CATCH_START_SECTION("double_access: verify a double value with no default and nothing on the command line")
     {
         advgetopt::option const options[] =
         {
@@ -608,7 +618,7 @@ CATCH_TEST_CASE("double_access", "[arguments][valid][getopt]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("double_access: Verify a double value validity when a default is defined.")
+    CATCH_START_SECTION("double_access: verify a double value validity when a default is defined.")
     {
         advgetopt::option const options[] =
         {
@@ -673,7 +683,7 @@ CATCH_TEST_CASE("double_access", "[arguments][valid][getopt]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("double_access: Verify a double value in no arguments")
+    CATCH_START_SECTION("double_access: verify a double value in no arguments")
     {
         advgetopt::option const options[] =
         {
@@ -763,7 +773,7 @@ CATCH_TEST_CASE("double_access", "[arguments][valid][getopt]")
 
 CATCH_TEST_CASE("system_flags_version", "[arguments][valid][getopt][system_flags]")
 {
-    CATCH_START_SECTION("Check with the --version system flag")
+    CATCH_START_SECTION("system_flags_version: check with the --version system flag")
     {
         long const major_version(rand());
         long const minor_version(rand());
@@ -860,7 +870,7 @@ CATCH_TEST_CASE("system_flags_version", "[arguments][valid][getopt][system_flags
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Check with the --version system flag, without a --version on the command line")
+    CATCH_START_SECTION("system_flags_version: check with the --version system flag, without a --version on the command line")
     {
         long const major_version(rand());
         long const minor_version(rand());
@@ -960,7 +970,7 @@ CATCH_TEST_CASE("system_flags_version", "[arguments][valid][getopt][system_flags
 
 CATCH_TEST_CASE("system_flags_has_sanitizer", "[arguments][valid][getopt][system_flags]")
 {
-    CATCH_START_SECTION("Check with the --has-sanitizer system flag")
+    CATCH_START_SECTION("system_flags_has_sanitizer: check with the --has-sanitizer system flag")
     {
         long const default_value(rand());
         std::string const default_val(std::to_string(default_value));
@@ -1060,7 +1070,7 @@ CATCH_TEST_CASE("system_flags_has_sanitizer", "[arguments][valid][getopt][system
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Check with the --has-sanitizer system flag, without a --has-sanitizer on the command line")
+    CATCH_START_SECTION("system_flags_has_sanitizer: check with the --has-sanitizer system flag, without a --has-sanitizer on the command line")
     {
         long const default_value(rand());
         std::string const default_val(std::to_string(default_value));
@@ -1147,7 +1157,7 @@ CATCH_TEST_CASE("system_flags_has_sanitizer", "[arguments][valid][getopt][system
 
 CATCH_TEST_CASE("system_flags_compiler_version", "[arguments][valid][getopt][system_flags]")
 {
-    CATCH_START_SECTION("Check with the --compiler-version system flag")
+    CATCH_START_SECTION("system_flags_compiler_version: check with the --compiler-version system flag")
     {
         long const default_value(rand());
         std::string const default_val(std::to_string(default_value));
@@ -1231,7 +1241,7 @@ CATCH_TEST_CASE("system_flags_compiler_version", "[arguments][valid][getopt][sys
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Check with the --compiler-version system flag, without a --compiler-version on the command line")
+    CATCH_START_SECTION("system_flags_compiler_version: check with the --compiler-version system flag, without a --compiler-version on the command line")
     {
         long const default_value(rand());
         std::string const default_val(std::to_string(default_value));
@@ -1318,7 +1328,7 @@ CATCH_TEST_CASE("system_flags_compiler_version", "[arguments][valid][getopt][sys
 
 CATCH_TEST_CASE("system_flags_help", "[arguments][valid][getopt][system_flags]")
 {
-    CATCH_START_SECTION("Check with the --help system flag")
+    CATCH_START_SECTION("system_flags_help: check with the --help system flag")
     {
         advgetopt::option const options[] =
         {
@@ -1482,7 +1492,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Check with the --long-help system flag")
+    CATCH_START_SECTION("system_flags_help: check with the --long-help system flag")
     {
         advgetopt::option const options[] =
         {
@@ -1677,7 +1687,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Check with the --help system flag, without a --help on the command line")
+    CATCH_START_SECTION("system_flags_help: check with the --help system flag, without a --help on the command line")
     {
         advgetopt::option const options[] =
         {
@@ -1758,7 +1768,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Check with the --commands-help system flag")
+    CATCH_START_SECTION("system_flags_help: check with the --commands-help system flag")
     {
         advgetopt::option const options[] =
         {
@@ -1931,7 +1941,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Check with the --options-help system flag")
+    CATCH_START_SECTION("system_flags_help: check with the --options-help system flag")
     {
         advgetopt::option const options[] =
         {
@@ -2057,7 +2067,7 @@ advgetopt::breakup_line(
 
 CATCH_TEST_CASE("system_flags_copyright", "[arguments][valid][getopt][system_flags]")
 {
-    CATCH_START_SECTION("Check with the --copyright system flag")
+    CATCH_START_SECTION("system_flags_copyright: check with the --copyright system flag")
     {
         advgetopt::option const options[] =
         {
@@ -2139,7 +2149,8 @@ CATCH_TEST_CASE("system_flags_copyright", "[arguments][valid][getopt][system_fla
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Check with the --copyright system flag, without a --copyright on the command line")
+    CATCH_START_SECTION("system_flags_copyright: check with the --copyright system flag, without a --copyright on the command line")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -2216,6 +2227,7 @@ CATCH_TEST_CASE("system_flags_copyright", "[arguments][valid][getopt][system_fla
         advgetopt::flag_t const result(opt.process_system_options(ss));
         CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_NONE);
         CATCH_REQUIRE(ss.str().empty());
+    }
     CATCH_END_SECTION()
 }
 
@@ -2223,7 +2235,7 @@ CATCH_TEST_CASE("system_flags_copyright", "[arguments][valid][getopt][system_fla
 
 CATCH_TEST_CASE("system_flags_license", "[arguments][valid][getopt][system_flags]")
 {
-    CATCH_START_SECTION("Check with the --license system flag")
+    CATCH_START_SECTION("system_flags_license: check with the --license system flag")
     {
         advgetopt::option const options[] =
         {
@@ -2305,7 +2317,8 @@ CATCH_TEST_CASE("system_flags_license", "[arguments][valid][getopt][system_flags
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Check with the --license system flag, without a --license on the command line")
+    CATCH_START_SECTION("system_flags_license: check with the --license system flag, without a --license on the command line")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -2382,6 +2395,7 @@ CATCH_TEST_CASE("system_flags_license", "[arguments][valid][getopt][system_flags
         advgetopt::flag_t const result(opt.process_system_options(ss));
         CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_NONE);
         CATCH_REQUIRE(ss.str().empty());
+    }
     CATCH_END_SECTION()
 }
 
@@ -2389,7 +2403,7 @@ CATCH_TEST_CASE("system_flags_license", "[arguments][valid][getopt][system_flags
 
 CATCH_TEST_CASE("system_flags_build_date", "[arguments][valid][getopt][system_flags]")
 {
-    CATCH_START_SECTION("Check with the --build-date system flag")
+    CATCH_START_SECTION("system_flags_build_date: check with the --build-date system flag")
     {
         advgetopt::option const options[] =
         {
@@ -2473,7 +2487,8 @@ CATCH_TEST_CASE("system_flags_build_date", "[arguments][valid][getopt][system_fl
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Check with the --build-date system flag, without a --build-date on the command line")
+    CATCH_START_SECTION("system_flags_build_date: check with the --build-date system flag, without a --build-date on the command line")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -2549,6 +2564,7 @@ CATCH_TEST_CASE("system_flags_build_date", "[arguments][valid][getopt][system_fl
         advgetopt::flag_t const result(opt.process_system_options(ss));
         CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_NONE);
         CATCH_REQUIRE(ss.str().empty());
+    }
     CATCH_END_SECTION()
 }
 
@@ -2556,7 +2572,7 @@ CATCH_TEST_CASE("system_flags_build_date", "[arguments][valid][getopt][system_fl
 
 CATCH_TEST_CASE("system_flags_environment_variable_name", "[arguments][valid][getopt][system_flags]")
 {
-    CATCH_START_SECTION("Check with the --environment-variable-name system flag")
+    CATCH_START_SECTION("system_flags_environment_variable_name: check with the --environment-variable-name system flag")
     {
         advgetopt::option const options[] =
         {
@@ -2637,7 +2653,7 @@ CATCH_TEST_CASE("system_flags_environment_variable_name", "[arguments][valid][ge
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Check with the --environment-variable-name system flag with nullptr")
+    CATCH_START_SECTION("system_flags_environment_variable_name: check with the --environment-variable-name system flag with nullptr")
     {
         advgetopt::option const options[] =
         {
@@ -2718,7 +2734,7 @@ CATCH_TEST_CASE("system_flags_environment_variable_name", "[arguments][valid][ge
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Check with the --environment-variable-name system flag with \"\"")
+    CATCH_START_SECTION("system_flags_environment_variable_name: check with the --environment-variable-name system flag with \"\"")
     {
         advgetopt::option const options[] =
         {
@@ -2799,7 +2815,8 @@ CATCH_TEST_CASE("system_flags_environment_variable_name", "[arguments][valid][ge
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Check with the --environment-variable-name system flag, without a --environment-variable-name on the command line")
+    CATCH_START_SECTION("system_flags_environment_variable_name: check with the --environment-variable-name system flag, without a --environment-variable-name on the command line")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -2875,6 +2892,7 @@ CATCH_TEST_CASE("system_flags_environment_variable_name", "[arguments][valid][ge
         advgetopt::flag_t const result(opt.process_system_options(ss));
         CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_NONE);
         CATCH_REQUIRE(ss.str().empty());
+    }
     CATCH_END_SECTION()
 }
 
@@ -2882,7 +2900,7 @@ CATCH_TEST_CASE("system_flags_environment_variable_name", "[arguments][valid][ge
 
 CATCH_TEST_CASE("system_flags_configuration_filenames", "[arguments][valid][getopt][system_flags]")
 {
-    CATCH_START_SECTION("Check with the --configuration-filenames system flag")
+    CATCH_START_SECTION("system_flags_configuration_filenames: check with the --configuration-filenames system flag")
     {
         snapdev::safe_setenv env("HOME", "/home/advgetopt");
 
@@ -2996,7 +3014,7 @@ CATCH_TEST_CASE("system_flags_configuration_filenames", "[arguments][valid][geto
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Check with the --configuration-filenames system flag with --config-dir too")
+    CATCH_START_SECTION("system_flags_configuration_filenames: check with the --configuration-filenames system flag with --config-dir too")
     {
         snapdev::safe_setenv env("HOME", "/home/advgetopt");
 
@@ -3119,7 +3137,7 @@ CATCH_TEST_CASE("system_flags_configuration_filenames", "[arguments][valid][geto
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Check with the --configuration-filenames system flag without any configuration files")
+    CATCH_START_SECTION("system_flags_configuration_filenames: check with the --configuration-filenames system flag without any configuration files")
     {
         advgetopt::option const options[] =
         {
@@ -3199,7 +3217,8 @@ CATCH_TEST_CASE("system_flags_configuration_filenames", "[arguments][valid][geto
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Check with the --configuration-filenames system flag, without a --configuration-filenames on the command line")
+    CATCH_START_SECTION("system_flags_configuration_filenames: check with the --configuration-filenames system flag, without a --configuration-filenames on the command line")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -3293,6 +3312,7 @@ CATCH_TEST_CASE("system_flags_configuration_filenames", "[arguments][valid][geto
         advgetopt::flag_t const result(opt.process_system_options(ss));
         CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_NONE);
         CATCH_REQUIRE(ss.str().empty());
+    }
     CATCH_END_SECTION()
 }
 
@@ -3300,7 +3320,7 @@ CATCH_TEST_CASE("system_flags_configuration_filenames", "[arguments][valid][geto
 
 CATCH_TEST_CASE("system_flags_path_to_option_definitions", "[arguments][valid][getopt][system_flags]")
 {
-    CATCH_START_SECTION("Check with the --path-to-option-definitions system flag (Default)")
+    CATCH_START_SECTION("system_flags_path_to_option_definitions: check with the --path-to-option-definitions system flag (Default)")
     {
         advgetopt::option const options[] =
         {
@@ -3380,7 +3400,7 @@ CATCH_TEST_CASE("system_flags_path_to_option_definitions", "[arguments][valid][g
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Check with the --path-to-option-definitions system flag (Specified)")
+    CATCH_START_SECTION("system_flags_path_to_option_definitions: check with the --path-to-option-definitions system flag (Specified)")
     {
         advgetopt::option const options[] =
         {
@@ -3461,7 +3481,8 @@ CATCH_TEST_CASE("system_flags_path_to_option_definitions", "[arguments][valid][g
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Check with the --path-to-option-definitions system flag, without a --path-to-option-definitions on the command line")
+    CATCH_START_SECTION("system_flags_path_to_option_definitions: check with the --path-to-option-definitions system flag, without a --path-to-option-definitions on the command line")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -3537,6 +3558,7 @@ CATCH_TEST_CASE("system_flags_path_to_option_definitions", "[arguments][valid][g
         advgetopt::flag_t const result(opt.process_system_options(ss));
         CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_NONE);
         CATCH_REQUIRE(ss.str().empty());
+    }
     CATCH_END_SECTION()
 }
 
@@ -3549,7 +3571,8 @@ CATCH_TEST_CASE("system_flags_path_to_option_definitions", "[arguments][valid][g
 
 CATCH_TEST_CASE("invalid_option_name", "[arguments][invalid][getopt]")
 {
-    CATCH_START_SECTION("Verify that asking for the string of a non-existant option fails")
+    CATCH_START_SECTION("invalid_option_name: verify that asking for the string of a non-existant option fails")
+    {
         advgetopt::options_environment environment_options;
         environment_options.f_project_name = "unittest";
         environment_options.f_options = nullptr;
@@ -3586,9 +3609,11 @@ CATCH_TEST_CASE("invalid_option_name", "[arguments][invalid][getopt]")
                 , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
                               "getopt_logic_error: there is no --non-existant option defined."));
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify that asking for the long of a non-existant option fails")
+    CATCH_START_SECTION("invalid_option_name: verify that asking for the long of a non-existant option fails")
+    {
         advgetopt::options_environment environment_options;
         environment_options.f_project_name = "unittest";
         environment_options.f_options = nullptr;
@@ -3625,9 +3650,11 @@ CATCH_TEST_CASE("invalid_option_name", "[arguments][invalid][getopt]")
                 , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
                               "getopt_logic_error: there is no --non-existant option defined."));
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify that asking for a default with an empty string fails")
+    CATCH_START_SECTION("invalid_option_name: verify that asking for a default with an empty string fails")
+    {
         advgetopt::options_environment environment_options;
         environment_options.f_project_name = "unittest";
         environment_options.f_options = nullptr;
@@ -3658,9 +3685,11 @@ CATCH_TEST_CASE("invalid_option_name", "[arguments][invalid][getopt]")
                 , advgetopt::getopt_invalid_parameter
                 , Catch::Matchers::ExceptionMessage(
                               "getopt_exception: get_option() `name` argument cannot be empty."));
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("[] operators want a valid name")
+    CATCH_START_SECTION("invalid_option_name: [] operators want a valid name")
+    {
         advgetopt::options_environment environment_options;
         environment_options.f_project_name = "unittest";
         environment_options.f_options = nullptr;
@@ -3717,6 +3746,7 @@ CATCH_TEST_CASE("invalid_option_name", "[arguments][invalid][getopt]")
                 , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
                               "getopt_logic_error: argument name cannot be empty."));
+    }
     CATCH_END_SECTION()
 }
 
@@ -3724,7 +3754,7 @@ CATCH_TEST_CASE("invalid_option_name", "[arguments][invalid][getopt]")
 
 CATCH_TEST_CASE("missing_default_value", "[arguments][invalid][getopt]")
 {
-    CATCH_START_SECTION("Verify a string value without arguments and no default")
+    CATCH_START_SECTION("missing_default_value: verify a string value without arguments and no default")
     {
         advgetopt::option const options[] =
         {
@@ -3834,7 +3864,7 @@ CATCH_TEST_CASE("missing_default_value", "[arguments][invalid][getopt]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify an integer (long) value without arguments and no default")
+    CATCH_START_SECTION("missing_default_value: verify an integer (long) value without arguments and no default")
     {
         advgetopt::option const options[] =
         {
@@ -3910,7 +3940,7 @@ CATCH_TEST_CASE("missing_default_value", "[arguments][invalid][getopt]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify an integer (long) value without arguments and an empty string as default")
+    CATCH_START_SECTION("missing_default_value: verify an integer (long) value without arguments and an empty string as default")
     {
         advgetopt::option const options[] =
         {
@@ -3992,7 +4022,8 @@ CATCH_TEST_CASE("missing_default_value", "[arguments][invalid][getopt]")
 
 CATCH_TEST_CASE("incompatible_default_value", "[arguments][invalid][getopt]")
 {
-    CATCH_START_SECTION("Verify an integer (long) value without arguments and a non-numeric default")
+    CATCH_START_SECTION("incompatible_default_value: verify an integer (long) value without arguments and a non-numeric default")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -4023,6 +4054,7 @@ CATCH_TEST_CASE("incompatible_default_value", "[arguments][invalid][getopt]")
         // check that the result is valid
 
         // an invalid parameter, MUST NOT EXIST
+        //
         CATCH_REQUIRE(opt.get_option("invalid-parameter") == nullptr);
         CATCH_REQUIRE(opt.get_option('Z') == nullptr);
         CATCH_REQUIRE_FALSE(opt.is_defined("invalid-parameter"));
@@ -4030,12 +4062,14 @@ CATCH_TEST_CASE("incompatible_default_value", "[arguments][invalid][getopt]")
         CATCH_REQUIRE(opt.size("invalid-parameter") == 0);
 
         // no default
+        //
         CATCH_REQUIRE(opt.get_option("--") == nullptr);
         CATCH_REQUIRE_FALSE(opt.is_defined("--"));
         CATCH_REQUIRE(opt.get_default("--").empty());
         CATCH_REQUIRE(opt.size("--") == 0);
 
         // the valid parameter
+        //
         CATCH_REQUIRE(opt.get_option("size") != nullptr);
         CATCH_REQUIRE(opt.get_option('s') != nullptr);
         CATCH_REQUIRE_FALSE(opt.is_defined("size"));
@@ -4062,8 +4096,10 @@ CATCH_TEST_CASE("incompatible_default_value", "[arguments][invalid][getopt]")
                               "getopt_logic_error: invalid default number \"undefined\" for option --size"));
 
         // other parameters
+        //
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
     CATCH_END_SECTION()
 }
 
@@ -4071,7 +4107,8 @@ CATCH_TEST_CASE("incompatible_default_value", "[arguments][invalid][getopt]")
 
 CATCH_TEST_CASE("out_of_range_value", "[arguments][invalid][getopt]")
 {
-    CATCH_START_SECTION("Verify an integer (long) value without arguments and a non-numeric default")
+    CATCH_START_SECTION("out_of_range_value: verify an integer (long) value without arguments and a non-numeric default")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -4135,9 +4172,11 @@ CATCH_TEST_CASE("out_of_range_value", "[arguments][invalid][getopt]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify an integer (long) value without arguments and a non-numeric default")
+    CATCH_START_SECTION("out_of_range_value: verify an integer (long) value without arguments and a non-numeric default")
+    {
         advgetopt::option const options[] =
         {
             advgetopt::define_option(
@@ -4194,13 +4233,14 @@ CATCH_TEST_CASE("out_of_range_value", "[arguments][invalid][getopt]")
         // other parameters
         CATCH_REQUIRE(opt.get_program_name() == "arguments");
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/arguments");
+    }
     CATCH_END_SECTION()
 }
 
 
 CATCH_TEST_CASE("check_sanitizer", "[arguments][valid][getopt]")
 {
-    CATCH_START_SECTION("Check that the sanitizer is detected")
+    CATCH_START_SECTION("check_sanitizer: check that the sanitizer is detected")
     {
         // when compiling the tests with coverage we turn on the sanitizer
         // so here we should get output that show the sanitizer as being
@@ -4227,6 +4267,7 @@ CATCH_TEST_CASE("check_sanitizer", "[arguments][valid][getopt]")
     }
     CATCH_END_SECTION()
 }
+
 
 
 // vim: ts=4 sw=4 et

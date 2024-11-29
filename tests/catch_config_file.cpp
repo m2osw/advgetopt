@@ -57,10 +57,6 @@
 
 
 
-
-
-
-
 CATCH_TEST_CASE("configuration_spaces", "[config][getopt][valid]")
 {
     CATCH_START_SECTION("configuration_spaces: verify configuration spaces")
@@ -339,7 +335,7 @@ CATCH_TEST_CASE("configuration_setup", "[config][getopt][valid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("configuration_setup: check non-existant filename")
+    CATCH_START_SECTION("configuration_setup: check non-existent filename")
     {
         advgetopt::conf_file_setup setup(
                       "/etc/advgetopt/unknown-file.conf"
@@ -2288,7 +2284,7 @@ CATCH_TEST_CASE("config_section_tests", "[config][getopt][valid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("command line with .conf including section of variables ([variables])")
+    CATCH_START_SECTION("config_section_tests: command line with .conf including section of variables ([variables])")
     {
         // in a config file variables are not auto-managed
         //
@@ -3696,7 +3692,7 @@ CATCH_TEST_CASE("invalid_field_name", "[config][getopt][invalid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("empty variable name after section name")
+    CATCH_START_SECTION("invalid_field_name: empty variable name after section name")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-variable-name", "section-and-name-missing");
 
@@ -3747,7 +3743,7 @@ CATCH_TEST_CASE("invalid_field_name", "[config][getopt][invalid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("variable name starts with a dash")
+    CATCH_START_SECTION("invalid_field_name: variable name starts with a dash")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-variable-name", "dash-name");
 
@@ -3800,7 +3796,7 @@ CATCH_TEST_CASE("invalid_field_name", "[config][getopt][invalid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("variable name starts with an underscore")
+    CATCH_START_SECTION("invalid_field_name: variable name starts with an underscore")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-variable-name", "underscore-name");
 
@@ -3853,7 +3849,7 @@ CATCH_TEST_CASE("invalid_field_name", "[config][getopt][invalid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("variable name with spaces")
+    CATCH_START_SECTION("invalid_field_name: variable name with spaces")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("invalid-variable-name", "name-space-more-name");
 

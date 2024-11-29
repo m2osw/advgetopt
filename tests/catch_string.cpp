@@ -50,13 +50,13 @@
 
 CATCH_TEST_CASE("option_string", "[getopt][string]")
 {
-    CATCH_START_SECTION("empty string returns an empty empty")
+    CATCH_START_SECTION("option_string: empty string returns an empty empty")
     {
         CATCH_REQUIRE(advgetopt::escape_shell_argument(std::string()) == std::string("\"\""));
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("empty string returns empty")
+    CATCH_START_SECTION("option_string: empty string returns empty")
     {
         std::string const g_simple_characters("_/.-+=0123456789ABCEFGHIJKLMNOPQRSTUVWXYZabcefghijklmnopqrstuvwxyz");
         for(std::size_t i(0); i < g_simple_characters.length(); ++i)
@@ -68,19 +68,19 @@ CATCH_TEST_CASE("option_string", "[getopt][string]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("string in single quotes")
+    CATCH_START_SECTION("option_string: string in single quotes")
     {
         CATCH_REQUIRE(advgetopt::escape_shell_argument("'between quotes'") == std::string("''\\''between quotes'\\'''"));
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("string with apostrophe")
+    CATCH_START_SECTION("option_string: string with apostrophe")
     {
         CATCH_REQUIRE(advgetopt::escape_shell_argument("c'est un test") == std::string("'c'\\''est un test'"));
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("string with special characters")
+    CATCH_START_SECTION("option_string: string with special characters")
     {
         CATCH_REQUIRE(advgetopt::escape_shell_argument("space colon: and semi-colon;") == std::string("'space colon: and semi-colon;'"));
     }
@@ -90,7 +90,7 @@ CATCH_TEST_CASE("option_string", "[getopt][string]")
 
 CATCH_TEST_CASE("options_to_string", "[arguments][valid][getopt]")
 {
-    CATCH_START_SECTION("Transform command line options back to a shell compatible command.")
+    CATCH_START_SECTION("options_to_string: transform command line options back to a shell compatible command.")
     {
         // create a getopt object with options
         //
@@ -206,7 +206,6 @@ CATCH_TEST_CASE("options_to_string", "[arguments][valid][getopt]")
     }
     CATCH_END_SECTION()
 }
-
 
 
 

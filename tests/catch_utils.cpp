@@ -49,7 +49,7 @@
 
 CATCH_TEST_CASE("utils_unquote", "[utils][valid]")
 {
-    CATCH_START_SECTION("Unquote, default pairs")
+    CATCH_START_SECTION("utils_unquote: unquote, default pairs")
     {
         CATCH_REQUIRE(advgetopt::unquote("") == "");
         CATCH_REQUIRE(advgetopt::unquote("a") == "a");
@@ -106,7 +106,7 @@ CATCH_TEST_CASE("utils_unquote", "[utils][valid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Unquote, brackets")
+    CATCH_START_SECTION("utils_unquote: unquote, brackets")
     {
         CATCH_REQUIRE(advgetopt::unquote("", "[]<>{}") == "");
         CATCH_REQUIRE(advgetopt::unquote("a", "[]<>{}") == "a");
@@ -193,7 +193,7 @@ CATCH_TEST_CASE("utils_unquote", "[utils][valid]")
 
 CATCH_TEST_CASE("utils_quote", "[utils][valid]")
 {
-    CATCH_START_SECTION("Quote, default pairs")
+    CATCH_START_SECTION("utils_quote: quote, default pairs")
     {
         CATCH_REQUIRE(advgetopt::quote("") == "\"\"");
         CATCH_REQUIRE(advgetopt::quote("a") == "\"a\"");
@@ -232,7 +232,8 @@ CATCH_TEST_CASE("utils_quote", "[utils][valid]")
 
 CATCH_TEST_CASE("utils_split", "[utils][valid]")
 {
-    CATCH_START_SECTION("Split three words")
+    CATCH_START_SECTION("utils_split: split three words")
+    {
         advgetopt::string_list_t result;
         advgetopt::split_string("test with spaces"
                               , result
@@ -241,9 +242,11 @@ CATCH_TEST_CASE("utils_split", "[utils][valid]")
         CATCH_REQUIRE(result[0] == "test");
         CATCH_REQUIRE(result[1] == "with");
         CATCH_REQUIRE(result[2] == "spaces");
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Split three words, one with single quotes")
+    CATCH_START_SECTION("utils_split: split three words, one with single quotes")
+    {
         advgetopt::string_list_t result;
         advgetopt::split_string("test 'with quotes and' spaces"
                               , result
@@ -252,9 +255,11 @@ CATCH_TEST_CASE("utils_split", "[utils][valid]")
         CATCH_REQUIRE(result[0] == "test");
         CATCH_REQUIRE(result[1] == "with quotes and");
         CATCH_REQUIRE(result[2] == "spaces");
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Split three words, one with double quotes")
+    CATCH_START_SECTION("utils_split: split three words, one with double quotes")
+    {
         advgetopt::string_list_t result;
         advgetopt::split_string("test \"with quotes and\" spaces"
                               , result
@@ -263,9 +268,11 @@ CATCH_TEST_CASE("utils_split", "[utils][valid]")
         CATCH_REQUIRE(result[0] == "test");
         CATCH_REQUIRE(result[1] == "with quotes and");
         CATCH_REQUIRE(result[2] == "spaces");
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Split three words, one with single quotes but no spaces")
+    CATCH_START_SECTION("utils_split: split three words, one with single quotes but no spaces")
+    {
         advgetopt::string_list_t result;
         advgetopt::split_string("test'with quotes and'nospaces"
                               , result
@@ -274,9 +281,11 @@ CATCH_TEST_CASE("utils_split", "[utils][valid]")
         CATCH_REQUIRE(result[0] == "test");
         CATCH_REQUIRE(result[1] == "with quotes and");
         CATCH_REQUIRE(result[2] == "nospaces");
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Split three words, one with double quotes but no spaces")
+    CATCH_START_SECTION("utils_split: split three words, one with double quotes but no spaces")
+    {
         advgetopt::string_list_t result;
         advgetopt::split_string("test\"with quotes and\"nospaces"
                               , result
@@ -285,9 +294,11 @@ CATCH_TEST_CASE("utils_split", "[utils][valid]")
         CATCH_REQUIRE(result[0] == "test");
         CATCH_REQUIRE(result[1] == "with quotes and");
         CATCH_REQUIRE(result[2] == "nospaces");
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Split five words, four separators")
+    CATCH_START_SECTION("utils_split: split five words, four separators")
+    {
         advgetopt::string_list_t result;
         advgetopt::split_string("test,with quite|many;separators"
                               , result
@@ -298,9 +309,11 @@ CATCH_TEST_CASE("utils_split", "[utils][valid]")
         CATCH_REQUIRE(result[2] == "quite");
         CATCH_REQUIRE(result[3] == "many");
         CATCH_REQUIRE(result[4] == "separators");
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Split five words, multiple/repeated separators")
+    CATCH_START_SECTION("utils_split: split five words, multiple/repeated separators")
+    {
         advgetopt::string_list_t result;
         advgetopt::split_string("test, with quite|||many ; separators"
                               , result
@@ -311,9 +324,11 @@ CATCH_TEST_CASE("utils_split", "[utils][valid]")
         CATCH_REQUIRE(result[2] == "quite");
         CATCH_REQUIRE(result[3] == "many");
         CATCH_REQUIRE(result[4] == "separators");
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Split five words, and empty entries")
+    CATCH_START_SECTION("utils_split: split five words, and empty entries")
+    {
         advgetopt::string_list_t result;
         advgetopt::split_string("|||test, with quite\"\"many ; ''separators''"
                               , result
@@ -324,9 +339,11 @@ CATCH_TEST_CASE("utils_split", "[utils][valid]")
         CATCH_REQUIRE(result[2] == "quite");
         CATCH_REQUIRE(result[3] == "many");
         CATCH_REQUIRE(result[4] == "separators");
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Split five words, start/end with separator")
+    CATCH_START_SECTION("utils_split: split five words, start/end with separator")
+    {
         advgetopt::string_list_t result;
         advgetopt::split_string("|start|and|end|with|separator|"
                               , result
@@ -337,18 +354,22 @@ CATCH_TEST_CASE("utils_split", "[utils][valid]")
         CATCH_REQUIRE(result[2] == "end");
         CATCH_REQUIRE(result[3] == "with");
         CATCH_REQUIRE(result[4] == "separator");
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Split five words, unclosed double quote")
+    CATCH_START_SECTION("utils_split: split five words, unclosed double quote")
+    {
         advgetopt::string_list_t result;
         advgetopt::split_string("\"unclosed quote|mark"
                               , result
                               , {"|"});
         CATCH_REQUIRE(result.size() == 1);
         CATCH_REQUIRE(result[0] == "unclosed quote|mark");
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Split five words, unclosed single quote")
+    CATCH_START_SECTION("utils_split: split five words, unclosed single quote")
+    {
         advgetopt::string_list_t result;
         advgetopt::split_string("here is an \"unclosed quote|mark"
                               , result
@@ -358,6 +379,7 @@ CATCH_TEST_CASE("utils_split", "[utils][valid]")
         CATCH_REQUIRE(result[1] == "is");
         CATCH_REQUIRE(result[2] == "an");
         CATCH_REQUIRE(result[3] == "unclosed quote|mark");
+    }
     CATCH_END_SECTION()
 }
 
@@ -462,7 +484,7 @@ CATCH_TEST_CASE("utils_insert_group_name", "[utils][valid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("utils_insert_group_name: Empty cases")
+    CATCH_START_SECTION("utils_insert_group_name: empty cases")
     {
         {
             advgetopt::string_list_t fullname(advgetopt::insert_group_name(
@@ -550,7 +572,7 @@ CATCH_TEST_CASE("utils_insert_group_name", "[utils][valid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("utils_insert_group_name: Basename Only")
+    CATCH_START_SECTION("utils_insert_group_name: basename only")
     {
         {
             advgetopt::string_list_t fullname(advgetopt::insert_group_name(
@@ -572,7 +594,7 @@ CATCH_TEST_CASE("utils_insert_group_name", "[utils][valid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("utils_insert_group_name: Actual List of Files on Disk")
+    CATCH_START_SECTION("utils_insert_group_name: actual list of files on disk")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("advgetopt-multi", "sorted-user-conf", false);
 
@@ -696,7 +718,7 @@ CATCH_TEST_CASE("utils_insert_group_name", "[utils][valid]")
 
 CATCH_TEST_CASE("utils_default_group_name", "[utils][valid]")
 {
-    CATCH_START_SECTION("utils_default_group_name: Full insert")
+    CATCH_START_SECTION("utils_default_group_name: full insert")
     {
         // CONFIG FILE HAS NO EXTENSION
         {
@@ -807,7 +829,7 @@ CATCH_TEST_CASE("utils_default_group_name", "[utils][valid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("utils_default_group_name: Empty cases")
+    CATCH_START_SECTION("utils_default_group_name: empty cases")
     {
         {
             std::string const fullname(advgetopt::default_group_name(
@@ -931,7 +953,7 @@ CATCH_TEST_CASE("utils_default_group_name", "[utils][valid]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("utils_default_group_name: Basename Only")
+    CATCH_START_SECTION("utils_default_group_name: basename Only")
     {
         {
             std::string const fullname(advgetopt::default_group_name(
@@ -960,7 +982,8 @@ CATCH_TEST_CASE("utils_default_group_name", "[utils][valid]")
 
 CATCH_TEST_CASE("utils_handle_user_directory", "[utils][valid]")
 {
-    CATCH_START_SECTION("Valid cases")
+    CATCH_START_SECTION("utils_handle_user_directory: valid cases")
+    {
         snapdev::safe_setenv env("HOME", "/home/advgetopt");
 
         {
@@ -977,9 +1000,11 @@ CATCH_TEST_CASE("utils_handle_user_directory", "[utils][valid]")
             std::string result(advgetopt::handle_user_directory("~/.config/advgetopt.conf"));
             CATCH_REQUIRE(result == "/home/advgetopt/.config/advgetopt.conf");
         }
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("$HOME is empty")
+    CATCH_START_SECTION("utils_handle_user_directory: $HOME is empty")
+    {
         snapdev::safe_setenv env("HOME", "");
 
         {
@@ -991,9 +1016,11 @@ CATCH_TEST_CASE("utils_handle_user_directory", "[utils][valid]")
             std::string result(advgetopt::handle_user_directory("~/.config/advgetopt.conf"));
             CATCH_REQUIRE(result == "~/.config/advgetopt.conf");
         }
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Paths do not start with ~")
+    CATCH_START_SECTION("utils_handle_user_directory: paths do not start with ~")
+    {
         snapdev::safe_setenv env("HOME", "/home/advgetopt");
 
         {
@@ -1005,6 +1032,7 @@ CATCH_TEST_CASE("utils_handle_user_directory", "[utils][valid]")
             std::string result(advgetopt::handle_user_directory("/~/.config/advgetopt.conf"));
             CATCH_REQUIRE(result == "/~/.config/advgetopt.conf");
         }
+    }
     CATCH_END_SECTION()
 }
 
@@ -1014,7 +1042,7 @@ CATCH_TEST_CASE("utils_handle_user_directory", "[utils][valid]")
 
 CATCH_TEST_CASE("utils_true_false", "[utils][boolean]")
 {
-    CATCH_START_SECTION("True Values")
+    CATCH_START_SECTION("utils_true_false: true values")
     {
         CATCH_REQUIRE(advgetopt::is_true("true"));
         CATCH_REQUIRE(advgetopt::is_true("on"));
@@ -1028,7 +1056,7 @@ CATCH_TEST_CASE("utils_true_false", "[utils][boolean]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("False Values")
+    CATCH_START_SECTION("utils_true_false: false values")
     {
         CATCH_REQUIRE(advgetopt::is_false("false"));
         CATCH_REQUIRE(advgetopt::is_false("off"));
@@ -1042,10 +1070,6 @@ CATCH_TEST_CASE("utils_true_false", "[utils][boolean]")
     }
     CATCH_END_SECTION()
 }
-
-
-
-
 
 
 

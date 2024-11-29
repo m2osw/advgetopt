@@ -54,7 +54,7 @@ CATCH_TEST_CASE("usage_function", "[getopt][usage]")
     tmpdir += "/.config/home";
     snapdev::safe_setenv env("HOME", tmpdir);
 
-    CATCH_START_SECTION("usage() using \"--filename\" for the default option accepting multiple entries")
+    CATCH_START_SECTION("usage_function: usage() using \"--filename\" for the default option accepting multiple entries")
     {
         advgetopt::option const options_list[] =
         {
@@ -496,7 +496,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("usage() using \"--filename\" for the default option accepting multiple entries which are required when \"--filename\" is used")
+    CATCH_START_SECTION("usage_function: usage() using \"--filename\" for the default option accepting multiple entries which are required when \"--filename\" is used")
     {
         const advgetopt::option options_list[] =
         {
@@ -843,7 +843,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("usage() using \"--filename\" for the default option accepting one required item")
+    CATCH_START_SECTION("usage_function: usage() using \"--filename\" for the default option accepting one required item")
     {
         // valid initialization + usage calls with a few different options
         const advgetopt::option options_list[] =
@@ -1010,7 +1010,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("usage() using \"--\" for the default option accepting one item")
+    CATCH_START_SECTION("usage_function: usage() using \"--\" for the default option accepting one item")
     {
         // valid initialization + usage calls with a few different options
         const advgetopt::option options_list[] =
@@ -1206,7 +1206,7 @@ advgetopt::breakup_line(
 
 CATCH_TEST_CASE("help_string_percent", "[getopt][usage]")
 {
-    CATCH_START_SECTION("Percent Percent")
+    CATCH_START_SECTION("help_string_percent: percent percent")
     {
         const advgetopt::option options_list[] =
         {
@@ -1281,7 +1281,7 @@ advgetopt::breakup_line(
 
 CATCH_TEST_CASE("help_string_project_name", "[getopt][usage]")
 {
-    CATCH_START_SECTION("Percent Project Name (name defined)")
+    CATCH_START_SECTION("help_string_project_name: percent project name (name defined)")
     {
         const advgetopt::option options_list[] =
         {
@@ -1338,7 +1338,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Project Name (nullptr)")
+    CATCH_START_SECTION("help_string_project_name: percent project name (nullptr)")
     {
         const advgetopt::option options_list[] =
         {
@@ -1386,7 +1386,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Project Name (\"\")")
+    CATCH_START_SECTION("help_string_project_name: percent project name (\"\")")
     {
         const advgetopt::option options_list[] =
         {
@@ -1439,7 +1439,7 @@ advgetopt::breakup_line(
 
 CATCH_TEST_CASE("help_string_build_date", "[getopt][usage]")
 {
-    CATCH_START_SECTION("Percent Build Date (defined)")
+    CATCH_START_SECTION("help_string_build_date: percent build date (defined)")
     {
         const advgetopt::option options_list[] =
         {
@@ -1496,7 +1496,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Build Date (nullptr)")
+    CATCH_START_SECTION("help_string_build_date: percent build date (nullptr)")
     {
         const advgetopt::option options_list[] =
         {
@@ -1544,7 +1544,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Build Date (\"\")")
+    CATCH_START_SECTION("help_string_build_date: percent build date (\"\")")
     {
         const advgetopt::option options_list[] =
         {
@@ -1598,7 +1598,7 @@ advgetopt::breakup_line(
 
 CATCH_TEST_CASE("help_string_copyright", "[getopt][usage]")
 {
-    CATCH_START_SECTION("Percent Copyright (defined)")
+    CATCH_START_SECTION("help_string_copyright: percent copyright (defined)")
     {
         const advgetopt::option options_list[] =
         {
@@ -1675,7 +1675,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Copyright (nullptr)")
+    CATCH_START_SECTION("help_string_copyright: percent copyright (nullptr)")
     {
         const advgetopt::option options_list[] =
         {
@@ -1723,7 +1723,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Copyright (\"\")")
+    CATCH_START_SECTION("help_string_copyright: percent copyright (\"\")")
     {
         const advgetopt::option options_list[] =
         {
@@ -1777,7 +1777,7 @@ advgetopt::breakup_line(
 
 CATCH_TEST_CASE("help_string_directories", "[getopt][usage][config]")
 {
-    CATCH_START_SECTION("Percent Directories (fully defined)")
+    CATCH_START_SECTION("help_string_copyright: percent directories (fully defined)")
     {
         const advgetopt::option options_list[] =
         {
@@ -1845,7 +1845,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Asterisk Directories (fully defined)")
+    CATCH_START_SECTION("help_string_copyright: percent asterisk directories (fully defined)")
     {
         const advgetopt::option options_list[] =
         {
@@ -1916,7 +1916,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Directories (nullptr)")
+    CATCH_START_SECTION("help_string_copyright: percent directories (nullptr)")
     {
         const advgetopt::option options_list[] =
         {
@@ -1964,7 +1964,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Asterisk Directories (nullptr)")
+    CATCH_START_SECTION("help_string_copyright: percent asterisk directories (nullptr)")
     {
         const advgetopt::option options_list[] =
         {
@@ -2015,7 +2015,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Directories (empty array)")
+    CATCH_START_SECTION("help_string_copyright: percent directories (empty array)")
     {
         const advgetopt::option options_list[] =
         {
@@ -2068,7 +2068,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Asterisk Directories (empty array)")
+    CATCH_START_SECTION("help_string_copyright: percent asterisk directories (empty array)")
     {
         const advgetopt::option options_list[] =
         {
@@ -2130,7 +2130,7 @@ advgetopt::breakup_line(
 
 CATCH_TEST_CASE("help_string_environment_variable", "[getopt][usage]")
 {
-    CATCH_START_SECTION("Percent Environment Variable (fully defined, variable set)")
+    CATCH_START_SECTION("help_string_copyright: percent environment variable (fully defined, variable set)")
     {
         snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--verbose");
 
@@ -2190,7 +2190,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Environment Variable (fully defined, variable not set)")
+    CATCH_START_SECTION("help_string_copyright: percent environment variable (fully defined, variable not set)")
     {
         const advgetopt::option options_list[] =
         {
@@ -2248,7 +2248,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Asterisk Environment Variable (fully defined, variable set)")
+    CATCH_START_SECTION("help_string_copyright: percent asterisk environment variable (fully defined, variable set)")
     {
         snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--verbose");
 
@@ -2308,7 +2308,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Asterisk Environment Variable (fully defined, variable not set)")
+    CATCH_START_SECTION("help_string_copyright: percent asterisk environment variable (fully defined, variable not set)")
     {
         const advgetopt::option options_list[] =
         {
@@ -2366,7 +2366,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Environment Variable (nullptr, variable set)")
+    CATCH_START_SECTION("help_string_copyright: percent environment variable (nullptr, variable set)")
     {
         snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--verbose");
 
@@ -2418,7 +2418,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Environment Variable (nullptr, variable not set)")
+    CATCH_START_SECTION("help_string_copyright: percent environment variable (nullptr, variable not set)")
     {
         const advgetopt::option options_list[] =
         {
@@ -2465,7 +2465,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Asterisk Environment Variable (nullptr, variable set)")
+    CATCH_START_SECTION("help_string_copyright: percent asterisk environment variable (nullptr, variable set)")
     {
         snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--verbose");
 
@@ -2517,7 +2517,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Asterisk Environment Variable (nullptr, variable not set)")
+    CATCH_START_SECTION("help_string_copyright: percent asterisk environment variable (nullptr, variable not set)")
     {
         const advgetopt::option options_list[] =
         {
@@ -2567,7 +2567,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Environment Variable (empty string, variable set)")
+    CATCH_START_SECTION("help_string_copyright: percent environment variable (empty string, variable set)")
     {
         snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--verbose");
 
@@ -2617,7 +2617,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Environment Variable (empty string, variable not set)")
+    CATCH_START_SECTION("help_string_copyright: percent environment variable (empty string, variable not set)")
     {
         const advgetopt::option options_list[] =
         {
@@ -2665,7 +2665,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Asterisk Environment Variable (empty string, variable set)")
+    CATCH_START_SECTION("help_string_copyright: percent asterisk environment variable (empty string, variable set)")
     {
         snapdev::safe_setenv env("ADVGETOPT_TEST_OPTIONS", "--verbose");
 
@@ -2717,7 +2717,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Asterisk Environment Variable (empty string, variable not set)")
+    CATCH_START_SECTION("help_string_copyright: percent asterisk environment variable (empty string, variable not set)")
     {
         const advgetopt::option options_list[] =
         {
@@ -2767,7 +2767,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Environment Variable Intro (undefined)")
+    CATCH_START_SECTION("help_string_copyright: environment variable intro (undefined)")
     {
         const advgetopt::option options_list[] =
         {
@@ -2832,7 +2832,7 @@ advgetopt::breakup_line(
 
 CATCH_TEST_CASE("help_string_configuration_files", "[getopt][usage][config]")
 {
-    CATCH_START_SECTION("Percent Configuration Files with f (fully defined)")
+    CATCH_START_SECTION("help_string_copyright: percent configuration files with f (fully defined)")
     {
         const advgetopt::option options_list[] =
         {
@@ -2899,7 +2899,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Asterisk Configuration Files with f (fully defined)")
+    CATCH_START_SECTION("help_string_copyright: percent asterisk configuration files with f (fully defined)")
     {
         const advgetopt::option options_list[] =
         {
@@ -2970,7 +2970,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Configuration Files with f (nullptr)")
+    CATCH_START_SECTION("help_string_copyright: percent configuration files with f (nullptr)")
     {
         const advgetopt::option options_list[] =
         {
@@ -3018,7 +3018,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Asterisk Configuration Files with f (nullptr)")
+    CATCH_START_SECTION("help_string_copyright: percent asterisk configuration files with f (nullptr)")
     {
         const advgetopt::option options_list[] =
         {
@@ -3069,7 +3069,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Configuration Files with f (empty array)")
+    CATCH_START_SECTION("help_string_copyright: percent configuration files with f (empty array)")
     {
         const advgetopt::option options_list[] =
         {
@@ -3122,7 +3122,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Asterisk Configuration Files with f (empty array)")
+    CATCH_START_SECTION("help_string_copyright: percent asterisk configuration files with f (empty array)")
     {
         const advgetopt::option options_list[] =
         {
@@ -3182,7 +3182,7 @@ advgetopt::breakup_line(
 
 CATCH_TEST_CASE("help_string_configuration_files_functions", "[getopt][usage][config]")
 {
-    CATCH_START_SECTION("Percent Configuration Files with g (fully defined)")
+    CATCH_START_SECTION("help_string_copyright: percent configuration files with g (fully defined)")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("config_filenames", "existing_g");
 
@@ -3278,7 +3278,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Configuration Files with g (fully defined)")
+    CATCH_START_SECTION("help_string_copyright: percent configuration files with g (fully defined)")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("config_file_names", "with_existing_g");
 
@@ -3373,7 +3373,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Asterisk Configuration Files with g (fully defined)")
+    CATCH_START_SECTION("help_string_copyright: percent asterisk configuration files with g (fully defined)")
     {
         const advgetopt::option options_list[] =
         {
@@ -3466,7 +3466,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Configuration Files with g (nullptr)")
+    CATCH_START_SECTION("help_string_copyright: percent configuration files with g (nullptr)")
     {
         const advgetopt::option options_list[] =
         {
@@ -3514,7 +3514,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Asterisk Configuration Files with g (nullptr)")
+    CATCH_START_SECTION("help_string_copyright: percent asterisk configuration files with g (nullptr)")
     {
         const advgetopt::option options_list[] =
         {
@@ -3586,7 +3586,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Configuration Files with g (empty array)")
+    CATCH_START_SECTION("help_string_copyright: percent configuration files with g (empty array)")
     {
         const advgetopt::option options_list[] =
         {
@@ -3639,7 +3639,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Asterisk Configuration Files with g (empty array)")
+    CATCH_START_SECTION("help_string_copyright: percent asterisk configuration files with g (empty array)")
     {
         const advgetopt::option options_list[] =
         {
@@ -3722,7 +3722,7 @@ advgetopt::breakup_line(
 
 CATCH_TEST_CASE("help_string_option_file_directory", "[getopt][usage][config]")
 {
-    CATCH_START_SECTION("Percent Configuration Files with i (fully defined)")
+    CATCH_START_SECTION("help_string_option_file_directory: percent configuration files with i (fully defined)")
     {
         const advgetopt::option options_list[] =
         {
@@ -3784,7 +3784,7 @@ CATCH_TEST_CASE("help_string_option_file_directory", "[getopt][usage][config]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Configuration Files with i (nullptr)")
+    CATCH_START_SECTION("help_string_option_file_directory: percent configuration files with i (nullptr)")
     {
         const advgetopt::option options_list[] =
         {
@@ -3841,7 +3841,7 @@ advgetopt::breakup_line("Usage: test usage: /usr/share/advgetopt/options/unittes
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Configuration Files with i (empty string)")
+    CATCH_START_SECTION("help_string_option_file_directory: percent configuration files with i (empty string)")
     {
         const advgetopt::option options_list[] =
         {
@@ -3904,7 +3904,7 @@ advgetopt::breakup_line("Usage: test usage: /usr/share/advgetopt/options/unittes
 
 CATCH_TEST_CASE("help_string_license", "[getopt][usage]")
 {
-    CATCH_START_SECTION("Percent License (defined)")
+    CATCH_START_SECTION("help_string_license: percent license (defined)")
     {
         const advgetopt::option options_list[] =
         {
@@ -3956,7 +3956,7 @@ advgetopt::breakup_line("Usage: test usage: MIT-%l", 0, advgetopt::get_screen_wi
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent License (nullptr)")
+    CATCH_START_SECTION("help_string_license: percent license (nullptr)")
     {
         const advgetopt::option options_list[] =
         {
@@ -4004,7 +4004,7 @@ advgetopt::breakup_line("Usage: test usage: MIT-%l", 0, advgetopt::get_screen_wi
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent License (\"\")")
+    CATCH_START_SECTION("help_string_license: percent license (\"\")")
     {
         const advgetopt::option options_list[] =
         {
@@ -4058,7 +4058,7 @@ advgetopt::breakup_line("Usage: test usage: MIT-%l", 0, advgetopt::get_screen_wi
 
 CATCH_TEST_CASE("help_string_configuration_output_file", "[getopt][usage][config]")
 {
-    CATCH_START_SECTION("Percent Configuration Output File (fully defined)")
+    CATCH_START_SECTION("help_string_license: percent configuration output file (fully defined)")
     {
         const advgetopt::option options_list[] =
         {
@@ -4119,7 +4119,7 @@ advgetopt::breakup_line("Usage: test usage: unittest.d/50-user.config", 0, advge
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Configuration Output File (nullptr)")
+    CATCH_START_SECTION("help_string_license: percent configuration output file (nullptr)")
     {
         const advgetopt::option options_list[] =
         {
@@ -4177,7 +4177,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Configuration Output File (empty array)")
+    CATCH_START_SECTION("help_string_license: percent configuration output file (empty array)")
     {
         const advgetopt::option options_list[] =
         {
@@ -4249,7 +4249,7 @@ advgetopt::breakup_line(
 
 CATCH_TEST_CASE("help_string_program_name", "[getopt][usage]")
 {
-    CATCH_START_SECTION("Percent Program Name")
+    CATCH_START_SECTION("help_string_program_name: percent program name")
     {
         const advgetopt::option options_list[] =
         {
@@ -4301,7 +4301,7 @@ advgetopt::breakup_line("Usage: test usage: usage", 0, advgetopt::get_screen_wid
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Asterisk Program Name")
+    CATCH_START_SECTION("help_string_program_name: percent asterisk program name")
     {
         const advgetopt::option options_list[] =
         {
@@ -4353,7 +4353,7 @@ advgetopt::breakup_line("Usage: test usage: tests/unittests/usage", 0, advgetopt
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Program Name (empty--before parsing the arguments)")
+    CATCH_START_SECTION("help_string_program_name: percent program name (empty--before parsing the arguments)")
     {
         const advgetopt::option options_list[] =
         {
@@ -4400,7 +4400,7 @@ advgetopt::breakup_line("Usage: test usage: tests/unittests/usage", 0, advgetopt
 
 CATCH_TEST_CASE("help_string_build_time", "[getopt][usage]")
 {
-    CATCH_START_SECTION("Percent Build Time (defined)")
+    CATCH_START_SECTION("help_string_build_time: percent build time (defined)")
     {
         const advgetopt::option options_list[] =
         {
@@ -4451,7 +4451,7 @@ advgetopt::breakup_line("Usage: test usage: 23:02:36 %t", 0, advgetopt::get_scre
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Build Time (nullptr)")
+    CATCH_START_SECTION("help_string_build_time: percent build time (nullptr)")
     {
         const advgetopt::option options_list[] =
         {
@@ -4507,7 +4507,7 @@ advgetopt::breakup_line("Usage: test usage: 23:02:36 %t", 0, advgetopt::get_scre
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Build Time (\"\")")
+    CATCH_START_SECTION("help_string_build_time: percent build time (\"\")")
     {
         const advgetopt::option options_list[] =
         {
@@ -4561,7 +4561,7 @@ advgetopt::breakup_line("Usage: test usage: 23:02:36 %t", 0, advgetopt::get_scre
 
 CATCH_TEST_CASE("help_string_version", "[getopt][usage]")
 {
-    CATCH_START_SECTION("Percent Version (defined)")
+    CATCH_START_SECTION("help_string_version: percent version (defined)")
     {
         const advgetopt::option options_list[] =
         {
@@ -4612,7 +4612,7 @@ advgetopt::breakup_line("Usage: test usage: 2.0.1-%v", 0, advgetopt::get_screen_
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Version (nullptr)")
+    CATCH_START_SECTION("help_string_version: percent version (nullptr)")
     {
         const advgetopt::option options_list[] =
         {
@@ -4660,7 +4660,7 @@ advgetopt::breakup_line("Usage: test usage: 2.0.1-%v", 0, advgetopt::get_screen_
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Version (\"\")")
+    CATCH_START_SECTION("help_string_version: percent version (\"\")")
     {
         const advgetopt::option options_list[] =
         {
@@ -4715,7 +4715,7 @@ advgetopt::breakup_line("Usage: test usage: 2.0.1-%v", 0, advgetopt::get_screen_
 
 CATCH_TEST_CASE("help_string_writable_configuration_files", "[getopt][usage][config]")
 {
-    CATCH_START_SECTION("Percent Writable Configuration Files (fully defined--one file)")
+    CATCH_START_SECTION("help_string_writable_configuration_files: percent writable configuration files (fully defined--one file)")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("config_writable_filenames", "writable_filenames");
 
@@ -4806,7 +4806,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Writable Configuration Files (fully defined)")
+    CATCH_START_SECTION("help_string_writable_configuration_files: percent writable configuration files (fully defined)")
     {
         SNAP_CATCH2_NAMESPACE::init_tmp_dir("config_writable_filenames", "writable_filenames");
         std::string const save_config_filename(SNAP_CATCH2_NAMESPACE::g_config_filename);
@@ -4927,7 +4927,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Writable Configuration Files (nullptr)")
+    CATCH_START_SECTION("help_string_writable_configuration_files: percent writable configuration files (nullptr)")
     {
         const advgetopt::option options_list[] =
         {
@@ -4975,7 +4975,7 @@ advgetopt::breakup_line(
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Percent Writable Configuration Files (empty array)")
+    CATCH_START_SECTION("help_string_writable_configuration_files: percent writable configuration files (empty array)")
     {
         const advgetopt::option options_list[] =
         {
@@ -5034,7 +5034,7 @@ advgetopt::breakup_line(
 
 CATCH_TEST_CASE("invalid_group_for_find_group", "[getopt][usage][config][invalid]")
 {
-    CATCH_START_SECTION("find_group() with invalid flags")
+    CATCH_START_SECTION("invalid_group_for_find_group: find_group() with invalid flags")
     {
         for(int idx(0); idx < 32; ++idx)
         {
@@ -5072,7 +5072,7 @@ CATCH_TEST_CASE("invalid_group_for_find_group", "[getopt][usage][config][invalid
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("find_group() with GETOPT_FLAG_GROUP_NONE")
+    CATCH_START_SECTION("invalid_group_for_find_group: find_group() with GETOPT_FLAG_GROUP_NONE")
     {
         advgetopt::group_description const groups[] =
         {
@@ -5098,7 +5098,7 @@ CATCH_TEST_CASE("invalid_group_for_find_group", "[getopt][usage][config][invalid
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("find_group() with invalid group definitions")
+    CATCH_START_SECTION("invalid_group_for_find_group: find_group() with invalid group definitions")
     {
         // define groups without name nor description
         // (later the define_group() will err at compile time on those

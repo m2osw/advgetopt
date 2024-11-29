@@ -35,11 +35,13 @@
 
 CATCH_TEST_CASE("version", "[version][valid]")
 {
-    CATCH_START_SECTION("Verify the library version")
+    CATCH_START_SECTION("version: verify the library version")
+    {
         CATCH_REQUIRE(advgetopt::get_major_version() == LIBADVGETOPT_VERSION_MAJOR);
         CATCH_REQUIRE(advgetopt::get_release_version() == LIBADVGETOPT_VERSION_MINOR);
         CATCH_REQUIRE(advgetopt::get_patch_version() == LIBADVGETOPT_VERSION_PATCH);
         CATCH_REQUIRE(strcmp(advgetopt::get_version_string(), LIBADVGETOPT_VERSION_STRING) == 0);
+    }
     CATCH_END_SECTION()
 }
 

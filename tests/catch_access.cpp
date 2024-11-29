@@ -43,12 +43,10 @@
 
 
 
-
-
-
 CATCH_TEST_CASE("program_name", "[program_name][valid][getopt]")
 {
-    CATCH_START_SECTION("Verify a nullptr program name in argv[]s")
+    CATCH_START_SECTION("program_name: Verify a nullptr program name in argv[]s")
+    {
         advgetopt::options_environment environment_options;
         environment_options.f_project_name = "unittest";
         environment_options.f_help_header = "Usage: verify program name handling";
@@ -68,9 +66,11 @@ CATCH_TEST_CASE("program_name", "[program_name][valid][getopt]")
 
         CATCH_REQUIRE(opt.get_program_name().empty());
         CATCH_REQUIRE(opt.get_program_fullname().empty());
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify a program name with no path")
+    CATCH_START_SECTION("program_name: verify a program name with no path")
+    {
         advgetopt::options_environment environment_options;
         environment_options.f_project_name = "unittest";
         environment_options.f_options = nullptr;
@@ -91,9 +91,11 @@ CATCH_TEST_CASE("program_name", "[program_name][valid][getopt]")
 
         CATCH_REQUIRE(opt.get_program_name() == "basename-only.exe");
         CATCH_REQUIRE(opt.get_program_fullname() == "basename-only.exe");
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify a program name with a relative path")
+    CATCH_START_SECTION("program_name: verify a program name with a relative path")
+    {
         advgetopt::options_environment environment_options;
         environment_options.f_project_name = "unittest";
         environment_options.f_options = nullptr;
@@ -114,9 +116,11 @@ CATCH_TEST_CASE("program_name", "[program_name][valid][getopt]")
 
         CATCH_REQUIRE(opt.get_program_name() == "and-basename.tool");
         CATCH_REQUIRE(opt.get_program_fullname() == "project/bin/and-basename.tool");
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify a program name with a relative path and backslashes")
+    CATCH_START_SECTION("program_name: verify a program name with a relative path and backslashes")
+    {
         advgetopt::options_environment environment_options;
         environment_options.f_project_name = "unittest";
         environment_options.f_options = nullptr;
@@ -137,9 +141,11 @@ CATCH_TEST_CASE("program_name", "[program_name][valid][getopt]")
 
         CATCH_REQUIRE(opt.get_program_name() == "and-basename.tool");
         CATCH_REQUIRE(opt.get_program_fullname() == "project\\bin\\and-basename.tool");
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify a program name with a full path")
+    CATCH_START_SECTION("program_name: verify a program name with a full path")
+    {
         advgetopt::options_environment environment_options;
         environment_options.f_project_name = "unittest";
         environment_options.f_options = nullptr;
@@ -160,9 +166,11 @@ CATCH_TEST_CASE("program_name", "[program_name][valid][getopt]")
 
         CATCH_REQUIRE(opt.get_program_name() == "basename");
         CATCH_REQUIRE(opt.get_program_fullname() == "/usr/bin/basename");
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify a program name with a full path and backslashes")
+    CATCH_START_SECTION("program_name: verify a program name with a full path and backslashes")
+    {
         advgetopt::options_environment environment_options;
         environment_options.f_project_name = "unittest";
         environment_options.f_options = nullptr;
@@ -183,23 +191,26 @@ CATCH_TEST_CASE("program_name", "[program_name][valid][getopt]")
 
         CATCH_REQUIRE(opt.get_program_name() == "basename");
         CATCH_REQUIRE(opt.get_program_fullname() == "\\usr\\bin\\basename");
+    }
     CATCH_END_SECTION()
 }
 
 
-
 CATCH_TEST_CASE("project_name", "[project_name][valid][getopt]")
 {
-    CATCH_START_SECTION("Verify a nullptr project name")
+    CATCH_START_SECTION("project_name: verify a nullptr project name")
+    {
         advgetopt::options_environment environment_options;
         environment_options.f_help_header = "Usage: verify project name handling";
 
         advgetopt::getopt opt(environment_options);
 
         CATCH_REQUIRE(opt.get_project_name().empty());
+    }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("Verify an actual project name")
+    CATCH_START_SECTION("project_name: verify an actual project name")
+    {
         advgetopt::options_environment environment_options;
         environment_options.f_project_name = "unit-test";
         environment_options.f_help_header = "Usage: verify program name handling";
@@ -207,13 +218,15 @@ CATCH_TEST_CASE("project_name", "[project_name][valid][getopt]")
         advgetopt::getopt opt(environment_options);
 
         CATCH_REQUIRE(opt.get_project_name() == "unit-test");
+    }
     CATCH_END_SECTION()
 }
 
 
 CATCH_TEST_CASE("invalid_program_name", "[program_name][invalid][getopt]")
 {
-    CATCH_START_SECTION("Parsing a nullptr program name throws")
+    CATCH_START_SECTION("invalid_program_name: parsing a nullptr program name throws")
+    {
         advgetopt::options_environment environment_options;
         environment_options.f_project_name = "unittest";
         environment_options.f_help_header = "Usage: verify program name handling";
@@ -225,9 +238,9 @@ CATCH_TEST_CASE("invalid_program_name", "[program_name][invalid][getopt]")
                 , advgetopt::getopt_logic_error
                 , Catch::Matchers::ExceptionMessage(
                               "getopt_logic_error: argv pointer cannot be nullptr"));
+    }
     CATCH_END_SECTION()
 }
-
 
 
 

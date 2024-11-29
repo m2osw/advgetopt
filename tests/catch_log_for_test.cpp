@@ -128,5 +128,6 @@ void expected_logs_stack_is_empty()
 }
 
 
+
 } // SNAP_CATCH2_NAMESPACE namespace
 // vim: ts=4 sw=4 et
