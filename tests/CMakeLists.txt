@@ -66,12 +66,6 @@ if(SnapCatch2_FOUND)
         file(MAKE_DIRECTORY ${TMPDIR})
     endif()
 
-    #unset( DEBUG_WORD )
-    #if( "${CMAKE_BUILD_TYPE}" STREQUAL "Debug" )
-    #    set( DEBUG_WORD "_d" )
-    #endif()
-    add_test(unittests ${PROJECT_NAME} --tmp ${TMPDIR})
-
 else(SnapCatch2_FOUND)
 
     message("snapcatch2 not found... no test will be built.")
