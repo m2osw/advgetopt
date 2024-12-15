@@ -219,7 +219,7 @@ CATCH_TEST_CASE("invalid_logger", "[logger][invalid][log]")
             }
 
             CATCH_REQUIRE_THROWS_MATCHES(cppthread::to_string(level)
-                    , cppthread::cppthread_invalid_error
+                    , cppthread::invalid_error
                     , Catch::Matchers::ExceptionMessage(
                               "cppthread_exception: unknown log level ("
                             + std::to_string(static_cast<int>(level))
