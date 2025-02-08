@@ -86,7 +86,7 @@ class OptionValue
 public:
     typedef T   value_t;
 
-    constexpr OptionValue<T>(T const v)
+    constexpr OptionValue(T const v)
         : f_value(v)
     {
     }
@@ -322,7 +322,7 @@ class GroupValue
 public:
     typedef T   value_t;
 
-    constexpr GroupValue<T>(T const v)
+    constexpr GroupValue(T const v)
         : f_value(v)
     {
     }
