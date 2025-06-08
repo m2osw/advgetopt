@@ -28,6 +28,17 @@
  * by your application.
  *
  * The value is checked for overflows on a signed 64 bits value.
+ *
+ * The function supports decimal numbers by default (base 10). An introducer
+ * can be used to change the base as follow:
+ *
+ * \li 0x... -- hexadecimal numbers
+ * \li 0d... -- decimal numbers
+ * \li 0o... -- octal numbers
+ * \li 0b... -- binary numbers
+ *
+ * Note that a number that starts with 0 does not represent an octal
+ * number with the existing algorithm.
  */
 
 // self
@@ -109,7 +120,7 @@ validator_integer_factory       g_validator_integer_factory;
  *    range: number
  *         | number '...' number
  *
- *    number: [-+]?[0-9]+
+ *    number: [-+]?(0[bdox])?[0-9]+
  * \endcode
  *
  * Note that a single number is considered to be a range and is managed
@@ -287,9 +298,35 @@ bool validator_integer::convert_string(std::string const & value, std::int64_t &
         ++s;
     }
 
+    int base(10);
+    if(*s == '0')
+    {
+        if(s[1] == 'b')
+        {
+            base = 2;
+            s += 2;
+        }
+        else if(s[1] == 'd')
+        {
+            //base = 10; -- this is the default
+            s += 2;
+        }
+        else if(s[1] == 'o')
+        {
+            base = 8;
+            s += 2;
+        }
+        else if(s[1] == 'x')
+        {
+            base = 16;
+            s += 2;
+        }
+        // else start from 's' (including the '0')
+    }
+
     if(*s == '\0')
     {
-        // empty string, not considered valid
+        // empty string or just the introducer, not considered valid
         //
         return false;
     }
@@ -319,7 +356,21 @@ bool validator_integer::convert_string(std::string const & value, std::int64_t &
             }
             return true;
         }
-        if(c < '0' || c > '9')
+
+        std::int64_t digit(std::numeric_limits<std::int64_t>::max());
+        if(c >= '0' && c <= '9')
+        {
+            digit = c - '0';
+        }
+        else if(c >= 'a' && c <= 'f')
+        {
+            digit = c - ('a' - 10);
+        }
+        else if(c >= 'A' && c <= 'F')
+        {
+            digit = c - ('A' - 10);
+        }
+        if(digit >= base)
         {
             // invalid digit
             //
@@ -327,7 +378,7 @@ bool validator_integer::convert_string(std::string const & value, std::int64_t &
         }
 
         std::uint64_t const old(integer);
-        integer = integer * 10 + c - '0';
+        integer = integer * base + digit;
         if(integer < old)
         {
             // overflow
