@@ -43,7 +43,7 @@ configure_file(
     ${CMAKE_CURRENT_BINARY_DIR}/version.h
 )
 
-add_library( ${PROJECT_NAME} SHARED
+add_library(${PROJECT_NAME} SHARED
     advgetopt.cpp
     advgetopt_access.cpp
     advgetopt_config.cpp
@@ -91,7 +91,7 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 
-set_target_properties( ${PROJECT_NAME} PROPERTIES
+set_target_properties(${PROJECT_NAME} PROPERTIES
     VERSION
         ${LIBADVGETOPT_VERSION_MAJOR}.${LIBADVGETOPT_VERSION_MINOR}
     SOVERSION
@@ -101,10 +101,13 @@ set_target_properties( ${PROJECT_NAME} PROPERTIES
 install(
     TARGETS
         ${PROJECT_NAME}
+
     RUNTIME DESTINATION
         bin
+
     LIBRARY DESTINATION
         lib
+
     ARCHIVE DESTINATION
         lib
 )
@@ -127,6 +130,7 @@ install(
         validator_size.h
         variables.h
         ${CMAKE_CURRENT_BINARY_DIR}/version.h
+
     DESTINATION
         include/advgetopt
 )
