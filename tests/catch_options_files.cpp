@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2024  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2006-2025  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/project/advgetopt
 // contact@m2osw.com
@@ -29,6 +29,7 @@
 
 // snapdev
 //
+#include    <snapdev/pathinfo.h>
 #include    <snapdev/safe_setenv.h>
 
 
@@ -381,7 +382,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
 
                 "[from]\n"
                 "shortname=F\n"
-                "help=Request for the geographcal location representing the origin of the files; optionally you can specify the format\n"
+                "help=Request for the geographical location representing the origin of the files; optionally you can specify the format\n"
                 "validator=integer\n"
                 "environment_variable_name=FROM\n"
                 "allowed=command-line,environment-variable,configuration-file\n"
@@ -519,7 +520,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
             auto const o(options.find("from"));
             CATCH_REQUIRE(o != options.end());
             CATCH_REQUIRE(o->second->get_short_name() == U'F');
-            CATCH_REQUIRE(o->second->get_help() == "Request for the geographcal location representing the origin of the files; optionally you can specify the format");
+            CATCH_REQUIRE(o->second->get_help() == "Request for the geographical location representing the origin of the files; optionally you can specify the format");
             CATCH_REQUIRE_FALSE(o->second->has_default());
             CATCH_REQUIRE(o->second->get_validator()->name() == "integer");
             CATCH_REQUIRE(o->second->get_environment_variable_name() == "FROM");
@@ -748,7 +749,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
                 "\n"
                 "[from]\n"
                 "shortname=F\n"
-                "help=Request for the geographcal location representing the origin of the files; optionally you can specify the format.\n"
+                "help=Request for the geographical location representing the origin of the files; optionally you can specify the format.\n"
                 "validator=integer\n"
                 "environment_variable_name=FROM\n"
                 "allowed=command-line,environment-variable,configuration-file\n"
@@ -851,7 +852,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
                 "required\n"
                 "\n"
                 "[dimensions::from]\n"
-                "help=Request for the geographcal location representing the origin of the files; optionally you can specify the format.\n"
+                "help=Request for the geographical location representing the origin of the files; optionally you can specify the format.\n"
                 "validator=integer\n"
                 "environment_variable_name=FROM\n"
                 "allowed=command-line,environment-variable,configuration-file\n"
@@ -911,7 +912,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
         {
             auto const o(options.find("dimensions::from"));
             CATCH_REQUIRE(o != options.end());
-            CATCH_REQUIRE(o->second->get_help() == "Request for the geographcal location representing the origin of the files; optionally you can specify the format.");
+            CATCH_REQUIRE(o->second->get_help() == "Request for the geographical location representing the origin of the files; optionally you can specify the format.");
         }
 
         {
@@ -979,7 +980,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
                 "required\n"
                 "\n"
                 "[dimensions::from]\n"
-                "help=Request for the geographcal location representing the origin of the files; optionally you can specify the format.\n"
+                "help=Request for the geographical location representing the origin of the files; optionally you can specify the format.\n"
                 "validator=integer\n"
                 "environment_variable_name=FROM\n"
                 "allowed=command-line,environment-variable,configuration-file\n"
@@ -1035,7 +1036,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
         {
             auto const o(options.find("dimensions::from"));
             CATCH_REQUIRE(o != options.end());
-            CATCH_REQUIRE(o->second->get_help() == "Request for the geographcal location representing the origin of the files; optionally you can specify the format.");
+            CATCH_REQUIRE(o->second->get_help() == "Request for the geographical location representing the origin of the files; optionally you can specify the format.");
         }
 
         {
@@ -1097,7 +1098,7 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
             advgetopt::define_option(
                   advgetopt::Name("from")
                 , advgetopt::ShortName('F')
-                , advgetopt::Help("Request for the geographcal location representing the origin of the files; optionally you can specify the format")
+                , advgetopt::Help("Request for the geographical location representing the origin of the files; optionally you can specify the format")
                 , advgetopt::Validator("integer")
                 , advgetopt::Flags(advgetopt::all_flags<>())
             ),
