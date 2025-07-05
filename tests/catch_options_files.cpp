@@ -793,9 +793,18 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
         // to the load the data _manually_ to hit the errors of the load
         // function
         //
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: section \"default::integer\" from parameter \"size::default::integer\" on line 17 in configuration file \"/home/snapwebsites/snapcpp/BUILD/Debug/contrib/advgetopt/tmp/shared/advgetopt-double-namespace/unittest.ini\" includes a character (\\072) not acceptable for a section or parameter name (controls, space, quotes, and \";#/=:?+\\\").");
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: section \"default::string\" from parameter \"size::default::string\" on line 18 in configuration file \"/home/snapwebsites/snapcpp/BUILD/Debug/contrib/advgetopt/tmp/shared/advgetopt-double-namespace/unittest.ini\" includes a character (\\072) not acceptable for a section or parameter name (controls, space, quotes, and \";#/=:?+\\\").");
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: section \"flag::multiple\" from parameter \"output::flag::multiple\" on line 43 in configuration file \"/home/snapwebsites/snapcpp/BUILD/Debug/contrib/advgetopt/tmp/shared/advgetopt-double-namespace/unittest.ini\" includes a character (\\072) not acceptable for a section or parameter name (controls, space, quotes, and \";#/=:?+\\\").");
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+              "error: section \"default::integer\" from parameter \"size::default::integer\" on line 17 in configuration file \""
+            + options_filename
+            + "\" includes a character (\\072) not acceptable for a section or parameter name (controls, space, quotes, and \";#/=:?+\\\").");
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+              "error: section \"default::string\" from parameter \"size::default::string\" on line 18 in configuration file \""
+            + options_filename
+            + "\" includes a character (\\072) not acceptable for a section or parameter name (controls, space, quotes, and \";#/=:?+\\\").");
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+              "error: section \"flag::multiple\" from parameter \"output::flag::multiple\" on line 43 in configuration file \""
+            + options_filename
+            + "\" includes a character (\\072) not acceptable for a section or parameter name (controls, space, quotes, and \";#/=:?+\\\").");
         CATCH_REQUIRE_THROWS_MATCHES(
                       advgetopt::getopt(valid_options_from_file, sub_argc, sub_argv)
                     , advgetopt::getopt_exit
