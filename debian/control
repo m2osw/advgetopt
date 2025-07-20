@@ -4,7 +4,7 @@ Maintainer: Alexis Wilke <alexis@m2osw.com>
 Build-Depends: as2js (>= 0.1.39.0~jammy),
     cmake,
     cppthread-dev (>= 1.0.0.0~jammy),
-    debhelper,
+    debhelper-compat (= 13),
     doxygen,
     graphviz,
     libboost-dev,

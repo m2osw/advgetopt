@@ -1,3 +1,13 @@
+advgetopt (2.0.48.0~jammy) jammy; urgency=high
+
+  * Enhance documentation.
+  * Cleaned up & enhanced the tests.
+  * Added support for hexadecimal, octal and binary integers.
+  * Canonicalization of variable name is properly checking for scope and digits.
+  * Various clean ups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 10 Dec 2023 15:07:57 -0800
+
 advgetopt (2.0.47.0~jammy) jammy; urgency=high
 
   * Added a function to reset the configuration file cache.
