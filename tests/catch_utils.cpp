@@ -811,9 +811,10 @@ CATCH_TEST_CASE("utils_default_group_name", "[utils][valid]")
                             , "group-name"
                             , "project-name"
                             , priority));
-            CATCH_REQUIRE(fullname == "/this/is/a/group-name.d/0"
-                                        + std::to_string(priority)
-                                        + "-basename.ext");
+            std::string expected("/this/is/a/group-name.d/0");
+            expected += std::to_string(priority);
+            expected += "-basename.ext";
+            CATCH_REQUIRE(expected == fullname);
         }
         for(int priority(10); priority < 100; ++priority)
         {
@@ -822,9 +823,10 @@ CATCH_TEST_CASE("utils_default_group_name", "[utils][valid]")
                             , "group-name"
                             , "project-name"
                             , priority));
-            CATCH_REQUIRE(fullname == "/this/is/a/group-name.d/"
-                                        + std::to_string(priority)
-                                        + "-basename.ext");
+            std::string expected("/this/is/a/group-name.d/");
+            expected += std::to_string(priority);
+            expected += "-basename.ext";
+            CATCH_REQUIRE(expected == fullname);
         }
     }
     CATCH_END_SECTION()
