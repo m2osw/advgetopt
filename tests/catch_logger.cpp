@@ -131,7 +131,9 @@ CATCH_TEST_CASE("logger", "[logger][valid][log]")
         // gcc sees this one as a char
         {
             std::uint8_t v(rand());
-            std::string const msg(std::string("info: Test an uint8_t: ") + static_cast<char>(v) + ".");
+            std::string msg("info: Test an uint8_t: ");
+            msg += static_cast<char>(v);
+            msg += '.';
             SNAP_CATCH2_NAMESPACE::push_expected_log(msg);
             cppthread::log << cppthread::log_level_t::info
                            << "Test an uint8_t: "
