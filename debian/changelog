@@ -1,4 +1,4 @@
-advgetopt (2.0.49.1~jammy) jammy; urgency=high
+advgetopt (2.0.49.1~noble) noble; urgency=high
 
   * Change two more string concatenation so it works on newer versions.
 
