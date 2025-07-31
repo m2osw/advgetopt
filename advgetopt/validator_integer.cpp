@@ -146,7 +146,7 @@ validator_integer_factory       g_validator_integer_factory;
  *
  * This example allows all positive values.
  *
- * \param[in] ranges  The ranges used to limit the integer.
+ * \param[in] range_list  The ranges used to limit the integer.
  */
 validator_integer::validator_integer(string_list_t const & range_list)
 {

@@ -155,7 +155,7 @@ void getopt::parse_options_info(option const * opts, bool ignore_duplicates)
  * short-name to NO_SHORT_NAME before adding the option to the tables.
  *
  * \param[in] opt  The option to be added.
- * \param[in] ignore_duplicate  If option is a duplicate, do not add it.
+ * \param[in] ignore_duplicates  If option is a duplicate, do not add it.
  */
 void getopt::add_option(option_info::pointer_t opt, bool ignore_duplicates)
 {

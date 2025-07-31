@@ -169,10 +169,11 @@ conf_file_map_t     g_conf_files = conf_file_map_t();
  * gets saved as is.
  *
  * \param[in] filename  A valid filename.
- * \param[in] line_continue  One of the line_continuation_t values.
+ * \param[in] line_continuation  One of the line_continuation_t values.
  * \param[in] assignment_operator  A set of assignment operator flags.
  * \param[in] comment  A set of comment flags.
  * \param[in] section_operator  A set of section operator flags.
+ * \param[in] name_separator  In names, change dashes in underscores or vice versa.
  */
 conf_file_setup::conf_file_setup(
           std::string const & filename

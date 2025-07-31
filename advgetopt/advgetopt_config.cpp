@@ -77,8 +77,7 @@ namespace advgetopt
  * \param[in] writable  Only return files we consider writable.
  * \param[in] argc  The number of arguments in argv.
  * \param[in] argv  The arguments passed to the finish_parsing() function or
- * nullptr.
- * \param[in] environment_variable  The environment variable or an empty string.
+ *                  nullptr.
  *
  * \return The list of configuration filenames.
  */

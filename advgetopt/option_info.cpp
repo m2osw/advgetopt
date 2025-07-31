@@ -454,12 +454,13 @@ void option_info::set_environment_variable_name(std::string const & name)
 }
 
 
-/** \brief Set the default value of this option.
+/** \brief Set the name of the environment variable.
  *
- * This function is an overload which allows us to call set_default()
- * with a nullptr.
+ * This function sets the name of the environment variable which can include
+ * a set of options parsed before the command line.
  *
- * \param[in] default_value  The new default value for this option.
+ * \param[in] name  The name of the environment variable attached to this
+ * option.
  *
  * \sa get_environment_variable_name()
  * \sa get_environment_variable_value()
@@ -996,7 +997,7 @@ validator::pointer_t option_info::get_validator() const
  * makes sure that all the options that are marked as an alias are
  * properly linked.
  *
- * \param[in] alias  The final destination of this option.
+ * \param[in] destination  The final destination of this option.
  */
 void option_info::set_alias_destination(option_info::pointer_t destination)
 {

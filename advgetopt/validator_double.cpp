@@ -128,7 +128,7 @@ validator_double_factory       g_validator_double_factory;
  *
  * This example allows all positive values and zero.
  *
- * \param[in] ranges  The ranges used to limit the double.
+ * \param[in] range_list  The ranges used to limit the double.
  */
 validator_double::validator_double(string_list_t const & range_list)
 {
