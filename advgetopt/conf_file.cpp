@@ -1408,9 +1408,9 @@ std::string conf_file::get_parameter(std::string name) const
  * \li control characters (any character between 0x00 and 0x1F)
  * \li a space (0x20)
  * \li a backslash (`\`)
- * \li quotation (`"` and `'`)
- * \li comment (';', '#', '/')
- * \li assignment operators ('=', ':', '?', '+')
+ * \li quotation (`"`, &quot; and ')
+ * \li comment (`;`, `#`, `/`)
+ * \li assignment operators (`=`, `:`, `?`, `+`)
  *
  * \note
  * The \p section and \p name parameters have underscores (`_`)
