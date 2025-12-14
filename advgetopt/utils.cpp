@@ -314,7 +314,7 @@ std::string option_with_underscores(std::string const & s)
  *
  * \code
  *     string_list_t result;
- *     option_info::split_string(string_to_split, result, {","});
+ *     advgetopt::split_string(string_to_split, result, {","});
  * \endcode
  *
  * If `string_to_split` is set to "a, b, c", then the `result` vector
