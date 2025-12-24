@@ -214,7 +214,7 @@ void getopt::add_option(option_info::pointer_t opt, bool ignore_duplicates)
 /** \brief Get the path and filename to options.
  *
  * The programmer can define a path to options that the tool will load.
- * By default, that path is expected to be `/usr/share/advgetopt`.
+ * By default, that path is expected to be `/usr/share/advgetopt/options`.
  *
  * In order to allow debugging as a programmer, we also support changing
  * the source through an environment variable named
