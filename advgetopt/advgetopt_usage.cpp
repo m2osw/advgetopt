@@ -564,7 +564,8 @@ public:
  * \li "%*f" -- print out all the configuration full paths.
  * \li "%g" -- print out the list of existing configuration files.
  * \li "%*g" -- print out the list of all possible configuration files.
- * \li "%i" -- print out the directory to option files.
+ * \li "%i" -- print out the filenames of the option files.
+ * \li "%*i" -- print out the path to the option files.
  * \li "%l" -- print out the license.
  * \li "%o" -- show the configuration filename where changes get written.
  * \li "%p" -- print out the program basename.
@@ -719,9 +720,15 @@ std::string getopt::process_help_string(char const * help) const
             break;
 
         case 'i':
-            // in the advgetopt_options.cpp, we clearly add a final "/"
-            // so we want to add it here too, to be consistent
-            it->string(get_options_filename());
+            if(it->has_flags(usage_flag_traits::FORMAT_FLAG_EXTENDED))
+            {
+                it->string(get_path_to_option_files());
+            }
+            else
+            {
+                string_list_t const list(get_filenames_of_option_definitions());
+                it->string(snapdev::join_strings(list, ", "));
+            }
             break;
 
         case 'l':

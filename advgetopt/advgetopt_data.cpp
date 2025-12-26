@@ -799,19 +799,17 @@ flag_t getopt::process_system_options(std::basic_ostream<char> & out)
     // --path-to-option-definitions
     if(is_defined("path-to-option-definitions"))
     {
-        if(f_options_environment.f_options_files_directory == nullptr
-        || *f_options_environment.f_options_files_directory == '\0')
+        out << get_path_to_option_files() << std::endl;
+        result |= SYSTEM_OPTION_PATH_TO_OPTION_DEFINITIONS;
+    }
+
+    // --filenames-of-option-definitions
+    if(is_defined("filenames-of-option-definitions"))
+    {
+        string_list_t const list(getopt::get_filenames_of_option_definitions());
+        for(auto const & l : list)
         {
-            out << "/usr/share/advgetopt/options/" << std::endl;
-        }
-        else
-        {
-            out << f_options_environment.f_options_files_directory;
-            if(f_options_environment.f_options_files_directory[strlen(f_options_environment.f_options_files_directory) - 1] != '/')
-            {
-                out << '/';
-            }
-            out << std::endl;
+            out << l << std::endl;
         }
         result |= SYSTEM_OPTION_PATH_TO_OPTION_DEFINITIONS;
     }

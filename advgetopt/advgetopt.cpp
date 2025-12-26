@@ -180,9 +180,15 @@ namespace
  * Print out the list of configuration file names that the system checks
  * for configuration data.
  *
+ * \li `--filenames-of-option-definitions`
+ *
+ * Print out the main filename with option definitions. If other files
+ * also exist, then they are listed too. This is particularly useful when
+ * a service loads plugins that need additional options to work properly.
+ *
  * \li `--path-to-option-definitions`
  *
- * Print out the path to files which define options for this tool.
+ * Print out the path to files which define additional options for this tool.
  *
  * \li `--source-option-sources`
  *
@@ -230,6 +236,13 @@ option const g_system_options[] =
               GETOPT_FLAG_GROUP_COMMANDS
             , GETOPT_FLAG_SHOW_SYSTEM>())
         , Help("print out the name of the environment variable supported by %p (if any.)")
+    ),
+    define_option(
+          Name("filenames-of-option-definitions")
+        , Flags(standalone_command_flags<
+              GETOPT_FLAG_GROUP_COMMANDS
+            , GETOPT_FLAG_SHOW_SYSTEM>())
+        , Help("print out the full filename of the main option definitions and if any, the filenames of additional option definitions (often used by plugins).")
     ),
     define_option(
           Name("has-sanitizer")

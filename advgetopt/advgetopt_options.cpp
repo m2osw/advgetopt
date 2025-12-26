@@ -46,6 +46,7 @@
 
 // snapdev
 //
+#include    <snapdev/glob_to_list.h>
 #include    <snapdev/join_strings.h>
 #include    <snapdev/tokenize_string.h>
 
@@ -211,73 +212,154 @@ void getopt::add_option(option_info::pointer_t opt, bool ignore_duplicates)
 }
 
 
-/** \brief Get the path and filename to options.
- *
- * The programmer can define a path to options that the tool will load.
- * By default, that path is expected to be `/usr/share/advgetopt/options`.
- *
- * In order to allow debugging as a programmer, we also support changing
- * the source through an environment variable named
- * `ADVGETOPT_OPTIONS_FILES_DIRECTORY`. This variable is checked
- * first and any other path is ignored if it is defined and not just an
- * empty string.
- *
- * \note
- * If somehow you did not define a group or a project name, then the
- * function will return an empty string. Otherwise, this path always
- * exists.
- *
- * \return The path or an empty string.
- */
-std::string getopt::get_options_filename() const
+std::string getopt::get_path_to_option_files() const
 {
-    std::string const filename(get_group_or_project_name());
-    if(filename.empty())
-    {
-        return std::string();
-    }
-
     std::string path;
+
     char const * const options_files_directory(getenv("ADVGETOPT_OPTIONS_FILES_DIRECTORY"));
     if(options_files_directory != nullptr
     && *options_files_directory != '\0')
     {
+        // environment variable has priority
+        //
         path = options_files_directory;
     }
     else if(f_options_environment.f_options_files_directory != nullptr
          && f_options_environment.f_options_files_directory[0] != '\0')
     {
+        // next the tool option environment has priority
+        //
         path = f_options_environment.f_options_files_directory;
     }
     else
     {
+        // finally, use a default
+        //
         path = "/usr/share/advgetopt/options/";
     }
+
     if(path.back() != '/')
     {
         path += '/';
     }
 
-    return path + filename + ".ini";
+    return path;
+}
+
+
+/** \brief Get the path and filename to options.
+ *
+ * The programmer can define a path to options that the tool loads on
+ * initialization of the advgetopt object. By default, the path is
+ * expected to be `/usr/share/advgetopt/options` and the filename is
+ * set to the name of the group (if defined) or the name of the project
+ * (if defined).
+ *
+ * Note that if neither the group nor the project names are defined, then
+ * the function returns an empty list. If at least one of the names is
+ * defined, then at least one filename is added: the main filename. This
+ * does not mean that file exists. For the additional files, however, they
+ * are found using a pattern so they for sure exist.
+ *
+ * In order to allow debugging as a programmer, we also support changing
+ * the source directory through an environment variable named
+ * `ADVGETOPT_OPTIONS_FILES_DIRECTORY`. This variable is checked
+ * first and any other path is ignored if it is defined and not just an
+ * empty string.
+ *
+ * The following is the order in which things are being checked:
+ *
+ * \code
+ *     # if the options path variable & group name are defined
+ *     <variable-options-path>/<group-name>.ini
+ *     <variable-options-path>/<group-name>-*.ini
+ *
+ *     # if the options path variable & project name are defined
+ *     <variable-options-path>/<project-name>.ini
+ *     <variable-options-path>/<project-name>-*.ini
+ *
+ *     # if the options path & group name are defined
+ *     <options-path>/<group-name>.ini
+ *     <options-path>/<group-name>-*.ini
+ *
+ *     # if the options path & project name are defined
+ *     <options-path>/<project-name>.ini
+ *     <options-path>/<project-name>-*.ini
+ *
+ *     # if the group name is defined:
+ *     /usr/share/advgetopt/options/<group-name>.ini
+ *     /usr/share/advgetopt/options/<group-name>-*.ini
+ *
+ *     # if the project name is defined:
+ *     /usr/share/advgetopt/options/<project-name>.ini
+ *     /usr/share/advgetopt/options/<project-name>-*.ini
+ * \endcode
+ *
+ * \return A list of filenames to load option definitions from.
+ */
+string_list_t getopt::get_filenames_of_option_definitions() const
+{
+    string_list_t result;
+
+    std::string const filename(get_group_or_project_name());
+    if(filename.empty())
+    {
+        return result;
+    }
+
+    std::string const path(get_path_to_option_files());
+
+    // add the plain filename
+    //
+    result.push_back(path + filename + ".ini");
+
+    // look for additional filenames
+    //
+    std::string pattern(path + filename + "-*.ini");
+    snapdev::glob_to_list<std::list<std::string>> list;
+    if(list.read_path<snapdev::glob_to_list_flag_t::GLOB_FLAG_IGNORE_ERRORS>(pattern))
+    {
+        for(auto const & l : list)
+        {
+            result.push_back(l);
+        }
+    }
+
+    return result;
 }
 
 
 /** \brief Check for a file with option definitions.
  *
  * This function tries to read the default option file for this process.
- * This filename is generated using the the option environment files
- * directory and the project name.
+ * This filename is generated using the option environment files
+ * directory and the group or project name.
+ *
+ * First, we test with the name "<group-name>.ini" then again with a
+ * pattern: "<group-name>-*.ini". The order in which the files are defined
+ * is not important so there is no number required. If the group name is
+ * not defined, then the project name is used (i.e. "<project-name>-*.ini").
  *
  * If the directory is not defined, the function uses this default path:
  * `"/usr/share/advgetopt/options/"`. See the other
- * parse_options_from_file(std::string const & filename, int min_sections, int max_sections)
+ * parse_options_from_file(std::string const & filename, int min_sections,
+ * int max_sections, bool ignore_duplicates)
  * function for additional details.
  *
- * \sa parse_options_from_file(std::string const & filename, int min_sections, int max_sections)
+ * \note
+ * If you support plugins and thus want to possibly accept many extensions
+ * to your list of options, you may want to consider defining your own
+ * directory (the `options_environment.f_options_files_directory` parameter).
+ *
+ * \sa parse_options_from_file(std::string const & filename, int min_sections, int max_sections, bool ignore_duplicates)
  */
 void getopt::parse_options_from_file()
 {
-    parse_options_from_file(get_options_filename(), 1, 1);
+    string_list_t const list(get_filenames_of_option_definitions());
+    for(auto const & l : list)
+    {
+        parse_options_from_file(l, 1, 1);
+    }
 }
 
 

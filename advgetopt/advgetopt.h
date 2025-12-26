@@ -174,7 +174,8 @@ public:
     std::string             get_group_or_project_name() const;
     void                    define_environment_variable_data();
     std::string             get_environment_variable_name() const;
-    std::string             get_options_filename() const;
+    std::string             get_path_to_option_files() const;
+    string_list_t           get_filenames_of_option_definitions() const;
     size_t                  get_configuration_filename_size() const;
     std::string             get_configuration_filename(int idx) const;
     string_list_t           get_configuration_filenames(
