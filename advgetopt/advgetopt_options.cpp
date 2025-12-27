@@ -383,7 +383,7 @@ void getopt::parse_options_from_file()
  *     help=<help sentence>
  *     validator=<validator name>[(<param>[,<param>...])]|/<regex>/<flags>
  *     alias=<name of aliased option>
- *     allowed=command-line,environment-variable,configuration-file
+ *     allowed=command-line,environment-variable,configuration-file,dynamic-configuration
  *     show-usage-on-error
  *     no-arguments|multiple
  *     required
