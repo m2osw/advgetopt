@@ -23,7 +23,6 @@ project(advgetopt_library)
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 
-find_package(Boost            REQUIRED)
 find_package(CppThread        REQUIRED)
 find_package(LibExcept        REQUIRED)
 find_package(LibTLD           REQUIRED)

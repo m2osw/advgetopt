@@ -511,22 +511,23 @@ images. Hopefully you can reuse those aliases too.
 # Dependencies
 
 See debian/control for the latest. Here are the dependencies as of
-December 2021:
+December 2025:
 
+    as2js
     cmake
     cppthread-dev
-    debhelper
+    debhelper-compat
     doxygen
     graphviz
-    libboost-dev
     libexcept-dev
+    libtld-dev
     libutf8-dev
     snapcatch2
     snapcmakemodules
     snapdev
 
 Non-system dependencies can all be found in our
-[m2osw Organization](https://github.com/m2osw).
+[m2osw Organization](https://github.com/m2osw) on github.
 
 
 # License

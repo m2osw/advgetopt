@@ -31,11 +31,7 @@
 // snapdev
 //
 #include    <snapdev/safe_setenv.h>
-
-
-// boost
-//
-#include    <boost/preprocessor/stringize.hpp>
+#include    <snapdev/stringize.h>
 
 
 // C++
@@ -1378,10 +1374,10 @@ CATCH_TEST_CASE("system_flags_help", "[arguments][valid][getopt][system_flags]")
 
         // check the list of options
         //   3 -- the number of user defined option (see above)
-        //  12 -- the number of system options (see advgetopt.cpp)
+        //  13 -- the number of system options (see advgetopt.cpp)
         //   2 -- auto-added long-help
         advgetopt::option_info::map_by_name_t const & list_of_options(opt.get_options());
-        CATCH_REQUIRE(list_of_options.size() == 3 + 12 + 2);
+        CATCH_REQUIRE(list_of_options.size() == 3 + 13 + 2);
 
         // user options
         CATCH_REQUIRE(list_of_options.find("size") != list_of_options.end());
@@ -1617,6 +1613,13 @@ advgetopt::breakup_line(
               "--environment-variable-name"
             , "print out the name of the environment variable supported by"
               " arguments (if any.)"
+            , 30
+            , advgetopt::get_screen_width())
++ advgetopt::format_usage_string(
+              "--filenames-of-option-definitions"
+            , "print out the full filename of the main option definitions"
+              " and if any, the filenames of additional option definitions"
+              " (often used by plugins)."
             , 30
             , advgetopt::get_screen_width())
 + advgetopt::format_usage_string(
@@ -2085,7 +2088,7 @@ CATCH_TEST_CASE("system_flags_copyright", "[arguments][valid][getopt][system_fla
         environment_options.f_project_name = "unittest";
         environment_options.f_options = options;
         environment_options.f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS;
-        environment_options.f_copyright = "Copyright (c) " BOOST_PP_STRINGIZE(UTC_BUILD_YEAR) "  Made to Order Software Corporation";
+        environment_options.f_copyright = "Copyright (c) " SNAPDEV_STRINGIZE(UTC_BUILD_YEAR) "  Made to Order Software Corporation";
 
         char const * cargv[] =
         {
@@ -2145,7 +2148,7 @@ CATCH_TEST_CASE("system_flags_copyright", "[arguments][valid][getopt][system_fla
         std::stringstream ss;
         advgetopt::flag_t const result(opt.process_system_options(ss));
         CATCH_REQUIRE(result == advgetopt::SYSTEM_OPTION_COPYRIGHT);
-        CATCH_REQUIRE(ss.str() == "Copyright (c) " BOOST_PP_STRINGIZE(UTC_BUILD_YEAR) "  Made to Order Software Corporation\n");
+        CATCH_REQUIRE(ss.str() == "Copyright (c) " SNAPDEV_STRINGIZE(UTC_BUILD_YEAR) "  Made to Order Software Corporation\n");
     }
     CATCH_END_SECTION()
 

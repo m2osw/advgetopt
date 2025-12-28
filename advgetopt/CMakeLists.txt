@@ -73,7 +73,6 @@ add_library(${PROJECT_NAME} SHARED
 
 target_include_directories(${PROJECT_NAME}
     PUBLIC
-        ${BOOST_INCLUDE_DIRS}
         ${CPPTHREAD_INCLUDE_DIRS}
         ${LIBEXCEPT_INCLUDE_DIRS}
         ${LIBTLD_INCLUDE_DIRS}

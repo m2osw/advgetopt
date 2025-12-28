@@ -1,6 +1,4 @@
 
-* Remove boost dependency (I think all is available in the snapdev library).
-
 * Allow for multiple DEFAULT that accept just one filename. Use a "FIFO"
   type of list to accept those (TBD: how to properly define the order? we
   can use the array's order, I would imagine).

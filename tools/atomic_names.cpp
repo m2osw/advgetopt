@@ -69,11 +69,7 @@
 //
 #include    <snapdev/file_contents.h>
 #include    <snapdev/pathinfo.h>
-
-
-// boost
-//
-#include    <boost/preprocessor/stringize.hpp>
+#include    <snapdev/stringize.h>
 
 
 // C++
@@ -167,7 +163,7 @@ advgetopt::options_environment const g_options_environment =
     .f_version = CPPTHREAD_VERSION_STRING,
     .f_license = "GPL v2 or newer",
     .f_copyright = "Copyright (c) 2022-"
-                   BOOST_PP_STRINGIZE(UTC_BUILD_YEAR)
+                   SNAPDEV_STRINGIZE(UTC_BUILD_YEAR)
                    "  Made to Order Software Corporation",
     .f_build_date = UTC_BUILD_DATE,
     .f_build_time = UTC_BUILD_TIME,

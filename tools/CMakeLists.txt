@@ -116,7 +116,6 @@ add_executable(${PROJECT_NAME}
 
 target_include_directories(${PROJECT_NAME}
     PUBLIC
-        ${BOOST_INCLUDE_DIRS}
         ${CPPTHREAD_INCLUDE_DIRS}
         ${LIBEXCEPT_INCLUDE_DIRS}
         ${LIBUTF8_INCLUDE_DIRS}
