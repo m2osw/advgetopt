@@ -1302,8 +1302,8 @@ conf_file::parameters_t conf_file::get_parameters() const
 
 /** \brief Check whether a parameter is defined.
  *
- * This function checks for the existance of a parameter. It is a good
- * idea to first check for the existance of a parameter since the
+ * This function checks for the existence of a parameter. It is a good
+ * idea to first check for the existence of a parameter since the
  * get_parameter() function may otherwise return an empty string and
  * you cannot know whether that empty string means that the parameter
  * was not defined or it was set to the empty string.

@@ -663,10 +663,17 @@ std::string default_group_name(
  * nothing.
  *
  * \todo
- * Add support for "~<user name>/..." so that way a service could use its
+ * Add support for `~\<user name>/...` so that way a service could use its
  * own home folder even when run from a different user (a.k.a. root). This
  * requires that we load the user database and get the home folder from that
  * data.
+ *
+ * \todo
+ * Support the `~+` (`\$PWD`) and `~-` (`\$OLDPWD`).
+ *
+ * \todo
+ * Move this to our snapdev library since it's "so small" and maybe useful
+ * to other low level libraries.
  *
  * \param[in] filename  The filename to check for a tilde (~).
  *
