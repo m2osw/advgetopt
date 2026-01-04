@@ -137,6 +137,7 @@ bool validator_list::validate(std::string const & value) const
         }
     }
 
+    set_error("none of the validators could accept the input value.");
     return false;
 }
 

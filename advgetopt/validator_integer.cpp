@@ -265,9 +265,11 @@ bool validator_integer::validate(std::string const & value) const
                 return true;
             }
         }
+        set_error("out of range.");
         return false;
     }
 
+    set_error("not a valid number.");
     return false;
 }
 

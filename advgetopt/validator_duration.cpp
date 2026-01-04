@@ -40,6 +40,11 @@
 #include    <cppthread/log.h>
 
 
+// snapdev
+//
+#include    <snapdev/trim_string.h>
+
+
 // last include
 //
 #include    <snapdev/poison.h>
@@ -93,11 +98,19 @@ validator_duration_factory      g_validator_duration_factory;
  * The string uses the following format:
  *
  * \code
- *    start: flags
- *         | start flags
+ *    start: flag_or_range
+ *         | start ',' flag_or_range
+ *
+ *    flags_and_ranges: flag
+ *                    | range
  *
  *    flags: 'small'
  *         | 'large'
+ *
+ *    range: duration
+ *         | duration '...' duration
+ *
+ *    duration: [-+]?[0-9]+(.[0-9]+)?[dhmswy]
  * \endcode
  *
  * 'small' stands for small values (down to 1 second).
@@ -105,7 +118,30 @@ validator_duration_factory      g_validator_duration_factory;
  * 'large' stands for large values (so the 'm' suffix represents month,
  * not minutes).
  *
- * The 'small' and 'large' flags are exclusive, the last one will be effective.
+ * The 'small' and 'large' flags are exclusive, the last one is effective.
+ * Note that the 'm' suffix is the only one affected. If you want to
+ * specifically specify minutes or months you can also enter the entire word:
+ *
+ * \code
+ *     1minute...5minutes
+ *     3months...12months
+ * \endcode
+ *
+ * The duration range can use any duration on the left hand side and right
+ * hand side. The whole expression cannot include any spaces.
+ *
+ * For example, the following defines a duration range between one second
+ * and one minute:
+ *
+ * \code
+ *     1s..60s
+ * \endcode
+ *
+ * If a side is omitted the default is used: the minimum of the left hand side
+ * and the maximum for the right hand side. The minimum must be smaller or
+ * equal to the maximum.
+ *
+ * When no suffix is specified, seconds are assumed.
  *
  * \param[in] flag_list  The flags used to define the usage of the 'm' suffix.
  */
@@ -123,11 +159,64 @@ validator_duration::validator_duration(string_list_t const & flag_list)
         }
         else
         {
-            cppthread::log << cppthread::log_level_t::error
-                           << r
-                           << " is not a valid flag for the duration validator."
-                           << cppthread::end;
-            continue;
+            range_t range;
+            std::string::size_type const pos(r.find("..."));
+            if(pos == std::string::npos)
+            {
+                if(!convert_string(r, f_flags, range.f_minimum))
+                {
+                    cppthread::log << cppthread::log_level_t::error
+                                   << r
+                                   << " is not a valid duration or flag."
+                                   << cppthread::end;
+                    continue;
+                }
+                range.f_maximum = range.f_minimum;
+            }
+            else
+            {
+                std::string const min_value(snapdev::trim_string(r.substr(0, pos)));
+                if(!min_value.empty())
+                {
+                    if(!convert_string(min_value, f_flags, range.f_minimum))
+                    {
+                        cppthread::log << cppthread::log_level_t::error
+                                       << min_value
+                                       << " is not a valid value for your range's start;"
+                                          " it must be a valid duration,"
+                                          " optionally preceded by a sign (+ or -)."
+                                       << cppthread::end;
+                        continue;
+                    }
+                }
+
+                std::string const max_value(snapdev::trim_string(r.substr(pos + 3)));
+                if(!max_value.empty())
+                {
+                    if(!convert_string(max_value, f_flags, range.f_maximum))
+                    {
+                        cppthread::log << cppthread::log_level_t::error
+                                       << max_value
+                                       << " is not a valid value for your range's end;"
+                                          " it must be a valid duration,"
+                                          " optionally preceded by a sign (+ or -)."
+                                       << cppthread::end;
+                        continue;
+                    }
+                }
+
+                if(range.f_minimum > range.f_maximum)
+                {
+                    cppthread::log << cppthread::log_level_t::error
+                                   << min_value
+                                   << " has to be smaller or equal to "
+                                   << max_value
+                                   << "; you have an invalid duration range."
+                                   << cppthread::end;
+                    continue;
+                }
+            }
+            f_allowed_values.push_back(range);
         }
     }
 }
@@ -160,7 +249,28 @@ std::string validator_duration::name() const
 bool validator_duration::validate(std::string const & value) const
 {
     double result(0);
-    return convert_string(value, f_flags, result);
+    if(!convert_string(value, f_flags, result))
+    {
+        set_error("not a valid duration.");
+        return false;
+    }
+
+    if(f_allowed_values.empty())
+    {
+        return true;
+    }
+
+    for(auto f : f_allowed_values)
+    {
+        if(result >= f.f_minimum
+        && result <= f.f_maximum)
+        {
+            return true;
+        }
+    }
+
+    set_error("out of range.");
+    return false;
 }
 
 

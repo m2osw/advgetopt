@@ -71,9 +71,15 @@ public:
     virtual std::string         name() const = 0;
     virtual bool                validate(std::string const & value) const = 0;
 
+    void                        set_error(std::string const & msg) const;
+    std::string const &         get_error() const;
+
     static void                 register_validator(validator_factory const & factory);
     static pointer_t            create(std::string const & name, string_list_t const & data);
     static pointer_t            create(std::string const & name_and_params);
+
+private:
+    mutable std::string         f_error = std::string("<error undefined>");
 };
 
 

@@ -122,7 +122,13 @@ std::string validator_keywords::name() const
  */
 bool validator_keywords::validate(std::string const & value) const
 {
-    return f_keywords.find(value) != f_keywords.end();
+    if(f_keywords.find(value) == f_keywords.end())
+    {
+        set_error("not a known keyword.");
+        return false;
+    }
+
+    return true;
 }
 
 

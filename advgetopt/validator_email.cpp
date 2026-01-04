@@ -145,14 +145,26 @@ bool validator_email::validate(std::string const & value) const
     tld_email_list list;
     if(list.parse(value, 0) != TLD_RESULT_SUCCESS)
     {
+        set_error("invalid list of emails.");
         return false;
     }
 
     if(f_multiple)
     {
-        return list.count() > 0;
+        if(list.count() > 0)
+        {
+            return true;
+        }
+        set_error("at least one email address is required.");
+        return false;
     }
-    return list.count() == 1;
+
+    if(list.count() == 1)
+    {
+        return true;
+    }
+    set_error("exactly one email address is required.");
+    return false;
 }
 
 

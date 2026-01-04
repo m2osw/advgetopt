@@ -176,7 +176,13 @@ std::string validator_regex::name() const
 bool validator_regex::validate(std::string const & value) const
 {
     std::smatch info;
-    return std::regex_match(value, info, f_regex);
+    if(std::regex_match(value, info, f_regex))
+    {
+        return true;
+    }
+
+    set_error("did not match the regex.");
+    return false;
 }
 
 

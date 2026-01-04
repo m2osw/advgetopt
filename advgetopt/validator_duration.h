@@ -37,6 +37,7 @@
 // C++
 //
 #include    <cstdint>
+#include    <limits>
 
 
 
@@ -66,7 +67,16 @@ public:
                                              , double & result);
 
 private:
+    struct range_t
+    {
+        typedef std::vector<range_t>    vector_t;
+
+        double            f_minimum = std::numeric_limits<double>::min();
+        double            f_maximum = std::numeric_limits<double>::max();
+    };
+
     flag_t                      f_flags = VALIDATOR_DURATION_DEFAULT_FLAGS;
+    range_t::vector_t           f_allowed_values = range_t::vector_t();
 };
 
 

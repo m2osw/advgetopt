@@ -19,12 +19,13 @@
 
 
 /** \file
- * \brief Advanced getopt version functions.
+ * \brief Validator manager.
  *
- * The advgetopt environment is versioned. The functions available here
- * give you access to the version, in case you wanted to make sure you
- * had a minimum version or had some special case options when you
- * want to be able to support various versions.
+ * The command line options can be validated before starting your process.
+ * This means you do not have to do you own validation of every single
+ * option passed by the end user.
+ *
+ * The manager creates validators using their factory.
  */
 
 // self
@@ -317,7 +318,7 @@ private:
     {
         if(f_c != '\0')
         {
-            throw getopt_logic_error("ungetc() already called once, getc() must be called in between now"); // LCOV_EXCL_LINE
+            throw getopt_logic_error("ungetc() already called once, getc() must be called at least once in between."); // LCOV_EXCL_LINE
         }
         f_c = c;
     }
@@ -408,7 +409,7 @@ public:
                                 {
                                     return false;
                                 }
-                                if(t.tok() != token_t::TOK_IDENTIFIER
+                                if(t.tok() != token_t::TOK_IDENTIFIER // <- anything which is not a separator, string, regex including numbers (it is called 'thing' in the grammar)
                                 && t.tok() != token_t::TOK_STRING
                                 && t.tok() != token_t::TOK_REGEX)
                                 {
@@ -557,15 +558,30 @@ validator::~validator()
 
 
 /** \fn bool validator::validate(std::string const & value) const;
- * \brief Return true if \p value validates agains this validator.
+ * \brief Return true if \p value validates against this validator.
  *
  * The function parses the \p value parameter and if it matches the
  * allowed parameters, then it returns true.
+ *
+ * The validator may save an error message when the validation fails.
+ * See the set_error() and get_error() functions.
  *
  * \param[in] value  The value to validate.
  *
  * \return true if the value validates.
  */
+
+
+void validator::set_error(std::string const & msg) const
+{
+    f_error = msg;
+}
+
+
+std::string const & validator::get_error() const
+{
+    return f_error;
+}
 
 
 void validator::register_validator(validator_factory const & factory)
@@ -621,6 +637,30 @@ validator::pointer_t validator::create(std::string const & name, string_list_t c
  * If the input string is empty, the current validator, if one is
  * installed, gets removed.
  *
+ * The complete grammar of the \p name_and_params name and parameters
+ * can be written as a comma separated list of function calls, we have
+ * a special case for regex which do not require the function call.
+ * `thing` is pretty much anything other than the few special characters
+ * (comma, space, parenthesis, and quotes). To include a special
+ * character in thing either use a string or escape the character.
+ *
+ * \code
+ *   validator_list: name_and_params
+ *                 | name_and_params ',' validator_list
+ *
+ *   name_and_params: name '(' params ')'
+ *                  | '/' ... '/'              // regex special case
+ *
+ *   name: [a-zA-Z_][a-zA-Z_0-9]*
+ *
+ *   params: (thing - [,()'" ])
+ *         | '\'' (thing - '\'') '\''
+ *         | '"' (thing - '"') '"'
+ *
+ *   thing: [^ -~]*
+ *        | '\\' [ -~]
+ * \endcode
+ *
  * \param[in] name_and_params  The validator name and parameters.
  */
 validator::pointer_t validator::create(std::string const & name_and_params)
@@ -629,25 +669,6 @@ validator::pointer_t validator::create(std::string const & name_and_params)
     {
         return validator::pointer_t();
     }
-
-    // the name and parameters can be written as a function call, we have
-    // a special case for regex which do not require the function call
-    //
-    //   validator_list: name_and_params
-    //                 | name_and_params ',' validator_list
-    //
-    //   name_and_params: name '(' params ')'
-    //                  | '/' ... '/'              /* regex special case */
-    //
-    //   name: [a-zA-Z_][a-zA-Z_0-9]*
-    //
-    //   params: (thing - [,()'" ])
-    //         | '\'' (thing - '\'') '\''
-    //         | '"' (thing - '"') '"'
-    //
-    //   thing: [ -~]*
-    //        | '\\' [ -~]
-    //
 
     lexer l(name_and_params.c_str());
     parser p(l);

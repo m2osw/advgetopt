@@ -107,7 +107,7 @@ validator_length::validator_length(string_list_t const & length_list)
                 cppthread::log << cppthread::log_level_t::error
                                << r
                                << " is not a valid standalone value for your ranges;"
-                                  " it must only be digits, optionally preceeded by a sign (+ or -)"
+                                  " it must only be digits, optionally preceded by a sign (+ or -)"
                                   " and not overflow an int64_t value."
                                << cppthread::end;
                 continue;
@@ -124,7 +124,7 @@ validator_length::validator_length(string_list_t const & length_list)
                     cppthread::log << cppthread::log_level_t::error
                                    << min_value
                                    << " is not a valid value for your range's start;"
-                                      " it must only be digits, optionally preceeded by a sign (+ or -)"
+                                      " it must only be digits, optionally preceded by a sign (+ or -)"
                                       " and not overflow an int64_t value."
                                    << cppthread::end;
                     continue;
@@ -139,7 +139,7 @@ validator_length::validator_length(string_list_t const & length_list)
                     cppthread::log << cppthread::log_level_t::error
                                    << max_value
                                    << " is not a valid value for your range's end;"
-                                      " it must only be digits, optionally preceeded by a sign (+ or -)"
+                                      " it must only be digits, optionally preceded by a sign (+ or -)"
                                       " and not overflow an int64_t value."
                                    << cppthread::end;
                     continue;
@@ -200,6 +200,8 @@ bool validator_length::validate(std::string const & value) const
             return true;
         }
     }
+
+    set_error("length (in character) of value is out of range.");
     return false;
 }
 

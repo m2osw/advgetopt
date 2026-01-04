@@ -953,7 +953,8 @@ bool option_info::validates(int idx)
                    << f_value[idx]
                    << "\" given to parameter --"
                    << f_name
-                   << " is not considered valid."
+                   << " is not considered valid: "
+                   << f_validator->get_error()
                    << cppthread::end;
 
     // get rid of that value since it does not validate

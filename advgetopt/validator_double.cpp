@@ -36,7 +36,6 @@
 
 // snapdev
 //
-#include    <snapdev/not_used.h>
 #include    <snapdev/trim_string.h>
 
 
@@ -72,7 +71,6 @@ public:
 
     virtual std::shared_ptr<validator> create(string_list_t const & data) const override
     {
-        snapdev::NOT_USED(data); // ignore `data`
         return std::make_shared<validator_double>(data);
     }
 };
@@ -113,14 +111,14 @@ validator_double_factory       g_validator_double_factory;
  * start value is set to the minimum double value. If the not specified,
  * the end value is set to the maximum double value.
  *
- * Example:
+ * Examples:
  *
  * \code
- *     "-10.01...+10.05,0.0005661"
+ *     "-10.01...+10.05,30.0005661"
  * \endcode
  *
  * This example allows all values between -10.01 and +10.05 inclusive and also
- * allows the value 0.0005661.
+ * allows the value 30.0005661.
  *
  * \code
  *     "0.0..."
@@ -132,9 +130,9 @@ validator_double_factory       g_validator_double_factory;
  */
 validator_double::validator_double(string_list_t const & range_list)
 {
-    range_t range;
     for(auto r : range_list)
     {
+        range_t range;
         std::string::size_type const pos(r.find("..."));
         if(pos == std::string::npos)
         {
@@ -144,7 +142,7 @@ validator_double::validator_double(string_list_t const & range_list)
                                << r
                                << " is not a valid standalone value;"
                                   " it must be a valid floating point,"
-                                  " optionally preceeded by a sign (+ or -)."
+                                  " optionally preceded by a sign (+ or -)."
                                << cppthread::end;
                 continue;
             }
@@ -161,7 +159,7 @@ validator_double::validator_double(string_list_t const & range_list)
                                    << min_value
                                    << " is not a valid value for your range's start;"
                                       " it must be a valid floating point,"
-                                      " optionally preceeded by a sign (+ or -)."
+                                      " optionally preceded by a sign (+ or -)."
                                    << cppthread::end;
                     continue;
                 }
@@ -176,7 +174,7 @@ validator_double::validator_double(string_list_t const & range_list)
                                    << max_value
                                    << " is not a valid value for your range's end;"
                                       " it must be a valid floating point,"
-                                      " optionally preceeded by a sign (+ or -)."
+                                      " optionally preceded by a sign (+ or -)."
                                    << cppthread::end;
                     continue;
                 }
@@ -245,9 +243,11 @@ bool validator_double::validate(std::string const & value) const
                 return true;
             }
         }
+        set_error("out of range.");
         return false;
     }
 
+    set_error("not a valid floating point number.");
     return false;
 }
 

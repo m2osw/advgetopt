@@ -180,7 +180,13 @@ bool validator_size::validate(std::string const & value) const
 {
     using namespace snapdev::literals;
     __int128 result(0_int128);
-    return convert_string(value, f_flags, result);
+    if(convert_string(value, f_flags, result))
+    {
+        return true;
+    }
+
+    set_error("invalid size suffix or number.");
+    return false;
 }
 #pragma GCC diagnostic pop
 
