@@ -32,6 +32,7 @@
 
 // snapdev
 //
+#include    <snapdev/math.h>
 #include    <snapdev/ostream_int128.h>
 
 
@@ -1073,14 +1074,11 @@ CATCH_TEST_CASE("duration_validator", "[validator][valid][validation]")
                 // type of numbers... which do not work here)
                 //
                 double value(0.0);
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wfloat-equal"
                 do
                 {
                     value = static_cast<double>(rand()) / static_cast<double>(RAND_MAX);
                 }
-                while(value < 0.0001 && value != 0.0);
-#pragma GCC diagnostic pop
+                while(value < 0.0001 && snapdev::quiet_floating_point_not_equal(value, 0.0));
                 if(rand() % 2 == 0)
                 {
                     value *= -1.0;
@@ -1134,6 +1132,114 @@ CATCH_TEST_CASE("duration_validator", "[validator][valid][validation]")
                         }
                     }
                 }
+            }
+        }
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("duration_validator: verify the duration validator (within range)")
+    {
+        struct range_t
+        {
+            typedef std::vector<range_t>    vector_t;
+
+            double                  f_min = 0.0;
+            double                  f_max = 0.0;
+        };
+        struct verify_t
+        {
+            typedef std::vector<verify_t>   vector_t;
+
+            double                  f_value = 0.0;
+            bool                    f_valid = false;
+        };
+        struct test_t
+        {
+            typedef std::vector<test_t>     vector_t;
+
+            range_t::vector_t       f_ranges = range_t::vector_t();
+            verify_t::vector_t      f_values = verify_t::vector_t();
+        };
+
+        test_t::vector_t tests = {
+            {
+                {
+                    { 0.0, 1.0 },
+                },
+                {
+                    { 0.0, true },
+                    { 0.5, true },
+                    { 1.0, true },
+                    { -1.0, false },
+                    { 2.0, false },
+                },
+            },
+            {
+                {
+                    { 1.0, 1.0 },
+                    { 2.0, 2.0 },
+                    { 3.0, 3.0 },
+                    { 4.0, 4.0 },
+                },
+                {
+                    { 0.0, false },
+                    { 0.5, false },
+                    { 1.0, true },
+                    { -1.0, false },
+                    { 2.0, true },
+                    { 3.1, false },
+                    { 5.0, false },
+                },
+            },
+            {
+                {
+                    { -1.0, 1.0 },
+                    { -52.0, -52.0 },
+                    { 3.0, 3.0 },
+                },
+                {
+                    { 0.0, true },
+                    { 0.5, true },
+                    { 1.0, true },
+                    { -1.0, true },
+                    { -0.5, true },
+                    { 2.0, false },
+                    { 3.0, true },
+                    { -52.0, true },
+                    { -51.0, false },
+                    { -52.1, false },
+                },
+            },
+        };
+
+        for(auto t : tests)
+        {
+            // create the set of parameters which are ranges unless the min/max
+            // are equal in which case we may use either syntax
+            //
+            advgetopt::string_list_t params;
+            for(auto p : t.f_ranges)
+            {
+                if(snapdev::quiet_floating_point_equal(p.f_min, p.f_max) && (rand() & 1) == 0)
+                {
+                    // if equal, then enter it as a single value 50% of the time
+                    //
+                    params.push_back(std::to_string(p.f_min));
+                }
+                else
+                {
+                    params.push_back(std::to_string(p.f_min) + "..." + std::to_string(p.f_max));
+                }
+            }
+
+            advgetopt::validator::pointer_t duration_validator(advgetopt::validator::create("duration", params));
+            CATCH_REQUIRE(duration_validator != nullptr);
+            CATCH_REQUIRE(duration_validator->name() == "duration");
+
+            for(auto v : t.f_values)
+            {
+                std::string duration(std::to_string(v.f_value));
+                CATCH_REQUIRE(duration_validator->validate(duration) == v.f_valid);
             }
         }
     }
@@ -1404,9 +1510,9 @@ CATCH_TEST_CASE("invalid_length_validator", "[validator][invalid][validation]")
             "3...def",
             "10...1"};
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: abc is not a valid standalone value for your ranges; it must only be digits, optionally preceeded by a sign (+ or -) and not overflow an int64_t value.");
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: abc is not a valid value for your range's start; it must only be digits, optionally preceeded by a sign (+ or -) and not overflow an int64_t value.");
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: def is not a valid value for your range's end; it must only be digits, optionally preceeded by a sign (+ or -) and not overflow an int64_t value.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: abc is not a valid standalone value for your ranges; it must only be digits, optionally preceded by a sign (+ or -) and not overflow an int64_t value.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: abc is not a valid value for your range's start; it must only be digits, optionally preceded by a sign (+ or -) and not overflow an int64_t value.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: def is not a valid value for your range's end; it must only be digits, optionally preceded by a sign (+ or -) and not overflow an int64_t value.");
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: 10 has to be smaller or equal to 1; you have an invalid range.");
 
         advgetopt::validator::pointer_t length_validator(advgetopt::validator::create("length", range));
@@ -1425,9 +1531,9 @@ CATCH_TEST_CASE("invalid_integer_validator", "[validator][invalid][validation]")
             "3...def",
             "10...1"};
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: abc is not a valid standalone value for your ranges; it must only be digits, optionally preceeded by a sign (+ or -) and not overflow an int64_t value.");
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: abc is not a valid value for your range's start; it must only be digits, optionally preceeded by a sign (+ or -) and not overflow an int64_t value.");
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: def is not a valid value for your range's end; it must only be digits, optionally preceeded by a sign (+ or -) and not overflow an int64_t value.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: abc is not a valid standalone value for your ranges; it must only be digits, optionally preceded by a sign (+ or -) and not overflow an int64_t value.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: abc is not a valid value for your range's start; it must only be digits, optionally preceded by a sign (+ or -) and not overflow an int64_t value.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: def is not a valid value for your range's end; it must only be digits, optionally preceded by a sign (+ or -) and not overflow an int64_t value.");
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: 10 has to be smaller or equal to 1; you have an invalid range.");
 
         advgetopt::validator::pointer_t integer_validator(advgetopt::validator::create("integer", range));
@@ -1446,9 +1552,9 @@ CATCH_TEST_CASE("invalid_double_validator", "[validator][invalid][validation]")
             "13.3...def",
             "10.5...1.2"};
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: abc is not a valid standalone value; it must be a valid floating point, optionally preceeded by a sign (+ or -).");
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: abc is not a valid value for your range's start; it must be a valid floating point, optionally preceeded by a sign (+ or -).");
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: def is not a valid value for your range's end; it must be a valid floating point, optionally preceeded by a sign (+ or -).");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: abc is not a valid standalone value; it must be a valid floating point, optionally preceded by a sign (+ or -).");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: abc is not a valid value for your range's start; it must be a valid floating point, optionally preceded by a sign (+ or -).");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: def is not a valid value for your range's end; it must be a valid floating point, optionally preceded by a sign (+ or -).");
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: 10.5 has to be smaller or equal to 1.2; you have an invalid range.");
 
         advgetopt::validator::pointer_t integer_validator(advgetopt::validator::create("double", range));
@@ -1466,7 +1572,7 @@ CATCH_TEST_CASE("invalid_duration_validator", "[invalid][validation]")
             "medium",
             "large"};
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: medium is not a valid flag for the duration validator.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: medium is not a valid duration or flag.");
         advgetopt::validator::pointer_t duration_validator(advgetopt::validator::create("duration", range));
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
@@ -1486,6 +1592,66 @@ CATCH_TEST_CASE("invalid_duration_validator", "[invalid][validation]")
         CATCH_REQUIRE_FALSE(duration_validator->validate("28.901 wkS"));
         CATCH_REQUIRE_FALSE(duration_validator->validate("28 YY"));
         CATCH_REQUIRE_FALSE(duration_validator->validate("2..8 year"));
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("invalid_duration_validator: verify invalid duration (text)")
+    {
+        advgetopt::string_list_t range{"alpha"};
+
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: alpha is not a valid duration or flag.");
+        advgetopt::validator::pointer_t duration_validator(advgetopt::validator::create("duration", range));
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
+
+        CATCH_REQUIRE_FALSE(duration_validator->validate("2..8 year"));
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("invalid_duration_validator: verify invalid duration (two periods)")
+    {
+        advgetopt::string_list_t range{"3..91"};
+
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: 3..91 is not a valid duration or flag.");
+        advgetopt::validator::pointer_t duration_validator(advgetopt::validator::create("duration", range));
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
+
+        CATCH_REQUIRE_FALSE(duration_validator->validate("year"));
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("invalid_duration_validator: verify invalid duration (bad start)")
+    {
+        advgetopt::string_list_t range{"D...9.1"};
+
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: D is not a valid value for your range's start; it must be a valid duration, optionally preceded by a sign (+ or -).");
+        advgetopt::validator::pointer_t duration_validator(advgetopt::validator::create("duration", range));
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
+
+        CATCH_REQUIRE_FALSE(duration_validator->validate("days"));
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("invalid_duration_validator: verify invalid duration (bad end)")
+    {
+        advgetopt::string_list_t range{"3.1...E"};
+
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: E is not a valid value for your range's end; it must be a valid duration, optionally preceded by a sign (+ or -).");
+        advgetopt::validator::pointer_t duration_validator(advgetopt::validator::create("duration", range));
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
+
+        CATCH_REQUIRE_FALSE(duration_validator->validate("days"));
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("invalid_duration_validator: verify invalid duration (start > end)")
+    {
+        advgetopt::string_list_t range{"3.1...2.9"};
+
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: 3.1 has to be smaller or equal to 2.9; you have an invalid duration range.");
+        advgetopt::validator::pointer_t duration_validator(advgetopt::validator::create("duration", range));
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
+
+        CATCH_REQUIRE_FALSE(duration_validator->validate("days"));
     }
     CATCH_END_SECTION()
 }

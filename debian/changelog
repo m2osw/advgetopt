@@ -1,6 +1,21 @@
+advgetopt (2.0.50.0~noble) noble; urgency=high
+
+  * Added a more precise error message from validators.
+  * Fixed the grammar of the validator_duration (documentation).
+  * Added support for range definitions for the validator_duration.
+  * Documented the dynamic_configuration type.
+  * Added a system option to list filenames of option definitions.
+  * Allow for a pattern to be used to find option definition files.
+  * Show the path to the option definitions.
+  * Fixed issues in doxy file.
+  * Fixed documentation.
+  * Finished removal of the boost library dependency.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 21 Jul 2025 07:23:21 -0700
+
 advgetopt (2.0.49.1~noble) noble; urgency=high
 
-  * Change two more string concatenation so it works on newer versions.
+  * Change two more string concatenations so it works on newer versions.
 
  -- Alexis Wilke <alexis@m2osw.com>  Mon, 21 Jul 2025 07:23:21 -0700
 

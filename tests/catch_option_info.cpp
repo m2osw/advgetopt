@@ -405,7 +405,7 @@ CATCH_TEST_CASE("option_info_validator", "[option_info][valid][validator]")
         CATCH_REQUIRE(auto_validate.get_validator() == nullptr);
 
         advgetopt::validator::pointer_t integer_validator(advgetopt::validator::create("integer", {"1","2","5","6","8"}));
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"51\" given to parameter --validator is not considered valid.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"51\" given to parameter --validator is not considered valid: out of range.");
         auto_validate.set_validator(integer_validator);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         CATCH_REQUIRE(auto_validate.get_validator() == integer_validator);
@@ -413,12 +413,12 @@ CATCH_TEST_CASE("option_info_validator", "[option_info][valid][validator]")
         auto_validate.set_value(0, "6", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_DYNAMIC);
         CATCH_REQUIRE(auto_validate.source() == advgetopt::option_source_t::SOURCE_DYNAMIC);
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"3\" given to parameter --validator is not considered valid.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"3\" given to parameter --validator is not considered valid: out of range.");
         auto_validate.set_value(0, "3", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_CONFIGURATION);
         CATCH_REQUIRE(auto_validate.source() == advgetopt::option_source_t::SOURCE_UNDEFINED);    // it doesn't take... it gets cleared though
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"11\" given to parameter --validator is not considered valid.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"11\" given to parameter --validator is not considered valid: out of range.");
         auto_validate.set_value(0, "11", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_ENVIRONMENT_VARIABLE);
         CATCH_REQUIRE(auto_validate.source() == advgetopt::option_source_t::SOURCE_UNDEFINED);    // it doesn't take... it gets cleared though
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
@@ -445,13 +445,13 @@ CATCH_TEST_CASE("option_info_validator", "[option_info][valid][validator]")
         CATCH_REQUIRE(auto_validate.get_validator() == nullptr);
 
         advgetopt::validator::pointer_t integer_validator(advgetopt::validator::create("integer", {"-1","2","5","6","18"}));
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"-15\" given to parameter --validator is not considered valid.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"-15\" given to parameter --validator is not considered valid: out of range.");
         auto_validate.set_validator(integer_validator);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         CATCH_REQUIRE(auto_validate.get_validator() == integer_validator);
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"3\" given to parameter --validator is not considered valid.");
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"11\" given to parameter --validator is not considered valid.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"3\" given to parameter --validator is not considered valid: out of range.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"11\" given to parameter --validator is not considered valid: out of range.");
         CATCH_REQUIRE_FALSE(auto_validate.set_multiple_values("6,3,18,11", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE));
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         CATCH_REQUIRE(auto_validate.size() == 2);
@@ -498,25 +498,45 @@ CATCH_TEST_CASE("option_info_validator", "[option_info][valid][validator]")
         auto_validate.set_validator(std::string());
         CATCH_REQUIRE(auto_validate.get_validator() == nullptr);
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"35\" given to parameter --validator is not considered valid.");
-        auto_validate.set_validator("integer(-1,2,5,6,18)");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"35\" given to parameter --validator is not considered valid: out of range.");
+        auto_validate.set_validator("integer(-1,2,5,6,18,51966)");
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         CATCH_REQUIRE(auto_validate.get_validator() != nullptr);
         CATCH_REQUIRE(auto_validate.get_validator()->name() == "integer");
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"3\" given to parameter --validator is not considered valid.");
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"11\" given to parameter --validator is not considered valid.");
-        CATCH_REQUIRE_FALSE(auto_validate.set_multiple_values("6,3,18,11", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE));
+        // test with the lowercase introducer
+        //
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"0b11\" given to parameter --validator is not considered valid: out of range.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"0o13\" given to parameter --validator is not considered valid: out of range.");
+        CATCH_REQUIRE_FALSE(auto_validate.set_multiple_values("0d6,0b11,0x12,0o13,0xcafe", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE));
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
-        CATCH_REQUIRE(auto_validate.size() == 2);
-        CATCH_REQUIRE(auto_validate.get_value(0) == "6");
+        CATCH_REQUIRE(auto_validate.size() == 3);
+        CATCH_REQUIRE(auto_validate.get_value(0) == "0d6");
         CATCH_REQUIRE(auto_validate.get_long(0) == 6);
-        CATCH_REQUIRE(auto_validate.get_value(1) == "18");
+        CATCH_REQUIRE(auto_validate.get_value(1) == "0x12");
         CATCH_REQUIRE(auto_validate.get_long(1) == 18);
+        CATCH_REQUIRE(auto_validate.get_value(2) == "0xcafe");
+        CATCH_REQUIRE(auto_validate.get_long(2) == 51966);
+
+        // test with the uppercase introducer
+        //
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"0B11\" given to parameter --validator is not considered valid: out of range.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"0O13\" given to parameter --validator is not considered valid: out of range.");
+        CATCH_REQUIRE_FALSE(auto_validate.set_multiple_values("0D6,0B11,0X12,0O13,0XCAFE", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE));
+        SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
+        CATCH_REQUIRE(auto_validate.size() == 3);
+        CATCH_REQUIRE(auto_validate.get_value(0) == "0D6");
+        CATCH_REQUIRE(auto_validate.get_long(0) == 6);
+        CATCH_REQUIRE(auto_validate.get_value(1) == "0X12");
+        CATCH_REQUIRE(auto_validate.get_long(1) == 18);
+        CATCH_REQUIRE(auto_validate.get_value(2) == "0XCAFE");
+        CATCH_REQUIRE(auto_validate.get_long(2) == 51966);
 
         auto_validate.set_validator(std::string());
         CATCH_REQUIRE(auto_validate.get_validator() == nullptr);
 
+        // here, however, we cannot use the introducer
+        //
         CATCH_REQUIRE(auto_validate.set_multiple_values("6,3,18,11", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE));
         CATCH_REQUIRE(auto_validate.size() == 4);
         CATCH_REQUIRE(auto_validate.get_value(0) == "6");
@@ -555,8 +575,8 @@ CATCH_TEST_CASE("option_info_validator", "[option_info][valid][validator]")
         CATCH_REQUIRE(auto_validate.get_validator() != nullptr);
         CATCH_REQUIRE(auto_validate.get_validator()->name() == "regex");
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"33\" given to parameter --validator is not considered valid.");
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"45\" given to parameter --validator is not considered valid.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"33\" given to parameter --validator is not considered valid: did not match the regex.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"45\" given to parameter --validator is not considered valid: did not match the regex.");
         CATCH_REQUIRE_FALSE(auto_validate.set_multiple_values("abc,qqq,33,zac,pop,45", advgetopt::string_list_t(), advgetopt::option_source_t::SOURCE_COMMAND_LINE));
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         CATCH_REQUIRE(auto_validate.size() == 4);

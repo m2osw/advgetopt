@@ -665,10 +665,10 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
                                  " --more black");
             opt.define_environment_variable_data();
 
-            SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"1001 meters\" given to parameter --size is not considered valid.");
-            SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"valid.cpp\" given to parameter --files is not considered valid.");
-            SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"auto-build\" given to parameter --from is not considered valid.");
-            SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"black\" given to parameter --more is not considered valid.");
+            SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"1001 meters\" given to parameter --size is not considered valid: did not match the regex.");
+            SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"valid.cpp\" given to parameter --files is not considered valid: did not match the regex.");
+            SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"auto-build\" given to parameter --from is not considered valid: not a valid number.");
+            SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"black\" given to parameter --more is not considered valid: did not match the regex.");
             opt.parse_environment_variable();
             SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
         }
@@ -1328,9 +1328,9 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
         int const sub_argc3(sizeof(sub_cargv3) / sizeof(sub_cargv3[0]) - 1);
         char ** sub_argv3 = const_cast<char **>(sub_cargv3);
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"1001\" given to parameter --size is not considered valid.");
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"valid.cpp\" given to parameter --files is not considered valid.");
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"black\" given to parameter --more is not considered valid.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"1001\" given to parameter --size is not considered valid: out of range.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"valid.cpp\" given to parameter --files is not considered valid: did not match the regex.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: input \"black\" given to parameter --more is not considered valid: did not match the regex.");
         opt.parse_arguments(sub_argc3, sub_argv3, advgetopt::option_source_t::SOURCE_COMMAND_LINE);
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
     }
