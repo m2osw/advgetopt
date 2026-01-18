@@ -393,8 +393,6 @@ double getopt::get_double(std::string const & name, int idx, double min, double 
         result = opt->get_double(idx);
     }
 
-    // TODO: replace with validators
-    //
     if(result < min || result > max)
     {
         cppthread::log << cppthread::log_level_t::error
