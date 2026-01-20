@@ -179,7 +179,7 @@ std::string short_name_to_string(short_name_t short_name)
  *
  * The \p short_name parameter is a UTF-32 character. To not offer a short
  * name for an option, use NO_SHORT_NAME as the value (which is the default
- * if not specified to the constructor.)
+ * if not specified in the constructor).
  *
  * \li Special Option Name: "--"
  *
@@ -211,12 +211,12 @@ std::string short_name_to_string(short_name_t short_name)
  * For this reason, the long name is saved with only dashes. That
  * means all the maps are indexed using the long name with dashes.
  *
- * \exception getopt_exception_logic
- * The constructor raises the invalid exception if the long name is an
- * empty string since this is not allowed. It will also raise that
- * exception if the name is the default option ("--") and a short name
- * is also defined. (i.e. no short name is allowed along the default
- * option.)
+ * \exception getopt_logic_error
+ * The constructor raises this exception if
+ * \li the long name is an empty string;
+ * \li the name is the default option ("--") and a short name is defined;
+ * \li the long name starts with a dash;
+ * \li the short name is the dash character.
  *
  * \param[in] name  The (long) name of this option.
  * \param[in] short_name  The short name of this option (one character.)

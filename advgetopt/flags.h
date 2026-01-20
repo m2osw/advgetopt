@@ -19,11 +19,12 @@
 #pragma once
 
 /** \file
- * \brief Definitions of the options class a initialization functions.
+ * \brief Definitions of the options class initialization functions.
  *
  * The advgetopt library offers an advanced way to manage your command
- * line tools options on the command line, in environment variables, and
- * in configuration files.
+ * line tools options on the command line, in environment variables,
+ * in configuration files, and dynamically through the use of the
+ * fluid-settings service.
  */
 
 
@@ -49,11 +50,11 @@ static constexpr flag_t     GETOPT_FLAG_DYNAMIC_CONFIGURATION = static_cast<flag
 
 static constexpr flag_t     GETOPT_FLAG_ALIAS                 = static_cast<flag_t>(0x00000010);  // alias, result in another option defined in "help" string
 static constexpr flag_t     GETOPT_FLAG_FLAG                  = static_cast<flag_t>(0x00000020);  // no parameter allowed (--help)
-static constexpr flag_t     GETOPT_FLAG_REQUIRED              = static_cast<flag_t>(0x00000040);  // required (--host 127.0.0.1)
-static constexpr flag_t     GETOPT_FLAG_MULTIPLE              = static_cast<flag_t>(0x00000080);  // any number of parameter is allowed (--files a b c d ...)
+static constexpr flag_t     GETOPT_FLAG_REQUIRED              = static_cast<flag_t>(0x00000040);  // requires an additional parameter (--host 127.0.0.1)
+static constexpr flag_t     GETOPT_FLAG_MULTIPLE              = static_cast<flag_t>(0x00000080);  // any number of parameters are allowed (--files a b c d ...)
 static constexpr flag_t     GETOPT_FLAG_DEFAULT_OPTION        = static_cast<flag_t>(0x00000100);  // where entries go by default (a.k.a. after "--")
 static constexpr flag_t     GETOPT_FLAG_HAS_DEFAULT           = static_cast<flag_t>(0x00000200);  // default value is defined
-static constexpr flag_t     GETOPT_FLAG_PROCESS_VARIABLES     = static_cast<flag_t>(0x00000400);  // variables within this parameter will automatically be processed
+static constexpr flag_t     GETOPT_FLAG_PROCESS_VARIABLES     = static_cast<flag_t>(0x00000400);  // variables within this parameter are automatically processed
 static constexpr flag_t     GETOPT_FLAG_ARRAY                 = static_cast<flag_t>(0x00000800);  // allow for options to include an array or map specification (--opt[3] or --opt:back)
 
 static constexpr flag_t     GETOPT_FLAG_SHOW_MOST             = static_cast<flag_t>(0x00000000);  // show in usage() when not in GROUP1 or GROUP2
@@ -76,6 +77,7 @@ static constexpr flag_t     GETOPT_FLAG_GROUP_FIVE            = static_cast<flag
 static constexpr flag_t     GETOPT_FLAG_GROUP_SIX             = static_cast<flag_t>(0x00600000);  // in group 6
 static constexpr flag_t     GETOPT_FLAG_GROUP_SEVEN           = static_cast<flag_t>(0x00700000);  // in group 7
 
+static constexpr flag_t     GETOPT_FLAG_REMOVE_NAMESPACE      = static_cast<flag_t>(0x10000000);  // create a command line option without the namespace (useful along dynamic options)
 static constexpr flag_t     GETOPT_FLAG_DYNAMIC               = static_cast<flag_t>(0x20000000);  // this value was found in a configuration file and dynamic parameters are allowed (i.e. no definition for this option was found)
 static constexpr flag_t     GETOPT_FLAG_LOCK                  = static_cast<flag_t>(0x40000000);  // this value is currently locked (can't be modified)
 

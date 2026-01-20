@@ -93,9 +93,10 @@ public:
                                     , bool ignore_duplicates = false);
     void                    parse_options_from_file(
                                       std::string const & filename
-                                    , int min_sections
-                                    , int max_sections
-                                    , bool ignore_duplicates = false);
+                                    , int const min_sections
+                                    , int const max_sections
+                                    , bool ignore_duplicates = false
+                                    , bool keep_all_sections = true);
     void                    add_option(
                                       option_info::pointer_t opt
                                     , bool ignore_duplicates = false);

@@ -119,25 +119,85 @@ void getopt::parse_options_info(option const * opts, bool ignore_duplicates)
             throw getopt_logic_error("a long name option must be at least 2 characters.");
         }
 
-        short_name_t short_name(opts->f_short_name);
+        short_name_t const short_name(opts->f_short_name);
 
-        option_info::pointer_t o(std::make_shared<option_info>(
-                                              opts->f_name
-                                            , short_name));
-        o->set_variables(f_variables);
-
-        o->set_environment_variable_name(opts->f_environment_variable_name);
-        o->add_flag(opts->f_flags);
-        o->set_default(opts->f_default);
-        o->set_help(opts->f_help);
-        o->set_multiple_separators(opts->f_multiple_separators);
-
-        if(opts->f_validator != nullptr)
+        char const * const n(strrchr(opts->f_name, ':'));
+        if((opts->f_flags & GETOPT_FLAG_REMOVE_NAMESPACE) != 0
+        && n != nullptr)
         {
-            o->set_validator(opts->f_validator);
-        }
+            // TODO: this is probably not a well thought feature... when adding
+            //       dynamic options within a library we want to include the
+            //       name of that library to the option, something like:
+            //
+            //           fluid-settings::fluid-settings-timeout
+            //
+            //       and it is important to keep the namespace in this case,
+            //       as we do above; however, for the command line, we don't
+            //       want to have enter the namespace, so here we remove it
+            //       for that option (and above we hid the one with the namespace)
+            //
 
-        add_option(o, ignore_duplicates);
+            // the official option uses `basename`
+            //
+            std::string const basename(n + 1);
+            option_info::pointer_t o(std::make_shared<option_info>(
+                                                  basename
+                                                , short_name));
+            o->set_variables(f_variables);
+
+            o->set_environment_variable_name(opts->f_environment_variable_name);
+            o->add_flag(opts->f_flags);
+            o->set_default(opts->f_default);
+            o->set_help(opts->f_help);
+            o->set_multiple_separators(opts->f_multiple_separators);
+
+            if(opts->f_validator != nullptr)
+            {
+                o->set_validator(opts->f_validator);
+            }
+
+            add_option(o, ignore_duplicates);
+
+            // the full named option (with namespaces) uses an alias
+            //
+            option_info::pointer_t alias(std::make_shared<option_info>(
+                                                  opts->f_name
+                                                , short_name));
+            alias->set_variables(f_variables);
+
+            alias->set_environment_variable_name(opts->f_environment_variable_name);
+            alias->add_flag(opts->f_flags | GETOPT_FLAG_ALIAS);
+            alias->set_default(opts->f_default);
+            alias->set_help(basename);
+            alias->set_multiple_separators(opts->f_multiple_separators);
+
+            if(opts->f_validator != nullptr)
+            {
+                alias->set_validator(opts->f_validator);
+            }
+
+            add_option(alias, ignore_duplicates);
+        }
+        else
+        {
+            option_info::pointer_t o(std::make_shared<option_info>(
+                                                  opts->f_name
+                                                , short_name));
+            o->set_variables(f_variables);
+
+            o->set_environment_variable_name(opts->f_environment_variable_name);
+            o->add_flag(opts->f_flags);
+            o->set_default(opts->f_default);
+            o->set_help(opts->f_help);
+            o->set_multiple_separators(opts->f_multiple_separators);
+
+            if(opts->f_validator != nullptr)
+            {
+                o->set_validator(opts->f_validator);
+            }
+
+            add_option(o, ignore_duplicates);
+        }
     }
 }
 
@@ -408,14 +468,16 @@ void getopt::parse_options_from_file()
  * \param[in] min_sections  The minimum number of namespaces.
  * \param[in] max_sections  The maximum number of namespaces.
  * \param[in] ignore_duplicates  Whether duplicates are okay or not.
+ * \param[in] keep_all_sections  Whether remove this project's namespace.
  *
  * \sa parse_options_from_file()
  */
 void getopt::parse_options_from_file(
           std::string const & filename
-        , int min_sections
-        , int max_sections
-        , bool ignore_duplicates)
+        , int const min_sections
+        , int const max_sections
+        , bool ignore_duplicates
+        , bool keep_all_sections)
 {
     if(filename.empty())
     {
@@ -443,6 +505,20 @@ void getopt::parse_options_from_file(
     // if the file includes a section named after the group or project
     // we can remove it completely (this helps with sharing fluid settings)
     //
+    // the format of an option file is:
+    //
+    // [<option-name>]
+    // help=option description
+    //
+    // For fluid-settings to work, we need to include the name of service
+    // or tool as in:
+    //
+    // [<service>::<option-name>]
+    // help=option description
+    //
+    // so we want to remove the "<service>::" part to avoid the namespace
+    // in the --<option-name> command line options.
+    //
     std::string const section_to_ignore(get_group_or_project_name());
     conf_setup.set_section_to_ignore(section_to_ignore);
 
@@ -453,7 +529,8 @@ void getopt::parse_options_from_file(
         string_list_t names;
         split_string(section_names, names, {"::"});
         std::string option_name;
-        if(names.size() > 1
+        if(keep_all_sections
+        && names.size() > 1
         && *names.begin() == section_to_ignore)
         {
             names.erase(names.begin());
@@ -475,7 +552,8 @@ void getopt::parse_options_from_file(
                 // directly inside the conf_file::get_conf_file() call
                 //
                 cppthread::log << cppthread::log_level_t::error                             // LCOV_EXCL_LINE
-                    << "the name of a settings definition must include one namespace; \""   // LCOV_EXCL_LINE
+                    << filename                                                             // LCOV_EXCL_LINE
+                    << ": the name of a settings definition must include one namespace; \"" // LCOV_EXCL_LINE
                     << section_names                                                        // LCOV_EXCL_LINE
                     << "\" is not considered valid."                                        // LCOV_EXCL_LINE
                     << cppthread::end;                                                      // LCOV_EXCL_LINE
@@ -483,7 +561,8 @@ void getopt::parse_options_from_file(
             else
             {
                 cppthread::log << cppthread::log_level_t::error
-                    << "the name of a settings definition must include between "
+                    << filename
+                    << ": the name of a settings definition must include between "
                     << min_sections
                     << " and "
                     << max_sections
@@ -497,18 +576,19 @@ void getopt::parse_options_from_file(
 
         std::string const parameter_name(option_name);
         std::string const short_name(unquote(conf->get_parameter(parameter_name + "::shortname")));
-        if(short_name.length() > 1)
+        short_name_t const sn(string_to_short_name(short_name));
+        if(sn == NO_SHORT_NAME
+        && !short_name.empty())
         {
             throw getopt_logic_error(
                       "option \""
                     + section_names
-                    + "\" has an invalid short name in \""
+                    + "\" has an invalid short name \""
+                    + short_name
+                    + "\" in \""
                     + filename
                     + "\", it can't be more than one character.");
         }
-        short_name_t const sn(short_name.length() == 1
-                                    ? short_name[0]
-                                    : NO_SHORT_NAME);
 
         option_info::pointer_t opt(std::make_shared<option_info>(parameter_name, sn));
         opt->set_variables(f_variables);

@@ -373,26 +373,32 @@ std::string getopt::usage(flag_t show) const
             {
                 argument << "--" << opt.second->get_name();
                 auto aliases(alias_reverse_references.lower_bound(opt.second));
-                if(aliases->first == opt.second)
+                if(!opt.second->has_flag(GETOPT_FLAG_REMOVE_NAMESPACE))
                 {
-                    auto end(alias_reverse_references.upper_bound(opt.second));
-                    for(auto a(aliases); a != end; ++a)
+                    if(aliases->first == opt.second)
                     {
-                        argument << " or --" << a->second->get_name();
+                        auto end(alias_reverse_references.upper_bound(opt.second));
+                        for(auto a(aliases); a != end; ++a)
+                        {
+                            argument << " or --" << a->second->get_name();
+                        }
                     }
                 }
                 if(opt.second->get_short_name() != NO_SHORT_NAME)
                 {
                     argument << " or -" << short_name_to_string(opt.second->get_short_name());
                 }
-                if(aliases->first == opt.second)
+                if(!opt.second->has_flag(GETOPT_FLAG_REMOVE_NAMESPACE))
                 {
-                    auto end(alias_reverse_references.upper_bound(opt.second));
-                    for(; aliases != end; ++aliases)
+                    if(aliases->first == opt.second)
                     {
-                        if(aliases->second->get_short_name() != NO_SHORT_NAME)
+                        auto end(alias_reverse_references.upper_bound(opt.second));
+                        for(; aliases != end; ++aliases)
                         {
-                            argument << " or -" << short_name_to_string(aliases->second->get_short_name());
+                            if(aliases->second->get_short_name() != NO_SHORT_NAME)
+                            {
+                                argument << " or -" << short_name_to_string(aliases->second->get_short_name());
+                            }
                         }
                     }
                 }
