@@ -891,8 +891,12 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
 
         advgetopt::getopt::pointer_t opts(std::make_shared<advgetopt::getopt>(valid_options_from_file));
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: the name of a settings definition must include between 2 and 3 namespaces; \"us::legal::department::licence\" is not considered valid.");
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: the name of a settings definition must include between 2 and 3 namespaces; \"us::legal::department::license\" is not considered valid.");
+        // the filename path should not change on us since it's relative
+        // however, if you're not in the snapcpp environment, it likely
+        // would be different
+        //
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: ../../BUILD/Debug/contrib/advgetopt/tmp/shared/advgetopt-namespace-overflow/unittest.ini: the name of a settings definition must include between 2 and 3 namespaces; \"us::legal::department::licence\" is not considered valid.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: ../../BUILD/Debug/contrib/advgetopt/tmp/shared/advgetopt-namespace-overflow/unittest.ini: the name of a settings definition must include between 2 and 3 namespaces; \"us::legal::department::license\" is not considered valid.");
         opts->parse_options_from_file(
                   options_filename
                 , 2
@@ -1488,7 +1492,7 @@ CATCH_TEST_CASE("invalid_options_files", "[options][invalid][files]")
                       std::make_shared<advgetopt::getopt>(options_environment, sub_argc, sub_argv)
                     , advgetopt::getopt_logic_error
                     , Catch::Matchers::ExceptionMessage(
-                              "getopt_logic_error: option \"badname\" has an invalid short name in \""
+                              "getopt_logic_error: option \"badname\" has an invalid short name \"to\" in \""
                             + options_filename
                             + "\", it can't be more than one character."));
     }
