@@ -209,7 +209,7 @@ public:
     void                        remove_callback(callback_id_t id);
 
     bool                        exists() const;
-    int                         get_errno() const;
+    int                         get_errno(bool clear = true) const;
 
     int                         section_to_variables(
                                       std::string const & section_name
@@ -268,7 +268,7 @@ private:
 
     int                         f_unget_char = '\0';
     int                         f_line = 0;
-    int                         f_errno = 0;
+    mutable int                 f_errno = 0;
     bool                        f_reading = false;
     bool                        f_exists = false;
 

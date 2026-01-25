@@ -1193,7 +1193,7 @@ bool conf_file::exists() const
 }
 
 
-/** \brief Get the error number opening/reading the configuration file.
+/** \brief Get the error number opening/reading/writing the configuration file.
  *
  * The class registers the errno value whenever an I/O error happens
  * while handling the configuration file. In most cases the function
@@ -1205,15 +1205,28 @@ bool conf_file::exists() const
  * happens. However, it is expected when you want to make some
  * changes to a few parameters and save them back to file (i.e.
  * the very first time there will be no file under the writable
- * configuration folder.)
+ * configuration folder).
+ *
+ * \warning
+ * By default the error gets cleared back to 0. In other words, you can
+ * call this function only once and need to save the value. If you do
+ * not want to clear the value, make sure to call the function with
+ * false in the \p clear parameter.
+ *
+ * \param[in] clear  Whether the clear the value back to 0.
  *
  * \return The last errno detected while accessing the configuration file.
  */
-int conf_file::get_errno() const
+int conf_file::get_errno(bool clear) const
 {
     cppthread::guard lock(get_global_mutex());
 
-    return f_errno;
+    int e(f_errno);
+    if(clear)
+    {
+        f_errno = 0;
+    }
+    return e;
 }
 
 
