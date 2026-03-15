@@ -19,11 +19,12 @@
 #pragma once
 
 /** \file
- * \brief Definitions of the advanced getopt class.
+ * \brief Variables with generic licenses.
  *
- * The advgetopt library offers an advanced way to manage your command
- * line tools options on the command line, in environment variables, and
- * in configuration files.
+ * The advgetopt library offers a way to include a license in your
+ * applications option definitions. The user can then use the --license
+ * command line option (or an equivalent) to see that license. The following
+ * variables can be used when you have a one to one match.
  */
 
 namespace advgetopt
@@ -31,7 +32,8 @@ namespace advgetopt
 
 
 extern char const * 		g_license_gpl_v2;
+extern char const * 		g_license_gpl_v3;
 
 
-}   // namespace advgetopt
+} // namespace advgetopt
 // vim: ts=4 sw=4 et

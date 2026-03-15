@@ -53,6 +53,7 @@ add_library(${PROJECT_NAME} SHARED
     advgetopt_usage.cpp
     conf_file.cpp
     license_gpl2.cpp
+    license_gpl3.cpp
     option_info.cpp
     option_info_ref.cpp
     utils.cpp
