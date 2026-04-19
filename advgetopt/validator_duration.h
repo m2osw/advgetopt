@@ -62,9 +62,16 @@ public:
     virtual std::string         name() const override;
     virtual bool                validate(std::string const & value) const override;
 
-    static bool                 convert_string(std::string const & duration
-                                             , flag_t flags
-                                             , double & result);
+    static bool                 convert_string(
+                                      std::string const & duration
+                                    , flag_t flags
+                                    , double suffix_default_factor
+                                    , double & result);
+
+    static double               suffix_to_factor(
+                                      std::string const & suffix
+                                    , flag_t flags
+                                    , double suffix_default_factor);
 
 private:
     struct range_t
@@ -76,6 +83,7 @@ private:
     };
 
     flag_t                      f_flags = VALIDATOR_DURATION_DEFAULT_FLAGS;
+    double                      f_default_factor = 1.0;
     range_t::vector_t           f_allowed_values = range_t::vector_t();
 };
 

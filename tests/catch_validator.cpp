@@ -1014,17 +1014,17 @@ CATCH_TEST_CASE("duration_validator", "[validator][valid][validation]")
 
         // simple seconds with decimal point
         //
-        CATCH_REQUIRE(advgetopt::validator_duration::convert_string("22.3s", 0, duration));
+        CATCH_REQUIRE(advgetopt::validator_duration::convert_string("22.3s", 0, 1.0, duration));
         CATCH_REQUIRE(SNAP_CATCH2_NAMESPACE::nearly_equal(duration, 22.3, 0.0));
 
         // "seconds" is the default
         //
-        CATCH_REQUIRE(advgetopt::validator_duration::convert_string("1.05", 0, duration));
+        CATCH_REQUIRE(advgetopt::validator_duration::convert_string("1.05", 0, 1.0, duration));
         CATCH_REQUIRE(SNAP_CATCH2_NAMESPACE::nearly_equal(duration, 1.05, 0.0));
 
         // number can start with a decimal point
         //
-        CATCH_REQUIRE(advgetopt::validator_duration::convert_string(".0503", 0, duration));
+        CATCH_REQUIRE(advgetopt::validator_duration::convert_string(".0503", 0, 1.0, duration));
         CATCH_REQUIRE(SNAP_CATCH2_NAMESPACE::nearly_equal(duration, 0.0503, 0.0));
     }
     CATCH_END_SECTION()
@@ -1032,14 +1032,14 @@ CATCH_TEST_CASE("duration_validator", "[validator][valid][validation]")
     CATCH_START_SECTION("duration_validator: verify the duration validator (multiple values)")
     {
         double duration(0.0);
-        CATCH_REQUIRE(advgetopt::validator_duration::convert_string("1d 3h 2m 15.3s", 0, duration));
+        CATCH_REQUIRE(advgetopt::validator_duration::convert_string("1d 3h 2m 15.3s", 0, 1.0, duration));
         CATCH_REQUIRE(SNAP_CATCH2_NAMESPACE::nearly_equal(duration, 1.0 * 86400.0 + 3.0 * 3600.0 + 2.0 * 60.0 + 15.3, 0.0));
 
         // same in uppercase
-        CATCH_REQUIRE(advgetopt::validator_duration::convert_string("1D 3H 2M 15.3S", 0, duration));
+        CATCH_REQUIRE(advgetopt::validator_duration::convert_string("1D 3H 2M 15.3S", 0, 1.0, duration));
         CATCH_REQUIRE(SNAP_CATCH2_NAMESPACE::nearly_equal(duration, 1.0 * 86400.0 + 3.0 * 3600.0 + 2.0 * 60.0 + 15.3, 0.0));
 
-        CATCH_REQUIRE(advgetopt::validator_duration::convert_string("3d 15h 52m 21.801s", 0, duration));
+        CATCH_REQUIRE(advgetopt::validator_duration::convert_string("3d 15h 52m 21.801s", 0, 1.0, duration));
         CATCH_REQUIRE(SNAP_CATCH2_NAMESPACE::nearly_equal(duration, 3.0 * 86400.0 + 15.0 * 3600.0 + 52.0 * 60.0 + 21.801, 0.0));
     }
     CATCH_END_SECTION()
@@ -1108,7 +1108,7 @@ CATCH_TEST_CASE("duration_validator", "[validator][valid][validation]")
                         }
 
                         double result(0.0);
-                        CATCH_REQUIRE(advgetopt::validator_duration::convert_string(duration, flg, result));
+                        CATCH_REQUIRE(advgetopt::validator_duration::convert_string(duration, flg, 1.0, result));
                         if(g_duration_suffixes[i].f_factor < 0.0)
                         {
                             // the 'm' special case
@@ -1572,7 +1572,7 @@ CATCH_TEST_CASE("invalid_duration_validator", "[invalid][validation]")
             "medium",
             "large"};
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: medium is not a valid duration or flag.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: medium is not a valid duration suffix or flag.");
         advgetopt::validator::pointer_t duration_validator(advgetopt::validator::create("duration", range));
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
@@ -1599,7 +1599,7 @@ CATCH_TEST_CASE("invalid_duration_validator", "[invalid][validation]")
     {
         advgetopt::string_list_t range{"alpha"};
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: alpha is not a valid duration or flag.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: alpha is not a valid duration suffix or flag.");
         advgetopt::validator::pointer_t duration_validator(advgetopt::validator::create("duration", range));
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
@@ -1611,7 +1611,7 @@ CATCH_TEST_CASE("invalid_duration_validator", "[invalid][validation]")
     {
         advgetopt::string_list_t range{"3..91"};
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: 3..91 is not a valid duration or flag.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: 3..91 is not a valid duration.");
         advgetopt::validator::pointer_t duration_validator(advgetopt::validator::create("duration", range));
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 
@@ -1623,7 +1623,7 @@ CATCH_TEST_CASE("invalid_duration_validator", "[invalid][validation]")
     {
         advgetopt::string_list_t range{"D...9.1"};
 
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: D is not a valid value for your range's start; it must be a valid duration, optionally preceded by a sign (+ or -).");
+        SNAP_CATCH2_NAMESPACE::push_expected_log("error: D...9.1 is not a valid duration suffix or flag.");
         advgetopt::validator::pointer_t duration_validator(advgetopt::validator::create("duration", range));
         SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
 

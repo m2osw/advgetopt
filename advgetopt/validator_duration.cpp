@@ -24,8 +24,8 @@
  * This one validator checks whether the input represents what is considered
  * a valid duration.
  *
- * This includes a floating point number followed by a suffix such as "week"
- * or "days".
+ * This includes a list of floating point numbers followed by an optional
+ * suffix such as "week" or "days".
  */
 
 // self
@@ -102,24 +102,48 @@ validator_duration_factory      g_validator_duration_factory;
  *         | start ',' flag_or_range
  *
  *    flags_and_ranges: flag
+ *                    | suffix
  *                    | range
  *
  *    flags: 'small'
  *         | 'large'
  *
+ *    suffix: 'd' | 'day' | 'days'
+ *          | 'h' | 'hour' | 'hours'
+ *          | 'm' | 'minute' | 'minutes'
+ *                | 'month' | 'months'
+ *          | 'mi' | 'microsecond' | 'microseconds'
+ *          | 'ms' | 'millisecond' | 'milliseconds'
+ *          | 'ns' | 'nanosecond' | 'nanoseconds'
+ *          | 's' | 'second' | 'seconds'
+ *          | 'w' | 'week' | 'weeks'
+ *          | 'y' | 'year' | 'years'
+ *
  *    range: duration
  *         | duration '...' duration
  *
- *    duration: [-+]?[0-9]+(.[0-9]+)?[dhmswy]
+ *    duration: [-+]?[0-9]+(.[0-9]+)?suffix?
  * \endcode
+ *
+ * \warning
+ * The order in which the flags are defined do have an effect. If you
+ * first define "small" then "m", you get a default suffix of 1 minute.
+ * If instead you use "large, m" then you get 1 month. But because the
+ * default is small, using "m, large" defines the default suffix as 1
+ * minute then changes the meaning of "m" to 1 month (30 days). Similarly,
+ * the range definitions are affected by the flags and default_suffix
+ * definitions happening beforehand.
  *
  * 'small' stands for small values (down to 1 second).
  *
  * 'large' stands for large values (so the 'm' suffix represents month,
  * not minutes).
  *
+ * The default_suffix defines the default factor to the specified suffix.
+ * By default, the factor is set to 1.0 which means 1 second.
+ *
  * The 'small' and 'large' flags are exclusive, the last one is effective.
- * Note that the 'm' suffix is the only one affected. If you want to
+ * Note that the 'm' suffix is the only one currently affected. If you want to
  * specifically specify minutes or months you can also enter the entire word:
  *
  * \code
@@ -134,14 +158,19 @@ validator_duration_factory      g_validator_duration_factory;
  * and one minute:
  *
  * \code
- *     1s..60s
+ *     1s...60s
  * \endcode
  *
  * If a side is omitted the default is used: the minimum of the left hand side
  * and the maximum for the right hand side. The minimum must be smaller or
  * equal to the maximum.
  *
- * When no suffix is specified, seconds are assumed.
+ * When no suffix is specified, the default suffix is used. If not changed,
+ * the default suffix is 1 second.
+ *
+ * \note
+ * At the moment we do not support UTF-8 for the suffixes and as a result the
+ * micro letter is not supported nor any UTF-8 spaces.
  *
  * \param[in] flag_list  The flags used to define the usage of the 'm' suffix.
  */
@@ -157,17 +186,30 @@ validator_duration::validator_duration(string_list_t const & flag_list)
         {
             f_flags |= VALIDATOR_DURATION_LONG;
         }
+        else if(!r.empty() && (r[0] | 0x20) >= 'a' && (r[0] | 0x20) <= 'z')
+        {
+            double const factor(suffix_to_factor(r, f_flags, -1.0));
+            if(factor < 0.0)
+            {
+                cppthread::log << cppthread::log_level_t::error
+                               << r
+                               << " is not a valid duration suffix or flag."
+                               << cppthread::end;
+                continue;
+            }
+            f_default_factor = factor;
+        }
         else
         {
             range_t range;
             std::string::size_type const pos(r.find("..."));
             if(pos == std::string::npos)
             {
-                if(!convert_string(r, f_flags, range.f_minimum))
+                if(!convert_string(r, f_flags, f_default_factor, range.f_minimum))
                 {
                     cppthread::log << cppthread::log_level_t::error
                                    << r
-                                   << " is not a valid duration or flag."
+                                   << " is not a valid duration."
                                    << cppthread::end;
                     continue;
                 }
@@ -178,7 +220,7 @@ validator_duration::validator_duration(string_list_t const & flag_list)
                 std::string const min_value(snapdev::trim_string(r.substr(0, pos)));
                 if(!min_value.empty())
                 {
-                    if(!convert_string(min_value, f_flags, range.f_minimum))
+                    if(!convert_string(min_value, f_flags, f_default_factor, range.f_minimum))
                     {
                         cppthread::log << cppthread::log_level_t::error
                                        << min_value
@@ -193,7 +235,7 @@ validator_duration::validator_duration(string_list_t const & flag_list)
                 std::string const max_value(snapdev::trim_string(r.substr(pos + 3)));
                 if(!max_value.empty())
                 {
-                    if(!convert_string(max_value, f_flags, range.f_maximum))
+                    if(!convert_string(max_value, f_flags, f_default_factor, range.f_maximum))
                     {
                         cppthread::log << cppthread::log_level_t::error
                                        << max_value
@@ -238,9 +280,9 @@ std::string validator_duration::name() const
  *
  * This function verifies that the specified value is a valid duration.
  *
- * It makes sures that the value is a valid decimal number which optionally
+ * It makes sure that the value is a valid decimal number which optionally
  * starts with a sign (`[-+]?`) and is optionally followed by a known
- * measurement suffix.
+ * duration suffix.
  *
  * \param[in] value  The value to validate.
  *
@@ -249,7 +291,7 @@ std::string validator_duration::name() const
 bool validator_duration::validate(std::string const & value) const
 {
     double result(0);
-    if(!convert_string(value, f_flags, result))
+    if(!convert_string(value, f_flags, f_default_factor, result))
     {
         set_error("not a valid duration.");
         return false;
@@ -279,16 +321,21 @@ bool validator_duration::validate(std::string const & value) const
  * This function is used to convert a string to a double representing a
  * duration. The duration can be specified with one of the following suffixes:
  *
- * * "s" or " second" or " seconds" -- the double is returned as is
- * * "m" or " minute" or " minutes" -- the double is multiplied by 60
- * * "h" or " hour" or " hours" -- the double is multiplied by 3600
- * * "d" or " day" or " days" -- the double is multiplied by 86400
- * * "w" or " week" or " weeks" -- the double is multiplied by 604800
- * * "m" or " month" or " months" -- the double is multiplied by 2592000
- * * "y" or " year" or " years" -- the double is multiplied by 31536000
+ * * "ns" or "nanosecond" or "nanoseconds" -- the double is multiplied by 0.0000000001
+ * * "mi" or "microsecond" or "microseconds" -- the double is multiplied by 0.0000001
+ * * "ms" or "millisecond" or "milliseconds" -- the double is multiplied by 0.0001
+ * * "s" or "second" or "seconds" -- the double is returned as is
+ * * "m" or "minute" or "minutes" -- the double is multiplied by 60
+ * * "h" or "hour" or "hours" -- the double is multiplied by 3600
+ * * "d" or "day" or "days" -- the double is multiplied by 86400
+ * * "w" or "week" or "weeks" -- the double is multiplied by 604800
+ * * "m" or "month" or "months" -- the double is multiplied by 2592000
+ * * "y" or "year" or "years" -- the double is multiplied by 31536000
  *
  * The "m" suffix is interpreted as "minute" by default. The flags passed
- * to the contructor can change that interpretation into "month" instead.
+ * to the constructor can change that interpretation into "month" instead.
+ *
+ * Any number of spaces can appear between the number of the suffix.
  *
  * One month uses 30 days.
  *
@@ -296,6 +343,11 @@ bool validator_duration::validate(std::string const & value) const
  *
  * Note that the input can be a double. So you can define a duration of
  * "1.3 seconds" or "2.25 days".
+ *
+ * You can also write multiple values such as "3 days 2 hours 17 seconds"
+ * (with the shorthand being "3d2h17s"). The durations get added to each
+ * other and the result returned. The durations get added to each
+ * other and the result returned.
  *
  * \todo
  * The last multiplication doesn't verify that no overflow or underflow
@@ -307,14 +359,19 @@ bool validator_duration::validate(std::string const & value) const
  *
  * \param[in] value  The value to be converted to a duration.
  * \param[in] flags  The flags to determine how to interpret the suffix.
+ * \param[in] suffix_default_factor  The default suffix factor. Use 1.0
+ * for 1 second, 86400.0 for one day, etc. You can use the suffix_to_factor()
+ * function to use a name instead of a number. This value does not need to
+ * match the factor of a known suffix.
  * \param[out] result  The resulting duration in seconds.
  *
  * \return true if the conversion succeeded.
  */
 bool validator_duration::convert_string(
-          std::string const & value
-        , flag_t flags
-        , double & result)
+      std::string const & value
+    , flag_t flags
+    , double suffix_default_factor
+    , double & result)
 {
     result = 0.0;
 
@@ -361,15 +418,12 @@ bool validator_duration::convert_string(
             }
         }
         double n(0.0);
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wrestrict"
         if(!validator_double::convert_string(
                   (*number == '.' ? "0" : "") + std::string(number, s - number)
                 , n))
         {
             return false;
         }
-#pragma GCC diagnostic pop
 
         while(isspace(*s))
         {
@@ -399,104 +453,10 @@ bool validator_duration::convert_string(
             }
         }
 
-        double factor(1.0);
-        if(!suffix.empty())     // empty == "seconds"
+        double const factor(suffix_to_factor(suffix, flags, suffix_default_factor));
+        if(factor < 0.0)
         {
-            switch(suffix[0])
-            {
-            case 'd':
-                if(suffix == "d"
-                || suffix == "day"
-                || suffix == "days")
-                {
-                    factor = 86400.0;
-                }
-                else
-                {
-                    return false;
-                }
-                break;
-
-            case 'h':
-                if(suffix == "h"
-                || suffix == "hour"
-                || suffix == "hours")
-                {
-                    factor = 3600.0;
-                }
-                else
-                {
-                    return false;
-                }
-                break;
-
-            case 'm':
-                if(suffix == "m")
-                {
-                    if((flags & VALIDATOR_DURATION_LONG) != 0)
-                    {
-                        factor = 86400.0 * 30.0;    // 1 month
-                    }
-                    else
-                    {
-                        factor = 60.0;              // 1 minute
-                    }
-                }
-                else if(suffix == "minute"
-                     || suffix == "minutes")
-                {
-                    factor = 60.0;
-                }
-                else if(suffix == "month"
-                     || suffix == "months")
-                {
-                    factor = 86400.0 * 30.0;
-                }
-                else
-                {
-                    return false;
-                }
-                break;
-
-            case 's':
-                if(suffix != "s"
-                && suffix != "second"
-                && suffix != "seconds")
-                {
-                    return false;
-                }
-                break;
-
-            case 'w':
-                if(suffix == "w"
-                || suffix == "week"
-                || suffix == "weeks")
-                {
-                    factor = 86400.0 * 7.0;
-                }
-                else
-                {
-                    return false;
-                }
-                break;
-
-            case 'y':
-                if(suffix == "y"
-                || suffix == "year"
-                || suffix == "years")
-                {
-                    factor = 86400.0 * 365.0;
-                }
-                else
-                {
-                    return false;
-                }
-                break;
-
-            default:
-                return false;
-
-            }
+            return false;
         }
 
         // TODO: catch ERANGE errors
@@ -512,6 +472,131 @@ bool validator_duration::convert_string(
     result = r;
 
     return true;
+}
+
+
+/** \brief Convert a duration suffix in a factor.
+ *
+ * The duration suffixes, such as "day" or "months", need to be converted
+ * to a number of seconds. This function does that conversion.
+ *
+ * If the input string is empty, then the default factor is returned.
+ * Within a validator_duration object, the default is 1.0.
+ *
+ * \param[in] suffix  A valid duration suffix or an empty string.
+ * \param[in] flags  The flags to determine how to interpret the suffix.
+ * \param[in] suffix_default_factor  Value returned if the \p suffix string
+ *                                   is empty.
+ *
+ * \return The factor representing the duration or -1.0 on an error.
+ */
+double validator_duration::suffix_to_factor(
+      std::string const & suffix
+    , flag_t flags
+    , double suffix_default_factor)
+{
+    // if empty use default
+    //
+    if(suffix.empty())
+    {
+        return suffix_default_factor;
+    }
+
+    switch(suffix[0])
+    {
+    case 'd':
+        if(suffix == "d"
+        || suffix == "day"
+        || suffix == "days")
+        {
+            return 86400.0;
+        }
+        break;
+
+    case 'h':
+        if(suffix == "h"
+        || suffix == "hour"
+        || suffix == "hours")
+        {
+            return 3600.0;
+        }
+        break;
+
+    case 'm':
+        if(suffix == "m")
+        {
+            if((flags & VALIDATOR_DURATION_LONG) != 0)
+            {
+                return 86400.0 * 30.0;    // 1 month
+            }
+            else
+            {
+                return 60.0;              // 1 minute
+            }
+        }
+        else if(suffix == "minute"
+             || suffix == "minutes")
+        {
+            return 60.0;
+        }
+        else if(suffix == "month"
+             || suffix == "months")
+        {
+            return 86400.0 * 30.0;
+        }
+        else if(suffix == "mi"
+             || suffix == "microsecond"
+             || suffix == "microseconds")
+        {
+            return 0.000001;
+        }
+        else if(suffix == "ms"
+             || suffix == "millisecond"
+             || suffix == "milliseconds")
+        {
+            return 0.001;
+        }
+        break;
+
+    case 'n':
+        if(suffix == "ns"
+        || suffix == "nanosecond"
+        || suffix == "nanoseconds")
+        {
+            return 0.000000001;
+        }
+        break;
+
+    case 's':
+        if(suffix == "s"
+        || suffix == "second"
+        || suffix == "seconds")
+        {
+            return 1.0;
+        }
+        break;
+
+    case 'w':
+        if(suffix == "w"
+        || suffix == "week"
+        || suffix == "weeks")
+        {
+            return 86400.0 * 7.0;
+        }
+        break;
+
+    case 'y':
+        if(suffix == "y"
+        || suffix == "year"
+        || suffix == "years")
+        {
+            return 86400.0 * 365.0;
+        }
+        break;
+
+    }
+
+    return -1.0;
 }
 
 

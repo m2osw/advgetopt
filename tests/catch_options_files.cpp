@@ -891,12 +891,14 @@ CATCH_TEST_CASE("valid_options_files", "[options][valid][files]")
 
         advgetopt::getopt::pointer_t opts(std::make_shared<advgetopt::getopt>(valid_options_from_file));
 
-        // the filename path should not change on us since it's relative
-        // however, if you're not in the snapcpp environment, it likely
-        // would be different
-        //
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: ../../BUILD/Debug/contrib/advgetopt/tmp/shared/advgetopt-namespace-overflow/unittest.ini: the name of a settings definition must include between 2 and 3 namespaces; \"us::legal::department::licence\" is not considered valid.");
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: ../../BUILD/Debug/contrib/advgetopt/tmp/shared/advgetopt-namespace-overflow/unittest.ini: the name of a settings definition must include between 2 and 3 namespaces; \"us::legal::department::license\" is not considered valid.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+              "error: "
+            + options_filename
+            + ": the name of a settings definition must include between 2 and 3 namespaces; \"us::legal::department::licence\" is not considered valid.");
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+              "error: "
+            + options_filename
+            + ": the name of a settings definition must include between 2 and 3 namespaces; \"us::legal::department::license\" is not considered valid.");
         opts->parse_options_from_file(
                   options_filename
                 , 2
