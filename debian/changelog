@@ -6,10 +6,16 @@ advgetopt (2.0.50.0~noble) noble; urgency=high
   * Documented the dynamic_configuration type.
   * Added a system option to list filenames of option definitions.
   * Allow for a pattern to be used to find option definition files.
+  * Added "%*i" to display all the supported filenames.
   * Show the path to the option definitions.
   * Fixed issues in doxy file.
-  * Fixed documentation.
+  * Fixed various documentation issues.
   * Finished removal of the boost library dependency.
+  * Added support for a default suffix instead of seconds.
+  * Changed license to GPL3.
+  * Made sure tests all pass and we're as close as possible to 100% coverage.
+  * Added proper support for UTF-8 short options (can be multiple bytes).
+  * Allow for a hidden namespace in an option name.
 
  -- Alexis Wilke <alexis@m2osw.com>  Mon, 21 Jul 2025 07:23:21 -0700
 
